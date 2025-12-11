@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acertive - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --black: #0a0a0a;
+      --gold: #FFD700;
+      --dark-gold: #FFA500;
+      --gray: #1a1a1a;
+      --white: #FFFFFF;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
+      min-height: 100vh;
+      color: var(--white);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .header {
+      background: rgba(0, 0, 0, 0.8);
+      border-bottom: 2px solid var(--gold);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-info span {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .btn-logout {
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background: var(--dark-gold);
+    }
+
+    /* DASHBOARD CONTENT */
+    .dashboard {
+      padding: 40px 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .dashboard-header h2 {
+      font-size: 32px;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .dashboard-header p {
+      font-size: 16px;
+      color: #ccc;
+    }
+
+    /* CARDS */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .card-icon {
+      font-size: 48px;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    /* AÇÕES RÁPIDAS */
+    .quick-actions {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+    }
+
+    .quick-actions h3 {
+      color: var(--gold);
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .action-btn {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .dashboard {
+        padding: 20px;
+      }
+
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <h1><i class="fas fa-crown"></i> ACERTIVE</h1>
+    <div class="user-info">
+      <span><i class="fas fa-user"></i> Bem-vindo, Usuário</span>
+      <button class="btn-logout" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </div>
+  </header>
+
+  <!-- DASHBOARD CONTENT -->
+  <main class="dashboard">
+    <div class="dashboard-header">
+      <h2>Painel de Controle</h2>
+      <p>Bem-vindo ao sistema de cobranças profissional</p>
+    </div>
+
+    <!-- CARDS -->
+    <div class="dashboard-grid">
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+        <h3>Total Recebido</h3>
+        <div class="value">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-clock"></i></div>
+        <h3>Pendentes</h3>
+        <div class="value">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-users"></i></div>
+        <h3>Clientes Ativos</h3>
+        <div class="value">0</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-file-invoice"></i></div>
+        <h3>Cobranças Emitidas</h3>
+        <div class="value">0</div>
+      </div>
+    </div>
+
+    <!-- AÇÕES RÁPIDAS -->
+    <div class="quick-actions">
+      <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
+      <div class="action-buttons">
+        <a href="#" class="action-btn">
+          <i class="fas fa-plus"></i> Nova Cobrança
+        </a>
+        <a href="#" class="action-btn">
+          <i class="fas fa-user-plus"></i> Novo Cliente
+        </a>
+        <a href="#" class="action-btn">
+          <i class="fas fa-paper-plane"></i> Enviar Lote
+        </a>
+        <a href="#" class="action-btn">
+          <i class="fas fa-download"></i> Exportar Relatório
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    © 2025 Acertive - Todos os direitos reservados
+  </footer>
+
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script>
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        window.location.href = 'login.html';
+      }
+    }
+  </script>
+</body>
+</html>
+
