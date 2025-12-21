@@ -185,28 +185,29 @@ async function initDb() {
   `);
 
   await pool.query(`
-    CREATE OR REPLACE VIEW vw_cobrancas AS
-    SELECT
-      c.id,
-      c.cliente_id,
-      cl.nome AS cliente_nome,
-      cl.email AS cliente_email,
-      cl.telefone AS cliente_telefone,
+   CREATE OR REPLACE VIEW vw_cobrancas AS
+  SELECT
+    c.id,
+    c.cliente_id,
+    cl.nome AS cliente_nome,
+    cl.email AS cliente_email,
+    cl.telefone AS cliente_telefone,
 
-      c.valor_original,
-      c.vencimento,
-      c.pagamento,
-      c.taxa,
-      c.taxa_percent,
-      c.juros,
-      c.multa,
-      c.dias,
-      c.valor_atualizado,
-      c.status,
-      c.created_at,
-      c.updated_at
-    FROM cobrancas c
-    JOIN clientes cl ON cl.id = c.cliente_id;
+    c.valor_original,
+    c.vencimento,
+    c.pago_em,
+    c.taxa,
+    c.taxa_percent,
+    c.juros,
+    c.multa,
+    c.dias,
+    c.valor_atualizado,
+    c.status,
+    c.created_at,
+    c.updated_at
+  FROM cobrancas c
+  JOIN clientes cl ON cl.id = c.cliente_id;
+
   `);
 
   // Bootstrap admin (opcional)
