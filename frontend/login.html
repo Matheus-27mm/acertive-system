@@ -2,212 +2,441 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Acertive - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acertive • Login</title>
+
+  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
   <style>
-    :root {
-      --black: #0a0a0a;
-      --gold: #FFD700;
-      --dark-gold: #FFA500;
-      --gray: #1a1a1a;
-      --white: #FFFFFF;
+    :root{
+      --bg1:#070707;
+      --bg2:#131313;
+      --card:#0f0f10cc;
+      --card2:#111114f2;
+      --gold:#FFD700;
+      --gold2:#FFA500;
+      --white:#ffffff;
+      --muted:#b9b9b9;
+      --line:rgba(255,215,0,.18);
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
     }
 
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    .wrap{
+      width:100%;
+      max-width: 980px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:22px;
+      align-items:stretch;
+    }
+
+    .brandPanel{
+      border-radius: var(--radius);
+      background:
+        radial-gradient(700px 420px at 30% 25%, rgba(255,215,0,.14), transparent 60%),
+        radial-gradient(700px 420px at 80% 80%, rgba(255,165,0,.12), transparent 58%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadow);
+      padding: 34px 34px;
+      position:relative;
+      overflow:hidden;
+      animation: fadeUp .55s ease both;
+    }
+
+    .brandPanel::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 6.5s ease-in-out infinite;
+      pointer-events:none;
+    }
+
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
+    }
+
+    .brandTop{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom: 18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .mark{
+      width:46px;height:46px;
+      border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111;
+      font-weight:800;
+      letter-spacing:.5px;
+      user-select:none;
+    }
+
+    .brandTop h1{
+      font-size: 22px;
+      letter-spacing: .6px;
       color: var(--white);
-      animation: fadeIn 1s ease;
+      line-height:1.1;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .brandTop small{
+      display:block;
+      color: rgba(255,215,0,.92);
+      font-weight:600;
+      margin-top:3px;
+      letter-spacing:.2px;
     }
 
-    .login-container {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid var(--gold);
-      border-radius: 16px;
-      padding: 40px 32px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
-      backdrop-filter: blur(10px);
-      transition: transform 0.3s ease;
-    }
-
-    .login-container:hover {
-      transform: translateY(-5px);
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .logo h1 {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 1px;
-    }
-
-    .logo p {
+    .brandBody{
+      margin-top: 14px;
+      color: var(--muted);
       font-size: 14px;
-      color: #ccc;
-      margin-top: 4px;
+      line-height: 1.7;
+      position:relative;
+      z-index:1;
     }
 
-    .form-group {
-      margin-bottom: 20px;
+    .features{
+      margin-top: 18px;
+      display:grid;
+      gap:10px;
+      position:relative;
+      z-index:1;
     }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
+    .feat{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,215,0,.10);
+      box-shadow: var(--shadowSoft);
+      backdrop-filter: blur(8px);
+    }
+
+    .feat i{
+      width:34px;height:34px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(255,215,0,.14);
       color: var(--gold);
-      font-weight: 600;
+      margin-top:2px;
     }
 
-    .input-wrapper {
-      position: relative;
+    .feat b{color: var(--white); font-weight:700}
+    .feat span{display:block; color: rgba(255,255,255,.70); font-size:13px; margin-top:2px}
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.20);
+      box-shadow: var(--shadow);
+      padding: 30px 28px;
+      animation: fadeUp .65s ease both;
     }
 
-    .input-wrapper i {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gold);
-      font-size: 16px;
+    @keyframes fadeUp{
+      from{opacity:0; transform: translateY(14px)}
+      to{opacity:1; transform: translateY(0)}
     }
 
-    .input-wrapper input {
-      width: 100%;
-      padding: 12px 12px 12px 40px;
-      border: 1px solid var(--gold);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
+    .cardHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      margin-bottom: 18px;
+    }
+
+    .cardHeader h2{
+      font-size: 20px;
       color: var(--white);
-      font-size: 15px;
-      transition: all 0.3s ease;
+      letter-spacing: .3px;
     }
 
-    .input-wrapper input:focus {
-      outline: none;
-      border-color: var(--dark-gold);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
-      color: var(--black);
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
-    }
-
-    .extra-links {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .extra-links a {
-      color: var(--gold);
-      text-decoration: none;
+    .cardHeader p{
+      margin-top: 6px;
+      color: rgba(255,255,255,.65);
       font-size: 13px;
-      transition: color 0.3s ease;
+      line-height: 1.45;
     }
 
-    .extra-links a:hover {
-      color: var(--dark-gold);
-    }
-
-    .footer-text {
-      text-align: center;
-      margin-top: 30px;
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,215,0,.20);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      font-weight:700;
       font-size: 12px;
-      color: #888;
+      white-space:nowrap;
     }
 
-    /* Responsividade */
-    @media (max-width: 480px) {
-      .login-container {
-        margin: 20px;
-        padding: 30px 20px;
-      }
+    .form{
+      margin-top: 10px;
+      display:grid;
+      gap: 14px;
+    }
+
+    .field{
+      position:relative;
+      display:grid;
+      gap: 8px;
+    }
+
+    .field label{
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+      font-weight: 600;
+      letter-spacing:.2px;
+    }
+
+    .control{
+      position:relative;
+    }
+
+    .control input{
+      width:100%;
+      padding: 12px 44px 12px 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,215,0,.22);
+      background: rgba(255,255,255,.04);
+      color: var(--white);
+      font-size: 14px;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .control input::placeholder{color: rgba(255,255,255,.38)}
+    .control input:focus{
+      outline:none;
+      border-color: rgba(255,215,0,.60);
+      box-shadow: 0 0 0 4px rgba(255,215,0,.14);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .iconLeft, .iconRight{
+      position:absolute;
+      top:50%;
+      transform: translateY(-50%);
+      width:36px;height:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 10px;
+      color: rgba(255,215,0,.95);
+    }
+
+    .iconLeft{left:6px}
+    .iconRight{right:6px}
+
+    .btnIcon{
+      border:1px solid rgba(255,215,0,.18);
+      background: rgba(255,215,0,.10);
+      cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .btnIcon:hover{
+      transform: translateY(-1px);
+      background: rgba(255,215,0,.16);
+      border-color: rgba(255,215,0,.30);
+    }
+
+    .btn{
+      margin-top: 10px;
+      width:100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 800;
+      letter-spacing: .3px;
+      color: #121212;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(255,215,0,.22);
+      filter: saturate(1.05);
+    }
+    .btn:active{transform: translateY(0)}
+
+    .link{
+      color: rgba(255,215,0,.95);
+      text-decoration:none;
+      font-weight: 700;
+      font-size: 13px;
+      transition: color .16s ease;
+    }
+    .link:hover{color: rgba(255,165,0,.98)}
+
+    .foot{
+      margin-top: 14px;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+      text-align:center;
+      line-height: 1.5;
+    }
+
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
+      margin: 14px 0 12px;
+    }
+
+    @media (max-width: 920px){
+      .wrap{grid-template-columns:1fr;max-width:520px}
+      .brandPanel{display:none}
     }
   </style>
 </head>
+
 <body>
-  <div class="login-container">
-    <div class="logo">
-      <h1>🔶 ACERTIVE</h1>
-      <p>Sistema de Cobranças Profissional</p>
-    </div>
-
-    <form id="loginForm">
-      <div class="form-group">
-        <label>Email</label>
-        <div class="input-wrapper">
-          <i class="fas fa-envelope"></i>
-          <input type="email" id="email" placeholder="seu@email.com" required />
+  <div class="wrap">
+    <section class="brandPanel" aria-hidden="true">
+      <div class="brandTop">
+        <div class="mark">A</div>
+        <div>
+          <h1>ACERTIVE</h1>
+          <small>Sistema de Cobranças Profissional</small>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Senha</label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="senha" placeholder="••••••••" required />
-        </div>
+      <div class="brandBody">
+        Acesse sua área administrativa para gerenciar clientes, cobranças e relatórios com mais controle e organização.
       </div>
 
-      <button type="submit" class="btn-primary">Entrar</button>
-    </form>
+      <div class="features">
+        <div class="feat">
+          <i class="fa-solid fa-shield-halved"></i>
+          <div>
+            <b>Segurança e Sessão</b>
+            <span>Fluxo de autenticação consistente com proteção de páginas.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <i class="fa-solid fa-chart-line"></i>
+          <div>
+            <b>Painel e Indicadores</b>
+            <span>Controle financeiro e status em um só lugar.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <i class="fa-solid fa-users"></i>
+          <div>
+            <b>Gestão de Clientes</b>
+            <span>Cadastro, atualização e histórico centralizados.</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <div class="extra-links">
-      <p><a href="cadastro.html">Não tem uma conta? Cadastre-se</a></p>
-      <p><a href="#">Esqueceu sua senha?</a></p>
-    </div>
+    <main class="card">
+      <div class="cardHeader">
+        <div>
+          <h2>Entrar no ACERTIVE</h2>
+          <p>Use suas credenciais para acessar o painel administrativo.</p>
+        </div>
+        <div class="pill"><i class="fa-solid fa-lock"></i> Acesso Restrito</div>
+      </div>
 
-    <div class="footer-text">
-      © 2025 Acertive - Todos os direitos reservados
-    </div>
+      <div class="divider"></div>
+
+      <form id="loginForm" class="form" autocomplete="on">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
+            <input type="email" id="email" placeholder="seuemail@dominio.com" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="senha">Senha</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-key"></i></span>
+            <input type="password" id="senha" placeholder="Digite sua senha" required autocomplete="current-password" />
+            <button type="button" class="iconRight btnIcon" id="toggleSenha" aria-label="Mostrar/ocultar senha">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Entrar
+        </button>
+
+        <div class="foot">
+          Não tem conta? <a class="link" href="/cadastro">Criar cadastro</a><br>
+          © 2025 ACERTIVE • Todos os direitos reservados
+        </div>
+      </form>
+    </main>
   </div>
 
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert('Login simulado com sucesso!');
-      window.location.href = 'dashboard.html';
-    });
-  </script>
+  <!-- SCRIPTS (sempre no final, antes do </body>) -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/login.js"></script>
 </body>
-</html> 
-
+</html>

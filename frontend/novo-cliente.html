@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Novo Cliente</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+  <style>
+    :root{
+      --bg1:#070707; --bg2:#131313;
+      --card:#0f0f10cc; --card2:#111114f2;
+      --gold:#FFD700; --gold2:#FFA500;
+      --white:#ffffff; --muted:#b9b9b9;
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      pointer-events:none;
+      opacity:.22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    .topbar{
+      width:100%;
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 6.5s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes shine{0%{transform:translateX(-45%)}50%{transform:translateX(35%)}100%{transform:translateX(-45%)}}
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.4px; color: var(--white);
+      position:relative; z-index:1;
+    }
+    .mark{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color:#111; font-weight:900; user-select:none;
+    }
+    .brand small{
+      display:block; color: rgba(255,215,0,.92);
+      font-weight:700; margin-top:2px; letter-spacing:.2px; font-size:12px;
+    }
+    .navbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;position:relative;z-index:1}
+    .navbtn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding: 10px 12px;border-radius:999px;
+      border: 1px solid rgba(255,215,0,.20);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      font-weight:800;text-decoration:none;cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;
+    }
+    .navbtn:hover{transform:translateY(-1px);background:rgba(255,215,0,.16);border-color:rgba(255,215,0,.30)}
+
+    .wrap{
+      width:100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.20);
+      box-shadow: var(--shadow);
+      padding: 26px 24px;
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+      animation: fadeUp .55s ease both;
+    }
+    @keyframes fadeUp{from{opacity:0; transform: translateY(14px)}to{opacity:1; transform: translateY(0)}}
+
+    .cardHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px}
+    .cardHeader h2{
+      font-size: 20px; color: var(--white); letter-spacing:.3px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .cardHeader p{margin-top:6px;color:rgba(255,255,255,.65);font-size:13px;line-height:1.45}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding: 8px 10px;border-radius:999px;
+      border: 1px solid rgba(255,215,0,.20);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      font-weight:800;font-size:12px;white-space:nowrap;
+    }
+
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
+      margin: 14px 0 14px;
+    }
+
+    .form{display:grid;gap:14px;margin-top:6px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:grid;gap:8px}
+    label{font-size:12px;color:rgba(255,255,255,.78);font-weight:700;letter-spacing:.2px}
+
+    .control{position:relative}
+    .control input, .control select, .control textarea{
+      width:100%;
+      padding: 12px 14px 12px 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,215,0,.22);
+      background: rgba(255,255,255,.04);
+      color: var(--white);
+      font-size: 14px;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+      appearance:none;
+    }
+    .control textarea{min-height: 98px; resize: vertical; padding-top: 12px}
+    .control input::placeholder, .control textarea::placeholder{color: rgba(255,255,255,.38)}
+    .control input:focus, .control select:focus, .control textarea:focus{
+      outline:none;
+      border-color: rgba(255,215,0,.60);
+      box-shadow: 0 0 0 4px rgba(255,215,0,.14);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .iconLeft{
+      position:absolute; top:50%; transform: translateY(-50%); left:6px;
+      width:36px;height:36px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      color: rgba(255,215,0,.95);
+      background: rgba(255,215,0,.10);
+      border: 1px solid rgba(255,215,0,.14);
+      pointer-events:none;
+    }
+    .iconLeft.top{ top: 18px; transform:none; }
+
+    .btn{
+      width:100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: #121212;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .btn:hover{transform: translateY(-2px);box-shadow: 0 14px 30px rgba(255,215,0,.22);filter:saturate(1.05)}
+    .btn.secondary{
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      border: 1px solid rgba(255,215,0,.28);
+      box-shadow:none;
+    }
+
+    .kv{display:grid;gap:10px;margin-top:4px}
+    .kvItem{
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,215,0,.18);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--shadowSoft);
+    }
+    .kvItem b{
+      color: rgba(255,215,0,.95);
+      font-size: 12px;
+      display:block;
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
+    .kvItem span{
+      color: rgba(255,255,255,.92);
+      font-size: 14px;
+      font-weight: 900;
+      word-break: break-word;
+    }
+    .note{margin-top:10px;font-size:12px;color:rgba(255,255,255,.62);line-height:1.55}
+
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div>
+        ACERTIVE
+        <small>Novo Cliente</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <a class="navbtn" href="/clientes-ativos"><i class="fa-solid fa-users"></i> Clientes</a>
+      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- FORM -->
+    <section class="card">
+      <div class="cardHeader">
+        <div>
+          <h2><i class="fa-solid fa-user-plus"></i> Cadastro de Cliente</h2>
+          <p>Registre clientes PF/PJ, com status e dados de contato centralizados.</p>
+        </div>
+        <div class="pill"><i class="fa-solid fa-id-card"></i> Cadastro</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <form id="formCliente" class="form" autocomplete="on">
+        <div class="row2">
+          <div class="field">
+            <label for="tipo">Tipo</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-building-user"></i></span>
+              <select id="tipo" name="type" required>
+                <option value="pf">Pessoa Física (PF)</option>
+                <option value="pj">Pessoa Jurídica (PJ)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="status">Status</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-toggle-on"></i></span>
+              <select id="status" name="status" required>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="nome">Nome / Razão Social</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
+            <input id="nome" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="email">E-mail</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
+              <input id="email" name="email" type="email" placeholder="ex.: cliente@email.com" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="telefone">Telefone</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-phone"></i></span>
+              <input id="telefone" name="phone" type="tel" placeholder="(99) 99999-9999" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="cpfCnpj" id="cpfCnpjLabel">CPF</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-fingerprint"></i></span>
+              <input id="cpfCnpj" name="cpfCnpj" type="text" placeholder="000.000.000-00" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="endereco">Endereço</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-location-dot"></i></span>
+              <input id="endereco" name="address" type="text" placeholder="Rua, número, bairro, cidade/UF" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="observacoes">Observações</label>
+          <div class="control">
+            <span class="iconLeft top"><i class="fa-solid fa-note-sticky"></i></span>
+            <textarea id="observacoes" name="notes" placeholder="Ex.: cliente VIP, preferências, detalhes de cobrança..."></textarea>
+          </div>
+        </div>
+
+        <div class="row2">
+          <button class="btn" type="submit">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Salvar Cliente
+          </button>
+
+          <button class="btn secondary" id="btnLimpar" type="button">
+            <i class="fa-solid fa-eraser"></i>
+            Limpar
+          </button>
+        </div>
+
+        <div class="note">
+          Dica: CPF/CNPJ é opcional, mas ajuda no controle e exportações futuras.
+        </div>
+      </form>
+    </section>
+
+    <!-- RESUMO -->
+    <section class="card" id="preview">
+      <div class="cardHeader">
+        <div>
+          <h2><i class="fa-solid fa-clipboard-check"></i> Resumo</h2>
+          <p id="statusMsg">Preencha o formulário para visualizar o resumo.</p>
+        </div>
+        <div class="pill"><i class="fa-solid fa-shield"></i> Registro</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="kv">
+        <div class="kvItem"><b>Tipo</b><span id="pTipo">—</span></div>
+        <div class="kvItem"><b>Status</b><span id="pStatus">—</span></div>
+        <div class="kvItem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
+        <div class="kvItem"><b>E-mail</b><span id="pEmail">—</span></div>
+        <div class="kvItem"><b>Telefone</b><span id="pTelefone">—</span></div>
+        <div class="kvItem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
+        <div class="kvItem"><b>Endereço</b><span id="pEndereco">—</span></div>
+        <div class="kvItem"><b>Observações</b><span id="pObs">—</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/novo-cliente.js"></script>
+</body>
+</html>

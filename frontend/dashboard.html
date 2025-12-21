@@ -1,289 +1,370 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Acertive - Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>ACERTIVE • Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
   <style>
-    :root {
-      --black: #0a0a0a;
-      --gold: #FFD700;
-      --dark-gold: #FFA500;
-      --gray: #1a1a1a;
-      --white: #FFFFFF;
+    :root{
+      --bg1:#070707;
+      --bg2:#131313;
+      --card:#0f0f10cc;
+      --card2:#111114f2;
+      --gold:#FFD700;
+      --gold2:#FFA500;
+      --white:#ffffff;
+      --muted:#b9b9b9;
+      --line:rgba(255,215,0,.18);
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0; pointer-events:none;
+      opacity:.22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
-      min-height: 100vh;
-      color: var(--white);
-      animation: fadeIn 1s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* HEADER */
-    .header {
-      background: rgba(0, 0, 0, 0.8);
-      border-bottom: 2px solid var(--gold);
-      padding: 20px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .topbar{
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
       backdrop-filter: blur(10px);
     }
-
-    .header h1 {
-      font-size: 28px;
-      color: var(--gold);
-      letter-spacing: 1px;
+    .topbar::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 6.5s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.4px;
+      position:relative; z-index:1;
+    }
+    .mark{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+      display:flex; align-items:center; justify-content:center;
+      color:#111; font-weight:900; user-select:none;
+    }
+    .brand small{
+      display:block; margin-top:2px;
+      color: rgba(255,215,0,.92);
+      font-weight:700; letter-spacing:.2px; font-size: 12px;
     }
 
-    .user-info span {
-      color: var(--gold);
-      font-weight: 600;
+    .navbtns{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+      position:relative; z-index:1;
+      align-items:center;
     }
-
-    .btn-logout {
-      background: var(--gold);
-      color: var(--black);
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    .navbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,215,0,.20);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      font-weight:800; text-decoration:none; cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;
+      white-space:nowrap;
     }
+    .navbtn:hover{transform: translateY(-1px); background: rgba(255,215,0,.16); border-color: rgba(255,215,0,.30);}
 
-    .btn-logout:hover {
-      background: var(--dark-gold);
-    }
-
-    /* DASHBOARD CONTENT */
-    .dashboard {
-      padding: 40px 30px;
-      max-width: 1200px;
+    .wrap{
+      max-width: 1100px;
       margin: 0 auto;
+      display:grid;
+      gap: 18px;
     }
 
-    .dashboard-header {
-      text-align: center;
-      margin-bottom: 40px;
+    .hero{
+      text-align:center;
+      padding: 14px 0 6px;
     }
-
-    .dashboard-header h2 {
-      font-size: 32px;
+    .hero h1{
+      font-size: 36px;
+      letter-spacing: .3px;
       color: var(--gold);
-      margin-bottom: 10px;
+      font-weight: 900;
+    }
+    .hero p{
+      margin-top: 8px;
+      color: rgba(255,255,255,.70);
+      font-size: 14px;
     }
 
-    .dashboard-header p {
-      font-size: 16px;
-      color: #ccc;
-    }
-
-    /* CARDS */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-
-    .card {
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--gold);
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.1);
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
-    }
-
-    .card-icon {
-      font-size: 48px;
-      color: var(--gold);
-      margin-bottom: 16px;
-    }
-
-    .card h3 {
-      font-size: 18px;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-
-    .card .value {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--white);
-    }
-
-    /* AÇÕES RÁPIDAS */
-    .quick-actions {
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--gold);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 40px;
-    }
-
-    .quick-actions h3 {
-      color: var(--gold);
-      margin-bottom: 20px;
-      font-size: 20px;
-    }
-
-    .action-buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
     }
 
-    .action-btn {
-      background: rgba(255, 215, 0, 0.1);
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 16px;
-      border-radius: 8px;
-      text-align: center;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.20);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
     }
-
-    .action-btn:hover {
-      background: rgba(255, 215, 0, 0.2);
+    .card:hover{
       transform: translateY(-2px);
+      border-color: rgba(255,215,0,.30);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
     }
 
-    /* FOOTER */
-    .footer {
-      text-align: center;
-      padding: 20px;
+    .kpiIcon{
+      width:48px;height:48px;border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      color:#111;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      box-shadow: 0 12px 22px rgba(255,215,0,.16);
+      margin: 2px auto 10px;
+    }
+
+    .kpiTitle{
+      text-align:center;
+      color: rgba(255,215,0,.92);
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .kpiValue{
+      text-align:center;
+      font-weight: 900;
+      font-size: 30px;
+      margin-top: 8px;
+      color: rgba(255,255,255,.96);
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.10));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .panelHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panelHeader h2{
+      display:flex; align-items:center; gap:10px;
+      color: var(--gold);
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: .2px;
+    }
+
+    .statusBar{
+      color: rgba(255,255,255,.65);
       font-size: 12px;
-      color: #888;
+      text-align:right;
+      max-width: 520px;
     }
 
-    /* Responsividade */
-    @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-        gap: 10px;
-      }
+    .actions{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
 
-      .dashboard {
-        padding: 20px;
-      }
+    .btn{
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: #121212;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      user-select:none;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(255,215,0,.22);
+      filter: saturate(1.05);
+    }
 
-      .action-buttons {
-        grid-template-columns: 1fr;
-      }
+    .btn.secondary{
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      border: 1px solid rgba(255,215,0,.28);
+      box-shadow: none;
+    }
+    .btn.secondary:hover{
+      background: rgba(255,215,0,.16);
+      border-color: rgba(255,215,0,.34);
+    }
+
+    footer{
+      text-align:center;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+      padding: 18px 0 6px;
+    }
+
+    @media (max-width: 1020px){
+      .grid{grid-template-columns: 1fr 1fr}
+      .actions{grid-template-columns: 1fr 1fr}
+      .statusBar{max-width: 100%; text-align:left;}
+    }
+    @media (max-width: 560px){
+      .grid{grid-template-columns: 1fr}
+      .actions{grid-template-columns: 1fr}
+      .hero h1{font-size: 28px}
     }
   </style>
 </head>
+
 <body>
-  <!-- HEADER -->
-  <header class="header">
-    <h1><i class="fas fa-crown"></i> ACERTIVE</h1>
-    <div class="user-info">
-      <span><i class="fas fa-user"></i> Bem-vindo, Usuário</span>
-      <button class="btn-logout" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Sair
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark"><i class="fa-solid fa-crown"></i></div>
+      <div>
+        ACERTIVE
+        <small>Painel de Controle</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <div class="navbtn" style="cursor:default;">
+        <i class="fa-solid fa-user"></i>
+        <span id="userName">Usuário</span>
+      </div>
+      <button class="navbtn" id="btnLogout" type="button">
+        <i class="fa-solid fa-right-from-bracket"></i> Sair
       </button>
     </div>
-  </header>
+  </div>
 
-  <!-- DASHBOARD CONTENT -->
-  <main class="dashboard">
-    <div class="dashboard-header">
-      <h2>Painel de Controle</h2>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Painel de Controle</h1>
       <p>Bem-vindo ao sistema de cobranças profissional</p>
-    </div>
+    </section>
 
-    <!-- CARDS -->
-    <div class="dashboard-grid">
+    <!-- KPIs (podem virar cards clicáveis depois, se quiser) -->
+    <section class="grid">
       <div class="card">
-        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-        <h3>Total Recebido</h3>
-        <div class="value">R$ 0,00</div>
+        <div class="kpiIcon"><i class="fa-solid fa-dollar-sign"></i></div>
+        <div class="kpiTitle">Total Recebido</div>
+        <div class="kpiValue" id="totalRecebido">R$ 0,00</div>
       </div>
-      <div class="card">
-        <div class="card-icon"><i class="fas fa-clock"></i></div>
-        <h3>Pendentes</h3>
-        <div class="value">R$ 0,00</div>
-      </div>
-      <div class="card">
-        <div class="card-icon"><i class="fas fa-users"></i></div>
-        <h3>Clientes Ativos</h3>
-        <div class="value">0</div>
-      </div>
-      <div class="card">
-        <div class="card-icon"><i class="fas fa-file-invoice"></i></div>
-        <h3>Cobranças Emitidas</h3>
-        <div class="value">0</div>
-      </div>
-    </div>
 
-    <!-- AÇÕES RÁPIDAS -->
-    <div class="quick-actions">
-      <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
-      <div class="action-buttons">
-        <a href="#" class="action-btn">
-          <i class="fas fa-plus"></i> Nova Cobrança
-        </a>
-        <a href="#" class="action-btn">
-          <i class="fas fa-user-plus"></i> Novo Cliente
-        </a>
-        <a href="#" class="action-btn">
-          <i class="fas fa-paper-plane"></i> Enviar Lote
-        </a>
-        <a href="#" class="action-btn">
-          <i class="fas fa-download"></i> Exportar Relatório
-        </a>
+      <div class="card">
+        <div class="kpiIcon"><i class="fa-regular fa-clock"></i></div>
+        <div class="kpiTitle">Pendentes</div>
+        <div class="kpiValue" id="totalPendentes">R$ 0,00</div>
       </div>
-    </div>
+
+      <div class="card">
+        <div class="kpiIcon"><i class="fa-solid fa-users"></i></div>
+        <div class="kpiTitle">Clientes Ativos</div>
+        <div class="kpiValue" id="totalClientes">0</div>
+      </div>
+
+      <div class="card">
+        <div class="kpiIcon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="kpiTitle">Cobranças Emitidas</div>
+        <div class="kpiValue" id="totalTitulos">0</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h2><i class="fa-solid fa-bolt"></i> Ações Rápidas</h2>
+        <div class="statusBar" id="statusBar"></div>
+      </div>
+
+      <!-- IMPORTANTE: aqui é navegação real (href). Não “some” o clique -->
+      <div class="actions">
+        <a class="btn secondary" id="btnNovaCobranca" href="/nova-cobranca">
+          <i class="fa-solid fa-plus"></i> Nova Cobrança
+        </a>
+
+        <a class="btn secondary" id="btnClientesAtivos" href="/clientes-ativos">
+          <i class="fa-solid fa-users"></i> Clientes Ativos
+        </a>
+
+        <a class="btn secondary" id="btnNovoCliente" href="/novo-cliente">
+          <i class="fa-solid fa-user-plus"></i> Novo Cliente
+        </a>
+
+        <a class="btn secondary" id="btnVerCobrancas" href="/cobrancas">
+          <i class="fa-solid fa-list"></i> Ver Cobranças
+        </a>
+
+        <button class="btn secondary" id="btnExportar" type="button">
+          <i class="fa-solid fa-download"></i> Exportar Relatório
+        </button>
+      </div>
+    </section>
+
+    <footer>© 2025 Acertive • Todos os direitos reservados</footer>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    © 2025 Acertive - Todos os direitos reservados
-  </footer>
-
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-  <script>
-    function logout() {
-      if (confirm('Deseja realmente sair?')) {
-        window.location.href = 'login.html';
-      }
-    }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/dashboard.js"></script>
 </body>
 </html>
-

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Nova Cobrança</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg1:#070707;
+      --bg2:#141414;
+      --card:#0f0f10cc;
+      --card2:#111114f2;
+      --gold:#FFD700;
+      --gold2:#FFA500;
+      --white:#ffffff;
+      --muted:#b9b9b9;
+      --line:rgba(255,215,0,.18);
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding: 26px;
+    }
+
+    .topbar{
+      max-width: 920px;
+      margin: 0 auto 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,215,0,.22);
+      background: rgba(0,0,0,.55);
+      box-shadow: var(--shadowSoft);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      color: var(--gold);
+    }
+
+    .brand .mark{
+      width:36px;height:36px;border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      color:#101010; display:flex; align-items:center; justify-content:center;
+      font-weight: 900;
+      box-shadow: 0 10px 20px rgba(255,215,0,.14);
+      user-select:none;
+    }
+
+    .navbtns{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+
+    .navbtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,215,0,.25);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      text-decoration:none;
+      font-weight: 800;
+      cursor:pointer;
+      transition: transform .16s ease, background .16s ease;
+      user-select:none;
+    }
+    .navbtn:hover{transform: translateY(-1px); background: rgba(255,215,0,.16)}
+
+    .container{
+      max-width: 920px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.22);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2{
+      color: var(--gold);
+      font-size: 20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 12px;
+      letter-spacing: .2px;
+    }
+
+    .sub{
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .form{
+      display:grid;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,.80);
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+    }
+
+    .control{
+      position:relative;
+    }
+
+    input, select{
+      width: 100%;
+      padding: 12px 12px 12px 44px;
+      border: 1px solid rgba(255,215,0,.22);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      color: var(--white);
+      font-size: 14px;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    input::placeholder{color: rgba(255,255,255,.38)}
+
+    input:focus, select:focus{
+      outline:none;
+      border-color: rgba(255,215,0,.60);
+      box-shadow: 0 0 0 4px rgba(255,215,0,.14);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .iconLeft{
+      position:absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width:32px;height:32px;
+      border-radius: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(255,215,0,.95);
+      background: rgba(255,215,0,.10);
+      border: 1px solid rgba(255,215,0,.14);
+      pointer-events:none;
+    }
+
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn{
+      margin-top: 6px;
+      width:100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: #121212;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(255,215,0,.22);
+      filter: saturate(1.05);
+    }
+
+    .btn.secondary{
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      border: 1px solid rgba(255,215,0,.28);
+      box-shadow: none;
+    }
+
+    .result{ display:none; }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .kvItem{
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,215,0,.18);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--shadowSoft);
+    }
+
+    .kvItem b{
+      color: rgba(255,215,0,.95);
+      font-size: 12px;
+      display:block;
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+    }
+
+    .kvItem span{
+      color: rgba(255,255,255,.90);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .note{
+      margin-top: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,.62);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 920px){
+      .container{grid-template-columns: 1fr}
+      body{padding: 18px}
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    // Guard padrão
+    if (!localStorage.getItem('usuarioLogado') && localStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = '/login';
+    }
+  </script>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">A</div>
+      ACERTIVE • Nova Cobrança
+    </div>
+
+    <div class="navbtns">
+      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <section class="card">
+      <h2><i class="fas fa-plus-circle"></i> Gerar Cobrança</h2>
+      <div class="sub">
+        O cálculo segue o padrão do seu servidor (multa fixa 2% + juros por dia).
+      </div>
+
+      <form id="formCobranca" class="form" autocomplete="on">
+        <div>
+          <label for="cliente">Cliente</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
+            <input id="cliente" type="text" name="cliente" placeholder="Nome do cliente" required />
+          </div>
+        </div>
+
+        <div>
+          <label for="valorOriginal">Valor Original (R$)</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-brazilian-real-sign"></i></span>
+            <input id="valorOriginal" type="number" step="0.01" min="0" name="valorOriginal" placeholder="Ex.: 250.00" required />
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label for="vencimento">Data de Vencimento</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-calendar-day"></i></span>
+              <input id="vencimento" type="date" name="vencimento" required />
+            </div>
+          </div>
+
+          <div>
+            <label for="pagamento">Data do Pagamento (opcional)</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-calendar-check"></i></span>
+              <input id="pagamento" type="date" name="pagamento" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="taxa">Taxa de Juros</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-percent"></i></span>
+            <select id="taxa" name="taxa" required>
+              <option value="8%">8% (padrão)</option>
+              <option value="6%">6%</option>
+              <option value="4%">4%</option>
+              <option value="3%">3%</option>
+              <option value="2%">2%</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn" type="submit">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          Calcular e Salvar
+        </button>
+
+        <button class="btn secondary" id="btnPdf" type="button" disabled>
+          <i class="fa-solid fa-file-pdf"></i>
+          Exportar PDF
+        </button>
+
+        <div class="note">
+          Se “Data do Pagamento” estiver vazia, o cálculo usa a data de hoje como referência.
+        </div>
+      </form>
+    </section>
+
+    <section class="card result" id="resultado">
+      <h2><i class="fa-solid fa-receipt"></i> Resumo</h2>
+      <div class="sub" id="statusMsg">Aguardando cálculo…</div>
+
+      <div class="kv">
+        <div class="kvItem"><b>Cliente</b><span id="resCliente">—</span></div>
+        <div class="kvItem"><b>Valor Original</b><span id="resOriginal">—</span></div>
+        <div class="kvItem"><b>Vencimento</b><span id="resVencimento">—</span></div>
+        <div class="kvItem"><b>Pagamento (referência)</b><span id="resPagamento">—</span></div>
+        <div class="kvItem"><b>Dias em Atraso</b><span id="resDias">—</span></div>
+        <div class="kvItem"><b>Juros</b><span id="resJuros">—</span></div>
+        <div class="kvItem"><b>Multa (2%)</b><span id="resMulta">—</span></div>
+        <div class="kvItem"><b>Valor Atualizado</b><span id="resAtualizado">—</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/nova-cobranca.js"></script>
+</body>
+</html>
