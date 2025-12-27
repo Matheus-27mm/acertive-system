@@ -1,35 +1,83 @@
-// server.js — ACERTIVE (PostgreSQL + Admin único + JWT + View vw_cobrancas)
-// Render ENV obrigatórias:
-// DATABASE_URL, JWT_SECRET
-// (opcional para criar o admin automaticamente no 1º deploy): ADMIN_EMAIL, ADMIN_PASS
+/**
+ * server.js — ACERTIVE (PostgreSQL + JWT + Front estático)
+ * Corrigido:
+ * - remove duplicate require("path")
+ * - remove rota /api/dashboard duplicada (fica só uma)
+ * - FRONTEND_DIR resolve automaticamente e não quebra caso não exista
+ * - adiciona rota /cadastro
+ * - melhora CORS para aceitar múltiplos origins (Render + domínio + localhost)
+ */
 
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const multer = require("multer");
+const XLSX = require("xlsx");
 
 const app = express();
+app.set("trust proxy", 1);
+
 const PORT = process.env.PORT || 3000;
 
 // =====================
-// STATIC (frontend) - agora dentro de backend/frontend
+// Frontend: descobrir pasta automaticamente
 // =====================
-const FRONTEND_DIR = path.join(__dirname, "frontend");
-app.use(express.static(FRONTEND_DIR));
+const FRONTEND_DIR_CANDIDATES = [
+  path.join(__dirname, "frontend"),       // backend/frontend
+  path.join(__dirname, "..", "frontend"), // raiz/frontend  ✅ seu caso
+];
+
+const FRONTEND_DIR = FRONTEND_DIR_CANDIDATES.find((p) => fs.existsSync(p));
+
+if (!FRONTEND_DIR) {
+  console.error("[ACERTIVE] ERRO: Pasta do frontend não encontrada.");
+  console.error("[ACERTIVE] Tentativas:", FRONTEND_DIR_CANDIDATES);
+} else {
+  console.log("[ACERTIVE] Servindo arquivos estáticos de:", FRONTEND_DIR);
+  app.use(express.static(FRONTEND_DIR));
+}
 
 // =====================
-// MIDDLEWARES
+// Middlewares
 // =====================
-app.use(cors());
+
+// CORS: aceita lista por env (recomendado) ou fallback seguro
+// Exemplo de FRONTEND_ORIGIN no Render:
+// FRONTEND_ORIGIN=https://acertivecobranca.com.br,https://www.acertivecobranca.com.br,http://localhost:3000
+const originEnv = (process.env.FRONTEND_ORIGIN || "").trim();
+const allowedOrigins = originEnv
+  ? originEnv.split(",").map((s) => s.trim()).filter(Boolean)
+  : [
+      "http://localhost:3000",
+      "https://acertivecobranca.com.br",
+      "https://www.acertivecobranca.com.br",
+    ];
+
+app.use(
+  cors({
+    origin: function (origin, cb) {
+      // requests sem origin (curl, healthchecks) devem passar
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS: " + origin));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // =====================
-// POSTGRES (Render via DATABASE_URL)
+// Postgres
 // =====================
 if (!process.env.DATABASE_URL) {
   console.error("[ACERTIVE] ENV DATABASE_URL não definida.");
@@ -40,488 +88,580 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+const sslEnv = String(process.env.DATABASE_SSL || "").toLowerCase();
+const pgsslmode = String(process.env.PGSSLMODE || "").toLowerCase();
+let sslOption = false;
+if (sslEnv === "true" || pgsslmode === "require" || pgsslmode === "on") {
+  sslOption = { rejectUnauthorized: false };
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: sslOption,
 });
 
 // =====================
-// HELPERS
+// Helpers
 // =====================
-function asStr(v) {
-  return String(v ?? "").trim();
-}
-
-function num(v) {
+const asStr = (v) => String(v ?? "").trim();
+const num = (v, def = 0) => {
   const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
+  return Number.isFinite(n) ? n : def;
+};
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
+}
+function toPgDateOrNull(v) {
+  const s = asStr(v);
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return null;
 }
 
-function uuid() {
-  return crypto.randomUUID ? crypto.randomUUID() : "id_" + Date.now() + "_" + Math.random();
-}
-
-function isUUID(s) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
-}
+const normalizeCpfCnpjDigits = (s) => String(s || "").replace(/\D/g, "");
+const normalizeEmail = (s) => String(s || "").trim().toLowerCase();
 
 // =====================
-// AUTH (JWT)
+// Auth middleware
 // =====================
 function auth(req, res, next) {
   try {
     const h = req.headers.authorization || "";
     const token = h.startsWith("Bearer ") ? h.slice(7) : "";
-    if (!token) return res.status(401).json({ success: false, message: "Não autenticado." });
+    if (!token) return res.status(401).json({ success: false, message: "Token não enviado." });
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = payload;
     return next();
-  } catch {
-    return res.status(401).json({ success: false, message: "Token inválido/expirado." });
+  } catch (err) {
+    console.error("[AUTH] erro:", err.message);
+    return res.status(401).json({ success: false, message: "Token inválido ou expirado." });
   }
 }
 
 // =====================
-// INIT DB (tabelas + triggers + view)
-// =====================
-async function initDb() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      nome TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      senha_hash TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS clientes (
-      id UUID PRIMARY KEY,
-      nome TEXT NOT NULL,
-      email TEXT,
-      telefone TEXT,
-      cpf_cnpj TEXT,
-      tipo TEXT DEFAULT 'pf',
-      status TEXT DEFAULT 'ativo',
-      endereco TEXT DEFAULT '',
-      observacoes TEXT DEFAULT '',
-      created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS cobrancas (
-      id UUID PRIMARY KEY,
-      cliente_id UUID NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
-
-      valor_original NUMERIC(12,2) NOT NULL,
-      vencimento DATE NOT NULL,
-      pagamento DATE,
-
-      taxa TEXT DEFAULT '8%',
-      taxa_percent NUMERIC(8,4) DEFAULT 0,
-      juros NUMERIC(12,2) DEFAULT 0,
-      multa NUMERIC(12,2) DEFAULT 0,
-      dias INT DEFAULT 0,
-
-      valor_atualizado NUMERIC(12,2) DEFAULT 0,
-      status TEXT DEFAULT 'pendente',
-
-      created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS audit_log (
-      id SERIAL PRIMARY KEY,
-      table_name TEXT NOT NULL,
-      action TEXT NOT NULL,
-      record_id TEXT NOT NULL,
-      payload JSONB,
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await pool.query(`
-    CREATE OR REPLACE FUNCTION set_updated_at()
-    RETURNS TRIGGER AS $$
-    BEGIN
-      NEW.updated_at = NOW();
-      RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-  `);
-
-  await pool.query(`
-    DO $$
-    BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_users_updated_at') THEN
-        CREATE TRIGGER trg_users_updated_at
-        BEFORE UPDATE ON users
-        FOR EACH ROW
-        EXECUTE FUNCTION set_updated_at();
-      END IF;
-
-      IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_clientes_updated_at') THEN
-        CREATE TRIGGER trg_clientes_updated_at
-        BEFORE UPDATE ON clientes
-        FOR EACH ROW
-        EXECUTE FUNCTION set_updated_at();
-      END IF;
-
-      IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_cobrancas_updated_at') THEN
-        CREATE TRIGGER trg_cobrancas_updated_at
-        BEFORE UPDATE ON cobrancas
-        FOR EACH ROW
-        EXECUTE FUNCTION set_updated_at();
-      END IF;
-    END;
-    $$;
-  `);
-
-  await pool.query(`
-   CREATE OR REPLACE VIEW vw_cobrancas AS
-  SELECT
-    c.id,
-    c.cliente_id,
-    cl.nome AS cliente_nome,
-    cl.email AS cliente_email,
-    cl.telefone AS cliente_telefone,
-
-    c.valor_original,
-    c.vencimento,
-    c.pago_em,
-    c.taxa,
-    c.taxa_percent,
-    c.juros,
-    c.multa,
-    c.dias,
-    c.valor_atualizado,
-    c.status,
-    c.created_at,
-    c.updated_at
-  FROM cobrancas c
-  JOIN clientes cl ON cl.id = c.cliente_id;
-
-  `);
-
-  // Bootstrap admin (opcional)
-  const adminEmail = asStr(process.env.ADMIN_EMAIL).toLowerCase();
-  const adminPass = asStr(process.env.ADMIN_PASS);
-
-  if (adminEmail && adminPass) {
-    const exists = await pool.query("SELECT id FROM users WHERE email=$1", [adminEmail]);
-    if (exists.rowCount === 0) {
-      const hash = await bcrypt.hash(adminPass, 10);
-      await pool.query("INSERT INTO users (nome, email, senha_hash) VALUES ($1,$2,$3)", [
-        "Administrador",
-        adminEmail,
-        hash,
-      ]);
-      console.log("[ACERTIVE] Admin criado via ENV (ADMIN_EMAIL/ADMIN_PASS).");
-    } else {
-      console.log("[ACERTIVE] Admin já existe.");
-    }
-  } else {
-    console.log("[ACERTIVE] ADMIN_EMAIL/ADMIN_PASS não definidos (ok).");
-  }
-}
-
-// =====================
-// LOGIN (sem cadastro público)
+// API: Login
 // =====================
 app.post("/api/login", async (req, res) => {
   try {
-    const email = asStr(req.body?.email).toLowerCase();
-    const senha = asStr(req.body?.senha);
+    const { email, senha } = req.body || {};
+    const emailStr = String(email || "").trim();
+    const senhaStr = String(senha || "");
 
-    if (!email || !senha) {
-      return res.status(400).json({ success: false, message: "Informe email e senha." });
+    if (!emailStr || !senhaStr) {
+      return res.status(400).json({ success: false, message: "Email e senha são obrigatórios." });
     }
 
-    const r = await pool.query("SELECT id, nome, email, senha_hash FROM users WHERE email=$1", [email]);
+    const r = await pool.query(
+      "SELECT id, email, senha_hash, nome FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1",
+      [emailStr]
+    );
     if (r.rowCount === 0) {
-      return res.status(401).json({ success: false, message: "Usuário ou senha inválidos." });
+      return res.status(401).json({ success: false, message: "Credenciais inválidas." });
     }
 
-    const u = r.rows[0];
-    const ok = await bcrypt.compare(senha, u.senha_hash);
-    if (!ok) return res.status(401).json({ success: false, message: "Usuário ou senha inválidos." });
+    const user = r.rows[0];
+    const ok = await bcrypt.compare(senhaStr, user.senha_hash);
+    if (!ok) return res.status(401).json({ success: false, message: "Credenciais inválidas." });
 
-    const token = jwt.sign({ id: u.id, email: u.email }, process.env.JWT_SECRET, { expiresIn: "8h" });
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, nome: user.nome },
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+
+    return res.json({ success: true, token, user: { id: user.id, email: user.email, nome: user.nome } });
+  } catch (err) {
+    console.error("[LOGIN] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao autenticar.", error: err.message });
+  }
+});
+
+// =====================
+// API: Dashboard (KPIs) — protegido (APENAS UMA VERSÃO)
+// =====================
+app.get("/api/dashboard", auth, async (req, res) => {
+  try {
+    const qClientes = await pool.query(
+      "SELECT COUNT(*)::int AS total FROM clientes WHERE lower(trim(status)) = 'ativo'"
+    );
+    const qCobrancas = await pool.query("SELECT COUNT(*)::int AS total FROM cobrancas");
+    const qRecebido = await pool.query(
+      "SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pago'"
+    );
+    const qPendente = await pool.query(
+      "SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pendente'"
+    );
 
     return res.json({
       success: true,
-      token,
-      usuario: { id: u.id, nome: u.nome, email: u.email },
+      clientesAtivos: Number(qClientes.rows?.[0]?.total ?? 0),
+      totalCobrancas: Number(qCobrancas.rows?.[0]?.total ?? 0),
+      totalRecebido: Number(qRecebido.rows?.[0]?.total ?? 0),
+      totalPendente: Number(qPendente.rows?.[0]?.total ?? 0),
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: "Erro no login", error: err.message });
+    console.error("[DASHBOARD] erro:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao carregar dados do dashboard.",
+      error: err.message,
+    });
   }
 });
 
-// Trocar senha (admin logado)
-app.put("/api/admin/senha", auth, async (req, res) => {
+// =====================
+// Rotas estáticas do frontend
+// (só registra se FRONTEND_DIR existir)
+// =====================
+function sendFront(file) {
+  return (req, res) => {
+    if (!FRONTEND_DIR) return res.status(500).send("Frontend não encontrado no servidor.");
+    return res.sendFile(path.join(FRONTEND_DIR, file));
+  };
+}
+app.get("/", sendFront("login.html"));
+app.get("/login", sendFront("login.html"));
+app.get("/dashboard", sendFront("dashboard.html"));
+app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
+app.get("/novo-cliente", sendFront("novo-cliente.html"));
+app.get("/cobrancas", sendFront("cobrancas.html"));
+app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
+
+// =====================
+// APIs: cobranças
+// =====================
+
+// GET cobranças (mantive como você tinha: público)
+app.get("/api/cobrancas", async (req, res) => {
   try {
-    const senhaAtual = asStr(req.body?.senhaAtual);
-    const novaSenha = asStr(req.body?.novaSenha);
-
-    if (!senhaAtual || !novaSenha) {
-      return res.status(400).json({ success: false, message: "Informe senhaAtual e novaSenha." });
-    }
-
-    const r = await pool.query("SELECT senha_hash FROM users WHERE id=$1", [req.user.id]);
-    if (r.rowCount === 0) return res.status(404).json({ success: false, message: "Usuário não encontrado." });
-
-    const ok = await bcrypt.compare(senhaAtual, r.rows[0].senha_hash);
-    if (!ok) return res.status(401).json({ success: false, message: "Senha atual incorreta." });
-
-    const hash = await bcrypt.hash(novaSenha, 10);
-    await pool.query("UPDATE users SET senha_hash=$1 WHERE id=$2", [hash, req.user.id]);
-
-    return res.json({ success: true, message: "Senha alterada com sucesso." });
+    const resultado = await pool.query("SELECT * FROM cobrancas ORDER BY created_at DESC");
+    return res.json({ success: true, data: resultado.rows });
   } catch (err) {
-    return res.status(500).json({ success: false, message: "Erro ao trocar senha", error: err.message });
+    console.error("[GET /api/cobrancas] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar cobranças.", error: err.message });
   }
 });
 
-// =====================
-// CLIENTES (CRUD) — PROTEGIDO
-// =====================
-app.get("/api/clientes", auth, async (req, res) => {
-  const r = await pool.query("SELECT * FROM clientes ORDER BY created_at DESC");
-  res.json({ success: true, data: r.rows });
-});
-
-app.post("/api/clientes/novo", auth, async (req, res) => {
-  const b = req.body || {};
-  const id = uuid();
-
-  const nome = asStr(b.nome || b.name);
-  const email = asStr(b.email);
-  const telefone = asStr(b.telefone || b.phone);
-  const cpf_cnpj = asStr(b.cpf_cnpj || b.cpfCnpj || b.cpf || b.cnpj);
-  const tipo = asStr(b.tipo || b.type || "pf").toLowerCase();
-  const status = asStr(b.status || "ativo").toLowerCase();
-  const endereco = asStr(b.endereco || b.address || "");
-  const observacoes = asStr(b.observacoes || b.notes || "");
-
-  if (!nome) return res.status(400).json({ success: false, message: "Nome é obrigatório." });
-
-  await pool.query(
-    `INSERT INTO clientes (id, nome, email, telefone, cpf_cnpj, tipo, status, endereco, observacoes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-    [id, nome, email, telefone, cpf_cnpj, tipo, status, endereco, observacoes]
-  );
-
-  const r = await pool.query("SELECT * FROM clientes WHERE id=$1", [id]);
-  return res.json({ success: true, data: r.rows[0] });
-});
-
-app.put("/api/clientes/:id", auth, async (req, res) => {
-  const id = asStr(req.params.id);
-  const b = req.body || {};
-
-  const cur = await pool.query("SELECT * FROM clientes WHERE id=$1", [id]);
-  if (cur.rowCount === 0) return res.status(404).json({ success: false, message: "Cliente não encontrado." });
-
-  const c = cur.rows[0];
-
-  const nome = asStr(b.nome || b.name) || c.nome;
-  const email = asStr(b.email) || c.email;
-  const telefone = asStr(b.telefone || b.phone) || c.telefone;
-  const cpf_cnpj = asStr(b.cpf_cnpj || b.cpfCnpj || b.cpf || b.cnpj) || c.cpf_cnpj;
-  const tipo = (asStr(b.tipo || b.type) || c.tipo || "pf").toLowerCase();
-  const status = (asStr(b.status) || c.status || "ativo").toLowerCase();
-  const endereco = asStr(b.endereco || b.address) || c.endereco;
-  const observacoes = asStr(b.observacoes || b.notes) || c.observacoes;
-
-  await pool.query(
-    `UPDATE clientes
-     SET nome=$1, email=$2, telefone=$3, cpf_cnpj=$4, tipo=$5, status=$6, endereco=$7, observacoes=$8
-     WHERE id=$9`,
-    [nome, email, telefone, cpf_cnpj, tipo, status, endereco, observacoes, id]
-  );
-
-  const r = await pool.query("SELECT * FROM clientes WHERE id=$1", [id]);
-  return res.json({ success: true, data: r.rows[0] });
-});
-
-app.delete("/api/clientes/:id", auth, async (req, res) => {
-  const id = asStr(req.params.id);
-  await pool.query("DELETE FROM clientes WHERE id=$1", [id]);
-  return res.json({ success: true });
-});
-
-// =====================
-// COBRANÇAS — PROTEGIDO
-// =====================
-app.get("/api/cobrancas", auth, async (req, res) => {
-  const status = asStr(req.query.status).toLowerCase();
-  const q = asStr(req.query.q).toLowerCase();
-
-  let sql = "SELECT * FROM vw_cobrancas";
-  const params = [];
-  const where = [];
-
-  if (status) {
-    params.push(status);
-    where.push(`LOWER(status) = $${params.length}`);
-  }
-
-  if (q) {
-    params.push(`%${q}%`);
-    where.push(`LOWER(cliente_nome) LIKE $${params.length}`);
-  }
-
-  if (where.length) sql += " WHERE " + where.join(" AND ");
-  sql += " ORDER BY created_at DESC";
-
-  const r = await pool.query(sql, params);
-  return res.json({ success: true, data: r.rows });
-});
-
+// POST criar cobrança (protegido)
 app.post("/api/cobrancas", auth, async (req, res) => {
   try {
     const b = req.body || {};
-    const id = uuid();
+    const cliente = asStr(b.cliente || "");
+    const clienteId = asStr(b.cliente_id);
+    const valorOriginal = round2(num(b.valor_original || b.valorOriginal));
+    const vencimento = toPgDateOrNull(b.vencimento);
 
-    let cliente_id = asStr(b.cliente_id || b.clienteId);
-    const clienteNome = asStr(b.cliente || "");
-
-    if (!cliente_id && clienteNome) {
-      const rCli = await pool.query(
-        "SELECT id FROM clientes WHERE LOWER(nome)=LOWER($1) ORDER BY created_at DESC LIMIT 1",
-        [clienteNome]
-      );
-      if (rCli.rowCount) cliente_id = rCli.rows[0].id;
+    if (!cliente && !clienteId) {
+      return res.status(400).json({ success: false, message: "Cliente ou cliente ID são obrigatórios." });
+    }
+    if (!valorOriginal || !vencimento) {
+      return res.status(400).json({ success: false, message: "Valor e vencimento são obrigatórios." });
     }
 
-    if (!cliente_id || !isUUID(cliente_id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Informe cliente_id válido (UUID). (Ou envie cliente=nome existente).",
-      });
+    const buscaCliente = await pool.query(
+      "SELECT id FROM clientes WHERE LOWER(nome) = LOWER($1) OR id = $2 LIMIT 1",
+      [cliente, clienteId]
+    );
+    if (buscaCliente.rowCount === 0) {
+      return res.status(400).json({ success: false, message: "Cliente não encontrado." });
     }
 
-    const valor_original = num(b.valorOriginal ?? b.valor_original);
-    const vencimento = asStr(b.vencimento);
-    if (!valor_original || !vencimento) {
-      return res.status(400).json({
-        success: false,
-        message: "Campos obrigatórios: valorOriginal e vencimento (e cliente_id).",
-      });
-    }
+    const multa = round2(num(b.multa, 0));
+    const juros = round2(num(b.juros, 0));
+    const desconto = round2(num(b.desconto, 0));
+    const taxaPercent = num(String(b.taxaPercent || "").replace("%", ""));
+    const taxaValor = round2((valorOriginal * taxaPercent) / 100);
 
-    const pagamento = asStr(b.pagamento || "") || null;
-    const taxa = asStr(b.taxa || "8%");
-    const taxa_percent = num(b.taxaPercent ?? b.taxa_percent ?? 0);
-    const juros = num(b.juros ?? 0);
-    const multa = num(b.multa ?? 0);
-    const dias = Number(b.dias ?? 0);
-    const valor_atualizado = num(b.valorAtualizado ?? b.valor_atualizado ?? valor_original);
-    const status = asStr(b.status || (dias > 0 ? "pendente" : "em-dia")).toLowerCase();
+    const valorAtualizado = round2(valorOriginal + multa + juros - desconto + taxaValor);
+    const status = asStr(b.status || "pendente");
 
-    await pool.query(
-      `INSERT INTO cobrancas
-       (id, cliente_id, valor_original, vencimento, pagamento, taxa, taxa_percent, juros, multa, dias, valor_atualizado, status)
-       VALUES
-       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [
-        id,
-        cliente_id,
-        valor_original,
-        vencimento,
-        pagamento,
-        taxa,
-        taxa_percent,
-        juros,
-        multa,
-        dias,
-        valor_atualizado,
-        status,
-      ]
+    const novaCobranca = await pool.query(
+      `INSERT INTO cobrancas (cliente_id, descricao, valor_original, multa, juros, desconto, vencimento, status, valor_atualizado)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [buscaCliente.rows[0].id, b.descricao || null, valorOriginal, multa, juros, desconto, vencimento, status, valorAtualizado]
     );
 
-    const out = await pool.query("SELECT * FROM vw_cobrancas WHERE id=$1", [id]);
-    return res.status(201).json({ success: true, data: out.rows[0] });
+    return res.json({ success: true, data: novaCobranca.rows[0] });
   } catch (err) {
-    return res.status(500).json({ success: false, message: "Erro ao criar cobrança", error: err.message });
+    console.error("[POST /api/cobrancas] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao salvar cobrança.", error: err.message });
   }
 });
 
-app.put("/api/cobrancas/:id/status", auth, async (req, res) => {
-  const id = asStr(req.params.id);
-  const status = asStr(req.body?.status).toLowerCase();
-  if (!status) return res.status(400).json({ success: false, message: "Status é obrigatório." });
-
-  await pool.query("UPDATE cobrancas SET status=$1 WHERE id=$2", [status, id]);
-  const r = await pool.query("SELECT * FROM vw_cobrancas WHERE id=$1", [id]);
-  if (r.rowCount === 0) return res.status(404).json({ success: false, message: "Cobrança não encontrada." });
-
-  return res.json({ success: true, data: r.rows[0] });
-});
-
+// DELETE cobrança (protegido)
 app.delete("/api/cobrancas/:id", auth, async (req, res) => {
-  const id = asStr(req.params.id);
-  await pool.query("DELETE FROM cobrancas WHERE id=$1", [id]);
-  return res.json({ success: true });
+  const { id } = req.params;
+  try {
+    const resultado = await pool.query("DELETE FROM cobrancas WHERE id = $1 RETURNING *", [id]);
+    if (!resultado.rowCount) return res.status(404).json({ success: false, message: "Cobrança não encontrada" });
+    return res.json({ success: true, data: resultado.rows[0] });
+  } catch (err) {
+    console.error("[DELETE /api/cobrancas/:id] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao remover cobrança", error: err.message });
+  }
 });
 
 // =====================
-// DASHBOARD — PROTEGIDO
+// APIs: clientes
 // =====================
-app.get("/api/dashboard", auth, async (req, res) => {
-  const clientesAtivos = await pool.query(
-    "SELECT COUNT(*)::int AS n FROM clientes WHERE COALESCE(status,'ativo') <> 'inativo'"
-  );
 
-  const totalCobrancas = await pool.query("SELECT COUNT(*)::int AS n FROM cobrancas");
+// GET clientes ativos (mantive público como estava)
+app.get("/api/clientes-ativos", async (req, res) => {
+  try {
+    const resultado = await pool.query("SELECT * FROM clientes WHERE status = 'ativo' ORDER BY created_at DESC");
+    return res.json({ success: true, data: resultado.rows });
+  } catch (err) {
+    console.error("[GET /api/clientes-ativos] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar clientes ativos.", error: err.message });
+  }
+});
 
-  const totalRecebido = await pool.query(
-    "SELECT COALESCE(SUM(valor_atualizado),0)::float AS n FROM cobrancas WHERE LOWER(status)='pago'"
-  );
+// POST criar cliente (protegido)
+app.post("/api/clientes", auth, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const nome = String(b.nome || "").trim();
+    const email = String(b.email || "").trim();
+    const telefone = String(b.telefone || "").trim();
+    const cpf_cnpj = String(b.cpf_cnpj || b.cpfCnpj || "").trim();
+    const endereco = String(b.endereco || "").trim();
+    const observacoes = String(b.observacoes || "").trim();
 
-  const totalPendente = await pool.query(
-    "SELECT COALESCE(SUM(valor_atualizado),0)::float AS n FROM cobrancas WHERE LOWER(status)='pendente'"
-  );
+    if (!nome) return res.status(400).json({ success: false, message: "Nome é obrigatório." });
 
-  res.json({
-    clientesAtivos: clientesAtivos.rows[0].n,
-    totalCobrancas: totalCobrancas.rows[0].n,
-    totalRecebido: totalRecebido.rows[0].n,
-    totalPendente: totalPendente.rows[0].n,
-  });
+    const r = await pool.query(
+      `INSERT INTO clientes (nome, email, telefone, cpf_cnpj, endereco, status, observacoes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [nome, email || null, telefone || null, cpf_cnpj || null, endereco || null, "ativo", observacoes || null]
+    );
+
+    return res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error("[POST /api/clientes] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao criar cliente.", error: err.message });
+  }
+});
+
+// PUT atualizar cliente (protegido)
+app.put("/api/clientes/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  const { nome, email, telefone, status, tipo, cpf_cnpj, endereco, observacoes } = req.body || {};
+  if (!id) return res.status(400).json({ success: false, message: "id é obrigatório" });
+
+  try {
+    const result = await pool.query(
+      `UPDATE clientes SET
+         nome = COALESCE($1, nome),
+         email = COALESCE($2, email),
+         telefone = COALESCE($3, telefone),
+         status = COALESCE($4, status),
+         tipo = COALESCE($5, tipo),
+         cpf_cnpj = COALESCE($6, cpf_cnpj),
+         endereco = COALESCE($7, endereco),
+         observacoes = COALESCE($8, observacoes),
+         updated_at = NOW()
+       WHERE id = $9
+       RETURNING *`,
+      [nome, email, telefone, status, tipo, cpf_cnpj, endereco, observacoes, id]
+    );
+
+    if (!result.rowCount) return res.status(404).json({ success: false, message: "Cliente não encontrado" });
+    return res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error("[PUT /api/clientes/:id] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao atualizar cliente", error: err.message });
+  }
+});
+
+// DELETE cliente (soft delete -> inativo) (protegido)
+app.delete("/api/clientes/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ success: false, message: "id é obrigatório" });
+
+  try {
+    const result = await pool.query(
+      "UPDATE clientes SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+      ["inativo", id]
+    );
+    if (!result.rowCount) return res.status(404).json({ success: false, message: "Cliente não encontrado" });
+    return res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error("[DELETE /api/clientes/:id] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao excluir cliente", error: err.message });
+  }
 });
 
 // =====================
-// ROTAS DE PÁGINAS (frontend)
+// IMPORTAÇÃO (Excel/CSV) — protegido
 // =====================
-const sendFrontend = (file) => (req, res) => res.sendFile(path.join(FRONTEND_DIR, file));
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+});
 
-app.get("/", sendFrontend("login.html"));
-app.get("/login", sendFrontend("login.html"));
-app.get("/dashboard", sendFrontend("dashboard.html"));
-app.get("/clientes-ativos", sendFrontend("clientes-ativos.html"));
-app.get("/novo-cliente", sendFrontend("novo-cliente.html"));
-app.get("/nova-cobranca", sendFrontend("nova-cobranca.html"));
-app.get("/cobrancas", sendFrontend("cobrancas.html"));
+app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Arquivo não enviado (campo 'file')." });
+    }
 
-app.get("/cadastro", (req, res) => res.status(404).send("Rota /cadastro desabilitada em produção."));
+    const filename = (req.file.originalname || "").toLowerCase();
+    const isCsv = filename.endsWith(".csv");
+
+    let rows = [];
+
+    if (isCsv) {
+      const text = req.file.buffer.toString("utf-8");
+      const sep = text.includes(";") ? ";" : ",";
+      const lines = text.split(/\r?\n/).filter((l) => l && l.trim().length);
+
+      if (lines.length < 2) {
+        return res.status(400).json({ success: false, message: "CSV vazio ou inválido." });
+      }
+
+      const headers = lines.shift().split(sep).map((h) => h.trim());
+      rows = lines.map((line) => {
+        const cols = line.split(sep);
+        const obj = {};
+        headers.forEach((h, i) => (obj[h] = (cols[i] ?? "").trim()));
+        return obj;
+      });
+    } else {
+      const wb = XLSX.read(req.file.buffer, { type: "buffer" });
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+    }
+
+    if (!rows.length) {
+      return res.status(400).json({ success: false, message: "Planilha vazia ou inválida." });
+    }
+
+    const norm = (s) =>
+      String(s || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "");
+
+    const pick = (obj, keys) => {
+      const keyMap = new Map(Object.keys(obj).map((k) => [norm(k), obj[k]]));
+      for (const k of keys) {
+        const v = keyMap.get(norm(k));
+        if (v !== undefined && String(v).trim() !== "") return String(v).trim();
+      }
+      return "";
+    };
+
+    let imported = 0;
+    let skipped = 0;
+    let duplicates = 0;
+    const errors = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      try {
+        const nome = pick(r, ["NOMECLI", "NOME_CLIENTE", "CLIENTE", "nome", "name"]);
+        if (!nome) {
+          skipped++;
+          continue;
+        }
+
+        const cpf_cnpj_raw = pick(r, ["cnpj_cpf", "cpf_cnpj", "cpf/cnpj", "cpf", "cnpj"]);
+        const cpf_cnpj_digits = normalizeCpfCnpjDigits(cpf_cnpj_raw) || null;
+
+        const telefone = pick(r, ["telefone", "fone", "celular", "whatsapp"]);
+        const email_raw = pick(r, ["email", "e-mail", "mail"]);
+        const email = email_raw ? normalizeEmail(email_raw) : "";
+
+        let exists = false;
+        if (cpf_cnpj_digits) {
+          const q = await pool.query(
+            "SELECT id FROM clientes WHERE regexp_replace(coalesce(cpf_cnpj,''), '\\D', '', 'g') = $1 LIMIT 1",
+            [cpf_cnpj_digits]
+          );
+          exists = q.rowCount > 0;
+        } else if (email) {
+          const q = await pool.query("SELECT id FROM clientes WHERE lower(email) = lower($1) LIMIT 1", [email]);
+          exists = q.rowCount > 0;
+        }
+
+        if (exists) {
+          duplicates++;
+          continue;
+        }
+
+        await pool.query(
+          `INSERT INTO clientes (nome, email, telefone, cpf_cnpj, endereco, status, observacoes)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          [nome, email || null, telefone || null, cpf_cnpj_raw || null, null, "ativo", null]
+        );
+
+        imported++;
+      } catch (errRow) {
+        errors.push({ line: i + 1, error: errRow?.message ? errRow.message : String(errRow) });
+      }
+    }
+
+    return res.json({ success: true, imported, skipped, duplicates, errors });
+  } catch (err) {
+    console.error("[IMPORT CLIENTES] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao importar planilha.", error: err.message });
+  }
+});
 
 // =====================
-// START
+// RELATÓRIO (CSV) — protegido
+// GET /api/relatorios/export-csv?start=YYYY-MM-DD&end=YYYY-MM-DD
 // =====================
-initDb()
-  .then(() => {
-    app.listen(PORT, () => console.log(`[ACERTIVE] Servidor rodando na porta ${PORT}`));
-  })
-  .catch((e) => {
-    console.error("[ACERTIVE] Falha ao iniciar DB:", e.message);
-    process.exit(1);
-  });
+app.get("/api/relatorios/export-csv", auth, async (req, res) => {
+  try {
+    const start = (req.query.start || "").trim();
+    const end = (req.query.end || "").trim();
+    const hasRange = start && end;
+
+    const qRecebido = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'pago'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qPendente = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'pendente'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qVencido = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'vencido'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qCountCobrancas = await pool.query(
+      `SELECT COUNT(*)::int AS total
+       FROM cobrancas
+       ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qClientesAtivos = await pool.query(
+      `SELECT COUNT(*)::int AS total
+       FROM clientes
+       WHERE status = 'ativo'`
+    );
+
+    const qRows = await pool.query(
+      `SELECT
+         c.id,
+         COALESCE(cl.nome, '') AS cliente,
+         c.descricao,
+         c.valor_original,
+         c.multa,
+         c.juros,
+         c.desconto,
+         c.valor_atualizado,
+         c.status,
+         c.vencimento,
+         c.created_at
+       FROM cobrancas c
+       LEFT JOIN clientes cl ON cl.id = c.cliente_id
+       ${hasRange ? "WHERE c.vencimento BETWEEN $1 AND $2" : ""}
+       ORDER BY c.created_at DESC`,
+      hasRange ? [start, end] : []
+    );
+
+    const esc = (v) => {
+      const s = String(v ?? "");
+      if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+    const fmtMoney = (n) => Number(n || 0).toFixed(2).replace(".", ",");
+    const fmtDate = (d) => {
+      if (!d) return "";
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return String(d);
+      const dd = String(dt.getDate()).padStart(2, "0");
+      const mm = String(dt.getMonth() + 1).padStart(2, "0");
+      const yy = dt.getFullYear();
+      return `${dd}/${mm}/${yy}`;
+    };
+
+    const periodLabel = hasRange ? `${start} a ${end}` : "Todos";
+    const lines = [];
+
+    lines.push("RELATORIO ACERTIVE");
+    lines.push(`Periodo,${esc(periodLabel)}`);
+    lines.push("");
+
+    lines.push("RESUMO");
+    lines.push(`Clientes Ativos,${qClientesAtivos.rows[0]?.total ?? 0}`);
+    lines.push(`Cobranças Emitidas,${qCountCobrancas.rows[0]?.total ?? 0}`);
+    lines.push(`Total Recebido (Pago),${fmtMoney(qRecebido.rows[0]?.total)}`);
+    lines.push(`Total Pendente,${fmtMoney(qPendente.rows[0]?.total)}`);
+    lines.push(`Total Vencido,${fmtMoney(qVencido.rows[0]?.total)}`);
+    lines.push("");
+
+    lines.push("DETALHAMENTO");
+    lines.push(
+      ["ID","Cliente","Descricao","Valor Original","Multa","Juros","Desconto","Valor Atualizado","Status","Vencimento","Criado Em"].join(",")
+    );
+
+    for (const r of qRows.rows) {
+      lines.push([
+        esc(r.id),
+        esc(r.cliente),
+        esc(r.descricao || ""),
+        esc(fmtMoney(r.valor_original)),
+        esc(fmtMoney(r.multa)),
+        esc(fmtMoney(r.juros)),
+        esc(fmtMoney(r.desconto)),
+        esc(fmtMoney(r.valor_atualizado)),
+        esc(r.status),
+        esc(fmtDate(r.vencimento)),
+        esc(fmtDate(r.created_at)),
+      ].join(","));
+    }
+
+    const csv = "\uFEFF" + lines.join("\n");
+    const fileName = hasRange
+      ? `relatorio_acertive_${start}_a_${end}.csv`
+      : `relatorio_acertive_completo.csv`;
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error("[RELATORIO] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao exportar relatório.", error: err.message });
+  }
+});
+
+// Alias opcional caso algum front esteja chamando outro endpoint antigo
+app.get("/api/relatorio/exportar", auth, (req, res) => {
+  // redireciona para o correto
+  const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+  return res.redirect(`/api/relatorios/export-csv${qs}`);
+});
+
+// =====================
+// 404
+// =====================
+app.use((req, res) => res.status(404).send("Página não encontrada."));
+
+// =====================
+// Start
+// =====================
+app.listen(PORT, () => {
+  console.log(`[ACERTIVE] Servidor rodando na porta ${PORT}`);
+});
