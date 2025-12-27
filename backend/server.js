@@ -691,7 +691,405 @@ app.get("/api/relatorio/exportar", auth, (req, res) => {
   const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
   return res.redirect(`/api/relatorios/export-csv${qs}`);
 });
+const { chromium } = require("playwright");
 
+// =====================
+// RELATÓRIO (PDF BONITO) — protegido
+// GET /api/relatorios/export-pdf?start=YYYY-MM-DD&end=YYYY-MM-DD
+// =====================
+app.get("/api/relatorios/export-pdf", auth, async (req, res) => {
+  let browser;
+  try {
+    const start = (req.query.start || "").trim();
+    const end = (req.query.end || "").trim();
+    const hasRange = start && end;
+
+    // --- consultas (mesmas da sua CSV) ---
+    const qRecebido = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'pago'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qPendente = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'pendente'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qVencido = await pool.query(
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
+       FROM cobrancas
+       WHERE status = 'vencido'
+       ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qCountCobrancas = await pool.query(
+      `SELECT COUNT(*)::int AS total
+       FROM cobrancas
+       ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
+      hasRange ? [start, end] : []
+    );
+
+    const qClientesAtivos = await pool.query(
+      `SELECT COUNT(*)::int AS total
+       FROM clientes
+       WHERE status = 'ativo'`
+    );
+
+    const qRows = await pool.query(
+      `SELECT
+         c.id,
+         COALESCE(cl.nome, '') AS cliente,
+         c.descricao,
+         c.valor_original,
+         c.multa,
+         c.juros,
+         c.desconto,
+         c.valor_atualizado,
+         c.status,
+         c.vencimento,
+         c.created_at
+       FROM cobrancas c
+       LEFT JOIN clientes cl ON cl.id = c.cliente_id
+       ${hasRange ? "WHERE c.vencimento BETWEEN $1 AND $2" : ""}
+       ORDER BY c.created_at DESC`,
+      hasRange ? [start, end] : []
+    );
+
+    const fmtMoney = (n) =>
+      Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    const fmtDate = (d) => {
+      if (!d) return "";
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return String(d);
+      return dt.toLocaleDateString("pt-BR");
+    };
+
+    const periodLabel = hasRange ? `${start} a ${end}` : "Todos";
+    const totalRecebido = fmtMoney(qRecebido.rows[0]?.total);
+    const totalPendente = fmtMoney(qPendente.rows[0]?.total);
+    const totalVencido = fmtMoney(qVencido.rows[0]?.total);
+    const totalCobrancas = qCountCobrancas.rows[0]?.total ?? 0;
+    const totalClientes = qClientesAtivos.rows[0]?.total ?? 0;
+
+    // Monta linhas da tabela
+    const rowsHtml = qRows.rows
+      .map((r) => {
+        const badgeClass =
+          r.status === "pago" ? "pago" : r.status === "vencido" ? "vencido" : "pendente";
+
+        const desc = (r.descricao || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const cliente = (r.cliente || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        return `
+          <tr>
+            <td class="mono">#${r.id}</td>
+            <td>
+              <div class="strong">${cliente}</div>
+              <div class="muted small">${desc || "&nbsp;"}</div>
+            </td>
+            <td>${fmtDate(r.vencimento)}</td>
+            <td>${fmtMoney(r.valor_original)}</td>
+            <td>${fmtMoney(r.juros)}</td>
+            <td>${fmtMoney(r.multa)}</td>
+            <td class="strong">${fmtMoney(r.valor_atualizado)}</td>
+            <td><span class="badge ${badgeClass}">${String(r.status || "").toUpperCase()}</span></td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    // HTML com o “jeito ACERTIVE”
+    const html = `
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Relatório ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#070707; --bg2:#131313;
+      --card:#0f0f10cc; --card2:#111114f2;
+      --gold:#FFD700; --gold2:#FFA500;
+      --white:#ffffff; --muted:#b9b9b9;
+      --line:rgba(255,215,0,.18);
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Montserrat',sans-serif;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+    }
+    .page{
+      padding: 26px;
+    }
+    .topbar{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      overflow:hidden;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.4px;
+    }
+    .mark{
+      width:42px;height:42px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      display:flex;align-items:center;justify-content:center;
+      color:#111;font-weight:900;
+      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+    }
+    .brand small{display:block;color:rgba(255,215,0,.92);font-weight:700;margin-top:2px;font-size:12px}
+    .meta{
+      text-align:right;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+      line-height:1.3;
+    }
+    .meta .gold{color:rgba(255,215,0,.95); font-weight:800}
+    .grid{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.20);
+      box-shadow: var(--shadow);
+      padding: 14px 14px;
+      min-height: 86px;
+    }
+    .kpiTitle{
+      font-size: 11px;
+      letter-spacing:.6px;
+      text-transform: uppercase;
+      color: rgba(255,215,0,.92);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .kpiValue{
+      font-size: 18px;
+      font-weight: 900;
+      color: rgba(255,255,255,.96);
+    }
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
+      margin: 16px 0;
+    }
+    .sectionTitle{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      margin: 0 0 10px;
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing:.2px;
+    }
+    .sectionTitle .hint{
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+    }
+
+    .tableWrap{
+      border-radius: 16px;
+      border: 1px solid rgba(255,215,0,.14);
+      background: rgba(0,0,0,.18);
+      overflow: hidden;
+      box-shadow: var(--shadowSoft);
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      vertical-align: top;
+    }
+    th{
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,215,0,.95);
+      background: rgba(0,0,0,.30);
+    }
+    .badge{
+      display:inline-flex;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing:.3px;
+      border: 1px solid rgba(255,215,0,.18);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      white-space:nowrap;
+      font-size: 10px;
+    }
+    .badge.pago{
+      border-color: rgba(40,167,69,.35);
+      background: rgba(40,167,69,.12);
+      color: rgba(40,167,69,.95);
+    }
+    .badge.vencido{
+      border-color: rgba(220,53,69,.35);
+      background: rgba(220,53,69,.12);
+      color: rgba(220,53,69,.95);
+    }
+    .badge.pendente{
+      border-color: rgba(255,215,0,.25);
+      background: rgba(255,215,0,.12);
+      color: rgba(255,215,0,.95);
+    }
+    .muted{color: rgba(255,255,255,.65)}
+    .small{font-size:10px}
+    .strong{font-weight:900}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .footer{
+      margin-top: 10px;
+      display:flex;
+      justify-content:space-between;
+      color: rgba(255,255,255,.55);
+      font-size: 10px;
+    }
+
+    /* para PDF: quebra boa */
+    tr{page-break-inside: avoid;}
+    @page { size: A4; margin: 14mm; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">A</div>
+        <div>
+          ACERTIVE
+          <small>Relatório de Cobranças</small>
+        </div>
+      </div>
+      <div class="meta">
+        <div><span class="gold">Período:</span> ${periodLabel}</div>
+        <div class="muted">Gerado em: ${new Date().toLocaleString("pt-BR")}</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="kpiTitle">Total Recebido</div>
+        <div class="kpiValue">${totalRecebido}</div>
+      </div>
+      <div class="card">
+        <div class="kpiTitle">Total Pendente</div>
+        <div class="kpiValue">${totalPendente}</div>
+      </div>
+      <div class="card">
+        <div class="kpiTitle">Total Vencido</div>
+        <div class="kpiValue">${totalVencido}</div>
+      </div>
+      <div class="card">
+        <div class="kpiTitle">Clientes / Cobranças</div>
+        <div class="kpiValue">${totalClientes} / ${totalCobrancas}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sectionTitle">
+      <h2>Detalhamento</h2>
+      <div class="hint">Total de itens: ${qRows.rows.length}</div>
+    </div>
+
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente / Descrição</th>
+            <th>Vencimento</th>
+            <th>Original</th>
+            <th>Juros</th>
+            <th>Multa</th>
+            <th>Atualizado</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || `<tr><td colspan="8" class="muted">Nenhuma cobrança encontrada no período.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>© ${new Date().getFullYear()} ACERTIVE</div>
+      <div class="muted">Relatório gerado automaticamente</div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Renderiza HTML -> PDF
+    browser = await chromium.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
+
+    await browser.close();
+    browser = null;
+
+    const fileName = hasRange
+      ? `relatorio_acertive_${start}_a_${end}.pdf`
+      : `relatorio_acertive_completo.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    return res.status(200).send(pdfBuffer);
+  } catch (err) {
+    if (browser) {
+      try { await browser.close(); } catch {}
+    }
+    console.error("[RELATORIO PDF] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao exportar relatório (PDF).", error: err.message });
+  }
+});
 // =====================
 // 404 (por último)
 // =====================
