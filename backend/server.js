@@ -1,11 +1,6 @@
 /**
  * server.js — ACERTIVE (PostgreSQL + JWT + Front estático)
- * Corrigido:
- * - remove duplicate require("path")
- * - remove rota /api/dashboard duplicada (fica só uma)
- * - FRONTEND_DIR resolve automaticamente e não quebra caso não exista
- * - adiciona rota /cadastro
- * - melhora CORS para aceitar múltiplos origins (Render + domínio + localhost)
+ * Ajustes para Render + domínio + evitar "Cannot GET /"
  */
 
 require("dotenv").config();
@@ -30,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 // =====================
 const FRONTEND_DIR_CANDIDATES = [
   path.join(__dirname, "frontend"),       // backend/frontend
-  path.join(__dirname, "..", "frontend"), // raiz/frontend  ✅ seu caso
+  path.join(__dirname, "..", "frontend"), // raiz/frontend (seu caso)
 ];
 
 const FRONTEND_DIR = FRONTEND_DIR_CANDIDATES.find((p) => fs.existsSync(p));
@@ -47,8 +42,7 @@ if (!FRONTEND_DIR) {
 // Middlewares
 // =====================
 
-// CORS: aceita lista por env (recomendado) ou fallback seguro
-// Exemplo de FRONTEND_ORIGIN no Render:
+// CORS: lista por env (recomendado)
 // FRONTEND_ORIGIN=https://acertivecobranca.com.br,https://www.acertivecobranca.com.br,http://localhost:3000
 const originEnv = (process.env.FRONTEND_ORIGIN || "").trim();
 const allowedOrigins = originEnv
@@ -57,12 +51,13 @@ const allowedOrigins = originEnv
       "http://localhost:3000",
       "https://acertivecobranca.com.br",
       "https://www.acertivecobranca.com.br",
+      "https://acertive-system.onrender.com",
     ];
 
 app.use(
   cors({
     origin: function (origin, cb) {
-      // requests sem origin (curl, healthchecks) devem passar
+      // requests sem origin (curl/healthchecks) devem passar
       if (!origin) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
       return cb(new Error("Not allowed by CORS: " + origin));
@@ -72,6 +67,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// preflight
+app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -119,7 +117,6 @@ function toPgDateOrNull(v) {
   if (m) return `${m[3]}-${m[2]}-${m[1]}`;
   return null;
 }
-
 const normalizeCpfCnpjDigits = (s) => String(s || "").replace(/\D/g, "");
 const normalizeEmail = (s) => String(s || "").trim().toLowerCase();
 
@@ -140,6 +137,18 @@ function auth(req, res, next) {
     return res.status(401).json({ success: false, message: "Token inválido ou expirado." });
   }
 }
+
+// =====================
+// Health check (pra testar no domínio)
+// =====================
+app.get("/api/health", (req, res) => {
+  return res.json({
+    ok: true,
+    service: "acertive",
+    time: new Date().toISOString(),
+    frontendDir: FRONTEND_DIR || null,
+  });
+});
 
 // =====================
 // API: Login
@@ -180,7 +189,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 // =====================
-// API: Dashboard (KPIs) — protegido (APENAS UMA VERSÃO)
+// API: Dashboard (KPIs) — protegido
 // =====================
 app.get("/api/dashboard", auth, async (req, res) => {
   try {
@@ -214,14 +223,30 @@ app.get("/api/dashboard", auth, async (req, res) => {
 
 // =====================
 // Rotas estáticas do frontend
-// (só registra se FRONTEND_DIR existir)
 // =====================
 function sendFront(file) {
   return (req, res) => {
-    if (!FRONTEND_DIR) return res.status(500).send("Frontend não encontrado no servidor.");
-    return res.sendFile(path.join(FRONTEND_DIR, file));
+    if (!FRONTEND_DIR) {
+      return res.status(500).send("Frontend não encontrado no servidor. Verifique a estrutura no deploy.");
+    }
+    const target = path.join(FRONTEND_DIR, file);
+    if (!fs.existsSync(target)) {
+      return res.status(404).send(`Arquivo não encontrado: ${file}`);
+    }
+    return res.sendFile(target);
   };
 }
+
+// Se você não usa mais cadastro.html, pode manter essa rota ou remover.
+// Mantive como "opcional": se não existir, cai no login.
+app.get("/cadastro", (req, res) => {
+  if (!FRONTEND_DIR) return res.status(500).send("Frontend não encontrado no servidor.");
+  const f = path.join(FRONTEND_DIR, "cadastro.html");
+  if (!fs.existsSync(f)) return res.redirect("/login");
+  return res.sendFile(f);
+});
+
+// Rotas principais
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
@@ -234,7 +259,7 @@ app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
 // APIs: cobranças
 // =====================
 
-// GET cobranças (mantive como você tinha: público)
+// GET cobranças (público)
 app.get("/api/cobrancas", async (req, res) => {
   try {
     const resultado = await pool.query("SELECT * FROM cobrancas ORDER BY created_at DESC");
@@ -250,7 +275,7 @@ app.post("/api/cobrancas", auth, async (req, res) => {
   try {
     const b = req.body || {};
     const cliente = asStr(b.cliente || "");
-    const clienteId = asStr(b.cliente_id);
+    const clienteId = asStr(b.cliente_id || b.clienteId || "");
     const valorOriginal = round2(num(b.valor_original || b.valorOriginal));
     const vencimento = toPgDateOrNull(b.vencimento);
 
@@ -261,11 +286,15 @@ app.post("/api/cobrancas", auth, async (req, res) => {
       return res.status(400).json({ success: false, message: "Valor e vencimento são obrigatórios." });
     }
 
-    const buscaCliente = await pool.query(
-      "SELECT id FROM clientes WHERE LOWER(nome) = LOWER($1) OR id = $2 LIMIT 1",
-      [cliente, clienteId]
-    );
-    if (buscaCliente.rowCount === 0) {
+    // Busca cliente: por ID se veio, senão por nome
+    let buscaCliente;
+    if (clienteId) {
+      buscaCliente = await pool.query("SELECT id FROM clientes WHERE id = $1 LIMIT 1", [clienteId]);
+    } else {
+      buscaCliente = await pool.query("SELECT id FROM clientes WHERE LOWER(nome) = LOWER($1) LIMIT 1", [cliente]);
+    }
+
+    if (!buscaCliente || buscaCliente.rowCount === 0) {
       return res.status(400).json({ success: false, message: "Cliente não encontrado." });
     }
 
@@ -281,7 +310,17 @@ app.post("/api/cobrancas", auth, async (req, res) => {
     const novaCobranca = await pool.query(
       `INSERT INTO cobrancas (cliente_id, descricao, valor_original, multa, juros, desconto, vencimento, status, valor_atualizado)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [buscaCliente.rows[0].id, b.descricao || null, valorOriginal, multa, juros, desconto, vencimento, status, valorAtualizado]
+      [
+        buscaCliente.rows[0].id,
+        b.descricao || null,
+        valorOriginal,
+        multa,
+        juros,
+        desconto,
+        vencimento,
+        status,
+        valorAtualizado,
+      ]
     );
 
     return res.json({ success: true, data: novaCobranca.rows[0] });
@@ -308,7 +347,7 @@ app.delete("/api/cobrancas/:id", auth, async (req, res) => {
 // APIs: clientes
 // =====================
 
-// GET clientes ativos (mantive público como estava)
+// GET clientes ativos (público)
 app.get("/api/clientes-ativos", async (req, res) => {
   try {
     const resultado = await pool.query("SELECT * FROM clientes WHERE status = 'ativo' ORDER BY created_at DESC");
@@ -647,15 +686,14 @@ app.get("/api/relatorios/export-csv", auth, async (req, res) => {
   }
 });
 
-// Alias opcional caso algum front esteja chamando outro endpoint antigo
+// Alias opcional (caso seu front ainda chame o antigo)
 app.get("/api/relatorio/exportar", auth, (req, res) => {
-  // redireciona para o correto
   const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
   return res.redirect(`/api/relatorios/export-csv${qs}`);
 });
 
 // =====================
-// 404
+// 404 (por último)
 // =====================
 app.use((req, res) => res.status(404).send("Página não encontrada."));
 
@@ -664,4 +702,5 @@ app.use((req, res) => res.status(404).send("Página não encontrada."));
 // =====================
 app.listen(PORT, () => {
   console.log(`[ACERTIVE] Servidor rodando na porta ${PORT}`);
+  console.log("[ACERTIVE] Allowed origins:", allowedOrigins);
 });
