@@ -14,6 +14,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const XLSX = require("xlsx");
+const { chromium } = require("playwright");
+
 
 const app = express();
 app.set("trust proxy", 1);
@@ -329,7 +331,250 @@ app.post("/api/cobrancas", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao salvar cobrança.", error: err.message });
   }
 });
+// =====================
+// COBRANÇA (PDF BONITO) — protegido
+// GET /api/cobrancas/:id/pdf
+// =====================
+app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
+  let browser;
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ success: false, message: "ID inválido." });
+    }
 
+    const q = await pool.query(
+      `SELECT
+         c.id,
+         COALESCE(cl.nome, '') AS cliente,
+         c.descricao,
+         c.valor_original,
+         c.multa,
+         c.juros,
+         c.desconto,
+         c.valor_atualizado,
+         c.status,
+         c.vencimento,
+         c.created_at
+       FROM cobrancas c
+       LEFT JOIN clientes cl ON cl.id = c.cliente_id
+       WHERE c.id = $1
+       LIMIT 1`,
+      [id]
+    );
+
+    if (!q.rows.length) {
+      return res.status(404).json({ success: false, message: "Cobrança não encontrada." });
+    }
+
+    const r = q.rows[0];
+
+    const esc = (s) =>
+      String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    const fmtMoney = (n) =>
+      Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    const fmtDate = (d) => {
+      if (!d) return "";
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return String(d);
+      return dt.toLocaleDateString("pt-BR");
+    };
+
+    const status = String(r.status || "").toLowerCase();
+    const badgeClass = status === "pago" ? "pago" : status === "vencido" ? "vencido" : "pendente";
+    const refCode = `AC-${String(r.id).padStart(6, "0")}`;
+
+    const html = `
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cobrança ${esc(refCode)} • ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#070707; --bg2:#131313;
+      --card:#0f0f10cc; --card2:#111114f2;
+      --gold:#FFD700; --gold2:#FFA500;
+      --white:#ffffff;
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Montserrat',sans-serif;
+      color:var(--white);
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+    }
+    .page{ padding: 26px; }
+    .topbar{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,215,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 16px 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.4px; }
+    .mark{
+      width:42px;height:42px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
+      display:flex;align-items:center;justify-content:center;
+      color:#111;font-weight:900;
+      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+    }
+    .brand small{display:block;color:rgba(255,215,0,.92);font-weight:700;margin-top:2px;font-size:12px}
+    .meta{ text-align:right; font-size:12px; color:rgba(255,255,255,.75); line-height:1.35; }
+    .meta .gold{color:rgba(255,215,0,.95); font-weight:800}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .muted{color: rgba(255,255,255,.65)}
+    .strong{font-weight:900}
+
+    .grid{ margin-top: 16px; display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,215,0,.20);
+      box-shadow: var(--shadow);
+      padding: 14px 14px;
+      min-height: 86px;
+    }
+    .kpiTitle{ font-size: 11px; letter-spacing:.6px; text-transform: uppercase; color: rgba(255,215,0,.92); font-weight: 900; margin-bottom: 8px; }
+    .kpiValue{ font-size: 18px; font-weight: 900; color: rgba(255,255,255,.96); }
+
+    .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent); margin: 16px 0; }
+
+    .box{
+      border-radius: 16px;
+      border: 1px solid rgba(255,215,0,.14);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--shadowSoft);
+      padding: 14px;
+    }
+    .title{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 0 0 10px; }
+    .title h2{ margin:0; font-size: 14px; font-weight: 900; }
+    .hint{ font-size: 12px; color: rgba(255,255,255,.70); }
+
+    .kv{ display:grid; grid-template-columns: 160px 1fr; gap:8px 12px; font-size: 11px; line-height: 1.35; }
+    .k{ color: rgba(255,255,255,.65); }
+    .v{ font-weight: 700; }
+
+    .badge{
+      display:inline-flex;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing:.3px;
+      border: 1px solid rgba(255,215,0,.18);
+      background: rgba(255,215,0,.10);
+      color: rgba(255,215,0,.95);
+      white-space:nowrap;
+      font-size: 10px;
+    }
+    .badge.pago{ border-color: rgba(40,167,69,.35); background: rgba(40,167,69,.12); color: rgba(40,167,69,.95); }
+    .badge.vencido{ border-color: rgba(220,53,69,.35); background: rgba(220,53,69,.12); color: rgba(220,53,69,.95); }
+    .badge.pendente{ border-color: rgba(255,215,0,.25); background: rgba(255,215,0,.12); color: rgba(255,215,0,.95); }
+
+    @page { size: A4; margin: 14mm; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">A</div>
+        <div>
+          ACERTIVE
+          <small>Documento de Cobrança</small>
+        </div>
+      </div>
+      <div class="meta">
+        <div><span class="gold">Referência:</span> <span class="mono">${esc(refCode)}</span></div>
+        <div><span class="gold">Status:</span> <span class="badge ${badgeClass}">${esc(String(r.status||"").toUpperCase())}</span></div>
+        <div class="muted">Gerado em: ${new Date().toLocaleString("pt-BR")}</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><div class="kpiTitle">Valor Atualizado</div><div class="kpiValue">${fmtMoney(r.valor_atualizado)}</div></div>
+      <div class="card"><div class="kpiTitle">Vencimento</div><div class="kpiValue">${esc(fmtDate(r.vencimento) || "—")}</div></div>
+      <div class="card"><div class="kpiTitle">Valor Original</div><div class="kpiValue">${fmtMoney(r.valor_original)}</div></div>
+      <div class="card"><div class="kpiTitle">Ajustes</div><div class="kpiValue">${fmtMoney((r.juros||0) + (r.multa||0) - (r.desconto||0))}</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="box">
+      <div class="title">
+        <h2>Dados da Cobrança</h2>
+        <div class="hint">ID: <span class="mono">#${esc(r.id)}</span></div>
+      </div>
+      <div class="kv">
+        <div class="k">Cliente</div><div class="v strong">${esc(r.cliente || "—")}</div>
+        <div class="k">Descrição</div><div class="v">${esc(r.descricao || "—")}</div>
+        <div class="k">Criada em</div><div class="v">${esc(fmtDate(r.created_at) || "—")}</div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:12px;">
+      <div class="title"><h2>Resumo Financeiro</h2><div class="hint">Detalhes</div></div>
+      <div class="kv">
+        <div class="k">Valor original</div><div class="v">${fmtMoney(r.valor_original)}</div>
+        <div class="k">Juros</div><div class="v">${fmtMoney(r.juros)}</div>
+        <div class="k">Multa</div><div class="v">${fmtMoney(r.multa)}</div>
+        <div class="k">Desconto</div><div class="v">${fmtMoney(r.desconto)}</div>
+        <div class="k strong">Total atualizado</div><div class="v strong">${fmtMoney(r.valor_atualizado)}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:flex; justify-content:space-between; color: rgba(255,255,255,.55); font-size: 10px;">
+      <div>© ${new Date().getFullYear()} ACERTIVE</div>
+      <div class="muted">Documento gerado automaticamente</div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    browser = await chromium.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
+
+    await browser.close();
+    browser = null;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="cobranca_${refCode}.pdf"`);
+    return res.status(200).send(pdfBuffer);
+  } catch (err) {
+    if (browser) { try { await browser.close(); } catch {} }
+    console.error("[COBRANCA PDF] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao gerar PDF da cobrança.", error: err.message });
+  }
+});
 // DELETE cobrança (protegido)
 app.delete("/api/cobrancas/:id", auth, async (req, res) => {
   const { id } = req.params;
@@ -691,8 +936,6 @@ app.get("/api/relatorio/exportar", auth, (req, res) => {
   const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
   return res.redirect(`/api/relatorios/export-csv${qs}`);
 });
-const { chromium } = require("playwright");
-
 // =====================
 // RELATÓRIO (PDF BONITO) — protegido
 // GET /api/relatorios/export-pdf?start=YYYY-MM-DD&end=YYYY-MM-DD
