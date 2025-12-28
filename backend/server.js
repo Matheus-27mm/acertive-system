@@ -191,35 +191,33 @@ app.post("/api/login", async (req, res) => {
 });
 
 // =====================
-// API: Dashboard (KPIs) — protegido
+// GET dashboard (KPIs) — protegido
 // =====================
 app.get("/api/dashboard", auth, async (req, res) => {
   try {
-    const qClientes = await pool.query(
-      "SELECT COUNT(*)::int AS total FROM clientes WHERE lower(trim(status)) = 'ativo'"
-    );
-    const qCobrancas = await pool.query("SELECT COUNT(*)::int AS total FROM cobrancas");
-    const qRecebido = await pool.query(
-      "SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pago'"
-    );
-    const qPendente = await pool.query(
-      "SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pendente'"
-    );
+    const q = await pool.query(`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'pago' THEN valor_atualizado ELSE 0 END), 0) AS total_recebido,
+        COALESCE(SUM(CASE WHEN status = 'pendente' THEN valor_atualizado ELSE 0 END), 0) AS total_pendente,
+        COALESCE(SUM(CASE WHEN status = 'vencido' THEN valor_atualizado ELSE 0 END), 0) AS total_vencido,
+        COUNT(*)::int AS total_cobrancas
+      FROM cobrancas
+    `);
 
+    const c = await pool.query(`SELECT COUNT(*)::int AS clientes_ativos FROM clientes`);
+
+    const row = q.rows[0] || {};
     return res.json({
       success: true,
-      clientesAtivos: Number(qClientes.rows?.[0]?.total ?? 0),
-      totalCobrancas: Number(qCobrancas.rows?.[0]?.total ?? 0),
-      totalRecebido: Number(qRecebido.rows?.[0]?.total ?? 0),
-      totalPendente: Number(qPendente.rows?.[0]?.total ?? 0),
+      totalRecebido: Number(row.total_recebido || 0),
+      totalPendente: Number(row.total_pendente || 0),
+      totalVencido: Number(row.total_vencido || 0),
+      totalCobrancas: Number(row.total_cobrancas || 0),
+      clientesAtivos: Number(c.rows[0]?.clientes_ativos || 0),
     });
   } catch (err) {
-    console.error("[DASHBOARD] erro:", err.message);
-    return res.status(500).json({
-      success: false,
-      message: "Erro ao carregar dados do dashboard.",
-      error: err.message,
-    });
+    console.error("[GET /api/dashboard] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao carregar dashboard.", error: err.message });
   }
 });
 
@@ -257,14 +255,61 @@ app.get("/novo-cliente", sendFront("novo-cliente.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
 
+// ===============================
+// Fallback para rotas do frontend
+// ===============================
+app.get(/^\/(?!api\/).*/, (req, res) => {
+  const loginPath = path.join(FRONTEND_DIR, "login.html");
+  if (fs.existsSync(loginPath)) {
+    return res.sendFile(loginPath);
+  }
+  return res.status(404).send("Página não encontrada.");
+});
+
 // =====================
 // APIs: cobranças
 // =====================
 
-// GET cobranças (público)
-app.get("/api/cobrancas", async (req, res) => {
+// GET cobranças (protegido) — com nome do cliente
+app.get("/api/cobrancas", auth, async (req, res) => {
   try {
-    const resultado = await pool.query("SELECT * FROM cobrancas ORDER BY created_at DESC");
+    const status = String(req.query.status || "").trim().toLowerCase();
+    const q = String(req.query.q || "").trim();
+
+    const params = [];
+    const where = [];
+
+    if (status) {
+      params.push(status);
+      where.push(`LOWER(c.status) = $${params.length}`);
+    }
+
+    if (q) {
+      params.push(`%${q}%`);
+      where.push(`LOWER(cl.nome) LIKE LOWER($${params.length})`);
+    }
+
+    const sql = `
+      SELECT
+        c.id,
+        COALESCE(cl.nome,'') AS cliente,
+        c.cliente_id,
+        c.descricao,
+        c.valor_original  AS "valorOriginal",
+        c.multa           AS "multa",
+        c.juros           AS "juros",
+        c.desconto        AS "desconto",
+        c.valor_atualizado AS "valorAtualizado",
+        c.status,
+        c.vencimento,
+        c.created_at      AS "createdAt"
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY c.created_at DESC
+    `;
+
+    const resultado = await pool.query(sql, params);
     return res.json({ success: true, data: resultado.rows });
   } catch (err) {
     console.error("[GET /api/cobrancas] erro:", err.message);
@@ -326,16 +371,59 @@ app.post("/api/cobrancas", auth, async (req, res) => {
     );
 
     return res.json({ success: true, data: novaCobranca.rows[0] });
-  } catch (err) {
-    console.error("[POST /api/cobrancas] erro:", err.message);
-    return res.status(500).json({ success: false, message: "Erro ao salvar cobrança.", error: err.message });
-  }
+} catch (err) {
+  console.error("[POST /api/cobrancas] erro:", err);
+
+  return res.status(500).json({
+    success: false,
+    message: "Erro ao salvar cobrança.",
+    error: err?.message || String(err),
+    detail: err?.detail || null,
+    hint: err?.hint || null,
+    code: err?.code || null,
+  });
+}
+
 });
 // =====================
-// COBRANÇA (PDF BONITO) — protegido
-// GET /api/cobrancas/:id/pdf
+// PUT atualizar status da cobrança (UUID ok) — protegido
+// /api/cobrancas/:id/status
+// body: { status: "pago" | "pendente" | "vencido" }
 // =====================
-// =====================
+app.put("/api/cobrancas/:id/status", auth, async (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim(); // UUID/string
+    const status = String(req.body?.status || "").toLowerCase().trim();
+
+    const allowed = new Set(["pago", "pendente", "vencido"]);
+    if (!id) {
+      return res.status(400).json({ success: false, message: "ID inválido." });
+    }
+    if (!allowed.has(status)) {
+      return res.status(400).json({ success: false, message: "Status inválido." });
+    }
+
+    const r = await pool.query(
+      `UPDATE cobrancas
+         SET status = $2
+       WHERE id = $1
+       RETURNING *`,
+      [id, status]
+    );
+
+    if (!r.rowCount) {
+      return res.status(404).json({ success: false, message: "Cobrança não encontrada." });
+    }
+
+    return res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error("[PUT /api/cobrancas/:id/status] erro:", err.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Erro ao atualizar status.", error: err.message });
+  }
+});
+
 // COBRANÇA (PDF BONITO) — protegido
 // GET /api/cobrancas/:id/pdf
 // =====================
