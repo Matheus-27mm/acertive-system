@@ -37,7 +37,6 @@ if (!FRONTEND_DIR) {
   console.error("[ACERTIVE] Tentativas:", FRONTEND_DIR_CANDIDATES);
 } else {
   console.log("[ACERTIVE] Servindo arquivos estáticos de:", FRONTEND_DIR);
-  app.use(express.static(FRONTEND_DIR));
 }
 
 // =====================
@@ -224,17 +223,30 @@ app.get("/api/dashboard", auth, async (req, res) => {
 // =====================
 // Rotas estáticas do frontend
 // =====================
+// ========================
+// Rotas estáticas do frontend
+// ========================
 function sendFront(file) {
   return (req, res) => {
+    if (!fs.existsSync(FRONTEND_DIR)) {
+      return res
+        .status(500)
+        .send("Frontend não encontrado no servidor (FRONTEND_DIR inválido).");
+    }
+
     const target = path.join(FRONTEND_DIR, file);
+
     if (!fs.existsSync(target)) {
       return res.status(404).send("Arquivo não encontrado: " + file);
     }
-    res.sendFile(target);
+
+    return res.sendFile(target);
   };
 }
 
+// ========================
 // Rotas principais
+// ========================
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
