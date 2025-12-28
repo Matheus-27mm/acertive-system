@@ -338,8 +338,8 @@ app.post("/api/cobrancas", auth, async (req, res) => {
 app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
   let browser;
   try {
-    const id = parseInt(req.params.id, 10);
-    if (!Number.isInteger(id) || id <= 0) {
+    const idRaw = String(req.params.id || "").trim();
+    if (!idRaw) {
       return res.status(400).json({ success: false, message: "ID inválido." });
     }
 
@@ -358,9 +358,9 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
          c.created_at
        FROM cobrancas c
        LEFT JOIN clientes cl ON cl.id = c.cliente_id
-       WHERE c.id = $1
+       WHERE c.id::text = $1
        LIMIT 1`,
-      [id]
+      [idRaw]
     );
 
     if (!q.rows.length) {
@@ -389,7 +389,11 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
 
     const status = String(r.status || "").toLowerCase();
     const badgeClass = status === "pago" ? "pago" : status === "vencido" ? "vencido" : "pendente";
-    const refCode = `AC-${String(r.id).padStart(6, "0")}`;
+
+    // referência amigável: se for número, faz AC-000001; se for uuid, usa os 8 primeiros
+    const idStr = String(r.id);
+    const refCode =
+      /^\d+$/.test(idStr) ? `AC-${idStr.padStart(6, "0")}` : `AC-${idStr.slice(0, 8).toUpperCase()}`;
 
     const html = `
 <!doctype html>
@@ -521,7 +525,7 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
     <div class="box">
       <div class="title">
         <h2>Dados da Cobrança</h2>
-        <div class="hint">ID: <span class="mono">#${esc(r.id)}</span></div>
+        <div class="hint">ID: <span class="mono">#${esc(String(r.id))}</span></div>
       </div>
       <div class="kv">
         <div class="k">Cliente</div><div class="v strong">${esc(r.cliente || "—")}</div>
@@ -575,6 +579,7 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao gerar PDF da cobrança.", error: err.message });
   }
 });
+
 // DELETE cobrança (protegido)
 app.delete("/api/cobrancas/:id", auth, async (req, res) => {
   const { id } = req.params;
