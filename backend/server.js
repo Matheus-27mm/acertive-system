@@ -335,11 +335,20 @@ app.post("/api/cobrancas", auth, async (req, res) => {
 // COBRANÇA (PDF BONITO) — protegido
 // GET /api/cobrancas/:id/pdf
 // =====================
+// =====================
+// COBRANÇA (PDF BONITO) — protegido
+// GET /api/cobrancas/:id/pdf
+// =====================
 app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
   let browser;
   try {
-    const idRaw = String(req.params.id || "").trim();
-    if (!idRaw) {
+    const id = String(req.params.id || "").trim();
+
+    // valida UUID (Postgres)
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+
+    if (!isUuid) {
       return res.status(400).json({ success: false, message: "ID inválido." });
     }
 
@@ -358,9 +367,9 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
          c.created_at
        FROM cobrancas c
        LEFT JOIN clientes cl ON cl.id = c.cliente_id
-       WHERE c.id::text = $1
+       WHERE c.id = $1::uuid
        LIMIT 1`,
-      [idRaw]
+      [id]
     );
 
     if (!q.rows.length) {
@@ -368,6 +377,9 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
     }
 
     const r = q.rows[0];
+
+    // ... (seu HTML/CSS e geração Playwright continuam iguais daqui pra baixo)
+
 
     const esc = (s) =>
       String(s ?? "")
