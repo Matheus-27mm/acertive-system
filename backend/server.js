@@ -226,32 +226,19 @@ app.get("/api/dashboard", auth, async (req, res) => {
 // =====================
 function sendFront(file) {
   return (req, res) => {
-    if (!FRONTEND_DIR) {
-      return res.status(500).send("Frontend não encontrado no servidor. Verifique a estrutura no deploy.");
-    }
     const target = path.join(FRONTEND_DIR, file);
     if (!fs.existsSync(target)) {
-      return res.status(404).send(`Arquivo não encontrado: ${file}`);
+      return res.status(404).send("Arquivo não encontrado: " + file);
     }
-    return res.sendFile(target);
+    res.sendFile(target);
   };
 }
-
-// Se você não usa mais cadastro.html, pode manter essa rota ou remover.
-// Mantive como "opcional": se não existir, cai no login.
-app.get("/cadastro", (req, res) => {
-  if (!FRONTEND_DIR) return res.status(500).send("Frontend não encontrado no servidor.");
-  const f = path.join(FRONTEND_DIR, "cadastro.html");
-  if (!fs.existsSync(f)) return res.redirect("/login");
-  return res.sendFile(f);
-});
 
 // Rotas principais
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
-app.get("/novo-cliente", sendFront("novo-cliente.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
 
