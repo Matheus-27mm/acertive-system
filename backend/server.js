@@ -35,10 +35,12 @@ const FRONTEND_DIR = FRONTEND_DIR_CANDIDATES.find((p) => fs.existsSync(p));
 if (!FRONTEND_DIR) {
   console.error("[ACERTIVE] ERRO: Pasta do frontend não encontrada.");
   console.error("[ACERTIVE] Tentativas:", FRONTEND_DIR_CANDIDATES);
-} else {
-  console.log("[ACERTIVE] Servindo arquivos estáticos de:", FRONTEND_DIR);
+  process.exit(1); // <- falha o deploy, evita Cannot GET / e fallback quebrado
 }
 
+console.log("[ACERTIVE] Servindo arquivos estáticos de:", FRONTEND_DIR);
+
+app.use(express.static(FRONTEND_DIR));
 // =====================
 // Middlewares
 // =====================
@@ -220,20 +222,11 @@ app.get("/api/dashboard", auth, async (req, res) => {
   }
 });
 
-// =====================
-// Rotas estáticas do frontend
-// =====================
 // ========================
 // Rotas estáticas do frontend
 // ========================
 function sendFront(file) {
   return (req, res) => {
-    if (!fs.existsSync(FRONTEND_DIR)) {
-      return res
-        .status(500)
-        .send("Frontend não encontrado no servidor (FRONTEND_DIR inválido).");
-    }
-
     const target = path.join(FRONTEND_DIR, file);
 
     if (!fs.existsSync(target)) {
@@ -257,14 +250,18 @@ app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
 // ===============================
 // Fallback para rotas do frontend
 // ===============================
-app.get(/^\/(?!api\/).*/, (req, res) => {
-  const loginPath = path.join(FRONTEND_DIR, "login.html");
-  if (fs.existsSync(loginPath)) {
-    return res.sendFile(loginPath);
-  }
-  return res.status(404).send("Página não encontrada.");
-});
+app.get("*", (req, res, next) => {
+  // Não interceptar API
+  if (req.path.startsWith("/api/")) return next();
 
+  // Se tiver extensão, é arquivo (JS/CSS/img) -> não devolver HTML
+  if (req.path.includes(".")) {
+    return res.status(404).send("Arquivo não encontrado");
+  }
+
+  // Para qualquer rota "de página" desconhecida, manda login (ou escolha outra)
+  return res.sendFile(path.join(FRONTEND_DIR, "login.html"));
+});
 // =====================
 // APIs: cobranças
 // =====================
