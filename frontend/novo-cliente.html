@@ -5,36 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ACERTIVE • Novo Cliente</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
   <style>
     :root{
-      --bg1:#070707; --bg2:#131313;
-      --card:#0f0f10cc; --card2:#111114f2;
-      --gold:#FFD700; --gold2:#FFA500;
-      --white:#ffffff; --muted:#b9b9b9;
+      /* ===== Paleta premium (mesma linha do Clientes Ativos / Dashboard) ===== */
+      --bg1:#070707;
+      --bg2:#0f0f12;
+
+      --card: rgba(17,17,20,.72);
+      --card2: rgba(10,10,12,.92);
+
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      --gold:#F6C84C;
+      --gold2:#FFD56A;
+      --gold-weak: rgba(246,200,76,.35);
+
+      --line: rgba(246,200,76,.14);
+
       --shadow: 0 18px 60px rgba(0,0,0,.62);
       --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
       --radius:18px;
     }
+
     *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+
     body{
       font-family:'Montserrat',sans-serif;
       min-height:100vh;
-      color:var(--white);
+      color: var(--text);
       background:
-        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
-        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
         linear-gradient(135deg, var(--bg1), var(--bg2));
-      padding:24px;
+      padding:22px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
+
     body::before{
       content:"";
-      position:fixed; inset:0;
+      position:fixed;
+      inset:0;
       pointer-events:none;
-      opacity:.22;
+      opacity:.18;
       background-image:
         linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -44,11 +65,11 @@
 
     .topbar{
       width:100%;
-      max-width: 1100px;
-      margin: 0 auto 18px;
+      max-width:1100px;
+      margin:0 auto 18px;
       border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,215,0,.18);
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadowSoft);
       padding: 14px 16px;
       display:flex;
@@ -59,177 +80,223 @@
       overflow:hidden;
       backdrop-filter: blur(10px);
     }
+
     .topbar::after{
       content:"";
       position:absolute;
       inset:-2px;
-      background: linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
       transform: translateX(-30%);
-      animation: shine 6.5s ease-in-out infinite;
+      animation: shine 7.8s ease-in-out infinite;
       pointer-events:none;
+      opacity:.65;
     }
-    @keyframes shine{0%{transform:translateX(-45%)}50%{transform:translateX(35%)}100%{transform:translateX(-45%)}}
 
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.4px; color: var(--white);
-      position:relative; z-index:1;
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
     }
+
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.4px;position:relative;z-index:1}
     .mark{
       width:40px;height:40px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      box-shadow: 0 10px 20px rgba(255,215,0,.18);
-      display:flex; align-items:center; justify-content:center;
-      color:#111; font-weight:900; user-select:none;
-    }
-    .brand small{
-      display:block; color: rgba(255,215,0,.92);
-      font-weight:700; margin-top:2px; letter-spacing:.2px; font-size:12px;
-    }
-    .navbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;position:relative;z-index:1}
-    .navbtn{
-      display:inline-flex;align-items:center;gap:8px;
-      padding: 10px 12px;border-radius:999px;
-      border: 1px solid rgba(255,215,0,.20);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      font-weight:800;text-decoration:none;cursor:pointer;
-      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 10px 20px rgba(246,200,76,.14);
+      display:flex;align-items:center;justify-content:center;color:#111;font-weight:900;
       user-select:none;
     }
-    .navbtn:hover{transform:translateY(-1px);background:rgba(255,215,0,.16);border-color:rgba(255,215,0,.30)}
+    .brand small{display:block;color:rgba(246,200,76,.95);font-weight:800;font-size:12px;margin-top:2px;letter-spacing:.2px}
+
+    .navbtns{display:flex;gap:10px;align-items:center;position:relative;z-index:1;flex-wrap:wrap;justify-content:flex-end}
+    .navbtn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
+      font-weight:800;text-decoration:none;cursor:pointer;
+      transition:transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;white-space:nowrap;
+    }
+    .navbtn i{color:var(--gold)}
+    .navbtn:hover{transform:translateY(-1px);background:rgba(0,0,0,.30);border-color:rgba(246,200,76,.28)}
 
     .wrap{
       width:100%;
-      max-width: 1100px;
-      margin: 0 auto;
+      max-width:1100px;
+      margin:0 auto;
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:22px;
+      grid-template-columns: 1.15fr .85fr;
+      gap:20px;
       align-items:start;
     }
 
     .card{
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,215,0,.20);
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadow);
-      padding: 26px 24px;
+      padding:20px;
       backdrop-filter: blur(10px);
       position:relative;
       overflow:hidden;
-      animation: fadeUp .55s ease both;
+      color: var(--text);
     }
-    @keyframes fadeUp{from{opacity:0; transform: translateY(14px)}to{opacity:1; transform: translateY(0)}}
 
-    .cardHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px}
-    .cardHeader h2{
-      font-size: 20px; color: var(--white); letter-spacing:.3px;
-      display:flex; align-items:center; gap:10px;
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
     }
-    .cardHeader p{margin-top:6px;color:rgba(255,255,255,.65);font-size:13px;line-height:1.45}
+    .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
+
+    .cardHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;position:relative;z-index:1}
+    .cardHeader h2{font-size:20px;display:flex;align-items:center;gap:10px;color:var(--gold);font-weight:900}
+    .cardHeader p{color:var(--muted);font-size:13px;margin-top:6px}
 
     .pill{
       display:inline-flex;align-items:center;gap:8px;
-      padding: 8px 10px;border-radius:999px;
-      border: 1px solid rgba(255,215,0,.20);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      font-weight:800;font-size:12px;white-space:nowrap;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
+      font-weight:900;
+      white-space:nowrap;
     }
+    .pill i{color:var(--gold)}
 
     .divider{
       height:1px;
-      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
-      margin: 14px 0 14px;
+      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
+      margin:12px 0;
+      position:relative;
+      z-index:1;
     }
 
-    .form{display:grid;gap:14px;margin-top:6px}
+    .form{display:grid;gap:12px;position:relative;z-index:1}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .field{display:grid;gap:8px}
-    label{font-size:12px;color:rgba(255,255,255,.78);font-weight:700;letter-spacing:.2px}
+    .field{display:grid;gap:6px}
+    label{
+      font-size:12px;
+      color:rgba(234,234,234,.78);
+      font-weight:800;
+      letter-spacing:.2px;
+    }
 
     .control{position:relative}
+
     .control input, .control select, .control textarea{
       width:100%;
-      padding: 12px 14px 12px 44px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,215,0,.22);
-      background: rgba(255,255,255,.04);
-      color: var(--white);
-      font-size: 14px;
-      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
-      appearance:none;
-    }
-    .control textarea{min-height: 98px; resize: vertical; padding-top: 12px}
-    .control input::placeholder, .control textarea::placeholder{color: rgba(255,255,255,.38)}
-    .control input:focus, .control select:focus, .control textarea:focus{
+      padding:12px 14px 12px 44px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.16);
+      background:rgba(255,255,255,.04);
+      color: var(--text);
+      font-size:14px;
       outline:none;
-      border-color: rgba(255,215,0,.60);
-      box-shadow: 0 0 0 4px rgba(255,215,0,.14);
+      transition: box-shadow .14s ease, transform .10s ease, border-color .14s ease, background .14s ease;
+    }
+
+    .control input::placeholder, .control textarea::placeholder{color:rgba(167,167,167,.85)}
+
+    .control input:focus, .control select:focus, .control textarea:focus{
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
       background: rgba(255,255,255,.06);
       transform: translateY(-1px);
     }
 
+    .control textarea{
+      min-height: 92px;
+      resize: vertical;
+      padding-top: 12px;
+    }
+
     .iconLeft{
-      position:absolute; top:50%; transform: translateY(-50%); left:6px;
+      position:absolute;
+      top:50%;
+      left:8px;
+      transform:translateY(-50%);
       width:36px;height:36px;border-radius:10px;
       display:flex;align-items:center;justify-content:center;
-      color: rgba(255,215,0,.95);
-      background: rgba(255,215,0,.10);
-      border: 1px solid rgba(255,215,0,.14);
+      color:var(--gold);
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(246,200,76,.14);
       pointer-events:none;
     }
-    .iconLeft.top{ top: 18px; transform:none; }
+    .iconLeft.top{ top:18px; transform:none; }
+
+    .btnRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
 
     .btn{
-      width:100%;
-      padding: 13px 14px;
-      border-radius: 12px;
-      border: 0;
+      padding:12px 14px;
+      border-radius:12px;
+      border:0;
       cursor:pointer;
-      font-weight: 900;
-      letter-spacing: .3px;
-      color: #121212;
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      font-weight:900;
+      color:#111;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      box-shadow:0 10px 24px rgba(246,200,76,.16);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
       transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
-      display:flex; align-items:center; justify-content:center; gap:10px;
+      user-select:none;
+      text-decoration:none;
+      white-space:nowrap;
     }
-    .btn:hover{transform: translateY(-2px);box-shadow: 0 14px 30px rgba(255,215,0,.22);filter:saturate(1.05)}
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow:0 14px 30px rgba(246,200,76,.18);
+      filter: saturate(1.03);
+    }
+
     .btn.secondary{
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      border: 1px solid rgba(255,215,0,.28);
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border:1px solid rgba(246,200,76,.18);
       box-shadow:none;
     }
+    .btn.secondary i{color:var(--gold)}
+    .btn.secondary:hover{
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+      transform: translateY(-1px);
+    }
 
-    .kv{display:grid;gap:10px;margin-top:4px}
+    .note{
+      font-size:12px;
+      color: rgba(234,234,234,.62);
+      margin-top:8px;
+    }
+
+    /* Preview */
+    #preview{position:relative}
+    .kv{display:grid;grid-template-columns:1fr;gap:10px;position:relative;z-index:1}
     .kvItem{
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(0,0,0,.18);
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
       box-shadow: var(--shadowSoft);
+      display:flex;
+      flex-direction:column;
+      gap:6px;
     }
-    .kvItem b{
-      color: rgba(255,215,0,.95);
-      font-size: 12px;
-      display:block;
-      margin-bottom: 6px;
-      letter-spacing:.2px;
-      font-weight:800;
-    }
-    .kvItem span{
-      color: rgba(255,255,255,.92);
-      font-size: 14px;
-      font-weight: 900;
-      word-break: break-word;
-    }
-    .note{margin-top:10px;font-size:12px;color:rgba(255,255,255,.62);line-height:1.55}
+    .kvItem b{font-size:12px;color:rgba(246,200,76,.95);font-weight:900}
+    .kvItem span{font-weight:800;color:rgba(234,234,234,.96);font-size:14px;word-break:break-word}
 
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr;gap:14px}
+      .row2{grid-template-columns:1fr}
+      .btnRow{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -253,10 +320,10 @@
 
   <div class="wrap">
     <!-- FORM -->
-    <section class="card">
+    <section class="card" aria-labelledby="cadastro-title">
       <div class="cardHeader">
         <div>
-          <h2><i class="fa-solid fa-user-plus"></i> Cadastro de Cliente</h2>
+          <h2 id="cadastro-title"><i class="fa-solid fa-user-plus"></i> Cadastro de Cliente</h2>
           <p>Registre clientes PF/PJ, com status e dados de contato centralizados.</p>
         </div>
         <div class="pill"><i class="fa-solid fa-id-card"></i> Cadastro</div>
@@ -264,7 +331,7 @@
 
       <div class="divider"></div>
 
-      <form id="formCliente" class="form" autocomplete="on">
+      <form id="formNovoCliente" class="form" autocomplete="on" novalidate>
         <div class="row2">
           <div class="field">
             <label for="tipo">Tipo</label>
@@ -290,37 +357,37 @@
         </div>
 
         <div class="field">
-          <label for="nome">Nome / Razão Social</label>
+          <label for="cliente_nome_input">Nome / Razão Social</label>
           <div class="control">
             <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
-            <input id="nome" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
+            <input id="cliente_nome_input" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
           </div>
         </div>
 
         <div class="row2">
           <div class="field">
-            <label for="email">E-mail</label>
+            <label for="cliente_email_input">E-mail</label>
             <div class="control">
               <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
-              <input id="email" name="email" type="email" placeholder="ex.: cliente@email.com" required />
+              <input id="cliente_email_input" name="email" type="email" placeholder="ex.: cliente@email.com" />
             </div>
           </div>
 
           <div class="field">
-            <label for="telefone">Telefone</label>
+            <label for="cliente_telefone_input">Telefone</label>
             <div class="control">
               <span class="iconLeft"><i class="fa-solid fa-phone"></i></span>
-              <input id="telefone" name="phone" type="tel" placeholder="(99) 99999-9999" />
+              <input id="cliente_telefone_input" name="phone" type="tel" placeholder="(99) 99999-9999" />
             </div>
           </div>
         </div>
 
         <div class="row2">
           <div class="field">
-            <label for="cpfCnpj" id="cpfCnpjLabel">CPF</label>
+            <label for="cliente_cpf_cnpj_input">CPF / CNPJ</label>
             <div class="control">
               <span class="iconLeft"><i class="fa-solid fa-fingerprint"></i></span>
-              <input id="cpfCnpj" name="cpfCnpj" type="text" placeholder="000.000.000-00" />
+              <input id="cliente_cpf_cnpj_input" name="cpf_cnpj" type="text" placeholder="000.000.000-00" />
             </div>
           </div>
 
@@ -337,12 +404,12 @@
           <label for="observacoes">Observações</label>
           <div class="control">
             <span class="iconLeft top"><i class="fa-solid fa-note-sticky"></i></span>
-            <textarea id="observacoes" name="notes" placeholder="Ex.: cliente VIP, preferências, detalhes de cobrança..."></textarea>
+            <textarea id="observacoes" name="observacoes" placeholder="Ex.: cliente VIP, preferências, detalhes de cobrança..."></textarea>
           </div>
         </div>
 
-        <div class="row2">
-          <button class="btn" type="submit">
+        <div class="btnRow">
+          <button class="btn" type="submit" id="btnSalvar">
             <i class="fa-solid fa-floppy-disk"></i>
             Salvar Cliente
           </button>
@@ -360,10 +427,10 @@
     </section>
 
     <!-- RESUMO -->
-    <section class="card" id="preview">
+    <section class="card" id="preview" aria-labelledby="resumo-title">
       <div class="cardHeader">
         <div>
-          <h2><i class="fa-solid fa-clipboard-check"></i> Resumo</h2>
+          <h2 id="resumo-title"><i class="fa-solid fa-clipboard-check"></i> Resumo</h2>
           <p id="statusMsg">Preencha o formulário para visualizar o resumo.</p>
         </div>
         <div class="pill"><i class="fa-solid fa-shield"></i> Registro</div>
@@ -371,20 +438,59 @@
 
       <div class="divider"></div>
 
-      <div class="kv">
-        <div class="kvItem"><b>Tipo</b><span id="pTipo">—</span></div>
-        <div class="kvItem"><b>Status</b><span id="pStatus">—</span></div>
-        <div class="kvItem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
-        <div class="kvItem"><b>E-mail</b><span id="pEmail">—</span></div>
-        <div class="kvItem"><b>Telefone</b><span id="pTelefone">—</span></div>
-        <div class="kvItem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
-        <div class="kvItem"><b>Endereço</b><span id="pEndereco">—</span></div>
-        <div class="kvItem"><b>Observações</b><span id="pObs">—</span></div>
+      <div class="kv" role="list">
+        <div class="kvItem" role="listitem"><b>Tipo</b><span id="pTipo">—</span></div>
+        <div class="kvItem" role="listitem"><b>Status</b><span id="pStatus">—</span></div>
+        <div class="kvItem" role="listitem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
+        <div class="kvItem" role="listitem"><b>E-mail</b><span id="pEmail">—</span></div>
+        <div class="kvItem" role="listitem"><b>Telefone</b><span id="pTelefone">—</span></div>
+        <div class="kvItem" role="listitem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
+        <div class="kvItem" role="listitem"><b>Endereço</b><span id="pEndereco">—</span></div>
+        <div class="kvItem" role="listitem"><b>Observações</b><span id="pObs">—</span></div>
       </div>
     </section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script src="/js/novo-cliente.js"></script>
+
+  <script>
+    (function () {
+      const form = document.getElementById('formNovoCliente');
+      const btnLimpar = document.getElementById('btnLimpar');
+      const pTipo = document.getElementById('pTipo');
+      const pStatus = document.getElementById('pStatus');
+      const pNome = document.getElementById('pNome');
+      const pEmail = document.getElementById('pEmail');
+      const pTelefone = document.getElementById('pTelefone');
+      const pCpfCnpj = document.getElementById('pCpfCnpj');
+      const pEndereco = document.getElementById('pEndereco');
+      const pObs = document.getElementById('pObs');
+
+      function updatePreview() {
+        pTipo.textContent = document.getElementById('tipo')?.value || '—';
+        pStatus.textContent = document.getElementById('status')?.value || '—';
+        pNome.textContent = document.getElementById('cliente_nome_input')?.value || '—';
+        pEmail.textContent = document.getElementById('cliente_email_input')?.value || '—';
+        pTelefone.textContent = document.getElementById('cliente_telefone_input')?.value || '—';
+        pCpfCnpj.textContent = document.getElementById('cliente_cpf_cnpj_input')?.value || '—';
+        pEndereco.textContent = document.getElementById('endereco')?.value || '—';
+        pObs.textContent = document.getElementById('observacoes')?.value || '—';
+      }
+
+      if (form) {
+        form.addEventListener('input', updatePreview);
+        form.addEventListener('change', updatePreview);
+      }
+      if (btnLimpar) {
+        btnLimpar.addEventListener('click', () => {
+          if (!form) return;
+          form.reset();
+          updatePreview();
+        });
+      }
+      updatePreview();
+    })();
+  </script>
 </body>
 </html>

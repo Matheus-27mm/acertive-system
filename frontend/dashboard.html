@@ -11,34 +11,46 @@
 
   <style>
     :root{
+      /* ===== Paleta premium (mesma linha do login padronizado + clientes-ativos) ===== */
       --bg1:#070707;
-      --bg2:#131313;
-      --card:#0f0f10cc;
-      --card2:#111114f2;
-      --gold:#FFD700;
-      --gold2:#FFA500;
-      --white:#ffffff;
-      --muted:#b9b9b9;
-      --line:rgba(255,215,0,.18);
+      --bg2:#0f0f12;
+
+      --card: rgba(17,17,20,.72);
+      --card2: rgba(10,10,12,.92);
+
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      --gold:#F6C84C;
+      --gold2:#FFD56A;
+      --gold-weak: rgba(246,200,76,.35);
+
+      --line: rgba(246,200,76,.14);
+
       --shadow: 0 18px 60px rgba(0,0,0,.62);
       --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
       --radius:18px;
     }
+
     *{margin:0;padding:0;box-sizing:border-box}
+
     body{
       font-family:'Montserrat',sans-serif;
       min-height:100vh;
-      color:var(--white);
+      color:var(--text);
       background:
-        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
-        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
         linear-gradient(135deg, var(--bg1), var(--bg2));
       padding:24px;
     }
+
     body::before{
       content:"";
       position:fixed; inset:0; pointer-events:none;
-      opacity:.22;
+      opacity:.18;
       background-image:
         linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -51,7 +63,7 @@
       margin: 0 auto 18px;
       border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,215,0,.18);
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadowSoft);
       padding: 14px 16px;
       display:flex;
@@ -62,14 +74,18 @@
       overflow:hidden;
       backdrop-filter: blur(10px);
     }
+
+    /* shine mais discreto */
     .topbar::after{
       content:"";
       position:absolute; inset:-2px;
-      background: linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
       transform: translateX(-30%);
-      animation: shine 6.5s ease-in-out infinite;
+      animation: shine 7.8s ease-in-out infinite;
       pointer-events:none;
+      opacity:.65;
     }
+
     @keyframes shine{
       0%{transform:translateX(-45%)}
       50%{transform:translateX(35%)}
@@ -81,17 +97,19 @@
       font-weight:900; letter-spacing:.4px;
       position:relative; z-index:1;
     }
+
     .mark{
       width:40px;height:40px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      box-shadow: 0 10px 20px rgba(255,215,0,.18);
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 10px 20px rgba(246,200,76,.14);
       display:flex; align-items:center; justify-content:center;
       color:#111; font-weight:900; user-select:none;
     }
+
     .brand small{
       display:block; margin-top:2px;
-      color: rgba(255,215,0,.92);
-      font-weight:700; letter-spacing:.2px; font-size: 12px;
+      color: rgba(246,200,76,.95);
+      font-weight:800; letter-spacing:.2px; font-size: 12px;
     }
 
     .navbtns{
@@ -99,19 +117,25 @@
       position:relative; z-index:1;
       align-items:center;
     }
+
     .navbtn{
       display:inline-flex; align-items:center; gap:8px;
       padding: 10px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(255,215,0,.20);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
+      border: 1px solid rgba(246,200,76,.18);
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
       font-weight:800; text-decoration:none; cursor:pointer;
       transition: transform .16s ease, background .16s ease, border-color .16s ease;
       user-select:none;
       white-space:nowrap;
     }
-    .navbtn:hover{transform: translateY(-1px); background: rgba(255,215,0,.16); border-color: rgba(255,215,0,.30);}
+    .navbtn i{ color: var(--gold); }
+    .navbtn:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+    }
 
     .wrap{
       max-width: 1100px;
@@ -132,7 +156,7 @@
     }
     .hero p{
       margin-top: 8px;
-      color: rgba(255,255,255,.70);
+      color: var(--muted);
       font-size: 14px;
     }
 
@@ -145,7 +169,7 @@
     .card{
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,215,0,.20);
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadow);
       padding: 18px;
       backdrop-filter: blur(10px);
@@ -153,39 +177,53 @@
       overflow:hidden;
       transition: transform .16s ease, border-color .16s ease, background .16s ease;
     }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+
     .card:hover{
       transform: translateY(-2px);
-      border-color: rgba(255,215,0,.30);
+      border-color: rgba(246,200,76,.28);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
     }
+    .card:hover::after{ opacity:.45; animation: shine 7.8s ease-in-out infinite; }
 
     .kpiIcon{
       width:48px;height:48px;border-radius: 16px;
       display:flex; align-items:center; justify-content:center;
       color:#111;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      box-shadow: 0 12px 22px rgba(255,215,0,.16);
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 12px 22px rgba(246,200,76,.12);
       margin: 2px auto 10px;
     }
 
     .kpiTitle{
       text-align:center;
-      color: rgba(255,215,0,.92);
-      font-weight: 800;
+      color: rgba(246,200,76,.95);
+      font-weight: 900;
       margin-top: 2px;
     }
+
     .kpiValue{
       text-align:center;
       font-weight: 900;
       font-size: 30px;
       margin-top: 8px;
-      color: rgba(255,255,255,.96);
+      color: rgba(234,234,234,.98);
     }
 
     .panel{
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.10));
-      border: 1px solid rgba(255,215,0,.18);
+      background: linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.12));
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadowSoft);
       padding: 16px;
       backdrop-filter: blur(10px);
@@ -208,7 +246,7 @@
     }
 
     .statusBar{
-      color: rgba(255,255,255,.65);
+      color: var(--muted);
       font-size: 12px;
       text-align:right;
       max-width: 520px;
@@ -230,7 +268,7 @@
       letter-spacing: .3px;
       color: #121212;
       background: linear-gradient(135deg, var(--gold), var(--gold2));
-      box-shadow: 0 10px 24px rgba(255,215,0,.18);
+      box-shadow: 0 10px 24px rgba(246,200,76,.16);
       transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
       display:flex;
       align-items:center;
@@ -240,26 +278,28 @@
       text-decoration:none;
       white-space:nowrap;
     }
+
     .btn:hover{
       transform: translateY(-2px);
-      box-shadow: 0 14px 30px rgba(255,215,0,.22);
-      filter: saturate(1.05);
+      box-shadow: 0 14px 30px rgba(246,200,76,.18);
+      filter: saturate(1.03);
     }
 
     .btn.secondary{
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      border: 1px solid rgba(255,215,0,.28);
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border: 1px solid rgba(246,200,76,.18);
       box-shadow: none;
     }
+    .btn.secondary i{ color: var(--gold); }
     .btn.secondary:hover{
-      background: rgba(255,215,0,.16);
-      border-color: rgba(255,215,0,.34);
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
     }
 
     footer{
       text-align:center;
-      color: rgba(255,255,255,.55);
+      color: rgba(234,234,234,.55);
       font-size: 12px;
       padding: 18px 0 6px;
     }
@@ -304,7 +344,6 @@
       <p>Bem-vindo ao sistema de cobranças profissional</p>
     </section>
 
-    <!-- KPIs (podem virar cards clicáveis depois, se quiser) -->
     <section class="grid">
       <div class="card">
         <div class="kpiIcon"><i class="fa-solid fa-dollar-sign"></i></div>
@@ -329,6 +368,12 @@
         <div class="kpiTitle">Cobranças Emitidas</div>
         <div class="kpiValue" id="totalTitulos">0</div>
       </div>
+      <div class="card">
+  <div class="kpiIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+  <div class="kpiTitle">Vencidos</div>
+  <div class="kpiValue" id="totalVencidos">R$ 0,00</div>
+</div>
+
     </section>
 
     <section class="panel">
@@ -337,7 +382,6 @@
         <div class="statusBar" id="statusBar"></div>
       </div>
 
-      <!-- IMPORTANTE: aqui é navegação real (href). Não “some” o clique -->
       <div class="actions">
         <a class="btn secondary" id="btnNovaCobranca" href="/nova-cobranca">
           <i class="fa-solid fa-plus"></i> Nova Cobrança

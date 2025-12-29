@@ -1,212 +1,349 @@
-// frontend/js/novo-cliente.js
+// frontend/js/novo-cliente.js — criação, import, editar e excluir clientes (versão corrigida)
 (function () {
-  // ===== Auth guard (mesmo padrão) =====
-  const logado = localStorage.getItem('usuarioLogado');
-  if (!logado) {
-    window.location.href = '/login';
+  // ===== Guard de autenticação =====
+  if (!localStorage.getItem("usuarioLogado") || !localStorage.getItem("token")) {
+    window.location.href = "/login";
     return;
   }
 
-  // ===== Toast =====
-  function showToast(msg, type = 'success') {
+  // ===== Utils =====
+  function showToast(msg, type = "success") {
+    if (typeof Toastify === "undefined") return alert(msg);
     Toastify({
       text: msg,
-      duration: 2800,
+      duration: 3200,
       close: true,
-      gravity: 'top',
-      position: 'right',
-      backgroundColor: type === 'success' ? '#FFD700' : (type === 'warning' ? '#fd7e14' : '#dc3545')
+      gravity: "top",
+      position: "right",
+      style: { background: type === "success" ? "#28a745" : "#dc3545" },
+      stopOnFocus: true,
     }).showToast();
   }
 
-  // ===== Elements =====
-  const btnLogout = document.getElementById('btnLogout');
-  const form = document.getElementById('formCliente');
-  const btnLimpar = document.getElementById('btnLimpar');
-
-  const tipo = document.getElementById('tipo');
-  const status = document.getElementById('status');
-  const nome = document.getElementById('nome');
-  const email = document.getElementById('email');
-  const telefone = document.getElementById('telefone');
-  const cpfCnpj = document.getElementById('cpfCnpj');
-  const cpfCnpjLabel = document.getElementById('cpfCnpjLabel');
-  const endereco = document.getElementById('endereco');
-  const observacoes = document.getElementById('observacoes');
-
-  const statusMsg = document.getElementById('statusMsg');
-  const pTipo = document.getElementById('pTipo');
-  const pStatus = document.getElementById('pStatus');
-  const pNome = document.getElementById('pNome');
-  const pEmail = document.getElementById('pEmail');
-  const pTelefone = document.getElementById('pTelefone');
-  const pCpfCnpj = document.getElementById('pCpfCnpj');
-  const pEndereco = document.getElementById('pEndereco');
-  const pObs = document.getElementById('pObs');
-
-  // ===== Logout =====
-  btnLogout.addEventListener('click', () => {
-    localStorage.removeItem('usuarioLogado');
-    window.location.href = '/login';
-  });
-
-  // ===== Helpers =====
-  function onlyDigits(v) {
-    return String(v || '').replace(/\D+/g, '');
-  }
-
-  function maskCpf(v) {
-    const d = onlyDigits(v).slice(0, 11);
-    const p1 = d.slice(0,3);
-    const p2 = d.slice(3,6);
-    const p3 = d.slice(6,9);
-    const p4 = d.slice(9,11);
-    let out = p1;
-    if (p2) out += '.' + p2;
-    if (p3) out += '.' + p3;
-    if (p4) out += '-' + p4;
-    return out;
-  }
-
-  function maskCnpj(v) {
-    const d = onlyDigits(v).slice(0, 14);
-    const p1 = d.slice(0,2);
-    const p2 = d.slice(2,5);
-    const p3 = d.slice(5,8);
-    const p4 = d.slice(8,12);
-    const p5 = d.slice(12,14);
-    let out = p1;
-    if (p2) out += '.' + p2;
-    if (p3) out += '.' + p3;
-    if (p4) out += '/' + p4;
-    if (p5) out += '-' + p5;
-    return out;
-  }
-
-  function maskTelefone(v) {
-    const d = onlyDigits(v).slice(0, 11);
-    const a = d.slice(0,2);
-    const n1 = d.slice(2,7);
-    const n2 = d.slice(7,11);
-    if (!d) return '';
-    if (d.length <= 10) {
-      const p = d.slice(2,6);
-      const s = d.slice(6,10);
-      return a ? `(${a}) ${p}${s ? '-' + s : ''}` : d;
+  async function parseResponseSafely(resp) {
+    const text = await resp.text().catch(() => "");
+    if (!text) return { text: "", json: null };
+    try {
+      const json = JSON.parse(text);
+      return { text, json };
+    } catch (e) {
+      return { text, json: null };
     }
-    return a ? `(${a}) ${n1}${n2 ? '-' + n2 : ''}` : d;
   }
 
-  function tipoLabel(v) {
-    return v === 'pj' ? 'Pessoa Jurídica (PJ)' : 'Pessoa Física (PF)';
+  function esc(s) {
+    return String(s || "").replace(/[<>&"]/g, (m) => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[m]));
   }
 
-  function statusLabel(v) {
-    return v === 'inativo' ? 'Inativo' : 'Ativo';
+  // ===== Elementos =====
+  const form = document.getElementById("formNovoCliente"); // form de cadastro
+  const inputNome = document.getElementById("cliente_nome_input");
+  const inputEmail = document.getElementById("cliente_email_input");
+  const inputTelefone = document.getElementById("cliente_telefone_input");
+  const inputCpfCnpj = document.getElementById("cliente_cpf_cnpj_input"); // opcional no HTML
+  const btnImport = document.getElementById("btnImport"); // botão do form de import
+  const fileInput = document.getElementById("fileImport"); // input type=file
+  const datalist = document.getElementById("listaClientes"); // datalist usado por nova-cobranca
+  const clientesTbody = document.getElementById("clientesTbody"); // tabela de clientes
+  const empty = document.getElementById("clientesEmpty");
+  const statusBar = document.getElementById("clientesStatus");
+  const btnReload = document.getElementById("btnReloadClientes");
+
+  // ===== Estado local =====
+  let clientesCache = [];
+  let submitting = false;
+
+  // ===== API helpers =====
+  function authHeaders(extra = {}) {
+    const token = localStorage.getItem("token");
+    return Object.assign(
+      {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      extra
+    );
   }
 
-  function syncPreview() {
-    pTipo.textContent = tipoLabel(tipo.value);
-    pStatus.textContent = statusLabel(status.value);
-    pNome.textContent = nome.value.trim() || '—';
-    pEmail.textContent = email.value.trim() || '—';
-    pTelefone.textContent = telefone.value.trim() || '—';
-    pCpfCnpj.textContent = cpfCnpj.value.trim() || '—';
-    pEndereco.textContent = endereco.value.trim() || '—';
-    pObs.textContent = observacoes.value.trim() || '—';
-
-    statusMsg.textContent = 'Pré-visualização pronta. Você pode salvar quando quiser.';
-  }
-
-  // ===== Tipo PF/PJ: troca label e máscara =====
-  function applyTipoUI() {
-    if (tipo.value === 'pj') {
-      cpfCnpjLabel.textContent = 'CNPJ';
-      cpfCnpj.placeholder = '00.000.000/0000-00';
-      cpfCnpj.value = maskCnpj(cpfCnpj.value);
-    } else {
-      cpfCnpjLabel.textContent = 'CPF';
-      cpfCnpj.placeholder = '000.000.000-00';
-      cpfCnpj.value = maskCpf(cpfCnpj.value);
+  async function apiCreateCliente(payload) {
+    const resp = await fetch("/api/clientes", {
+      method: "POST",
+      headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+      body: JSON.stringify(payload),
+    });
+    const { text, json } = await parseResponseSafely(resp);
+    if (!resp.ok) {
+      // se 401, redireciona para login
+      if (resp.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuarioLogado");
+        window.location.href = "/login";
+        throw new Error("Não autorizado. Faça login novamente.");
+      }
+      const msg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+      throw new Error(msg);
     }
-    syncPreview();
+    return json?.data ?? null;
   }
 
-  tipo.addEventListener('change', applyTipoUI);
+  async function apiImportClientes(formData) {
+    const resp = await fetch("/api/clientes/import", {
+      method: "POST",
+      headers: authHeaders(), // don't set Content-Type; browser sets multipart boundary
+      body: formData,
+    });
+    const { text, json } = await parseResponseSafely(resp);
+    if (!resp.ok) {
+      const msg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+      throw new Error(msg);
+    }
+    return json ?? {};
+  }
 
-  // ===== Masks =====
-  telefone.addEventListener('input', () => {
-    telefone.value = maskTelefone(telefone.value);
-    syncPreview();
-  });
+  async function apiUpdateCliente(id, payload) {
+    const resp = await fetch(`/api/clientes/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+      body: JSON.stringify(payload),
+    });
+    const { text, json } = await parseResponseSafely(resp);
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuarioLogado");
+        window.location.href = "/login";
+        throw new Error("Não autorizado. Faça login novamente.");
+      }
+      const msg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+      throw new Error(msg);
+    }
+    return json?.data ?? null;
+  }
 
-  cpfCnpj.addEventListener('input', () => {
-    cpfCnpj.value = (tipo.value === 'pj') ? maskCnpj(cpfCnpj.value) : maskCpf(cpfCnpj.value);
-    syncPreview();
-  });
+  async function apiDeleteCliente(id) {
+    const resp = await fetch(`/api/clientes/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    const { text, json } = await parseResponseSafely(resp);
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuarioLogado");
+        window.location.href = "/login";
+        throw new Error("Não autorizado. Faça login novamente.");
+      }
+      const msg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+      throw new Error(msg);
+    }
+    return json?.data ?? null;
+  }
 
-  // ===== Live preview inputs =====
-  [status, nome, email, endereco, observacoes].forEach(el => {
-    el.addEventListener('input', syncPreview);
-    el.addEventListener('change', syncPreview);
-  });
+  // ===== Carregar clientes (datalist + tabela) =====
+  async function carregarClientes() {
+    try {
+      if (statusBar) statusBar.textContent = "Carregando clientes…";
+      const resp = await fetch("/api/clientes-ativos", { headers: authHeaders() });
+      const { text, json } = await parseResponseSafely(resp);
 
-  // ===== Limpar =====
-  btnLimpar.addEventListener('click', () => {
-    form.reset();
-    applyTipoUI();
-    statusMsg.textContent = 'Preencha o formulário para visualizar o resumo.';
-    showToast('Formulário limpo.', 'success');
-  });
+      if (!resp.ok) {
+        const serverMsg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+        throw new Error(serverMsg);
+      }
 
-  // ===== Submit: salva no backend =====
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+      const payload = json ?? {};
+      if (!payload.success) throw new Error(payload.message || "Falha ao carregar clientes");
 
-    const payload = {
-      type: tipo.value,                 // 'pf' | 'pj'
-      status: status.value,             // 'ativo' | 'inativo'
-      name: nome.value.trim(),
-      email: email.value.trim(),
-      phone: telefone.value.trim(),
-      cpfCnpj: cpfCnpj.value.trim(),
-      address: endereco.value.trim(),
-      notes: observacoes.value.trim()
-    };
+      clientesCache = Array.isArray(payload.data) ? payload.data : [];
 
-    if (!payload.name || !payload.email) {
-      showToast('Preencha Nome/Razão Social e E-mail.', 'error');
+      // datalist
+      if (datalist) {
+        datalist.innerHTML = "";
+        clientesCache.forEach((c) => {
+          const option = document.createElement("option");
+          option.value = c.nome || "";
+          option.dataset.id = c.id || "";
+          datalist.appendChild(option);
+        });
+      }
+
+      // tabela
+      renderTabelaClientes(clientesCache);
+
+      if (statusBar) statusBar.textContent = "";
+    } catch (err) {
+      if (statusBar) statusBar.textContent = "Erro ao carregar clientes.";
+      showToast("Erro ao carregar clientes: " + (err.message || err), "error");
+      clientesCache = [];
+      renderTabelaClientes([]);
+    }
+  }
+
+  function renderTabelaClientes(list) {
+    if (!clientesTbody) return;
+    if (!list.length) {
+      clientesTbody.innerHTML = "";
+      if (empty) empty.style.display = "block";
+      return;
+    }
+    if (empty) empty.style.display = "none";
+
+    clientesTbody.innerHTML = list
+      .map((c) => {
+        const nome = esc(c.nome || "");
+        const email = esc(c.email || "");
+        const telefone = esc(c.telefone || "");
+        // usar campo status (padronizado no servidor)
+        const statusText = (c.status === 'inativo' || c.status === 'inativo') ? "Inativo" : "Ativo";
+        return `
+          <tr data-cliente-id="${c.id}">
+            <td style="font-weight:700">${nome}</td>
+            <td>${email}</td>
+            <td>${telefone}</td>
+            <td>${statusText}</td>
+            <td>
+              <div class="actions">
+                <button class="iconBtn" data-act="edit" data-id="${c.id}"><i class="fa-solid fa-pen"></i> Editar</button>
+                <button class="iconBtn danger" data-act="delete" data-id="${c.id}"><i class="fa-solid fa-trash"></i> Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
+  // ===== Handlers =====
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (submitting) return;
+      const nome = (inputNome?.value || "").trim();
+      const email = (inputEmail?.value || "").trim();
+      const telefone = (inputTelefone?.value || "").trim();
+      const cpf_cnpj = (inputCpfCnpj?.value || "").trim();
+
+      if (!nome) {
+        showToast("Preencha o nome do cliente.", "error");
+        return;
+      }
+
+      submitting = true;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const payload = { nome, email: email || null, telefone: telefone || null, cpf_cnpj: cpf_cnpj || null, status: 'ativo' };
+        const created = await apiCreateCliente(payload);
+        showToast("Cliente criado com sucesso.", "success");
+        // limpa form somente após sucesso
+        form.reset();
+        // atualiza lista/datalist
+        await carregarClientes();
+      } catch (err) {
+        console.error("[novo-cliente] erro ao criar:", err);
+        showToast("Erro ao criar cliente: " + (err.message || err), "error");
+      } finally {
+        submitting = false;
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+
+  // Importação de planilha (CSV/XLSX)
+  if (btnImport && fileInput) {
+    btnImport.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!fileInput.files || !fileInput.files.length) {
+        showToast("Selecione um arquivo para importar.", "error");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const fd = new FormData();
+      fd.append("file", file);
+
+      try {
+        const result = await apiImportClientes(fd);
+        const imported = result.imported ?? result.count ?? 0;
+        showToast(`Importação concluída. ${imported} clientes importados.`, "success");
+        fileInput.value = "";
+        await carregarClientes();
+      } catch (err) {
+        console.error("[novo-cliente] erro import:", err);
+        showToast("Erro na importação: " + (err.message || err), "error");
+      }
+    });
+  }
+
+  // Delegação de eventos para editar/excluir na tabela
+  document.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest && ev.target.closest("button[data-act][data-id]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-id");
+    const act = btn.getAttribute("data-act");
+
+    if (!id) return;
+
+    if (act === "delete") {
+      if (!confirm("Deseja excluir este cliente? Esta ação pode ser revertida pelo administrador.")) return;
+      try {
+        await apiDeleteCliente(id);
+        showToast("Cliente excluído.", "success");
+        // remove linha localmente
+        const row = document.querySelector(`[data-cliente-id="${id}"]`);
+        if (row) row.remove();
+        // atualizar cache e datalist
+        clientesCache = clientesCache.filter((c) => String(c.id) !== String(id));
+        if (datalist) {
+          const opt = [...datalist.options].find((o) => o.dataset.id === id);
+          if (opt) opt.remove();
+        }
+      } catch (err) {
+        console.error("[novo-cliente] erro ao excluir:", err);
+        showToast("Erro ao excluir cliente: " + (err.message || err), "error");
+      }
       return;
     }
 
-    statusMsg.textContent = 'Salvando no servidor…';
-
-    try {
-      const resp = await fetch('/api/clientes/novo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const json = await resp.json();
-
-      if (!resp.ok || !json.success) {
-        throw new Error(json.error || json.message || 'Falha ao salvar cliente');
+    if (act === "edit") {
+      const cliente = clientesCache.find((c) => String(c.id) === String(id));
+      if (!cliente) {
+        showToast("Cliente não encontrado localmente. Recarregando...", "error");
+        await carregarClientes();
+        return;
       }
 
-      statusMsg.textContent = 'Cliente salvo com sucesso.';
-      showToast('Cliente cadastrado.', 'success');
+      const novoNome = prompt("Nome do cliente:", cliente.nome || "");
+      if (novoNome === null) return; // cancelou
+      const novoEmail = prompt("Email do cliente:", cliente.email || "");
+      if (novoEmail === null) return;
+      const novoTelefone = prompt("Telefone do cliente:", cliente.telefone || "");
+      if (novoTelefone === null) return;
 
-      // opcional: voltar para a listagem
-      // window.location.href = '/clientes-ativos';
-
-    } catch (err) {
-      statusMsg.textContent = 'Falha ao salvar. Verifique o servidor e tente novamente.';
-      showToast('Erro ao salvar: ' + err.message, 'error');
+      try {
+        await apiUpdateCliente(id, {
+          nome: novoNome.trim(),
+          email: novoEmail.trim(),
+          telefone: novoTelefone.trim(),
+        });
+        showToast("Cliente atualizado.", "success");
+        await carregarClientes();
+      } catch (err) {
+        console.error("[novo-cliente] erro ao atualizar:", err);
+        showToast("Erro ao atualizar cliente: " + (err.message || err), "error");
+      }
+      return;
     }
   });
 
-  // init
-  applyTipoUI();
-  syncPreview();
+  // reload manual
+  if (btnReload) btnReload.addEventListener("click", () => carregarClientes());
+
+  // Expor função global para nova-cobranca.js (se necessário)
+  window.carregarClientes = carregarClientes;
+
+  // Init
+  document.addEventListener("DOMContentLoaded", () => {
+    carregarClientes();
+  });
 })();

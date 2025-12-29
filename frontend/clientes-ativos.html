@@ -9,22 +9,36 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
-  <!-- SheetJS (leitura Excel) -->
+  <!-- SheetJS (opcional no front; leitura é feita no backend) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
     :root{
+      /* Base */
       --bg1:#070707;
-      --bg2:#131313;
-      --card:#0f0f10cc;
-      --card2:#111114f2;
-      --gold:#FFD700;
-      --gold2:#FFA500;
-      --white:#ffffff;
-      --muted:#b9b9b9;
-      --line:rgba(255,215,0,.18);
+      --bg2:#0f0f12;
+
+      /* Cards */
+      --card: rgba(17,17,20,.70);
+      --card2: rgba(10,10,12,.92);
+
+      /* Texto */
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      /* Accent (dourado controlado) */
+      --gold:#F6C84C;
+      --gold-weak: rgba(246,200,76,.35);
+      --gold2:#FFD56A;
+
+      /* Linhas / bordas */
+      --line: rgba(246,200,76,.14);
+
+      /* Sombras */
       --shadow: 0 18px 60px rgba(0,0,0,.62);
       --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
       --radius:18px;
     }
 
@@ -33,10 +47,10 @@
     body{
       font-family:'Montserrat',sans-serif;
       min-height:100vh;
-      color:var(--white);
+      color:var(--text);
       background:
-        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
-        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
         linear-gradient(135deg, var(--bg1), var(--bg2));
       padding:24px;
     }
@@ -46,7 +60,7 @@
       position:fixed;
       inset:0;
       pointer-events:none;
-      opacity:.22;
+      opacity:.18;
       background-image:
         linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -60,7 +74,7 @@
       margin: 0 auto 18px;
       border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,215,0,.18);
+      border: 1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadowSoft);
       padding: 14px 16px;
       display:flex;
@@ -72,339 +86,147 @@
       backdrop-filter: blur(10px);
     }
 
-    .topbar::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: linear-gradient(120deg, transparent 0%, rgba(255,215,0,.08) 25%, transparent 55%);
-      transform: translateX(-30%);
-      animation: shine 6.5s ease-in-out infinite;
-      pointer-events:none;
-    }
-    @keyframes shine{
-      0%{transform:translateX(-45%)}
-      50%{transform:translateX(35%)}
-      100%{transform:translateX(-45%)}
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:900;
-      letter-spacing:.4px;
-      color: var(--white);
-      position:relative;
-      z-index:1;
-    }
-
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.4px;color:var(--text)}
     .mark{
-      width:40px;height:40px;
-      border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      box-shadow: 0 10px 20px rgba(255,215,0,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#111;
-      font-weight:900;
-      user-select:none;
+      width:40px;height:40px;border-radius:14px;
+      background:linear-gradient(135deg,rgba(246,200,76,.95),rgba(255,213,106,.95));
+      display:flex;align-items:center;justify-content:center;color:#111;font-weight:900
     }
+    .brand small{display:block;color:var(--muted);font-weight:700;margin-top:2px;letter-spacing:.2px;font-size:12px}
 
-    .brand small{
-      display:block;
-      color: rgba(255,215,0,.92);
-      font-weight:700;
-      margin-top:2px;
-      letter-spacing:.2px;
-      font-size: 12px;
-    }
-
-    .navbtns{
-      display:flex;
-      gap:10px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-      position:relative;
-      z-index:1;
-      align-items:center;
-    }
-
+    .navbtns{display:flex;gap:10px;align-items:center}
     .navbtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,215,0,.20);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
       font-weight:800;
-      text-decoration:none;
       cursor:pointer;
-      transition: transform .16s ease, background .16s ease, border-color .16s ease;
-      user-select:none;
-      white-space:nowrap;
+      text-decoration:none
     }
-    .navbtn:hover{
-      transform: translateY(-1px);
-      background: rgba(255,215,0,.16);
-      border-color: rgba(255,215,0,.30);
-    }
+    .navbtn i{color:var(--gold)}
+    .navbtn:hover{transform:translateY(-1px);background:rgba(0,0,0,.32);border-color:rgba(246,200,76,.28)}
 
-    .wrap{
-      width:100%;
-      max-width: 1180px;
-      margin: 0 auto;
-      display:grid;
-      gap:18px;
-    }
-
+    .wrap{width:100%;max-width:1180px;margin:0 auto;display:grid;gap:18px}
     .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,215,0,.20);
-      box-shadow: var(--shadow);
-      padding: 20px;
-      backdrop-filter: blur(10px);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid rgba(246,200,76,.14);
+      box-shadow:var(--shadow);
+      padding:20px;
+      backdrop-filter:blur(10px);
       position:relative;
-      overflow:hidden;
-      animation: fadeUp .55s ease both;
+      overflow:hidden
     }
+    .title{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;color:var(--gold)}
+    .sub{color:var(--muted);font-size:13px;margin-top:6px;opacity:.95}
 
-    @keyframes fadeUp{
-      from{opacity:0; transform: translateY(14px)}
-      to{opacity:1; transform: translateY(0)}
-    }
-
-    .row{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .title{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size: 22px;
-      font-weight: 900;
-    }
-
-    .title i{
-      color: rgba(255,215,0,.95);
-    }
-
-    .sub{
-      color: rgba(255,255,255,.66);
-      font-size: 13px;
-      margin-top: 6px;
-      line-height: 1.45;
-    }
-
-    .tools{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    .fileInput{
-      display:none;
-    }
-
+    .tools{display:flex;gap:10px;align-items:center}
+    .fileInput{display:none}
     .divider{
       height:1px;
-      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
-      margin: 14px 0;
+      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
+      margin:14px 0
     }
 
-    .filters{
-      display:flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .search{
-      flex: 1;
-      min-width: 260px;
-      position:relative;
-    }
-
+    .filters{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .search{flex:1;min-width:260px;position:relative}
     .search input{
       width:100%;
-      padding: 12px 14px 12px 44px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,255,255,.04);
-      color: var(--white);
-      font-size: 14px;
-      outline: none;
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      padding:12px 14px 12px 44px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text)
     }
-
-    .search input:focus{
-      border-color: rgba(255,215,0,.60);
-      box-shadow: 0 0 0 4px rgba(255,215,0,.14);
-      background: rgba(255,255,255,.06);
-    }
-
-    .search i{
-      position:absolute;
-      top:50%;
-      transform: translateY(-50%);
-      left: 12px;
-      color: rgba(255,215,0,.85);
-      opacity: .9;
-    }
+    .search input::placeholder{color: rgba(234,234,234,.45)}
+    .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gold)}
 
     select{
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,255,255,.04);
-      color: var(--white);
-      outline: none;
-      cursor:pointer;
-      min-width: 180px;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+      cursor:pointer
     }
 
     .tableWrap{
       overflow:auto;
-      border-radius: 16px;
-      border: 1px solid rgba(255,215,0,.14);
-      background: rgba(0,0,0,.16);
-      box-shadow: var(--shadowSoft);
+      border-radius:16px;
+      border:1px solid rgba(246,200,76,.12);
+      background:rgba(0,0,0,.22);
+      box-shadow:var(--shadowSoft)
     }
-
-    table{
-      width:100%;
-      border-collapse: collapse;
-      min-width: 980px;
-    }
-
-    th, td{
-      padding: 14px 14px;
+    table{width:100%;border-collapse:collapse;min-width:980px}
+    th,td{
+      padding:14px 14px;
       text-align:left;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      font-size: 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:14px;
+      color:var(--text2)
     }
-
     th{
-      font-size: 12px;
+      font-size:12px;
       letter-spacing:.5px;
-      text-transform: uppercase;
-      color: rgba(255,215,0,.95);
-      background: rgba(0,0,0,.28);
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tr:hover td{
-      background: rgba(255,215,0,.04);
+      text-transform:uppercase;
+      background:rgba(0,0,0,.36);
+      position:sticky;
+      top:0;
+      z-index:1;
+      color: rgba(246,200,76,.95);
     }
 
     .nameCell{
-      font-weight: 900;
-      color: rgba(255,215,0,.95);
+      font-weight:900;
+      color:var(--text);
       display:flex;
       flex-direction:column;
-      gap: 3px;
-    }
-    .nameCell small{
-      font-weight: 700;
-      color: rgba(255,255,255,.58);
+      gap:3px
     }
 
     .badge{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing:.3px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      white-space:nowrap;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid rgba(246,200,76,.22);
+      background:rgba(246,200,76,.08);
+      color:var(--gold2)
     }
-    .badge.inativo{
-      border-color: rgba(220,53,69,.35);
-      background: rgba(220,53,69,.12);
-      color: rgba(220,53,69,.95);
-    }
-
-    .actions{
-      display:flex;
-      gap:8px;
-    }
+    .badge.inativo{border-color:rgba(220,53,69,.35);background:rgba(220,53,69,.10);color:rgba(255,120,130,.95)}
 
     .iconBtn{
-      width:36px;height:36px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      width:36px;height:36px;border-radius:10px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.24);
+      color:var(--gold);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer
     }
-    .iconBtn:hover{
-      transform: translateY(-1px);
-      background: rgba(255,215,0,.16);
-      border-color: rgba(255,215,0,.30);
-    }
+    .iconBtn:hover{transform:translateY(-1px);background:rgba(0,0,0,.34)}
 
-    .iconBtn.danger{
-      border-color: rgba(220,53,69,.35);
-      background: rgba(220,53,69,.12);
-      color: rgba(220,53,69,.95);
-    }
+    .empty{display:none;text-align:center;padding:36px 12px;color:var(--muted)}
+    .empty i{font-size:44px;opacity:.55;margin-bottom:10px;color:rgba(246,200,76,.55)}
+    .footerInfo{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--muted);font-size:12px}
 
-    .footerInfo{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-      color: rgba(255,255,255,.62);
-      font-size: 12px;
+    .kv{display:grid;grid-template-columns:1fr;gap:12px}
+    .kvItem{
+      padding:14px;border-radius:12px;
+      border:1px solid rgba(246,200,76,.12);
+      background:rgba(0,0,0,.16);
+      box-shadow:0 8px 20px rgba(0,0,0,.45);
+      display:flex;flex-direction:column;gap:6px
     }
+    .kvItem b{color:var(--gold);font-size:12px}
+    .kvItem span{color:var(--text2);font-weight:700;font-size:14px}
 
-    .empty{
-      text-align:center;
-      padding: 36px 12px;
-      color: rgba(255,255,255,.65);
-      display:none;
-    }
-    .empty i{
-      font-size: 44px;
-      opacity:.55;
-      margin-bottom: 10px;
-      color: rgba(255,215,0,.85);
-    }
-    .empty h3{
-      font-size: 18px;
-      font-weight: 900;
-      color: rgba(255,255,255,.9);
-      margin-bottom: 6px;
-    }
-
-    @media (max-width: 920px){
-      body{padding: 18px}
-      table{min-width: 860px}
-    }
+    @media (max-width:920px){body{padding:18px}table{min-width:860px}}
   </style>
 </head>
 
@@ -426,7 +248,7 @@
 
   <div class="wrap">
     <section class="card">
-      <div class="row">
+      <div class="row" style="justify-content:space-between;align-items:center">
         <div>
           <div class="title"><i class="fa-solid fa-users"></i> Gerenciamento de Clientes</div>
           <div class="sub">Importe do Excel, pesquise e mantenha seus clientes organizados no padrão ACERTIVE.</div>
@@ -436,7 +258,8 @@
           <button class="navbtn" id="btnVoltar" type="button"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
           <button class="navbtn" id="btnNovo" type="button"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
 
-          <input class="fileInput" id="fileExcel" type="file" accept=".xlsx,.xls" />
+          <!-- aceitar CSV também -->
+          <input class="fileInput" id="fileExcel" type="file" accept=".xlsx,.xls,.csv" />
           <button class="navbtn" id="btnImportar" type="button"><i class="fa-solid fa-file-import"></i> Importar Excel</button>
 
           <button class="navbtn" id="btnExportar" type="button"><i class="fa-solid fa-download"></i> Exportar CSV</button>
@@ -490,7 +313,52 @@
     </section>
   </div>
 
+  <!-- Toastify e script do front -->
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script src="/js/clientes-ativos.js"></script>
+
+  <script>
+    (function () {
+      const btnNovo = document.getElementById('btnNovo');
+      if (btnNovo) btnNovo.addEventListener('click', () => { window.location.href = '/novo-cliente'; });
+
+      const btnVoltar = document.getElementById('btnVoltar');
+      if (btnVoltar) btnVoltar.addEventListener('click', () => { window.history.back(); });
+
+      const btnLogout = document.getElementById('btnLogout');
+      if (btnLogout) btnLogout.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuarioLogado');
+        window.location.href = '/login';
+      });
+
+      const btnExportar = document.getElementById('btnExportar');
+      if (btnExportar) {
+        btnExportar.addEventListener('click', async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+            const resp = await fetch('/api/clientes/export-csv', { headers });
+            if (resp.ok) {
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'clientes.csv';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              return;
+            }
+            Toastify({ text: 'Exportação indisponível no servidor.', duration: 3000, gravity: 'top', position: 'right', style: { background: '#e67e22' } }).showToast();
+          } catch (err) {
+            console.error('[clientes-ativos] export error', err);
+            Toastify({ text: 'Erro ao exportar: ' + (err.message || err), duration: 3500, gravity: 'top', position: 'right', style: { background: '#dc3545' } }).showToast();
+          }
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

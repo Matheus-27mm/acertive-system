@@ -1,4 +1,3 @@
-// frontend/js/login.js
 (function () {
   const LOGIN_REDIRECT = "/dashboard";
 
@@ -23,9 +22,11 @@
 
   if (!form || !emailInput || !senhaInput) return;
 
-  // limpa sessão antiga
-  localStorage.removeItem("acertive_token");
+  // Limpa sessões anteriores
+  localStorage.removeItem("token");
+  localStorage.removeItem("usuarioLogado");
 
+  // Enviar login
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -50,8 +51,12 @@
         showToast(data.message || "Falha no login.", "error");
         return;
       }
-
-      localStorage.setItem("acertive_token", data.token);
+      // Salva token no localStorage
+localStorage.setItem("token", data.token);
+localStorage.setItem(
+  "usuarioLogado",
+  JSON.stringify({ nome: data.user.nome, email: data.user.email })
+); // Salva detalhes do usuário logado
       showToast("Login realizado com sucesso!", "success");
 
       setTimeout(() => {

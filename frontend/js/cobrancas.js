@@ -1,6 +1,6 @@
+// frontend/js/cobrancas.js — completo (corrigido: botões não navegam + cliente aparece)
 (function () {
-  // Guard
-  if (!localStorage.getItem("usuarioLogado")) {
+  if (!localStorage.getItem("usuarioLogado") || !localStorage.getItem("token")) {
     window.location.href = "/login";
     return;
   }
@@ -13,7 +13,8 @@
       close: true,
       gravity: "top",
       position: "right",
-      backgroundColor: type === "success" ? "#FFD700" : "#dc3545",
+      style: { background: type === "success" ? "#FFD700" : "#dc3545" },
+      stopOnFocus: true,
     }).showToast();
   }
 
@@ -24,7 +25,7 @@
 
   function dataBR(iso) {
     if (!iso) return "—";
-    const d = new Date(String(iso) + "T00:00:00");
+    const d = new Date(String(iso).slice(0, 10) + "T00:00:00");
     if (Number.isNaN(d.getTime())) return "—";
     return d.toLocaleDateString("pt-BR");
   }
@@ -35,7 +36,6 @@
   const countEl = document.getElementById("count");
   const searchInput = document.getElementById("searchInput");
   const statusFilter = document.getElementById("statusFilter");
-
   const btnVoltar = document.getElementById("btnVoltar");
   const btnExportar = document.getElementById("btnExportar");
   const btnLogout = document.getElementById("btnLogout");
@@ -77,13 +77,12 @@
     tbody.innerHTML = list
       .map((c) => {
         const status = String(c.status || "pendente").toLowerCase();
-        const safeCliente = esc(c.cliente);
 
-        // ✅ compatibilidade: backend novo usa valorAtualizado; backend antigo usava "valor"
-        const atualizado = Number(c.valorAtualizado ?? c.valor ?? 0);
+        const safeCliente = esc(c.cliente || "—");
+        const atualizado = Number(c.valorAtualizado ?? 0);
 
         return `
-          <tr>
+          <tr data-cobranca-id="${c.id}">
             <td style="font-weight:900;color:rgba(255,215,0,.95)">${safeCliente}</td>
             <td>${dataBR(c.vencimento)}</td>
             <td>${moedaBR(c.valorOriginal)}</td>
@@ -93,16 +92,16 @@
             <td>${badge(status)}</td>
             <td>
               <div class="actions">
-                <button class="iconBtn" data-act="pago" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="pago" data-id="${c.id}">
                   <i class="fa-solid fa-check"></i> Pago
                 </button>
-                <button class="iconBtn" data-act="pendente" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="pendente" data-id="${c.id}">
                   <i class="fa-regular fa-clock"></i> Pendente
                 </button>
-                <button class="iconBtn" data-act="vencido" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="vencido" data-id="${c.id}">
                   <i class="fa-solid fa-triangle-exclamation"></i> Vencido
                 </button>
-                <button class="iconBtn danger" data-act="delete" data-id="${c.id}">
+                <button type="button" class="iconBtn danger" data-act="delete" data-id="${c.id}">
                   <i class="fa-solid fa-trash"></i> Excluir
                 </button>
               </div>
@@ -113,16 +112,14 @@
       .join("");
   }
 
-  function applyFilters() {
-    const q = String(searchInput?.value || "").toLowerCase().trim();
-    const st = String(statusFilter?.value || "").toLowerCase().trim();
-
-    let list = [...cobrancas];
-
-    if (st) list = list.filter((c) => String(c.status || "").toLowerCase() === st);
-    if (q) list = list.filter((c) => String(c.cliente || "").toLowerCase().includes(q));
-
-    render(list);
+  async function parseResponseSafely(resp) {
+    const text = await resp.text().catch(() => "");
+    if (!text) return { text: "", json: null };
+    try {
+      return { text, json: JSON.parse(text) };
+    } catch {
+      return { text, json: null };
+    }
   }
 
   async function load() {
@@ -136,12 +133,21 @@
       if (q) qs.push(`q=${encodeURIComponent(q)}`);
 
       const url = "/api/cobrancas" + (qs.length ? `?${qs.join("&")}` : "");
-      const resp = await fetch(url);
-      const json = await resp.json();
+      const resp = await fetch(url, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
 
-      if (!resp.ok || !json.success) throw new Error(json.message || "Falha ao carregar");
+      const { text, json } = await parseResponseSafely(resp);
 
-      cobrancas = Array.isArray(json.data) ? json.data : [];
+      if (!resp.ok) {
+        const serverMsg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+        throw new Error(serverMsg || "Falha ao carregar");
+      }
+
+      const payload = json ?? {};
+      if (!payload.success) throw new Error(payload.message || "Falha ao carregar");
+
+      cobrancas = Array.isArray(payload.data) ? payload.data : [];
       render(cobrancas);
 
       if (statusBar) statusBar.textContent = "";
@@ -156,19 +162,70 @@
   async function updateStatus(id, status) {
     const resp = await fetch(`/api/cobrancas/${encodeURIComponent(id)}/status`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Accept: "application/json, text/plain, */*",
+      },
       body: JSON.stringify({ status }),
     });
-    const json = await resp.json();
-    if (!resp.ok || !json.success) throw new Error(json.message || "Falha ao atualizar status");
-    return json.data;
+
+    const { text, json } = await parseResponseSafely(resp);
+
+    if (!resp.ok) {
+      const serverMsg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+      if (resp.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuarioLogado");
+        localStorage.removeItem("isLoggedIn");
+        showToast("Sessão inválida. Faça login novamente.", "error");
+        setTimeout(() => (window.location.href = "/login"), 900);
+      }
+      throw new Error(serverMsg || "Falha ao atualizar status");
+    }
+
+    const payload = json ?? {};
+    if (!payload.success) throw new Error(payload.message || "Falha ao atualizar status");
+    return payload.data;
   }
 
   async function removeCobranca(id) {
-    const resp = await fetch(`/api/cobrancas/${encodeURIComponent(id)}`, { method: "DELETE" });
-    const json = await resp.json();
-    if (!resp.ok || !json.success) throw new Error(json.message || "Falha ao remover cobrança");
-    return json.data;
+    const resp = await fetch(`/api/cobrancas/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Accept: "application/json, text/plain, */*",
+      },
+    });
+
+    const { text, json } = await parseResponseSafely(resp);
+
+    if (resp.status === 204 || resp.status === 200) {
+      if (json && json.success === false) {
+        throw new Error(json.message || json.error || text || `HTTP ${resp.status}`);
+      }
+      return json?.data ?? null;
+    }
+
+    const serverMsg = (json && (json.message || json.error)) || text || `HTTP ${resp.status}`;
+
+    if (resp.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("usuarioLogado");
+      localStorage.removeItem("isLoggedIn");
+      showToast("Sessão inválida. Faça login novamente.", "error");
+      setTimeout(() => (window.location.href = "/login"), 900);
+    }
+
+    throw new Error(serverMsg || "Falha ao remover cobrança");
+  }
+
+  function removerLinhaTabela(id) {
+    const row = document.querySelector(`[data-cobranca-id="${id}"]`);
+    if (row) row.remove();
+    cobrancas = cobrancas.filter((c) => String(c.id) !== String(id));
+    setCount(cobrancas.length);
+    if (!cobrancas.length && empty) empty.style.display = "block";
   }
 
   function exportCSV() {
@@ -185,9 +242,9 @@
         c.valorOriginal ?? 0,
         c.juros ?? 0,
         c.multa ?? 0,
-        c.valorAtualizado ?? c.valor ?? 0,
+        c.valorAtualizado ?? 0,
         c.status || "pendente",
-        c.createdAt || c.dataCriacao || "",
+        c.createdAt || "",
       ]),
     ];
 
@@ -208,24 +265,26 @@
     showToast("CSV exportado com sucesso.", "success");
   }
 
-  // Eventos
   if (btnVoltar) btnVoltar.addEventListener("click", () => (window.location.href = "/dashboard"));
   if (btnExportar) btnExportar.addEventListener("click", exportCSV);
 
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
       localStorage.removeItem("usuarioLogado");
+      localStorage.removeItem("token");
+      localStorage.removeItem("isLoggedIn");
       window.location.href = "/login";
     });
   }
 
-  if (searchInput) searchInput.addEventListener("input", () => applyFilters());
-  if (statusFilter) statusFilter.addEventListener("change", async () => load());
+  if (searchInput) searchInput.addEventListener("input", () => load());
+  if (statusFilter) statusFilter.addEventListener("change", () => load());
 
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-act][data-id]");
     if (!btn) return;
 
+    e.preventDefault(); // garante que não vai “navegar”
     const id = btn.getAttribute("data-id");
     const act = btn.getAttribute("data-act");
 
@@ -234,7 +293,7 @@
         if (!confirm("Deseja excluir esta cobrança?")) return;
         await removeCobranca(id);
         showToast("Cobrança excluída.", "success");
-        await load();
+        removerLinhaTabela(id);
         return;
       }
 
@@ -246,7 +305,6 @@
     }
   });
 
-  // Init
   document.addEventListener("DOMContentLoaded", () => {
     load();
   });
