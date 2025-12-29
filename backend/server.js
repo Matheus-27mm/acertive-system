@@ -246,6 +246,8 @@ app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
+app.get("/novo-cliente", sendFront("novo-cliente.html"));
+
 
 // ===============================
 // Fallback para rotas do frontend
