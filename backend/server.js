@@ -246,14 +246,13 @@ app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
-app.get("/novo-cliente", sendFront("novo-cliente.html"));
-
+app.get("/novo-cliente/", (req, res) => res.redirect(301, "/novo-cliente"));
+app.get("/novo-cliente.html", sendFront("novo-cliente.html"));
 
 // ===============================
-// Fallback para rotas do frontend
+// Fallback APENAS para páginas (sem extensão)
 // ===============================
 app.get("*", (req, res, next) => {
-  // Não interceptar API
   if (req.path.startsWith("/api/")) return next();
 
   // Se tiver extensão, é arquivo (JS/CSS/img) -> não devolver HTML
@@ -261,9 +260,10 @@ app.get("*", (req, res, next) => {
     return res.status(404).send("Arquivo não encontrado");
   }
 
-  // Para qualquer rota "de página" desconhecida, manda login (ou escolha outra)
+  // Para rota de página desconhecida, manda login.html
   return res.sendFile(path.join(FRONTEND_DIR, "login.html"));
 });
+
 // =====================
 // APIs: cobranças
 // =====================
