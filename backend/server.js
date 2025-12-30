@@ -238,7 +238,7 @@ function sendFront(file) {
 }
 
 // ========================
-// Rotas principais
+// Rotas principais (páginas)
 // ========================
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
@@ -246,8 +246,9 @@ app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
-app.get("/novo-cliente/", (req, res) => res.redirect(301, "/novo-cliente"));
-app.get("/novo-cliente.html", sendFront("novo-cliente.html"));
+app.get("/novo-cliente", sendFront("novo-cliente.html"));
+
+
 
 // ===============================
 // Fallback APENAS para páginas (sem extensão)
