@@ -246,7 +246,9 @@ app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
-app.get("/novo-cliente", sendFront("novo-cliente.html"));
+// Novo cliente: atende COM e SEM barra, sem redirect
+app.get(["/novo-cliente", "/novo-cliente/"], sendFront("novo-cliente.html"));
+app.get("/novo-cliente.html", sendFront("novo-cliente.html"));
 
 
 
