@@ -1,4 +1,4 @@
-// frontend/js/cobrancas.js — completo (corrigido: botões não navegam + cliente aparece)
+// frontend/js/cobrancas.js — versão melhorada com animações e feedback visual
 (function () {
   if (!localStorage.getItem("usuarioLogado") || !localStorage.getItem("token")) {
     window.location.href = "/login";
@@ -13,7 +13,7 @@
       close: true,
       gravity: "top",
       position: "right",
-      style: { background: type === "success" ? "#FFD700" : "#dc3545" },
+      style: { background: type === "success" ? "#4CAF50" : "#F44336" },
       stopOnFocus: true,
     }).showToast();
   }
@@ -39,17 +39,58 @@
   const btnVoltar = document.getElementById("btnVoltar");
   const btnExportar = document.getElementById("btnExportar");
   const btnLogout = document.getElementById("btnLogout");
+  const loadingOverlay = document.getElementById("loadingOverlay");
 
   let cobrancas = [];
+  let searchTimeout;
+
+  function hideLoadingOverlay() {
+    if (loadingOverlay) {
+      setTimeout(() => {
+        loadingOverlay.classList.add("hidden");
+        setTimeout(() => loadingOverlay.remove(), 300);
+      }, 500);
+    }
+  }
+
+  function updateStatusBar(message, type = 'neutral') {
+    if (!statusBar) return;
+    
+    statusBar.className = `${type}`;
+    statusBar.textContent = message;
+    
+    if (type === 'success' || type === 'error') {
+      setTimeout(() => {
+        if (statusBar.textContent === message) {
+          statusBar.textContent = '';
+          statusBar.className = '';
+        }
+      }, 5000);
+    }
+  }
 
   function setCount(n) {
-    if (countEl) countEl.textContent = `${n} cobrança${n !== 1 ? "s" : ""}`;
+    if (countEl) {
+      countEl.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        countEl.style.transform = 'scale(1)';
+      }, 200);
+      countEl.textContent = `${n} cobrança${n !== 1 ? "s" : ""}`;
+    }
   }
 
   function badge(status) {
     const s = String(status || "pendente").toLowerCase();
-    const label = s === "pago" ? "Pago" : s === "vencido" ? "Vencido" : "Pendente";
-    return `<span class="badge ${s}"><i class="fa-solid fa-circle"></i> ${label}</span>`;
+    
+    const configs = {
+      pago: { label: "Pago", icon: "fa-circle-check" },
+      vencido: { label: "Vencido", icon: "fa-circle-xmark" },
+      pendente: { label: "Pendente", icon: "fa-circle" }
+    };
+    
+    const config = configs[s] || configs.pendente;
+    
+    return `<span class="badge ${s}"><i class="fa-solid ${config.icon}"></i> ${config.label}</span>`;
   }
 
   function esc(s) {
@@ -75,33 +116,32 @@
     setCount(list.length);
 
     tbody.innerHTML = list
-      .map((c) => {
+      .map((c, index) => {
         const status = String(c.status || "pendente").toLowerCase();
-
         const safeCliente = esc(c.cliente || "—");
         const atualizado = Number(c.valorAtualizado ?? 0);
 
         return `
-          <tr data-cobranca-id="${c.id}">
-            <td style="font-weight:900;color:rgba(255,215,0,.95)">${safeCliente}</td>
+          <tr data-cobranca-id="${c.id}" style="animation-delay: ${index * 0.05}s">
+            <td style="font-weight:900;color:var(--gold)">${safeCliente}</td>
             <td>${dataBR(c.vencimento)}</td>
             <td>${moedaBR(c.valorOriginal)}</td>
-            <td>${moedaBR(c.juros)}</td>
-            <td>${moedaBR(c.multa)}</td>
-            <td style="font-weight:900">${moedaBR(atualizado)}</td>
+            <td style="color:${c.juros > 0 ? 'var(--orange)' : 'inherit'}">${moedaBR(c.juros)}</td>
+            <td style="color:${c.multa > 0 ? 'var(--red)' : 'inherit'}">${moedaBR(c.multa)}</td>
+            <td style="font-weight:900;font-size:15px">${moedaBR(atualizado)}</td>
             <td>${badge(status)}</td>
             <td>
               <div class="actions">
-                <button type="button" class="iconBtn" data-act="pago" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="pago" data-id="${c.id}" title="Marcar como pago">
                   <i class="fa-solid fa-check"></i> Pago
                 </button>
-                <button type="button" class="iconBtn" data-act="pendente" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="pendente" data-id="${c.id}" title="Marcar como pendente">
                   <i class="fa-regular fa-clock"></i> Pendente
                 </button>
-                <button type="button" class="iconBtn" data-act="vencido" data-id="${c.id}">
+                <button type="button" class="iconBtn" data-act="vencido" data-id="${c.id}" title="Marcar como vencido">
                   <i class="fa-solid fa-triangle-exclamation"></i> Vencido
                 </button>
-                <button type="button" class="iconBtn danger" data-act="delete" data-id="${c.id}">
+                <button type="button" class="iconBtn danger" data-act="delete" data-id="${c.id}" title="Excluir cobrança">
                   <i class="fa-solid fa-trash"></i> Excluir
                 </button>
               </div>
@@ -124,7 +164,7 @@
 
   async function load() {
     try {
-      if (statusBar) statusBar.textContent = "Carregando cobranças…";
+      updateStatusBar("Carregando cobranças…", "loading");
 
       const qs = [];
       const st = String(statusFilter?.value || "").trim();
@@ -150,12 +190,14 @@
       cobrancas = Array.isArray(payload.data) ? payload.data : [];
       render(cobrancas);
 
-      if (statusBar) statusBar.textContent = "";
+      updateStatusBar("", "");
+      hideLoadingOverlay();
     } catch (e) {
-      if (statusBar) statusBar.textContent = "Não foi possível carregar as cobranças.";
-      showToast("Erro: " + e.message, "error");
+      updateStatusBar("Erro ao carregar cobranças", "error");
+      showToast("❌ Erro: " + e.message, "error");
       cobrancas = [];
       render([]);
+      hideLoadingOverlay();
     }
   }
 
@@ -178,7 +220,7 @@
         localStorage.removeItem("token");
         localStorage.removeItem("usuarioLogado");
         localStorage.removeItem("isLoggedIn");
-        showToast("Sessão inválida. Faça login novamente.", "error");
+        showToast("⚠️ Sessão inválida. Faça login novamente.", "error");
         setTimeout(() => (window.location.href = "/login"), 900);
       }
       throw new Error(serverMsg || "Falha ao atualizar status");
@@ -213,7 +255,7 @@
       localStorage.removeItem("token");
       localStorage.removeItem("usuarioLogado");
       localStorage.removeItem("isLoggedIn");
-      showToast("Sessão inválida. Faça login novamente.", "error");
+      showToast("⚠️ Sessão inválida. Faça login novamente.", "error");
       setTimeout(() => (window.location.href = "/login"), 900);
     }
 
@@ -222,51 +264,77 @@
 
   function removerLinhaTabela(id) {
     const row = document.querySelector(`[data-cobranca-id="${id}"]`);
-    if (row) row.remove();
+    if (row) {
+      // Animate out
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-100%)';
+      setTimeout(() => row.remove(), 300);
+    }
+    
     cobrancas = cobrancas.filter((c) => String(c.id) !== String(id));
-    setCount(cobrancas.length);
-    if (!cobrancas.length && empty) empty.style.display = "block";
+    
+    setTimeout(() => {
+      setCount(cobrancas.length);
+      if (!cobrancas.length && empty) empty.style.display = "block";
+    }, 300);
   }
 
   function exportCSV() {
     if (!cobrancas.length) {
-      showToast("Não há cobranças para exportar.", "error");
+      showToast("❌ Não há cobranças para exportar.", "error");
       return;
     }
 
-    const rows = [
-      ["Cliente", "Vencimento", "Valor Original", "Juros", "Multa", "Valor Atualizado", "Status", "Data Criação"],
-      ...cobrancas.map((c) => [
-        c.cliente || "",
-        c.vencimento || "",
-        c.valorOriginal ?? 0,
-        c.juros ?? 0,
-        c.multa ?? 0,
-        c.valorAtualizado ?? 0,
-        c.status || "pendente",
-        c.createdAt || "",
-      ]),
-    ];
+    try {
+      const rows = [
+        ["Cliente", "Vencimento", "Valor Original", "Juros", "Multa", "Valor Atualizado", "Status", "Data Criação"],
+        ...cobrancas.map((c) => [
+          c.cliente || "",
+          c.vencimento || "",
+          c.valorOriginal ?? 0,
+          c.juros ?? 0,
+          c.multa ?? 0,
+          c.valorAtualizado ?? 0,
+          c.status || "pendente",
+          c.createdAt || "",
+        ]),
+      ];
 
-    const csv = rows
-      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
+      const csv = rows
+        .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `cobrancas_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cobrancas-acertive-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-    showToast("CSV exportado com sucesso.", "success");
+      showToast("✅ CSV exportado com sucesso!", "success");
+    } catch (e) {
+      showToast("❌ Erro ao exportar CSV: " + e.message, "error");
+    }
   }
 
+  // Event Listeners
   if (btnVoltar) btnVoltar.addEventListener("click", () => (window.location.href = "/dashboard"));
-  if (btnExportar) btnExportar.addEventListener("click", exportCSV);
+  
+  if (btnExportar) {
+    btnExportar.addEventListener("click", () => {
+      btnExportar.disabled = true;
+      btnExportar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exportando...';
+      
+      setTimeout(() => {
+        exportCSV();
+        btnExportar.disabled = false;
+        btnExportar.innerHTML = '<i class="fa-solid fa-download"></i> Exportar CSV';
+      }, 300);
+    });
+  }
 
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
@@ -277,31 +345,81 @@
     });
   }
 
-  if (searchInput) searchInput.addEventListener("input", () => load());
+  // Debounced search
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(load, 300);
+    });
+  }
+  
   if (statusFilter) statusFilter.addEventListener("change", () => load());
 
+  // Delegated event handler for action buttons
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-act][data-id]");
     if (!btn) return;
 
-    e.preventDefault(); // garante que não vai “navegar”
+    e.preventDefault();
     const id = btn.getAttribute("data-id");
     const act = btn.getAttribute("data-act");
 
+    // Visual feedback
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
     try {
       if (act === "delete") {
-        if (!confirm("Deseja excluir esta cobrança?")) return;
+        const cobranca = cobrancas.find(c => String(c.id) === String(id));
+        const clienteNome = cobranca ? cobranca.cliente : "esta cobrança";
+        
+        if (!confirm(`Tem certeza que deseja excluir a cobrança de ${clienteNome}?`)) {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        
         await removeCobranca(id);
-        showToast("Cobrança excluída.", "success");
+        showToast("✅ Cobrança excluída com sucesso.", "success");
         removerLinhaTabela(id);
+        
+        // Dispatch event for dashboard update
+        try {
+          window.dispatchEvent(new CustomEvent('cobrancas:atualizadas', { 
+            detail: { action: 'deleted' } 
+          }));
+        } catch (e) {
+          console.warn('dispatch event failed', e);
+        }
+        
         return;
       }
 
       await updateStatus(id, act);
-      showToast("Status atualizado.", "success");
+      
+      const statusLabels = {
+        pago: "paga",
+        pendente: "pendente",
+        vencido: "vencida"
+      };
+      
+      showToast(`✅ Cobrança marcada como ${statusLabels[act] || act}.`, "success");
       await load();
+      
+      // Dispatch event for dashboard update
+      try {
+        window.dispatchEvent(new CustomEvent('cobrancas:atualizadas', { 
+          detail: { action: 'status_changed', status: act } 
+        }));
+      } catch (e) {
+        console.warn('dispatch event failed', e);
+      }
+      
     } catch (err) {
-      showToast("Erro: " + err.message, "error");
+      showToast("❌ Erro: " + err.message, "error");
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
     }
   });
 

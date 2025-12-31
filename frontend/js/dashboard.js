@@ -1,4 +1,4 @@
-// frontend/js/dashboard.js — KPIs + sincronização (clientes + cobranças)
+// frontend/js/dashboard.js — KPIs + sincronização (clientes + cobranças) + Animações
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -19,6 +19,55 @@
   function moedaBR(v) {
     const n = Number(v || 0);
     return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  // Animação de contagem progressiva para números
+  function animateValue(element, start, end, duration = 1000) {
+    if (!element) return;
+    
+    const startTime = performance.now();
+    const isNumber = typeof end === 'number';
+    
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (easeOutCubic)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      if (isNumber) {
+        const current = start + (end - start) * easeProgress;
+        element.textContent = Math.floor(current);
+      } else {
+        // Para valores monetários
+        const currentValue = start + (end - start) * easeProgress;
+        element.textContent = moedaBR(currentValue);
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        element.textContent = isNumber ? end : moedaBR(end);
+      }
+    }
+    
+    requestAnimationFrame(update);
+  }
+
+  // Atualiza badge de status com animação
+  function updateBadge(badgeId, status = 'neutral', text = 'Sem dados') {
+    const badge = $(badgeId);
+    if (!badge) return;
+    
+    badge.className = `kpiBadge ${status}`;
+    
+    const icons = {
+      up: 'fa-arrow-up',
+      down: 'fa-arrow-down',
+      neutral: 'fa-minus'
+    };
+    
+    badge.innerHTML = `<i class="fa-solid ${icons[status] || icons.neutral}"></i> ${text}`;
   }
 
   // Set com fallback de ids (caso o HTML tenha mudado)
@@ -45,14 +94,49 @@
   const userNameEl = $("userName");
   if (userNameEl) userNameEl.textContent = usuario?.nome || "Usuário";
 
-  // Logout
-  const btnLogout = $("btnLogout");
+  // Logout (robusto)
+  const btnLogout =
+    document.getElementById("btnLogout") ||
+    document.getElementById("btnSair") ||
+    document.querySelector('[data-action="logout"]');
+
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
       localStorage.removeItem("token");
       localStorage.removeItem("usuarioLogado");
+      localStorage.removeItem("isLoggedIn");
       window.location.href = "/login";
     });
+  }
+
+  // Esconde o loading overlay
+  function hideLoadingOverlay() {
+    const overlay = $("loadingOverlay");
+    if (overlay) {
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        setTimeout(() => overlay.remove(), 300);
+      }, 500);
+    }
+  }
+
+  // Atualiza status bar com feedback visual
+  function updateStatusBar(message, type = 'neutral') {
+    const statusBar = $("statusBar");
+    if (!statusBar) return;
+    
+    statusBar.className = `statusBar ${type}`;
+    statusBar.textContent = message;
+    
+    // Limpa mensagens de sucesso após 3.5s
+    if (type === 'success') {
+      setTimeout(() => {
+        if (statusBar.textContent === message) {
+          statusBar.textContent = '';
+          statusBar.className = 'statusBar';
+        }
+      }, 3500);
+    }
   }
 
   function aplicarKpisDashboard(data) {
@@ -64,21 +148,47 @@
     const totalCobrancas = Number(data.totalCobrancas ?? data.cobrancasEmitidas ?? 0);
     const clientesAtivos = Number(data.clientesAtivos ?? 0);
 
-    // IDs mais prováveis no seu layout
-    setTextByIds(["totalRecebido"], moedaBR(totalRecebido));
-    setTextByIds(["totalPendentes", "totalPendente"], moedaBR(totalPendente));
+    // Animar valores ao invés de só setar
+    const recebidoEl = $("totalRecebido");
+    const pendenteEl = $("totalPendentes") || $("totalPendente");
+    const vencidoEl = $("totalVencidos") || $("totalVencido");
+    const titulosEl = $("totalTitulos") || $("totalCobrancas") || $("cobrancasEmitidas");
+    const clientesEl = $("totalClientes") || $("clientCount");
 
-    // Se existir card de vencidos no HTML, ele será atualizado (se não existir, não quebra)
-    setTextByIds(["totalVencidos", "totalVencido"], moedaBR(totalVencido));
+    if (recebidoEl) {
+      const current = parseFloat(recebidoEl.textContent.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      animateValue(recebidoEl, current, totalRecebido, 1200);
+      updateBadge('badgeRecebido', totalRecebido > 0 ? 'up' : 'neutral', totalRecebido > 0 ? 'Recebido' : 'Sem dados');
+    }
 
-    setTextByIds(["totalTitulos", "totalCobrancas", "cobrancasEmitidas"], String(totalCobrancas));
-    setTextByIds(["totalClientes", "clientCount"], String(Number.isFinite(clientesAtivos) ? clientesAtivos : 0));
+    if (pendenteEl) {
+      const current = parseFloat(pendenteEl.textContent.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      animateValue(pendenteEl, current, totalPendente, 1200);
+      updateBadge('badgePendentes', totalPendente > 0 ? 'down' : 'neutral', totalPendente > 0 ? 'A receber' : 'Sem dados');
+    }
+
+    if (vencidoEl) {
+      const current = parseFloat(vencidoEl.textContent.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+      animateValue(vencidoEl, current, totalVencido, 1200);
+      updateBadge('badgeVencidos', totalVencido > 0 ? 'down' : 'neutral', totalVencido > 0 ? 'Em atraso' : 'Sem dados');
+    }
+
+    if (titulosEl) {
+      const current = parseInt(titulosEl.textContent) || 0;
+      animateValue(titulosEl, current, totalCobrancas, 1000);
+      updateBadge('badgeTitulos', totalCobrancas > 0 ? 'neutral' : 'neutral', totalCobrancas > 0 ? `${totalCobrancas} títulos` : 'Sem dados');
+    }
+
+    if (clientesEl) {
+      const current = parseInt(clientesEl.textContent) || 0;
+      animateValue(clientesEl, current, Number.isFinite(clientesAtivos) ? clientesAtivos : 0, 1000);
+      updateBadge('badgeClientes', clientesAtivos > 0 ? 'neutral' : 'neutral', clientesAtivos > 0 ? `${clientesAtivos} ativos` : 'Sem dados');
+    }
   }
 
   // Carregar indicadores do dashboard
   async function carregarDashboard() {
-    const statusBar = $("statusBar");
-    if (statusBar) statusBar.textContent = "Atualizando indicadores…";
+    updateStatusBar("Atualizando indicadores…", "loading");
 
     try {
       // 1) KPIs principais via /api/dashboard
@@ -108,21 +218,33 @@
         const j2 = await r2.json().catch(() => ({}));
         if (r2.ok && j2 && j2.success && Array.isArray(j2.data)) {
           totalClientesAtivos = j2.data.length;
-          setTextByIds(["totalClientes", "clientCount"], String(totalClientesAtivos));
+          const clientesEl = $("totalClientes") || $("clientCount");
+          if (clientesEl) {
+            const current = parseInt(clientesEl.textContent) || 0;
+            animateValue(clientesEl, current, totalClientesAtivos, 1000);
+            updateBadge('badgeClientes', totalClientesAtivos > 0 ? 'neutral' : 'neutral', totalClientesAtivos > 0 ? `${totalClientesAtivos} ativos` : 'Sem dados');
+          }
         }
       }
 
-      if (statusBar) statusBar.textContent = "Dados atualizados com sucesso.";
+      updateStatusBar("Dados atualizados com sucesso.", "success");
+      hideLoadingOverlay();
     } catch (err) {
-      if (statusBar) statusBar.textContent = "Falha ao carregar dados.";
+      updateStatusBar("Falha ao carregar dados.", "error");
       showToast("Erro ao carregar o dashboard.", "error");
       console.error("[ACERTIVE] Falha no dashboard:", err);
+      hideLoadingOverlay();
     }
   }
 
   // Atualiza apenas o KPI de clientes quando receber evento
   function atualizarKpiClientes(total) {
-    setTextByIds(["totalClientes", "clientCount"], String(Number(total || 0)));
+    const clientesEl = $("totalClientes") || $("clientCount");
+    if (clientesEl) {
+      const current = parseInt(clientesEl.textContent) || 0;
+      animateValue(clientesEl, current, Number(total || 0), 1000);
+      updateBadge('badgeClientes', total > 0 ? 'neutral' : 'neutral', total > 0 ? `${total} ativos` : 'Sem dados');
+    }
   }
 
   // Evento disparado por clientes-ativos.js após import/alteração
@@ -130,13 +252,7 @@
     const total = ev?.detail?.total;
     if (typeof total === "number") {
       atualizarKpiClientes(total);
-      const statusBar = $("statusBar");
-      if (statusBar) {
-        statusBar.textContent = "Contador de clientes atualizado";
-        setTimeout(() => {
-          if (statusBar) statusBar.textContent = "";
-        }, 3500);
-      }
+      updateStatusBar("Contador de clientes atualizado", "success");
     } else {
       carregarDashboard();
     }
@@ -157,13 +273,7 @@
       clientesAtivos: d.clientesAtivos, // opcional
     });
 
-    const statusBar = $("statusBar");
-    if (statusBar) {
-      statusBar.textContent = "Indicadores de cobranças atualizados";
-      setTimeout(() => {
-        if (statusBar) statusBar.textContent = "";
-      }, 3500);
-    }
+    updateStatusBar("Indicadores de cobranças atualizados", "success");
   });
 
   // Exportar relatório (PDF bonito)
@@ -171,6 +281,9 @@
   if (btnExportar) {
     btnExportar.addEventListener("click", async () => {
       try {
+        btnExportar.disabled = true;
+        btnExportar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+        
         const token = localStorage.getItem("token");
         const resp = await fetch("/api/relatorios/export-pdf", {
           method: "GET",
@@ -184,15 +297,19 @@
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = "relatorio-acertive.pdf";
+        a.download = `relatorio-acertive-${new Date().toISOString().split('T')[0]}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();
 
         window.URL.revokeObjectURL(url);
+        showToast("Relatório exportado com sucesso!", "success");
       } catch (e) {
         console.error(e);
-        alert("Não foi possível baixar o relatório em PDF.");
+        showToast("Não foi possível baixar o relatório em PDF.", "error");
+      } finally {
+        btnExportar.disabled = false;
+        btnExportar.innerHTML = '<i class="fa-solid fa-download"></i> Exportar Relatório';
       }
     });
   }

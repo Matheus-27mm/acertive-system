@@ -32,6 +32,11 @@
       --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
 
       --radius:18px;
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -63,6 +68,7 @@
       mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
     }
 
+    /* ===== Topbar ===== */
     .topbar{
       width:100%;
       max-width:1100px;
@@ -79,6 +85,18 @@
       position:relative;
       overflow:hidden;
       backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .topbar::after{
@@ -98,29 +116,77 @@
       100%{transform:translateX(-45%)}
     }
 
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.4px;position:relative;z-index:1}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      letter-spacing:.4px;
+      position:relative;
+      z-index:1;
+    }
+    
     .mark{
-      width:40px;height:40px;border-radius:14px;
+      width:40px;
+      height:40px;
+      border-radius:14px;
       background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
       box-shadow: 0 10px 20px rgba(246,200,76,.14);
-      display:flex;align-items:center;justify-content:center;color:#111;font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111;
+      font-weight:900;
       user-select:none;
+      animation: pulse 2s ease-in-out infinite;
     }
-    .brand small{display:block;color:rgba(246,200,76,.95);font-weight:800;font-size:12px;margin-top:2px;letter-spacing:.2px}
 
-    .navbtns{display:flex;gap:10px;align-items:center;position:relative;z-index:1;flex-wrap:wrap;justify-content:flex-end}
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand small{
+      display:block;
+      color:rgba(246,200,76,.95);
+      font-weight:800;
+      font-size:12px;
+      margin-top:2px;
+      letter-spacing:.2px;
+    }
+
+    .navbtns{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      position:relative;
+      z-index:1;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    
     .navbtn{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:10px 12px;border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
       border:1px solid rgba(246,200,76,.18);
       background:rgba(0,0,0,.22);
       color:var(--text2);
-      font-weight:800;text-decoration:none;cursor:pointer;
-      transition:transform .16s ease, background .16s ease, border-color .16s ease;
-      user-select:none;white-space:nowrap;
+      font-weight:800;
+      text-decoration:none;
+      cursor:pointer;
+      transition:all 0.2s ease;
+      user-select:none;
+      white-space:nowrap;
     }
     .navbtn i{color:var(--gold)}
-    .navbtn:hover{transform:translateY(-1px);background:rgba(0,0,0,.30);border-color:rgba(246,200,76,.28)}
+    .navbtn:hover{
+      transform:translateY(-1px);
+      background:rgba(0,0,0,.30);
+      border-color:rgba(246,200,76,.28);
+    }
 
     .wrap{
       width:100%;
@@ -142,7 +208,22 @@
       position:relative;
       overflow:hidden;
       color: var(--text);
+      animation: fadeIn 0.6s ease both;
     }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:first-of-type { animation-delay: 0.1s; }
+    .card:last-of-type { animation-delay: 0.15s; }
 
     .card::after{
       content:"";
@@ -156,18 +237,43 @@
     }
     .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
 
-    .cardHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;position:relative;z-index:1}
-    .cardHeader h2{font-size:20px;display:flex;align-items:center;gap:10px;color:var(--gold);font-weight:900}
-    .cardHeader p{color:var(--muted);font-size:13px;margin-top:6px}
+    .cardHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+      position:relative;
+      z-index:1;
+    }
+    
+    .cardHeader h2{
+      font-size:20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--gold);
+      font-weight:900;
+    }
+    
+    .cardHeader p{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
 
     .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
       border:1px solid rgba(246,200,76,.18);
       background:rgba(0,0,0,.22);
       color:var(--text2);
       font-weight:900;
       white-space:nowrap;
+      animation: fadeIn 0.6s ease 0.3s both;
     }
     .pill i{color:var(--gold)}
 
@@ -179,19 +285,37 @@
       z-index:1;
     }
 
+    /* ===== Form ===== */
     .form{display:grid;gap:12px;position:relative;z-index:1}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .field{display:grid;gap:6px}
+    
+    .field{
+      display:grid;
+      gap:6px;
+      position: relative;
+    }
+
+    .field.filled label {
+      color: var(--gold);
+    }
+
+    .field.error label {
+      color: var(--red);
+    }
+    
     label{
       font-size:12px;
       color:rgba(234,234,234,.78);
       font-weight:800;
       letter-spacing:.2px;
+      transition: color 0.2s ease;
     }
 
     .control{position:relative}
 
-    .control input, .control select, .control textarea{
+    .control input, 
+    .control select, 
+    .control textarea{
       width:100%;
       padding:12px 14px 12px 44px;
       border-radius:12px;
@@ -199,17 +323,37 @@
       background:rgba(255,255,255,.04);
       color: var(--text);
       font-size:14px;
+      font-weight: 600;
       outline:none;
-      transition: box-shadow .14s ease, transform .10s ease, border-color .14s ease, background .14s ease;
+      transition: all 0.2s ease;
     }
 
-    .control input::placeholder, .control textarea::placeholder{color:rgba(167,167,167,.85)}
+    .control input::placeholder, 
+    .control textarea::placeholder{
+      color:rgba(167,167,167,.85);
+      font-weight: 400;
+    }
 
-    .control input:focus, .control select:focus, .control textarea:focus{
+    .control input:focus, 
+    .control select:focus, 
+    .control textarea:focus{
       border-color: rgba(246,200,76,.45);
       box-shadow: 0 0 0 4px rgba(246,200,76,.12);
       background: rgba(255,255,255,.06);
       transform: translateY(-1px);
+    }
+
+    .field.error .control input,
+    .field.error .control select,
+    .field.error .control textarea {
+      border-color: var(--red);
+      background: rgba(244,67,54,.05);
+    }
+
+    .field.error .control input:focus,
+    .field.error .control select:focus,
+    .field.error .control textarea:focus {
+      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
     }
 
     .control textarea{
@@ -223,16 +367,72 @@
       top:50%;
       left:8px;
       transform:translateY(-50%);
-      width:36px;height:36px;border-radius:10px;
-      display:flex;align-items:center;justify-content:center;
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       color:var(--gold);
       background:rgba(0,0,0,.22);
       border:1px solid rgba(246,200,76,.14);
       pointer-events:none;
+      transition: all 0.3s ease;
     }
-    .iconLeft.top{ top:18px; transform:none; }
 
-    .btnRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+    .field.filled .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+      background: rgba(246,200,76,.15);
+      border-color: rgba(246,200,76,.3);
+    }
+
+    .field.error .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+      background: rgba(244,67,54,.15);
+      border-color: rgba(244,67,54,.3);
+      color: var(--red);
+    }
+
+    .iconLeft.top{ 
+      top:18px; 
+      transform:none; 
+    }
+
+    .field.filled .iconLeft.top {
+      transform: scale(1.1);
+    }
+
+    .field.error .iconLeft.top {
+      transform: scale(1.1);
+    }
+
+    .error-message {
+      display: none;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-left: 44px;
+      animation: shake 0.3s ease;
+    }
+
+    .field.error .error-message {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* ===== Buttons ===== */
+    .btnRow{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:6px;
+    }
 
     .btn{
       padding:12px 14px;
@@ -247,15 +447,40 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      transition: all 0.2s ease;
       user-select:none;
       text-decoration:none;
       white-space:nowrap;
+      position: relative;
+      overflow: hidden;
     }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
     .btn:hover{
       transform: translateY(-2px);
       box-shadow:0 14px 30px rgba(246,200,76,.18);
       filter: saturate(1.03);
+    }
+
+    .btn:active {
+      transform: translateY(0);
     }
 
     .btn.secondary{
@@ -271,15 +496,36 @@
       transform: translateY(-1px);
     }
 
+    .btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .note{
       font-size:12px;
       color: rgba(234,234,234,.62);
       margin-top:8px;
     }
 
-    /* Preview */
+    /* ===== Preview ===== */
     #preview{position:relative}
-    .kv{display:grid;grid-template-columns:1fr;gap:10px;position:relative;z-index:1}
+    .kv{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    
     .kvItem{
       padding:12px;
       border-radius:12px;
@@ -289,9 +535,63 @@
       display:flex;
       flex-direction:column;
       gap:6px;
+      transition: all 0.3s ease;
+      opacity: 0.5;
     }
-    .kvItem b{font-size:12px;color:rgba(246,200,76,.95);font-weight:900}
-    .kvItem span{font-weight:800;color:rgba(234,234,234,.96);font-size:14px;word-break:break-word}
+
+    .kvItem.filled {
+      opacity: 1;
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .kvItem b{
+      font-size:12px;
+      color:rgba(246,200,76,.95);
+      font-weight:900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .kvItem span{
+      font-weight:800;
+      color:rgba(234,234,234,.96);
+      font-size:14px;
+      word-break:break-word;
+    }
+
+    /* Success feedback */
+    .success-message {
+      display: none;
+      padding: 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(76,175,80,.2), rgba(76,175,80,.1));
+      border: 1px solid rgba(76,175,80,.3);
+      color: var(--green);
+      font-weight: 700;
+      margin-top: 12px;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .success-message.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
     @media (max-width:980px){
       .wrap{grid-template-columns:1fr;gap:14px}
@@ -362,6 +662,7 @@
             <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
             <input id="cliente_nome_input" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
           </div>
+          <div class="error-message">Nome é obrigatório</div>
         </div>
 
         <div class="row2">
@@ -371,6 +672,7 @@
               <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
               <input id="cliente_email_input" name="email" type="email" placeholder="ex.: cliente@email.com" />
             </div>
+            <div class="error-message">E-mail inválido</div>
           </div>
 
           <div class="field">
@@ -408,6 +710,11 @@
           </div>
         </div>
 
+        <div class="success-message" id="successMessage">
+          <i class="fa-solid fa-circle-check"></i>
+          Cliente cadastrado com sucesso!
+        </div>
+
         <div class="btnRow">
           <button class="btn" type="submit" id="btnSalvar">
             <i class="fa-solid fa-floppy-disk"></i>
@@ -421,7 +728,7 @@
         </div>
 
         <div class="note">
-          Dica: CPF/CNPJ é opcional, mas ajuda no controle e exportações futuras.
+          💡 Dica: CPF/CNPJ é opcional, mas ajuda no controle e exportações futuras.
         </div>
       </form>
     </section>
@@ -439,14 +746,14 @@
       <div class="divider"></div>
 
       <div class="kv" role="list">
-        <div class="kvItem" role="listitem"><b>Tipo</b><span id="pTipo">—</span></div>
-        <div class="kvItem" role="listitem"><b>Status</b><span id="pStatus">—</span></div>
-        <div class="kvItem" role="listitem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
-        <div class="kvItem" role="listitem"><b>E-mail</b><span id="pEmail">—</span></div>
-        <div class="kvItem" role="listitem"><b>Telefone</b><span id="pTelefone">—</span></div>
-        <div class="kvItem" role="listitem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
-        <div class="kvItem" role="listitem"><b>Endereço</b><span id="pEndereco">—</span></div>
-        <div class="kvItem" role="listitem"><b>Observações</b><span id="pObs">—</span></div>
+        <div class="kvItem" id="kvTipo" role="listitem"><b>Tipo</b><span id="pTipo">—</span></div>
+        <div class="kvItem" id="kvStatus" role="listitem"><b>Status</b><span id="pStatus">—</span></div>
+        <div class="kvItem" id="kvNome" role="listitem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
+        <div class="kvItem" id="kvEmail" role="listitem"><b>E-mail</b><span id="pEmail">—</span></div>
+        <div class="kvItem" id="kvTelefone" role="listitem"><b>Telefone</b><span id="pTelefone">—</span></div>
+        <div class="kvItem" id="kvCpfCnpj" role="listitem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
+        <div class="kvItem" id="kvEndereco" role="listitem"><b>Endereço</b><span id="pEndereco">—</span></div>
+        <div class="kvItem" id="kvObs" role="listitem"><b>Observações</b><span id="pObs">—</span></div>
       </div>
     </section>
   </div>
@@ -458,6 +765,7 @@
     (function () {
       const form = document.getElementById('formNovoCliente');
       const btnLimpar = document.getElementById('btnLimpar');
+      
       const pTipo = document.getElementById('pTipo');
       const pStatus = document.getElementById('pStatus');
       const pNome = document.getElementById('pNome');
@@ -468,27 +776,88 @@
       const pObs = document.getElementById('pObs');
 
       function updatePreview() {
-        pTipo.textContent = document.getElementById('tipo')?.value || '—';
-        pStatus.textContent = document.getElementById('status')?.value || '—';
-        pNome.textContent = document.getElementById('cliente_nome_input')?.value || '—';
-        pEmail.textContent = document.getElementById('cliente_email_input')?.value || '—';
-        pTelefone.textContent = document.getElementById('cliente_telefone_input')?.value || '—';
-        pCpfCnpj.textContent = document.getElementById('cliente_cpf_cnpj_input')?.value || '—';
-        pEndereco.textContent = document.getElementById('endereco')?.value || '—';
-        pObs.textContent = document.getElementById('observacoes')?.value || '—';
+        const tipo = document.getElementById('tipo')?.value || '—';
+        const status = document.getElementById('status')?.value || '—';
+        const nome = document.getElementById('cliente_nome_input')?.value || '—';
+        const email = document.getElementById('cliente_email_input')?.value || '—';
+        const telefone = document.getElementById('cliente_telefone_input')?.value || '—';
+        const cpfCnpj = document.getElementById('cliente_cpf_cnpj_input')?.value || '—';
+        const endereco = document.getElementById('endereco')?.value || '—';
+        const obs = document.getElementById('observacoes')?.value || '—';
+
+        pTipo.textContent = tipo;
+        pStatus.textContent = status;
+        pNome.textContent = nome;
+        pEmail.textContent = email;
+        pTelefone.textContent = telefone;
+        pCpfCnpj.textContent = cpfCnpj;
+        pEndereco.textContent = endereco;
+        pObs.textContent = obs;
+
+        // Update kvItem filled state
+        updateKvItem('kvTipo', tipo);
+        updateKvItem('kvStatus', status);
+        updateKvItem('kvNome', nome);
+        updateKvItem('kvEmail', email);
+        updateKvItem('kvTelefone', telefone);
+        updateKvItem('kvCpfCnpj', cpfCnpj);
+        updateKvItem('kvEndereco', endereco);
+        updateKvItem('kvObs', obs);
+
+        // Update field filled state
+        updateFieldState('tipo', tipo !== '—');
+        updateFieldState('status', status !== '—');
+        updateFieldState('cliente_nome_input', nome !== '—');
+        updateFieldState('cliente_email_input', email !== '—');
+        updateFieldState('cliente_telefone_input', telefone !== '—');
+        updateFieldState('cliente_cpf_cnpj_input', cpfCnpj !== '—');
+        updateFieldState('endereco', endereco !== '—');
+        updateFieldState('observacoes', obs !== '—');
+      }
+
+      function updateKvItem(id, value) {
+        const kvItem = document.getElementById(id);
+        if (!kvItem) return;
+        
+        if (value !== '—') {
+          kvItem.classList.add('filled');
+        } else {
+          kvItem.classList.remove('filled');
+        }
+      }
+
+      function updateFieldState(inputId, isFilled) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        
+        const field = input.closest('.field');
+        if (!field) return;
+        
+        if (isFilled) {
+          field.classList.add('filled');
+        } else {
+          field.classList.remove('filled');
+        }
       }
 
       if (form) {
         form.addEventListener('input', updatePreview);
         form.addEventListener('change', updatePreview);
       }
+      
       if (btnLimpar) {
         btnLimpar.addEventListener('click', () => {
           if (!form) return;
           form.reset();
           updatePreview();
+          
+          // Remove all field states
+          document.querySelectorAll('.field').forEach(field => {
+            field.classList.remove('filled', 'error');
+          });
         });
       }
+      
       updatePreview();
     })();
   </script>

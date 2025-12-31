@@ -35,6 +35,12 @@
 
       --input-bg: rgba(255,255,255,.04);
       --input-border: rgba(246,200,76,.16);
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --orange: #FF9800;
+      --blue: #2196F3;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -66,7 +72,47 @@
       mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
     }
 
-    /* ===== Topbar (padrão ACERTIVE) ===== */
+    /* ===== Loading Overlay ===== */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 7, 7, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(246,200,76,.2);
+      border-top: 4px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== Topbar ===== */
     .topbar{
       width:100%;
       max-width: 1180px;
@@ -83,7 +129,20 @@
       position:relative;
       overflow:hidden;
       backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
     }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .topbar::after{
       content:"";
       position:absolute;
@@ -94,6 +153,7 @@
       pointer-events:none;
       opacity:.65;
     }
+    
     @keyframes shine{
       0%{transform:translateX(-45%)}
       50%{transform:translateX(35%)}
@@ -110,6 +170,7 @@
       position:relative;
       z-index:1;
     }
+    
     .mark{
       width:40px;height:40px;
       border-radius:14px;
@@ -121,7 +182,14 @@
       color:#111;
       font-weight:900;
       user-select:none;
+      animation: pulse 2s ease-in-out infinite;
     }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
     .brand small{
       display:block;
       color: rgba(246,200,76,.80);
@@ -140,6 +208,7 @@
       z-index:1;
       align-items:center;
     }
+    
     .navbtn{
       display:inline-flex;
       align-items:center;
@@ -152,7 +221,7 @@
       font-weight:900;
       text-decoration:none;
       cursor:pointer;
-      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      transition: all 0.2s ease;
       user-select:none;
       white-space:nowrap;
     }
@@ -181,8 +250,20 @@
       backdrop-filter: blur(10px);
       position:relative;
       overflow:hidden;
-      animation: fadeUp .55s ease both;
+      animation: fadeIn 0.6s ease;
     }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .card::after{
       content:"";
       position:absolute;
@@ -194,11 +275,6 @@
       transition: opacity .35s ease;
     }
     .card:hover::after{opacity:.30; animation: shine 7.8s ease-in-out infinite;}
-
-    @keyframes fadeUp{
-      from{opacity:0; transform: translateY(14px)}
-      to{opacity:1; transform: translateY(0)}
-    }
 
     .row{
       display:flex;
@@ -243,7 +319,7 @@
       z-index:1;
     }
 
-    /* ===== filtros ===== */
+    /* ===== Filtros ===== */
     .filters{
       display:flex;
       gap: 12px;
@@ -268,8 +344,13 @@
       background: var(--input-bg);
       color: var(--text);
       font-size: 14px;
+      font-weight: 600;
       outline: none;
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .10s ease;
+      transition: all 0.2s ease;
+    }
+
+    .search input::placeholder {
+      font-weight: 400;
     }
 
     .search input:focus{
@@ -286,6 +367,11 @@
       left: 12px;
       color: rgba(246,200,76,.85);
       opacity: .95;
+      transition: transform 0.3s ease;
+    }
+
+    .search input:focus + i {
+      transform: translateY(-50%) scale(1.1);
     }
 
     select{
@@ -298,19 +384,22 @@
       cursor:pointer;
       min-width: 180px;
       font-weight: 900;
+      transition: all 0.2s ease;
     }
+    
     select:focus{
       border-color: rgba(246,200,76,.45);
       box-shadow: 0 0 0 4px rgba(246,200,76,.12);
       transform: translateY(-1px);
     }
+    
     select option{
       background: #0b0b0f;
       color: #f2f2f2;
       font-weight: 800;
     }
 
-    /* ===== tabela ===== */
+    /* ===== Tabela ===== */
     .tableWrap{
       overflow:auto;
       border-radius: 16px;
@@ -319,12 +408,13 @@
       box-shadow: var(--shadowSoft);
       position:relative;
       z-index:1;
+      max-height: 600px;
     }
 
     table{
       width:100%;
       border-collapse: collapse;
-      min-width: 980px;
+      min-width: 1100px;
     }
 
     th, td{
@@ -341,52 +431,78 @@
       letter-spacing:.5px;
       text-transform: uppercase;
       color: rgba(246,200,76,.95);
-      background: rgba(0,0,0,.28);
+      background: rgba(0,0,0,.36);
       position: sticky;
       top: 0;
-      z-index: 1;
+      z-index: 10;
+      font-weight: 900;
     }
 
-    tr:hover td{ background: rgba(246,200,76,.04); }
+    tbody tr {
+      transition: all 0.2s ease;
+      animation: slideIn 0.3s ease both;
+    }
 
-    /* ===== badges ===== */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    tbody tr:hover {
+      background: rgba(246,200,76,.05);
+      transform: translateX(4px);
+    }
+
+    /* ===== Badges ===== */
     .badge{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 900;
       letter-spacing:.3px;
-      border: 1px solid rgba(246,200,76,.18);
-      background: rgba(0,0,0,.22);
-      color: rgba(246,200,76,.95);
+      border: 1px solid;
       white-space:nowrap;
+      transition: all 0.2s ease;
     }
+
+    .badge:hover {
+      transform: scale(1.05);
+    }
+    
     .badge.pendente{
-      border-color: rgba(246,200,76,.22);
-      background: rgba(246,200,76,.08);
-      color: rgba(246,200,76,.95);
+      border-color: rgba(255,152,0,.4);
+      background: rgba(255,152,0,.15);
+      color: var(--orange);
     }
+    
     .badge.vencido{
-      border-color: rgba(220,53,69,.38);
-      background: rgba(220,53,69,.12);
-      color: rgba(220,53,69,.95);
+      border-color: rgba(244,67,54,.4);
+      background: rgba(244,67,54,.15);
+      color: var(--red);
     }
+    
     .badge.pago{
-      border-color: rgba(40,167,69,.40);
-      background: rgba(40,167,69,.12);
-      color: rgba(40,167,69,.95);
+      border-color: rgba(76,175,80,.4);
+      background: rgba(76,175,80,.15);
+      color: var(--green);
     }
 
     .actions{
       display:flex;
-      gap:8px;
+      gap:6px;
       flex-wrap: wrap;
     }
 
-    /* ===== buttons de ação na tabela ===== */
+    /* ===== Botões de ação ===== */
     .iconBtn{
       height:36px;
       padding: 0 12px;
@@ -398,23 +514,59 @@
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      transition: all 0.2s ease;
       font-weight: 900;
       gap:8px;
       white-space:nowrap;
+      font-size: 13px;
+      position: relative;
+      overflow: hidden;
     }
+
+    .iconBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.4s, height 0.4s;
+    }
+
+    .iconBtn:hover::before {
+      width: 150px;
+      height: 150px;
+    }
+
     .iconBtn i{ color: var(--gold); }
+    
     .iconBtn:hover{
-      transform: translateY(-1px);
+      transform: translateY(-2px) scale(1.05);
       background: rgba(0,0,0,.30);
       border-color: rgba(246,200,76,.28);
+      box-shadow: 0 4px 12px rgba(246,200,76,.2);
     }
+
+    .iconBtn:active {
+      transform: translateY(0) scale(0.98);
+    }
+    
     .iconBtn.danger{
-      border-color: rgba(220,53,69,.38);
-      background: rgba(220,53,69,.10);
+      border-color: rgba(244,67,54,.35);
+      background: rgba(244,67,54,.10);
       color: rgba(234,234,234,.92);
     }
-    .iconBtn.danger i{ color: rgba(220,53,69,.95); }
+    
+    .iconBtn.danger i{ color: var(--red); }
+
+    .iconBtn.danger:hover {
+      border-color: rgba(244,67,54,.5);
+      background: rgba(244,67,54,.15);
+      box-shadow: 0 4px 12px rgba(244,67,54,.2);
+    }
 
     .footerInfo{
       display:flex;
@@ -427,32 +579,78 @@
       font-size: 12px;
       position:relative;
       z-index:1;
+      font-weight: 700;
+    }
+
+    .footerInfo #count {
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .footerInfo #statusBar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footerInfo #statusBar.loading::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(246,200,76,.3);
+      border-top: 2px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .footerInfo #statusBar.success {
+      color: var(--green);
+    }
+
+    .footerInfo #statusBar.error {
+      color: var(--red);
     }
 
     .empty{
       text-align:center;
-      padding: 36px 12px;
+      padding: 48px 12px;
       color: rgba(234,234,234,.66);
       display:none;
       position:relative;
       z-index:1;
+      animation: fadeIn 0.6s ease;
     }
+    
     .empty i{
-      font-size: 44px;
+      font-size: 54px;
       opacity:.55;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
       color: rgba(246,200,76,.85);
     }
+    
     .empty h3{
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 900;
       color: rgba(234,234,234,.92);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .empty p {
+      color: var(--muted);
+      font-size: 14px;
     }
 
     @media (max-width: 920px){
       body{padding: 18px}
-      table{min-width: 980px}
+      table{min-width: 1000px}
+      .tools {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -463,6 +661,12 @@
       window.location.href = '/login';
     }
   </script>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Carregando cobranças...</div>
+  </div>
 
   <div class="topbar">
     <div class="brand">
@@ -498,15 +702,15 @@
 
       <div class="filters">
         <div class="search">
-          <i class="fa-solid fa-magnifying-glass"></i>
           <input id="searchInput" type="text" placeholder="Pesquisar por cliente..." />
+          <i class="fa-solid fa-magnifying-glass"></i>
         </div>
 
         <select id="statusFilter">
           <option value="">Todos os Status</option>
-          <option value="pendente">Pendentes</option>
-          <option value="vencido">Vencidos</option>
-          <option value="pago">Pagos</option>
+          <option value="pendente">📋 Pendentes</option>
+          <option value="vencido">⚠️ Vencidos</option>
+          <option value="pago">✅ Pagos</option>
         </select>
       </div>
 
@@ -532,7 +736,7 @@
         <div class="empty" id="empty">
           <i class="fa-solid fa-file-circle-xmark"></i>
           <h3>Nenhuma cobrança encontrada</h3>
-          <div>Crie uma nova cobrança para começar.</div>
+          <p>Crie uma nova cobrança para começar ou ajuste os filtros de pesquisa.</p>
         </div>
       </div>
 

@@ -41,6 +41,12 @@
       --option-text: #f2f2f2;
       --option-hover-bg: rgba(246,200,76,.12);
       --option-hover-text: #101010;
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
+      --orange: #FF9800;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -72,7 +78,7 @@
       mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
     }
 
-    /* ===== Topbar (igual padrão) ===== */
+    /* ===== Topbar ===== */
     .topbar{
       width:100%;
       max-width: 1100px;
@@ -89,6 +95,18 @@
       position:relative;
       overflow:hidden;
       backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .topbar::after{
@@ -121,6 +139,12 @@
       box-shadow: 0 10px 20px rgba(246,200,76,.14);
       color:#111; display:flex; align-items:center; justify-content:center;
       font-weight:900; user-select:none;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     .brand .titleWrap{display:flex;flex-direction:column;line-height:1.05}
@@ -173,7 +197,22 @@
       backdrop-filter: blur(10px);
       position:relative;
       overflow:hidden;
+      animation: fadeIn 0.6s ease both;
     }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:first-of-type { animation-delay: 0.1s; }
+    .card:last-of-type { animation-delay: 0.15s; }
 
     .card::after{
       content:"";
@@ -218,6 +257,7 @@
       color: var(--text2);
       font-weight:900;
       white-space:nowrap;
+      animation: fadeIn 0.6s ease 0.3s both;
     }
     .pill i{color: var(--gold)}
 
@@ -235,18 +275,120 @@
       z-index:1;
     }
 
+    /* ===== Stepper (novo) ===== */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: rgba(246,200,76,.14);
+      z-index: -1;
+    }
+
+    .step:first-child::before {
+      left: 50%;
+      width: 50%;
+    }
+
+    .step:last-child::before {
+      width: 50%;
+    }
+
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.22);
+      border: 2px solid rgba(246,200,76,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-circle {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-color: var(--gold);
+      color: #111;
+      box-shadow: 0 0 20px rgba(246,200,76,.4);
+      transform: scale(1.1);
+    }
+
+    .step.completed .step-circle {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step.active .step-label {
+      color: var(--gold);
+    }
+
+    .step.completed .step-label {
+      color: var(--green);
+    }
+
     /* ===== Form ===== */
-    .form{ display:grid; gap:12px; position:relative; z-index:1; }
+    .form{ 
+      display:grid; 
+      gap:12px; 
+      position:relative; 
+      z-index:1;
+    }
+    
     label{
       display:block;
       font-size:12px;
       font-weight:900;
       color: rgba(234,234,234,.78);
       letter-spacing:.2px;
-      margin-bottom:6px
+      margin-bottom:6px;
+      transition: color 0.2s ease;
     }
 
-    .control{ position:relative; }
+    .field-group {
+      position: relative;
+    }
+
+    .field-group.filled label {
+      color: var(--gold);
+    }
+
+    .field-group.error label {
+      color: var(--red);
+    }
+
+    .control{ 
+      position:relative;
+    }
 
     .iconLeft{
       position:absolute; left:8px; top:50%;
@@ -257,9 +399,29 @@
       background: rgba(0,0,0,.22);
       border:1px solid rgba(246,200,76,.14);
       pointer-events:none;
+      transition: all 0.3s ease;
     }
 
-    input[type="text"], input[type="number"], input[type="date"], select{
+    .field-group.filled .iconLeft,
+    .field-group.error .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .field-group.filled .iconLeft {
+      background: rgba(246,200,76,.15);
+      border-color: rgba(246,200,76,.3);
+    }
+
+    .field-group.error .iconLeft {
+      background: rgba(244,67,54,.15);
+      border-color: rgba(244,67,54,.3);
+      color: var(--red);
+    }
+
+    input[type="text"], 
+    input[type="number"], 
+    input[type="date"], 
+    select{
       width:100%;
       padding:12px 14px 12px 52px;
       border-radius:12px;
@@ -267,11 +429,15 @@
       background: var(--input-bg);
       color: var(--text);
       font-size:14px;
-      transition: box-shadow .14s ease, transform .10s ease, border-color .14s ease, background .14s ease;
+      transition: all 0.2s ease;
       outline:none;
+      font-weight: 600;
     }
 
-    input::placeholder{ color: rgba(167,167,167,.85) }
+    input::placeholder{ 
+      color: rgba(167,167,167,.85);
+      font-weight: 400;
+    }
 
     input:focus, select:focus{
       border-color: rgba(246,200,76,.45);
@@ -280,9 +446,40 @@
       transform: translateY(-1px);
     }
 
+    .field-group.error input,
+    .field-group.error select {
+      border-color: var(--red);
+      background: rgba(244,67,54,.05);
+    }
+
+    .field-group.error input:focus,
+    .field-group.error select:focus {
+      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
+    }
+
+    .error-message {
+      display: none;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-left: 52px;
+      animation: shake 0.3s ease;
+    }
+
+    .field-group.error .error-message {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
     .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px }
 
-    /* ===== Select premium (mantendo sua seta) ===== */
+    /* ===== Select premium ===== */
     select{
       -webkit-appearance:none;
       -moz-appearance:none;
@@ -336,11 +533,36 @@
       transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
       user-select:none;
       white-space:nowrap;
+      position: relative;
+      overflow: hidden;
     }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
     .btn:hover{
       transform: translateY(-2px);
       box-shadow: 0 14px 30px rgba(246,200,76,.18);
       filter: saturate(1.03);
+    }
+
+    .btn:active {
+      transform: translateY(0);
     }
 
     .btn.secondary{
@@ -363,10 +585,28 @@
       filter:none !important;
     }
 
+    .btn.loading {
+      pointer-events: none;
+    }
+
+    .btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* ===== Resumo ===== */
     .resultCard{ display:block; }
 
-    .kv{ display:grid; gap:10px; margin-top:8px; position:relative; z-index:1; }
+    .kv{ 
+      display:grid; 
+      gap:10px; 
+      margin-top:8px; 
+      position:relative; 
+      z-index:1;
+    }
 
     .kvItem{
       padding:12px;
@@ -374,19 +614,53 @@
       background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
       border:1px solid rgba(246,200,76,.14);
       box-shadow: var(--shadowSoft);
+      transition: all 0.3s ease;
+      opacity: 0.5;
     }
+
+    .kvItem.filled {
+      opacity: 1;
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
     .kvItem b{
       display:block;
       color: rgba(246,200,76,.95);
       font-size:12px;
       font-weight:900;
       margin-bottom:6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .kvItem span{
       color: rgba(234,234,234,.96);
       font-weight:900;
       font-size:14px;
       word-break:break-word;
+    }
+
+    .kvItem.highlight {
+      background: linear-gradient(135deg, rgba(246,200,76,.15), rgba(0,0,0,.12));
+      border: 2px solid var(--gold);
+      transform: scale(1.02);
+    }
+
+    .kvItem.highlight span {
+      font-size: 16px;
+      color: var(--gold);
     }
 
     .note{
@@ -397,10 +671,46 @@
       z-index:1;
     }
 
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+
+    .status-badge.aguardando {
+      background: rgba(167,167,167,.2);
+      color: var(--muted);
+    }
+
+    .status-badge.calculando {
+      background: rgba(33,150,243,.2);
+      color: var(--blue);
+    }
+
+    .status-badge.sucesso {
+      background: rgba(76,175,80,.2);
+      color: var(--green);
+    }
+
+    .status-badge.erro {
+      background: rgba(244,67,54,.2);
+      color: var(--red);
+    }
+
     @media (max-width: 920px){
       .container{ grid-template-columns: 1fr; padding-bottom: 40px }
       .row2{ grid-template-columns: 1fr }
       .btnRow{ grid-template-columns: 1fr }
+      .stepper { font-size: 10px; }
+      .step-circle { width: 26px; height: 26px; }
     }
   </style>
 </head>
@@ -439,9 +749,25 @@
 
       <div class="divider"></div>
 
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step active" data-step="1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Dados</div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Cálculo</div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Salvar</div>
+        </div>
+      </div>
+
       <form id="formCobranca" class="form" autocomplete="on">
-        <!-- Cliente: visual antigo (input) + datalist + hidden id -->
-        <div>
+        <!-- Cliente -->
+        <div class="field-group">
           <label for="cliente_nome">Cliente</label>
           <div class="control">
             <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
@@ -449,26 +775,31 @@
             <input id="cliente_id" type="hidden" name="cliente_id" />
             <datalist id="listaClientes"></datalist>
           </div>
+          <div class="error-message">Selecione um cliente válido</div>
         </div>
 
-        <div>
+        <!-- Valor Original -->
+        <div class="field-group">
           <label for="valorOriginal">Valor Original (R$)</label>
           <div class="control">
             <span class="iconLeft"><i class="fa-solid fa-brazilian-real-sign"></i></span>
             <input id="valorOriginal" type="number" step="0.01" min="0" name="valorOriginal" placeholder="Ex.: 250.00" required />
           </div>
+          <div class="error-message">Informe um valor válido maior que zero</div>
         </div>
 
+        <!-- Datas -->
         <div class="row2">
-          <div>
+          <div class="field-group">
             <label for="vencimento">Data de Vencimento</label>
             <div class="control">
               <span class="iconLeft"><i class="fa-solid fa-calendar-day"></i></span>
               <input id="vencimento" type="date" name="vencimento" required />
             </div>
+            <div class="error-message">Data obrigatória</div>
           </div>
 
-          <div>
+          <div class="field-group">
             <label for="pagamento">Data do Pagamento (opcional)</label>
             <div class="control">
               <span class="iconLeft"><i class="fa-solid fa-calendar-check"></i></span>
@@ -477,7 +808,8 @@
           </div>
         </div>
 
-        <div>
+        <!-- Taxa -->
+        <div class="field-group">
           <label for="taxa">Taxa de Juros</label>
           <div class="control">
             <span class="iconLeft"><i class="fa-solid fa-percent"></i></span>
@@ -501,16 +833,21 @@
           </button>
         </div>
 
-        <div class="note">Se “Data do Pagamento” estiver vazia, o cálculo usa a data de hoje como referência.</div>
+        <div class="note">Se "Data do Pagamento" estiver vazia, o cálculo usa a data de hoje como referência.</div>
       </form>
     </section>
 
     <!-- Right: Resumo -->
-    <aside class="card resultCard">
+    <aside class="card resultCard"> 
+
       <div class="cardHeader">
         <div>
           <h2><i class="fa-solid fa-receipt"></i> Resumo</h2>
-          <div class="sub" id="statusMsg">Aguardando cálculo…</div>
+          <div class="sub">
+            <div class="status-badge aguardando" id="statusBadge">
+              <i class="fa-solid fa-clock"></i> Aguardando cálculo
+            </div>
+          </div>
         </div>
         <div class="pill"><i class="fa-solid fa-clipboard-check"></i> Detalhes</div>
       </div>
@@ -518,17 +855,17 @@
       <div class="divider"></div>
 
       <div class="kv">
-        <div class="kvItem"><b>Cliente</b><span id="resCliente">—</span></div>
-        <div class="kvItem"><b>Valor Original</b><span id="resOriginal">—</span></div>
-        <div class="kvItem"><b>Vencimento</b><span id="resVencimento">—</span></div>
-        <div class="kvItem"><b>Pagamento (referência)</b><span id="resPagamento">—</span></div>
-        <div class="kvItem"><b>Dias em Atraso</b><span id="resDias">—</span></div>
-        <div class="kvItem"><b>Juros</b><span id="resJuros">—</span></div>
-        <div class="kvItem"><b>Multa (2%)</b><span id="resMulta">—</span></div>
-        <div class="kvItem"><b>Valor Atualizado</b><span id="resAtualizado">—</span></div>
+        <div class="kvItem" id="kvCliente"><b>Cliente</b><span id="resCliente">—</span></div>
+        <div class="kvItem" id="kvOriginal"><b>Valor Original</b><span id="resOriginal">—</span></div>
+        <div class="kvItem" id="kvVencimento"><b>Vencimento</b><span id="resVencimento">—</span></div>
+        <div class="kvItem" id="kvPagamento"><b>Pagamento (referência)</b><span id="resPagamento">—</span></div>
+        <div class="kvItem" id="kvDias"><b>Dias em Atraso</b><span id="resDias">—</span></div>
+        <div class="kvItem" id="kvJuros"><b>Juros</b><span id="resJuros">—</span></div>
+        <div class="kvItem" id="kvMulta"><b>Multa (2%)</b><span id="resMulta">—</span></div>
+        <div class="kvItem highlight" id="kvAtualizado"><b>Valor Atualizado</b><span id="resAtualizado">—</span></div>
       </div>
 
-      <div class="note">Após salvar, o botão de PDF é liberado automaticamente pelo seu script.</div>
+      <div class="note">Após salvar, o botão de PDF é liberado automaticamente.</div>
     </aside>
   </div>
 
