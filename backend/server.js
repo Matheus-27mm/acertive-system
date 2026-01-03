@@ -1,6 +1,6 @@
 /**
  * server.js — ACERTIVE (PostgreSQL + JWT + Front estático)
- * Ajustes para Render + domínio + evitar "Cannot GET /"
+ * PDFs Premium Dourados Embutidos
  */
 
 require("dotenv").config();
@@ -16,18 +16,17 @@ const multer = require("multer");
 const XLSX = require("xlsx");
 const { chromium } = require("playwright");
 
-
 const app = express();
 app.set("trust proxy", 1);
 
 const PORT = process.env.PORT || 3000;
 
 // =====================
-// Frontend: descobrir pasta automaticamente
+// Frontend
 // =====================
 const FRONTEND_DIR_CANDIDATES = [
-  path.join(__dirname, "frontend"),       // backend/frontend
-  path.join(__dirname, "..", "frontend"), // raiz/frontend (seu caso)
+  path.join(__dirname, "frontend"),
+  path.join(__dirname, "..", "frontend"),
 ];
 
 const FRONTEND_DIR = FRONTEND_DIR_CANDIDATES.find((p) => fs.existsSync(p));
@@ -35,18 +34,15 @@ const FRONTEND_DIR = FRONTEND_DIR_CANDIDATES.find((p) => fs.existsSync(p));
 if (!FRONTEND_DIR) {
   console.error("[ACERTIVE] ERRO: Pasta do frontend não encontrada.");
   console.error("[ACERTIVE] Tentativas:", FRONTEND_DIR_CANDIDATES);
-  process.exit(1); // <- falha o deploy, evita Cannot GET / e fallback quebrado
+  process.exit(1);
 }
 
 console.log("[ACERTIVE] Servindo arquivos estáticos de:", FRONTEND_DIR);
-
 app.use(express.static(FRONTEND_DIR));
+
 // =====================
 // Middlewares
 // =====================
-
-// CORS: lista por env (recomendado)
-// FRONTEND_ORIGIN=https://acertivecobranca.com.br,https://www.acertivecobranca.com.br,http://localhost:3000
 const originEnv = (process.env.FRONTEND_ORIGIN || "").trim();
 const allowedOrigins = originEnv
   ? originEnv.split(",").map((s) => s.trim()).filter(Boolean)
@@ -60,7 +56,6 @@ const allowedOrigins = originEnv
 app.use(
   cors({
     origin: function (origin, cb) {
-      // requests sem origin (curl/healthchecks) devem passar
       if (!origin) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
       return cb(new Error("Not allowed by CORS: " + origin));
@@ -71,9 +66,7 @@ app.use(
   })
 );
 
-// preflight
 app.options("*", cors());
-
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -142,7 +135,7 @@ function auth(req, res, next) {
 }
 
 // =====================
-// Health check (pra testar no domínio)
+// Health check
 // =====================
 app.get("/api/health", (req, res) => {
   return res.json({
@@ -192,7 +185,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 // =====================
-// GET dashboard (KPIs) — protegido
+// GET dashboard (KPIs)
 // =====================
 app.get("/api/dashboard", auth, async (req, res) => {
   try {
@@ -223,47 +216,35 @@ app.get("/api/dashboard", auth, async (req, res) => {
 });
 
 // ========================
-// Rotas estáticas do frontend
+// Rotas estáticas frontend
 // ========================
 function sendFront(file) {
   return (req, res) => {
     const target = path.join(FRONTEND_DIR, file);
-
     if (!fs.existsSync(target)) {
       return res.status(404).send("Arquivo não encontrado: " + file);
     }
-
     return res.sendFile(target);
   };
 }
 
-// ========================
-// Rotas principais (páginas)
-// ========================
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
 app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
-// Novo cliente: atende COM e SEM barra, sem redirect
 app.get(["/novo-cliente", "/novo-cliente/"], sendFront("novo-cliente.html"));
 app.get("/novo-cliente.html", sendFront("novo-cliente.html"));
 
-
-
 // ===============================
-// Fallback APENAS para páginas (sem extensão)
+// Fallback
 // ===============================
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
-
-  // Se tiver extensão, é arquivo (JS/CSS/img) -> não devolver HTML
   if (req.path.includes(".")) {
     return res.status(404).send("Arquivo não encontrado");
   }
-
-  // Para rota de página desconhecida, manda login.html
   return res.sendFile(path.join(FRONTEND_DIR, "login.html"));
 });
 
@@ -271,7 +252,6 @@ app.get("*", (req, res, next) => {
 // APIs: cobranças
 // =====================
 
-// GET cobranças (protegido) — com nome do cliente
 app.get("/api/cobrancas", auth, async (req, res) => {
   try {
     const status = String(req.query.status || "").trim().toLowerCase();
@@ -318,7 +298,6 @@ app.get("/api/cobrancas", auth, async (req, res) => {
   }
 });
 
-// POST criar cobrança (protegido)
 app.post("/api/cobrancas", auth, async (req, res) => {
   try {
     const b = req.body || {};
@@ -334,7 +313,6 @@ app.post("/api/cobrancas", auth, async (req, res) => {
       return res.status(400).json({ success: false, message: "Valor e vencimento são obrigatórios." });
     }
 
-    // Busca cliente: por ID se veio, senão por nome
     let buscaCliente;
     if (clienteId) {
       buscaCliente = await pool.query("SELECT id FROM clientes WHERE id = $1 LIMIT 1", [clienteId]);
@@ -372,28 +350,22 @@ app.post("/api/cobrancas", auth, async (req, res) => {
     );
 
     return res.json({ success: true, data: novaCobranca.rows[0] });
-} catch (err) {
-  console.error("[POST /api/cobrancas] erro:", err);
-
-  return res.status(500).json({
-    success: false,
-    message: "Erro ao salvar cobrança.",
-    error: err?.message || String(err),
-    detail: err?.detail || null,
-    hint: err?.hint || null,
-    code: err?.code || null,
-  });
-}
-
+  } catch (err) {
+    console.error("[POST /api/cobrancas] erro:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Erro ao salvar cobrança.",
+      error: err?.message || String(err),
+      detail: err?.detail || null,
+      hint: err?.hint || null,
+      code: err?.code || null,
+    });
+  }
 });
-// =====================
-// PUT atualizar status da cobrança (UUID ok) — protegido
-// /api/cobrancas/:id/status
-// body: { status: "pago" | "pendente" | "vencido" }
-// =====================
+
 app.put("/api/cobrancas/:id/status", auth, async (req, res) => {
   try {
-    const id = String(req.params.id || "").trim(); // UUID/string
+    const id = String(req.params.id || "").trim();
     const status = String(req.body?.status || "").toLowerCase().trim();
 
     const allowed = new Set(["pago", "pendente", "vencido"]);
@@ -405,10 +377,7 @@ app.put("/api/cobrancas/:id/status", auth, async (req, res) => {
     }
 
     const r = await pool.query(
-      `UPDATE cobrancas
-         SET status = $2
-       WHERE id = $1
-       RETURNING *`,
+      `UPDATE cobrancas SET status = $2 WHERE id = $1 RETURNING *`,
       [id, status]
     );
 
@@ -419,45 +388,27 @@ app.put("/api/cobrancas/:id/status", auth, async (req, res) => {
     return res.json({ success: true, data: r.rows[0] });
   } catch (err) {
     console.error("[PUT /api/cobrancas/:id/status] erro:", err.message);
-    return res
-      .status(500)
-      .json({ success: false, message: "Erro ao atualizar status.", error: err.message });
+    return res.status(500).json({ success: false, message: "Erro ao atualizar status.", error: err.message });
   }
 });
 
-// COBRANÇA (PDF BONITO) — protegido
-// GET /api/cobrancas/:id/pdf
-// =====================
+// =====================================================
+// PDF COBRANÇA PREMIUM DOURADO (HTML EMBUTIDO)
+// =====================================================
 app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
   let browser;
   try {
     const id = String(req.params.id || "").trim();
 
-    // valida UUID (Postgres)
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
-
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
     if (!isUuid) {
       return res.status(400).json({ success: false, message: "ID inválido." });
     }
 
     const q = await pool.query(
-      `SELECT
-         c.id,
-         COALESCE(cl.nome, '') AS cliente,
-         c.descricao,
-         c.valor_original,
-         c.multa,
-         c.juros,
-         c.desconto,
-         c.valor_atualizado,
-         c.status,
-         c.vencimento,
-         c.created_at
-       FROM cobrancas c
-       LEFT JOIN clientes cl ON cl.id = c.cliente_id
-       WHERE c.id = $1::uuid
-       LIMIT 1`,
+      `SELECT c.id, COALESCE(cl.nome, '') AS cliente, c.descricao, c.valor_original, c.multa, c.juros, c.desconto,
+       c.valor_atualizado, c.status, c.vencimento, c.created_at
+       FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id WHERE c.id = $1::uuid LIMIT 1`,
       [id]
     );
 
@@ -467,212 +418,165 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
 
     const r = q.rows[0];
 
-    // ... (seu HTML/CSS e geração Playwright continuam iguais daqui pra baixo)
-
-
-    const esc = (s) =>
-      String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-    const fmtMoney = (n) =>
-      Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
+    const esc = (s) => String(s || "—").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const fmtMoney = (n) => Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     const fmtDate = (d) => {
-      if (!d) return "";
+      if (!d) return "—";
       const dt = new Date(d);
-      if (isNaN(dt.getTime())) return String(d);
-      return dt.toLocaleDateString("pt-BR");
+      return isNaN(dt.getTime()) ? String(d) : dt.toLocaleDateString("pt-BR");
+    };
+    const fmtDateTime = (d) => {
+      if (!d) return "—";
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? String(d) : dt.toLocaleString("pt-BR");
     };
 
-    const status = String(r.status || "").toLowerCase();
-    const badgeClass = status === "pago" ? "pago" : status === "vencido" ? "vencido" : "pendente";
+    const valorOriginal2 = parseFloat(r.valor_original || 0);
+    const juros2 = parseFloat(r.juros || 0);
+    const multa2 = parseFloat(r.multa || 0);
+    const desconto2 = parseFloat(r.desconto || 0);
+    const valorAtualizado2 = parseFloat(r.valor_atualizado || valorOriginal2);
+    const ajustes2 = juros2 + multa2 - desconto2;
 
-    // referência amigável: se for número, faz AC-000001; se for uuid, usa os 8 primeiros
-    const idStr = String(r.id);
-    const refCode =
-      /^\d+$/.test(idStr) ? `AC-${idStr.padStart(6, "0")}` : `AC-${idStr.slice(0, 8).toUpperCase()}`;
+    const status2 = String(r.status || "").toLowerCase();
+    const badgeClass2 = status2 === "pago" ? "pago" : status2 === "vencido" ? "vencido" : "pendente";
+    const statusLabel2 = status2 === "pago" ? "PAGO" : status2 === "vencido" ? "VENCIDO" : "PENDENTE";
 
-    const html = `
-<!doctype html>
+    const idStr2 = String(r.id);
+    const refCode2 = `AC-C${idStr2.slice(0, 2).toUpperCase()}D${idStr2.slice(2, 6).toUpperCase()}${idStr2.slice(6, 8).toUpperCase()}`;
+
+    const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Cobrança ${esc(refCode)} • ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg1:#070707; --bg2:#131313;
-      --card:#0f0f10cc; --card2:#111114f2;
-      --gold:#FFD700; --gold2:#FFA500;
-      --white:#ffffff;
-      --shadow: 0 18px 60px rgba(0,0,0,.62);
-      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:'Montserrat',sans-serif;
-      color:var(--white);
-      background:
-        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
-        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-    }
-    .page{ padding: 26px; }
-    .topbar{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,215,0,.18);
-      box-shadow: var(--shadowSoft);
-      padding: 16px 18px;
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
-    }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.4px; }
-    .mark{
-      width:42px;height:42px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      display:flex;align-items:center;justify-content:center;
-      color:#111;font-weight:900;
-      box-shadow: 0 10px 20px rgba(255,215,0,.18);
-    }
-    .brand small{display:block;color:rgba(255,215,0,.92);font-weight:700;margin-top:2px;font-size:12px}
-    .meta{ text-align:right; font-size:12px; color:rgba(255,255,255,.75); line-height:1.35; }
-    .meta .gold{color:rgba(255,215,0,.95); font-weight:800}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-    .muted{color: rgba(255,255,255,.65)}
-    .strong{font-weight:900}
-
-    .grid{ margin-top: 16px; display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,215,0,.20);
-      box-shadow: var(--shadow);
-      padding: 14px 14px;
-      min-height: 86px;
-    }
-    .kpiTitle{ font-size: 11px; letter-spacing:.6px; text-transform: uppercase; color: rgba(255,215,0,.92); font-weight: 900; margin-bottom: 8px; }
-    .kpiValue{ font-size: 18px; font-weight: 900; color: rgba(255,255,255,.96); }
-
-    .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent); margin: 16px 0; }
-
-    .box{
-      border-radius: 16px;
-      border: 1px solid rgba(255,215,0,.14);
-      background: rgba(0,0,0,.18);
-      box-shadow: var(--shadowSoft);
-      padding: 14px;
-    }
-    .title{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin: 0 0 10px; }
-    .title h2{ margin:0; font-size: 14px; font-weight: 900; }
-    .hint{ font-size: 12px; color: rgba(255,255,255,.70); }
-
-    .kv{ display:grid; grid-template-columns: 160px 1fr; gap:8px 12px; font-size: 11px; line-height: 1.35; }
-    .k{ color: rgba(255,255,255,.65); }
-    .v{ font-weight: 700; }
-
-    .badge{
-      display:inline-flex;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-weight: 900;
-      letter-spacing:.3px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      white-space:nowrap;
-      font-size: 10px;
-    }
-    .badge.pago{ border-color: rgba(40,167,69,.35); background: rgba(40,167,69,.12); color: rgba(40,167,69,.95); }
-    .badge.vencido{ border-color: rgba(220,53,69,.35); background: rgba(220,53,69,.12); color: rgba(220,53,69,.95); }
-    .badge.pendente{ border-color: rgba(255,215,0,.25); background: rgba(255,215,0,.12); color: rgba(255,215,0,.95); }
-
-    @page { size: A4; margin: 14mm; }
-  </style>
+<meta charset="UTF-8">
+<title>Cobrança ${refCode2}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@page{size:A4;margin:0}
+body{font-family:'Segoe UI',sans-serif;background:#fff;color:#2c3e50;padding:50px;line-height:1.6}
+.header{background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);padding:35px 40px;border-radius:20px;margin-bottom:35px;box-shadow:0 10px 30px rgba(0,0,0,.3);border-left:8px solid #F6C84C;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(246,200,76,.15) 0%,transparent 70%);border-radius:50%}
+.header-content{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.logo-section{display:flex;align-items:center;gap:20px}
+.logo{width:80px;height:80px;background:linear-gradient(135deg,#F6C84C,#FFD56A);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#1a1a1a;box-shadow:0 10px 25px rgba(246,200,76,.5)}
+.title-section h1{color:#fff;font-size:32px;font-weight:900;margin-bottom:8px;letter-spacing:.8px}
+.title-section h2{color:#F6C84C;font-size:16px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.header-info{text-align:right}
+.info-row{margin-bottom:10px;font-size:14px}
+.info-label{color:#9ca3af;font-weight:700;margin-right:10px;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+.info-value{color:#fff;font-weight:900;font-size:15px}
+.status-badge{display:inline-block;padding:8px 16px;border-radius:25px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-top:10px}
+.status-badge.pago{background:#dcfce7;color:#166534;border:2px solid #16a34a}
+.status-badge.pendente{background:#fef3c7;color:#854d0e;border:2px solid #F6C84C}
+.status-badge.vencido{background:#fee2e2;color:#991b1b;border:2px solid #dc2626}
+.valores-section{margin-bottom:35px}
+.section-title{color:#1a1a1a;font-size:18px;font-weight:900;margin-bottom:20px;padding-bottom:10px;border-bottom:3px solid #F6C84C}
+.valores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.valor-card{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);border:2px solid #d1d5db;border-radius:16px;padding:22px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.valor-label{color:#6b7280;font-size:11px;text-transform:uppercase;font-weight:800;letter-spacing:.8px;margin-bottom:12px}
+.valor-amount{color:#1a1a1a;font-size:24px;font-weight:900;letter-spacing:-.5px}
+.valor-card.destaque{background:linear-gradient(135deg,#F6C84C 0%,#FFD56A 100%);border-color:#d4a028;box-shadow:0 8px 25px rgba(246,200,76,.4);transform:scale(1.05)}
+.valor-card.destaque .valor-label{color:#1a1a1a}
+.valor-card.destaque .valor-amount{color:#1a1a1a;font-size:28px}
+.dados-section{background:linear-gradient(135deg,#f8f9fa 0%,#fff 100%);border:2px solid #d1d5db;border-radius:16px;padding:30px;margin-bottom:30px}
+.dados-grid{display:grid;grid-template-columns:200px 1fr;gap:16px;row-gap:20px}
+.dados-label{color:#6b7280;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.dados-value{color:#1a1a1a;font-weight:700;font-size:15px}
+.dados-value.highlight{color:#F6C84C;font-weight:900;font-size:16px}
+.resumo-section{background:linear-gradient(135deg,#fef3c7 0%,#fef9e7 100%);border:3px solid #F6C84C;border-radius:16px;padding:30px;margin-bottom:30px}
+.resumo-table{width:100%;border-collapse:collapse}
+.resumo-table tr{border-bottom:2px solid rgba(246,200,76,.2)}
+.resumo-table tr:last-child{border-bottom:none}
+.resumo-table td{padding:16px 20px;font-size:15px}
+.resumo-table td:first-child{color:#854d0e;font-weight:800;text-transform:uppercase;letter-spacing:.5px;font-size:13px}
+.resumo-table td:last-child{text-align:right;color:#1a1a1a;font-weight:900;font-size:17px}
+.resumo-total{background:linear-gradient(135deg,#F6C84C,#FFD56A);color:#1a1a1a!important;font-size:24px!important;border-radius:12px;font-weight:900!important}
+.resumo-total td{color:#1a1a1a!important;padding:20px!important}
+.footer{margin-top:50px;padding-top:25px;border-top:3px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+.footer-info p{color:#6b7280;font-size:13px;margin-bottom:6px;font-weight:600}
+.footer-info strong{color:#1a1a1a;font-weight:900}
+.footer-logo{display:flex;align-items:center;gap:12px}
+.footer-logo-icon{width:50px;height:50px;background:linear-gradient(135deg,#F6C84C,#FFD56A);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-size:26px;font-weight:900;box-shadow:0 4px 12px rgba(246,200,76,.3)}
+.footer-logo-text{color:#1a1a1a;font-size:22px;font-weight:900;letter-spacing:.8px}
+.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:120px;color:rgba(246,200,76,.03);font-weight:900;letter-spacing:20px;pointer-events:none;z-index:-1}
+.unique-id{text-align:center;margin:30px 0;padding:15px;background:linear-gradient(90deg,transparent,rgba(246,200,76,.1),transparent);border-top:1px solid rgba(246,200,76,.3);border-bottom:1px solid rgba(246,200,76,.3)}
+.unique-id-label{color:#6b7280;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.unique-id-value{color:#1a1a1a;font-family:'Courier New',monospace;font-size:13px;font-weight:700;letter-spacing:1px}
+</style>
 </head>
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <div class="mark">A</div>
-        <div>
-          ACERTIVE
-          <small>Documento de Cobrança</small>
-        </div>
-      </div>
-      <div class="meta">
-        <div><span class="gold">Referência:</span> <span class="mono">${esc(refCode)}</span></div>
-        <div><span class="gold">Status:</span> <span class="badge ${badgeClass}">${esc(String(r.status||"").toUpperCase())}</span></div>
-        <div class="muted">Gerado em: ${new Date().toLocaleString("pt-BR")}</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card"><div class="kpiTitle">Valor Atualizado</div><div class="kpiValue">${fmtMoney(r.valor_atualizado)}</div></div>
-      <div class="card"><div class="kpiTitle">Vencimento</div><div class="kpiValue">${esc(fmtDate(r.vencimento) || "—")}</div></div>
-      <div class="card"><div class="kpiTitle">Valor Original</div><div class="kpiValue">${fmtMoney(r.valor_original)}</div></div>
-      <div class="card"><div class="kpiTitle">Ajustes</div><div class="kpiValue">${fmtMoney((r.juros||0) + (r.multa||0) - (r.desconto||0))}</div></div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="box">
-      <div class="title">
-        <h2>Dados da Cobrança</h2>
-        <div class="hint">ID: <span class="mono">#${esc(String(r.id))}</span></div>
-      </div>
-      <div class="kv">
-        <div class="k">Cliente</div><div class="v strong">${esc(r.cliente || "—")}</div>
-        <div class="k">Descrição</div><div class="v">${esc(r.descricao || "—")}</div>
-        <div class="k">Criada em</div><div class="v">${esc(fmtDate(r.created_at) || "—")}</div>
-      </div>
-    </div>
-
-    <div class="box" style="margin-top:12px;">
-      <div class="title"><h2>Resumo Financeiro</h2><div class="hint">Detalhes</div></div>
-      <div class="kv">
-        <div class="k">Valor original</div><div class="v">${fmtMoney(r.valor_original)}</div>
-        <div class="k">Juros</div><div class="v">${fmtMoney(r.juros)}</div>
-        <div class="k">Multa</div><div class="v">${fmtMoney(r.multa)}</div>
-        <div class="k">Desconto</div><div class="v">${fmtMoney(r.desconto)}</div>
-        <div class="k strong">Total atualizado</div><div class="v strong">${fmtMoney(r.valor_atualizado)}</div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px; display:flex; justify-content:space-between; color: rgba(255,255,255,.55); font-size: 10px;">
-      <div>© ${new Date().getFullYear()} ACERTIVE</div>
-      <div class="muted">Documento gerado automaticamente</div>
-    </div>
-  </div>
+<div class="watermark">ACERTIVE</div>
+<div class="header">
+<div class="header-content">
+<div class="logo-section">
+<div class="logo">A</div>
+<div class="title-section">
+<h1>ACERTIVE</h1>
+<h2>Documento de Cobrança</h2>
+</div>
+</div>
+<div class="header-info">
+<div class="info-row"><span class="info-label">Referência:</span><span class="info-value">${refCode2}</span></div>
+<div class="info-row"><span class="info-label">Status:</span><span class="status-badge ${badgeClass2}">${statusLabel2}</span></div>
+<div class="info-row"><span class="info-label">Gerado em:</span><span class="info-value">${fmtDateTime(new Date())}</span></div>
+</div>
+</div>
+</div>
+<div class="valores-section">
+<h3 class="section-title">💰 Valores da Cobrança</h3>
+<div class="valores-grid">
+<div class="valor-card destaque"><div class="valor-label">Valor Atualizado</div><div class="valor-amount">${fmtMoney(valorAtualizado2)}</div></div>
+<div class="valor-card"><div class="valor-label">Vencimento</div><div class="valor-amount">${fmtDate(r.vencimento)}</div></div>
+<div class="valor-card"><div class="valor-label">Valor Original</div><div class="valor-amount">${fmtMoney(valorOriginal2)}</div></div>
+<div class="valor-card"><div class="valor-label">Ajustes</div><div class="valor-amount">${fmtMoney(ajustes2)}</div></div>
+</div>
+</div>
+<div class="dados-section">
+<h3 class="section-title">📋 Dados da Cobrança</h3>
+<div class="dados-grid">
+<div class="dados-label">Cliente</div><div class="dados-value highlight">${esc(r.cliente)}</div>
+<div class="dados-label">Descrição</div><div class="dados-value">${esc(r.descricao)}</div>
+<div class="dados-label">Criada em</div><div class="dados-value">${fmtDateTime(r.created_at)}</div>
+</div>
+</div>
+<div class="unique-id">
+<div class="unique-id-label">ID do Documento</div>
+<div class="unique-id-value">#c${String(id).slice(0,8)}-${Date.now().toString(36).toUpperCase()}</div>
+</div>
+<div class="resumo-section">
+<h3 class="section-title" style="border-color:#F6C84C;color:#854d0e">📊 Resumo Financeiro</h3>
+<p style="color:#854d0e;font-size:13px;margin-bottom:20px;font-weight:700;text-align:right">Detalhes</p>
+<table class="resumo-table">
+<tr><td>Valor original</td><td>${fmtMoney(valorOriginal2)}</td></tr>
+<tr><td>Juros</td><td>${fmtMoney(juros2)}</td></tr>
+<tr><td>Multa (2%)</td><td>${fmtMoney(multa2)}</td></tr>
+<tr><td>Desconto</td><td>${fmtMoney(desconto2)}</td></tr>
+<tr class="resumo-total"><td>Total atualizado</td><td>${fmtMoney(valorAtualizado2)}</td></tr>
+</table>
+</div>
+<div class="footer">
+<div class="footer-info">
+<p><strong>Gerado por:</strong> Sistema ACERTIVE</p>
+<p><strong>Data de geração:</strong> ${fmtDateTime(new Date())}</p>
+<p><strong>Usuário:</strong> ${req.user?.nome || "Administrador"}</p>
+</div>
+<div class="footer-logo">
+<div class="footer-logo-icon">A</div>
+<div class="footer-logo-text">ACERTIVE</div>
+</div>
+</div>
 </body>
-</html>
-    `;
+</html>`;
 
-    browser = await chromium.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
+    browser = await chromium.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle" });
-
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
-
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true });
     await browser.close();
     browser = null;
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="cobranca_${refCode}.pdf"`);
+    res.setHeader("Content-Disposition", `attachment; filename="cobranca_${refCode2}.pdf"`);
     return res.status(200).send(pdfBuffer);
   } catch (err) {
     if (browser) { try { await browser.close(); } catch {} }
@@ -681,7 +585,6 @@ app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
   }
 });
 
-// DELETE cobrança (protegido)
 app.delete("/api/cobrancas/:id", auth, async (req, res) => {
   const { id } = req.params;
   try {
@@ -698,7 +601,6 @@ app.delete("/api/cobrancas/:id", auth, async (req, res) => {
 // APIs: clientes
 // =====================
 
-// GET clientes ativos (público)
 app.get("/api/clientes-ativos", async (req, res) => {
   try {
     const resultado = await pool.query("SELECT * FROM clientes WHERE status = 'ativo' ORDER BY created_at DESC");
@@ -709,7 +611,6 @@ app.get("/api/clientes-ativos", async (req, res) => {
   }
 });
 
-// POST criar cliente (protegido)
 app.post("/api/clientes", auth, async (req, res) => {
   try {
     const b = req.body || {};
@@ -735,7 +636,6 @@ app.post("/api/clientes", auth, async (req, res) => {
   }
 });
 
-// PUT atualizar cliente (protegido)
 app.put("/api/clientes/:id", auth, async (req, res) => {
   const { id } = req.params;
   const { nome, email, telefone, status, tipo, cpf_cnpj, endereco, observacoes } = req.body || {};
@@ -743,18 +643,10 @@ app.put("/api/clientes/:id", auth, async (req, res) => {
 
   try {
     const result = await pool.query(
-      `UPDATE clientes SET
-         nome = COALESCE($1, nome),
-         email = COALESCE($2, email),
-         telefone = COALESCE($3, telefone),
-         status = COALESCE($4, status),
-         tipo = COALESCE($5, tipo),
-         cpf_cnpj = COALESCE($6, cpf_cnpj),
-         endereco = COALESCE($7, endereco),
-         observacoes = COALESCE($8, observacoes),
-         updated_at = NOW()
-       WHERE id = $9
-       RETURNING *`,
+      `UPDATE clientes SET nome = COALESCE($1, nome), email = COALESCE($2, email), telefone = COALESCE($3, telefone),
+       status = COALESCE($4, status), tipo = COALESCE($5, tipo), cpf_cnpj = COALESCE($6, cpf_cnpj),
+       endereco = COALESCE($7, endereco), observacoes = COALESCE($8, observacoes), updated_at = NOW()
+       WHERE id = $9 RETURNING *`,
       [nome, email, telefone, status, tipo, cpf_cnpj, endereco, observacoes, id]
     );
 
@@ -766,7 +658,6 @@ app.put("/api/clientes/:id", auth, async (req, res) => {
   }
 });
 
-// DELETE cliente (soft delete -> inativo) (protegido)
 app.delete("/api/clientes/:id", auth, async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ success: false, message: "id é obrigatório" });
@@ -785,7 +676,7 @@ app.delete("/api/clientes/:id", auth, async (req, res) => {
 });
 
 // =====================
-// IMPORTAÇÃO (Excel/CSV) — protegido
+// IMPORTAÇÃO Excel/CSV
 // =====================
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -800,18 +691,15 @@ app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) =
 
     const filename = (req.file.originalname || "").toLowerCase();
     const isCsv = filename.endsWith(".csv");
-
     let rows = [];
 
     if (isCsv) {
       const text = req.file.buffer.toString("utf-8");
       const sep = text.includes(";") ? ";" : ",";
       const lines = text.split(/\r?\n/).filter((l) => l && l.trim().length);
-
       if (lines.length < 2) {
         return res.status(400).json({ success: false, message: "CSV vazio ou inválido." });
       }
-
       const headers = lines.shift().split(sep).map((h) => h.trim());
       rows = lines.map((line) => {
         const cols = line.split(sep);
@@ -831,12 +719,7 @@ app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) =
     }
 
     const norm = (s) =>
-      String(s || "")
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]/g, "");
+      String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
 
     const pick = (obj, keys) => {
       const keyMap = new Map(Object.keys(obj).map((k) => [norm(k), obj[k]]));
@@ -847,23 +730,17 @@ app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) =
       return "";
     };
 
-    let imported = 0;
-    let skipped = 0;
-    let duplicates = 0;
+    let imported = 0, skipped = 0, duplicates = 0;
     const errors = [];
 
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       try {
         const nome = pick(r, ["NOMECLI", "NOME_CLIENTE", "CLIENTE", "nome", "name"]);
-        if (!nome) {
-          skipped++;
-          continue;
-        }
+        if (!nome) { skipped++; continue; }
 
         const cpf_cnpj_raw = pick(r, ["cnpj_cpf", "cpf_cnpj", "cpf/cnpj", "cpf", "cnpj"]);
         const cpf_cnpj_digits = normalizeCpfCnpjDigits(cpf_cnpj_raw) || null;
-
         const telefone = pick(r, ["telefone", "fone", "celular", "whatsapp"]);
         const email_raw = pick(r, ["email", "e-mail", "mail"]);
         const email = email_raw ? normalizeEmail(email_raw) : "";
@@ -880,17 +757,12 @@ app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) =
           exists = q.rowCount > 0;
         }
 
-        if (exists) {
-          duplicates++;
-          continue;
-        }
+        if (exists) { duplicates++; continue; }
 
         await pool.query(
-          `INSERT INTO clientes (nome, email, telefone, cpf_cnpj, endereco, status, observacoes)
-           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          `INSERT INTO clientes (nome, email, telefone, cpf_cnpj, endereco, status, observacoes) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
           [nome, email || null, telefone || null, cpf_cnpj_raw || null, null, "ativo", null]
         );
-
         imported++;
       } catch (errRow) {
         errors.push({ line: i + 1, error: errRow?.message ? errRow.message : String(errRow) });
@@ -905,8 +777,7 @@ app.post("/api/clientes/import", auth, upload.single("file"), async (req, res) =
 });
 
 // =====================
-// RELATÓRIO (CSV) — protegido
-// GET /api/relatorios/export-csv?start=YYYY-MM-DD&end=YYYY-MM-DD
+// RELATÓRIO CSV
 // =====================
 app.get("/api/relatorios/export-csv", auth, async (req, res) => {
   try {
@@ -915,57 +786,34 @@ app.get("/api/relatorios/export-csv", auth, async (req, res) => {
     const hasRange = start && end;
 
     const qRecebido = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'pago'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pago'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qPendente = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'pendente'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pendente'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qVencido = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'vencido'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'vencido'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qCountCobrancas = await pool.query(
-      `SELECT COUNT(*)::int AS total
-       FROM cobrancas
-       ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
+      `SELECT COUNT(*)::int AS total FROM cobrancas ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
-    const qClientesAtivos = await pool.query(
-      `SELECT COUNT(*)::int AS total
-       FROM clientes
-       WHERE status = 'ativo'`
-    );
+    const qClientesAtivos = await pool.query(`SELECT COUNT(*)::int AS total FROM clientes WHERE status = 'ativo'`);
 
     const qRows = await pool.query(
-      `SELECT
-         c.id,
-         COALESCE(cl.nome, '') AS cliente,
-         c.descricao,
-         c.valor_original,
-         c.multa,
-         c.juros,
-         c.desconto,
-         c.valor_atualizado,
-         c.status,
-         c.vencimento,
-         c.created_at
-       FROM cobrancas c
-       LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      `SELECT c.id, COALESCE(cl.nome, '') AS cliente, c.descricao, c.valor_original, c.multa, c.juros, c.desconto,
+       c.valor_atualizado, c.status, c.vencimento, c.created_at
+       FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id
        ${hasRange ? "WHERE c.vencimento BETWEEN $1 AND $2" : ""}
        ORDER BY c.created_at DESC`,
       hasRange ? [start, end] : []
@@ -993,7 +841,6 @@ app.get("/api/relatorios/export-csv", auth, async (req, res) => {
     lines.push("RELATORIO ACERTIVE");
     lines.push(`Periodo,${esc(periodLabel)}`);
     lines.push("");
-
     lines.push("RESUMO");
     lines.push(`Clientes Ativos,${qClientesAtivos.rows[0]?.total ?? 0}`);
     lines.push(`Cobranças Emitidas,${qCountCobrancas.rows[0]?.total ?? 0}`);
@@ -1001,32 +848,19 @@ app.get("/api/relatorios/export-csv", auth, async (req, res) => {
     lines.push(`Total Pendente,${fmtMoney(qPendente.rows[0]?.total)}`);
     lines.push(`Total Vencido,${fmtMoney(qVencido.rows[0]?.total)}`);
     lines.push("");
-
     lines.push("DETALHAMENTO");
-    lines.push(
-      ["ID","Cliente","Descricao","Valor Original","Multa","Juros","Desconto","Valor Atualizado","Status","Vencimento","Criado Em"].join(",")
-    );
+    lines.push(["ID","Cliente","Descricao","Valor Original","Multa","Juros","Desconto","Valor Atualizado","Status","Vencimento","Criado Em"].join(","));
 
     for (const r of qRows.rows) {
       lines.push([
-        esc(r.id),
-        esc(r.cliente),
-        esc(r.descricao || ""),
-        esc(fmtMoney(r.valor_original)),
-        esc(fmtMoney(r.multa)),
-        esc(fmtMoney(r.juros)),
-        esc(fmtMoney(r.desconto)),
-        esc(fmtMoney(r.valor_atualizado)),
-        esc(r.status),
-        esc(fmtDate(r.vencimento)),
-        esc(fmtDate(r.created_at)),
+        esc(r.id), esc(r.cliente), esc(r.descricao || ""), esc(fmtMoney(r.valor_original)),
+        esc(fmtMoney(r.multa)), esc(fmtMoney(r.juros)), esc(fmtMoney(r.desconto)),
+        esc(fmtMoney(r.valor_atualizado)), esc(r.status), esc(fmtDate(r.vencimento)), esc(fmtDate(r.created_at))
       ].join(","));
     }
 
     const csv = "\uFEFF" + lines.join("\n");
-    const fileName = hasRange
-      ? `relatorio_acertive_${start}_a_${end}.csv`
-      : `relatorio_acertive_completo.csv`;
+    const fileName = hasRange ? `relatorio_acertive_${start}_a_${end}.csv` : `relatorio_acertive_completo.csv`;
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
@@ -1037,15 +871,14 @@ app.get("/api/relatorios/export-csv", auth, async (req, res) => {
   }
 });
 
-// Alias opcional (caso seu front ainda chame o antigo)
 app.get("/api/relatorio/exportar", auth, (req, res) => {
   const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
   return res.redirect(`/api/relatorios/export-csv${qs}`);
 });
-// =====================
-// RELATÓRIO (PDF BONITO) — protegido
-// GET /api/relatorios/export-pdf?start=YYYY-MM-DD&end=YYYY-MM-DD
-// =====================
+
+// =====================================================
+// RELATÓRIO PDF PREMIUM DOURADO (HTML EMBUTIDO)
+// =====================================================
 app.get("/api/relatorios/export-pdf", auth, async (req, res) => {
   let browser;
   try {
@@ -1053,67 +886,41 @@ app.get("/api/relatorios/export-pdf", auth, async (req, res) => {
     const end = (req.query.end || "").trim();
     const hasRange = start && end;
 
-    // --- consultas (mesmas da sua CSV) ---
     const qRecebido = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'pago'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pago'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qPendente = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'pendente'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'pendente'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qVencido = await pool.query(
-      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total
-       FROM cobrancas
-       WHERE status = 'vencido'
+      `SELECT COALESCE(SUM(valor_atualizado), 0)::numeric AS total FROM cobrancas WHERE status = 'vencido'
        ${hasRange ? "AND vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
     const qCountCobrancas = await pool.query(
-      `SELECT COUNT(*)::int AS total
-       FROM cobrancas
-       ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
+      `SELECT COUNT(*)::int AS total FROM cobrancas ${hasRange ? "WHERE vencimento BETWEEN $1 AND $2" : ""}`,
       hasRange ? [start, end] : []
     );
 
-    const qClientesAtivos = await pool.query(
-      `SELECT COUNT(*)::int AS total
-       FROM clientes
-       WHERE status = 'ativo'`
-    );
+    const qClientesAtivos = await pool.query(`SELECT COUNT(*)::int AS total FROM clientes WHERE status = 'ativo'`);
 
     const qRows = await pool.query(
-      `SELECT
-         c.id,
-         COALESCE(cl.nome, '') AS cliente,
-         c.descricao,
-         c.valor_original,
-         c.multa,
-         c.juros,
-         c.desconto,
-         c.valor_atualizado,
-         c.status,
-         c.vencimento,
-         c.created_at
-       FROM cobrancas c
-       LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      `SELECT c.id, COALESCE(cl.nome, '') AS cliente, c.descricao, c.valor_original, c.multa, c.juros, c.desconto,
+       c.valor_atualizado, c.status, c.vencimento, c.created_at
+       FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id
        ${hasRange ? "WHERE c.vencimento BETWEEN $1 AND $2" : ""}
        ORDER BY c.created_at DESC`,
       hasRange ? [start, end] : []
     );
 
-    const fmtMoney = (n) =>
-      Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
+    const fmtMoney = (n) => Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     const fmtDate = (d) => {
       if (!d) return "";
       const dt = new Date(d);
@@ -1121,326 +928,164 @@ app.get("/api/relatorios/export-pdf", auth, async (req, res) => {
       return dt.toLocaleDateString("pt-BR");
     };
 
-    const periodLabel = hasRange ? `${start} a ${end}` : "Todos";
+    const periodLabel = hasRange ? `${fmtDate(start)} a ${fmtDate(end)}` : "Todos os períodos";
     const totalRecebido = fmtMoney(qRecebido.rows[0]?.total);
     const totalPendente = fmtMoney(qPendente.rows[0]?.total);
     const totalVencido = fmtMoney(qVencido.rows[0]?.total);
     const totalCobrancas = qCountCobrancas.rows[0]?.total ?? 0;
     const totalClientes = qClientesAtivos.rows[0]?.total ?? 0;
 
-    // Monta linhas da tabela
-    const rowsHtml = qRows.rows
-      .map((r) => {
-        const badgeClass =
-          r.status === "pago" ? "pago" : r.status === "vencido" ? "vencido" : "pendente";
+    const esc = (s) => String(s || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-        const desc = (r.descricao || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const cliente = (r.cliente || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const rowsHtml = qRows.rows.map((r) => {
+      const badgeClass = r.status === "pago" ? "pago" : r.status === "vencido" ? "vencido" : "pendente";
+      return `<tr>
+<td class="mono">${esc(String(r.id).slice(0,8))}</td>
+<td><div class="strong">${esc(r.cliente)}</div><div class="muted small">${esc(r.descricao || "—")}</div></td>
+<td>${fmtDate(r.vencimento)}</td>
+<td>${fmtMoney(r.valor_original)}</td>
+<td>${fmtMoney(r.juros)}</td>
+<td>${fmtMoney(r.multa)}</td>
+<td class="strong">${fmtMoney(r.valor_atualizado)}</td>
+<td><span class="badge ${badgeClass}">${String(r.status || "").toUpperCase()}</span></td>
+</tr>`;
+    }).join("");
 
-        return `
-          <tr>
-            <td class="mono">#${r.id}</td>
-            <td>
-              <div class="strong">${cliente}</div>
-              <div class="muted small">${desc || "&nbsp;"}</div>
-            </td>
-            <td>${fmtDate(r.vencimento)}</td>
-            <td>${fmtMoney(r.valor_original)}</td>
-            <td>${fmtMoney(r.juros)}</td>
-            <td>${fmtMoney(r.multa)}</td>
-            <td class="strong">${fmtMoney(r.valor_atualizado)}</td>
-            <td><span class="badge ${badgeClass}">${String(r.status || "").toUpperCase()}</span></td>
-          </tr>
-        `;
-      })
-      .join("");
-
-    // HTML com o “jeito ACERTIVE”
-    const html = `
-<!doctype html>
+    const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Relatório ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg1:#070707; --bg2:#131313;
-      --card:#0f0f10cc; --card2:#111114f2;
-      --gold:#FFD700; --gold2:#FFA500;
-      --white:#ffffff; --muted:#b9b9b9;
-      --line:rgba(255,215,0,.18);
-      --shadow: 0 18px 60px rgba(0,0,0,.62);
-      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:'Montserrat',sans-serif;
-      color:var(--white);
-      background:
-        radial-gradient(900px 500px at 20% 20%, rgba(255,215,0,.10), transparent 55%),
-        radial-gradient(800px 500px at 85% 20%, rgba(255,165,0,.10), transparent 50%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-    }
-    .page{
-      padding: 26px;
-    }
-    .topbar{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,215,0,.18);
-      box-shadow: var(--shadowSoft);
-      padding: 16px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      overflow:hidden;
-    }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.4px;
-    }
-    .mark{
-      width:42px;height:42px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.95));
-      display:flex;align-items:center;justify-content:center;
-      color:#111;font-weight:900;
-      box-shadow: 0 10px 20px rgba(255,215,0,.18);
-    }
-    .brand small{display:block;color:rgba(255,215,0,.92);font-weight:700;margin-top:2px;font-size:12px}
-    .meta{
-      text-align:right;
-      font-size:12px;
-      color:rgba(255,255,255,.75);
-      line-height:1.3;
-    }
-    .meta .gold{color:rgba(255,215,0,.95); font-weight:800}
-    .grid{
-      margin-top: 16px;
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:12px;
-    }
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,215,0,.20);
-      box-shadow: var(--shadow);
-      padding: 14px 14px;
-      min-height: 86px;
-    }
-    .kpiTitle{
-      font-size: 11px;
-      letter-spacing:.6px;
-      text-transform: uppercase;
-      color: rgba(255,215,0,.92);
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-    .kpiValue{
-      font-size: 18px;
-      font-weight: 900;
-      color: rgba(255,255,255,.96);
-    }
-    .divider{
-      height:1px;
-      background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
-      margin: 16px 0;
-    }
-    .sectionTitle{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
-      margin: 0 0 10px;
-    }
-    .sectionTitle h2{
-      margin:0;
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing:.2px;
-    }
-    .sectionTitle .hint{
-      font-size: 12px;
-      color: rgba(255,255,255,.70);
-    }
-
-    .tableWrap{
-      border-radius: 16px;
-      border: 1px solid rgba(255,215,0,.14);
-      background: rgba(0,0,0,.18);
-      overflow: hidden;
-      box-shadow: var(--shadowSoft);
-    }
-    table{
-      width:100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-    th, td{
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      vertical-align: top;
-    }
-    th{
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing:.6px;
-      color: rgba(255,215,0,.95);
-      background: rgba(0,0,0,.30);
-    }
-    .badge{
-      display:inline-flex;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-weight: 900;
-      letter-spacing:.3px;
-      border: 1px solid rgba(255,215,0,.18);
-      background: rgba(255,215,0,.10);
-      color: rgba(255,215,0,.95);
-      white-space:nowrap;
-      font-size: 10px;
-    }
-    .badge.pago{
-      border-color: rgba(40,167,69,.35);
-      background: rgba(40,167,69,.12);
-      color: rgba(40,167,69,.95);
-    }
-    .badge.vencido{
-      border-color: rgba(220,53,69,.35);
-      background: rgba(220,53,69,.12);
-      color: rgba(220,53,69,.95);
-    }
-    .badge.pendente{
-      border-color: rgba(255,215,0,.25);
-      background: rgba(255,215,0,.12);
-      color: rgba(255,215,0,.95);
-    }
-    .muted{color: rgba(255,255,255,.65)}
-    .small{font-size:10px}
-    .strong{font-weight:900}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-
-    .footer{
-      margin-top: 10px;
-      display:flex;
-      justify-content:space-between;
-      color: rgba(255,255,255,.55);
-      font-size: 10px;
-    }
-
-    /* para PDF: quebra boa */
-    tr{page-break-inside: avoid;}
-    @page { size: A4; margin: 14mm; }
-  </style>
+<meta charset="utf-8"/>
+<title>Relatório ACERTIVE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@page{size:A4;margin:0}
+body{font-family:'Montserrat',sans-serif;background:#fff;color:#2c3e50;padding:50px;line-height:1.6}
+.header{background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);padding:35px 40px;border-radius:20px;margin-bottom:35px;box-shadow:0 10px 30px rgba(0,0,0,.3);border-left:8px solid #F6C84C;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(246,200,76,.15) 0%,transparent 70%);border-radius:50%}
+.header-content{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.logo-section{display:flex;align-items:center;gap:20px}
+.logo{width:80px;height:80px;background:linear-gradient(135deg,#F6C84C,#FFD56A);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#1a1a1a;box-shadow:0 10px 25px rgba(246,200,76,.5)}
+.title-section h1{color:#fff;font-size:32px;font-weight:900;margin-bottom:8px;letter-spacing:.8px}
+.title-section h2{color:#F6C84C;font-size:16px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.header-info{text-align:right}
+.info-row{margin-bottom:10px;font-size:14px}
+.info-label{color:#9ca3af;font-weight:700;margin-right:10px;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+.info-value{color:#fff;font-weight:900;font-size:15px}
+.kpis-section{margin-bottom:35px}
+.section-title{color:#1a1a1a;font-size:18px;font-weight:900;margin-bottom:20px;padding-bottom:10px;border-bottom:3px solid #F6C84C;display:flex;align-items:center;gap:10px}
+.kpis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.kpi-card{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);border:2px solid #d1d5db;border-radius:16px;padding:22px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.kpi-label{color:#6b7280;font-size:11px;text-transform:uppercase;font-weight:800;letter-spacing:.8px;margin-bottom:12px}
+.kpi-value{color:#1a1a1a;font-size:24px;font-weight:900;letter-spacing:-.5px}
+.kpi-card.recebido{background:linear-gradient(135deg,#dcfce7 0%,#f0fdf4 100%);border-color:#4CAF50}
+.kpi-card.recebido .kpi-value{color:#166534}
+.kpi-card.pendente{background:linear-gradient(135deg,#fef3c7 0%,#fef9e7 100%);border-color:#F6C84C}
+.kpi-card.pendente .kpi-value{color:#854d0e}
+.kpi-card.vencido{background:linear-gradient(135deg,#fee2e2 0%,#fef2f2 100%);border-color:#F44336}
+.kpi-card.vencido .kpi-value{color:#991b1b}
+.table-section{background:linear-gradient(135deg,#f8f9fa 0%,#fff 100%);border:2px solid #d1d5db;border-radius:16px;padding:30px;margin-bottom:30px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:#F6C84C;padding:14px 12px;text-align:left;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:3px solid #F6C84C}
+tbody tr{border-bottom:1px solid #e5e7eb}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:12px;color:#374151;vertical-align:top}
+.badge{display:inline-block;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase}
+.badge.pago{background:#dcfce7;color:#166534;border:1px solid #16a34a}
+.badge.pendente{background:#fef3c7;color:#854d0e;border:1px solid #F6C84C}
+.badge.vencido{background:#fee2e2;color:#991b1b;border:1px solid #dc2626}
+.mono{font-family:'Courier New',monospace;font-size:10px}
+.strong{font-weight:900}
+.muted{color:#9ca3af}
+.small{font-size:10px}
+.footer{margin-top:40px;padding-top:25px;border-top:3px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+.footer-info p{color:#6b7280;font-size:13px;margin-bottom:6px;font-weight:600}
+.footer-info strong{color:#1a1a1a;font-weight:900}
+.footer-logo{display:flex;align-items:center;gap:12px}
+.footer-logo-icon{width:50px;height:50px;background:linear-gradient(135deg,#F6C84C,#FFD56A);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-size:26px;font-weight:900;box-shadow:0 4px 12px rgba(246,200,76,.3)}
+.footer-logo-text{color:#1a1a1a;font-size:22px;font-weight:900;letter-spacing:.8px}
+.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:120px;color:rgba(246,200,76,.03);font-weight:900;letter-spacing:20px;pointer-events:none;z-index:-1}
+</style>
 </head>
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <div class="mark">A</div>
-        <div>
-          ACERTIVE
-          <small>Relatório de Cobranças</small>
-        </div>
-      </div>
-      <div class="meta">
-        <div><span class="gold">Período:</span> ${periodLabel}</div>
-        <div class="muted">Gerado em: ${new Date().toLocaleString("pt-BR")}</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="kpiTitle">Total Recebido</div>
-        <div class="kpiValue">${totalRecebido}</div>
-      </div>
-      <div class="card">
-        <div class="kpiTitle">Total Pendente</div>
-        <div class="kpiValue">${totalPendente}</div>
-      </div>
-      <div class="card">
-        <div class="kpiTitle">Total Vencido</div>
-        <div class="kpiValue">${totalVencido}</div>
-      </div>
-      <div class="card">
-        <div class="kpiTitle">Clientes / Cobranças</div>
-        <div class="kpiValue">${totalClientes} / ${totalCobrancas}</div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="sectionTitle">
-      <h2>Detalhamento</h2>
-      <div class="hint">Total de itens: ${qRows.rows.length}</div>
-    </div>
-
-    <div class="tableWrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cliente / Descrição</th>
-            <th>Vencimento</th>
-            <th>Original</th>
-            <th>Juros</th>
-            <th>Multa</th>
-            <th>Atualizado</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml || `<tr><td colspan="8" class="muted">Nenhuma cobrança encontrada no período.</td></tr>`}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="footer">
-      <div>© ${new Date().getFullYear()} ACERTIVE</div>
-      <div class="muted">Relatório gerado automaticamente</div>
-    </div>
-  </div>
+<div class="watermark">ACERTIVE</div>
+<div class="header">
+<div class="header-content">
+<div class="logo-section">
+<div class="logo">A</div>
+<div class="title-section">
+<h1>ACERTIVE</h1>
+<h2>Relatório de Cobranças</h2>
+</div>
+</div>
+<div class="header-info">
+<div class="info-row"><span class="info-label">Período:</span><span class="info-value">${periodLabel}</span></div>
+<div class="info-row"><span class="info-label">Gerado em:</span><span class="info-value">${new Date().toLocaleDateString("pt-BR")}</span></div>
+</div>
+</div>
+</div>
+<div class="kpis-section">
+<h3 class="section-title">💰 Indicadores Financeiros</h3>
+<div class="kpis-grid">
+<div class="kpi-card recebido"><div class="kpi-label">Total Recebido</div><div class="kpi-value">${totalRecebido}</div></div>
+<div class="kpi-card pendente"><div class="kpi-label">Total Pendente</div><div class="kpi-value">${totalPendente}</div></div>
+<div class="kpi-card vencido"><div class="kpi-label">Total Vencido</div><div class="kpi-value">${totalVencido}</div></div>
+<div class="kpi-card"><div class="kpi-label">Clientes / Cobranças</div><div class="kpi-value">${totalClientes} / ${totalCobrancas}</div></div>
+</div>
+</div>
+<div class="table-section">
+<h3 class="section-title">📋 Detalhamento (${qRows.rows.length} registro${qRows.rows.length !== 1 ? 's' : ''})</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Cliente / Descrição</th>
+<th>Vencimento</th>
+<th>Original</th>
+<th>Juros</th>
+<th>Multa</th>
+<th>Atualizado</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+${rowsHtml || '<tr><td colspan="8" class="muted" style="text-align:center;padding:40px">Nenhuma cobrança encontrada no período.</td></tr>'}
+</tbody>
+</table>
+</div>
+<div class="footer">
+<div class="footer-info">
+<p><strong>Gerado por:</strong> Sistema ACERTIVE</p>
+<p><strong>Data/hora:</strong> ${new Date().toLocaleString("pt-BR")}</p>
+<p><strong>Usuário:</strong> ${req.user?.nome || 'Administrador'}</p>
+</div>
+<div class="footer-logo">
+<div class="footer-logo-icon">A</div>
+<div class="footer-logo-text">ACERTIVE</div>
+</div>
+</div>
 </body>
-</html>
-    `;
+</html>`;
 
-    // Renderiza HTML -> PDF
-    browser = await chromium.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
+    browser = await chromium.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle" });
-
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
-
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true });
     await browser.close();
     browser = null;
 
-    const fileName = hasRange
-      ? `relatorio_acertive_${start}_a_${end}.pdf`
-      : `relatorio_acertive_completo.pdf`;
-
+    const fileName = hasRange ? `relatorio_acertive_${start}_a_${end}.pdf` : `relatorio_acertive_completo.pdf`;
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     return res.status(200).send(pdfBuffer);
   } catch (err) {
-    if (browser) {
-      try { await browser.close(); } catch {}
-    }
+    if (browser) { try { await browser.close(); } catch {} }
     console.error("[RELATORIO PDF] erro:", err.message);
     return res.status(500).json({ success: false, message: "Erro ao exportar relatório (PDF).", error: err.message });
   }
 });
+
 // =====================
-// 404 (por último)
+// 404
 // =====================
 app.use((req, res) => res.status(404).send("Página não encontrada."));
 
