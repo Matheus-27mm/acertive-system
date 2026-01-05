@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobranças - ACERTIVE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); min-height: 100vh; color: #fff; }
+
+/* Topbar */
+.topbar { background: linear-gradient(135deg, #1a1a1a, #252525); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #F6C84C; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 15px; }
+.topbar-logo { width: 50px; height: 50px; border-radius: 12px; }
+.topbar-title { font-size: 24px; font-weight: 900; color: #F6C84C; letter-spacing: 1px; }
+.topbar-nav { display: flex; gap: 10px; }
+.topbar-nav a { color: #ccc; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+.topbar-nav a:hover, .topbar-nav a.active { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; }
+.btn-logout { background: #dc3545; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+.btn-logout:hover { background: #c82333; transform: scale(1.05); }
+
+/* Container */
+.container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
+.page-title { font-size: 32px; font-weight: 900; color: #F6C84C; }
+
+/* Filtros */
+.filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+.filter-btn { background: #2a2a2a; color: #ccc; border: 2px solid #333; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.filter-btn:hover, .filter-btn.active { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; border-color: #F6C84C; }
+.search-input { background: #2a2a2a; border: 2px solid #333; color: #fff; padding: 10px 15px; border-radius: 10px; font-size: 14px; width: 250px; }
+.search-input:focus { outline: none; border-color: #F6C84C; }
+.search-input::placeholder { color: #666; }
+
+/* Tabela */
+.table-container { background: linear-gradient(135deg, #1e1e1e, #252525); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+table { width: 100%; border-collapse: collapse; }
+thead th { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: #F6C84C; padding: 18px 15px; text-align: left; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 3px solid #F6C84C; }
+tbody tr { border-bottom: 1px solid #333; transition: all 0.3s; }
+tbody tr:hover { background: rgba(246, 200, 76, 0.05); }
+tbody td { padding: 18px 15px; color: #ddd; font-size: 14px; }
+.cliente-nome { font-weight: 700; color: #fff; }
+.valor { font-weight: 800; color: #F6C84C; font-size: 16px; }
+
+/* Badges de Status */
+.badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge-pago { background: #dcfce7; color: #166534; }
+.badge-pendente { background: #fef3c7; color: #854d0e; }
+.badge-vencido { background: #fee2e2; color: #991b1b; }
+
+/* Ações */
+.acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-acao { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-pdf { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; }
+.btn-email { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #fff; }
+.btn-whatsapp { background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; }
+.btn-ia { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
+.btn-status { background: #333; color: #ccc; }
+.btn-excluir { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; }
+.btn-acao:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 60px 20px; color: #666; }
+.empty-state h3 { font-size: 24px; margin-bottom: 10px; color: #888; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: linear-gradient(135deg, #1e1e1e, #252525); border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 2px solid #F6C84C; box-shadow: 0 20px 60px rgba(246, 200, 76, 0.2); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #333; }
+.modal-title { font-size: 22px; font-weight: 900; color: #F6C84C; display: flex; align-items: center; gap: 10px; }
+.modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; transition: color 0.3s; }
+.modal-close:hover { color: #F6C84C; }
+
+/* Form no Modal */
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; color: #ccc; font-weight: 700; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-select { width: 100%; background: #2a2a2a; border: 2px solid #333; color: #fff; padding: 12px 15px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+.form-select:focus { outline: none; border-color: #F6C84C; }
+
+/* Mensagem Gerada */
+.mensagem-container { background: #2a2a2a; border: 2px solid #333; border-radius: 12px; padding: 20px; margin-top: 20px; }
+.mensagem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.mensagem-label { color: #F6C84C; font-weight: 700; font-size: 14px; }
+.btn-copiar { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.3s; }
+.btn-copiar:hover { transform: scale(1.05); }
+.mensagem-texto { color: #ddd; font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+
+/* Botões do Modal */
+.modal-buttons { display: flex; gap: 15px; margin-top: 25px; }
+.btn-gerar { flex: 1; background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-gerar:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+.btn-gerar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-enviar-whatsapp { flex: 1; background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-enviar-whatsapp:hover { transform: scale(1.02); }
+
+/* Loading */
+.loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Info Box */
+.info-box { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+.info-box p { color: #a78bfa; font-size: 13px; line-height: 1.6; }
+.info-box strong { color: #F6C84C; }
+
+/* Toast */
+.toast { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; padding: 15px 25px; border-radius: 12px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+@media (max-width: 768px) {
+  .topbar { flex-direction: column; gap: 15px; }
+  .topbar-nav { flex-wrap: wrap; justify-content: center; }
+  .filters { width: 100%; }
+  .search-input { width: 100%; }
+  table { font-size: 12px; }
+  .acoes { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Logo" class="topbar-logo" id="topbar-logo">
+    <span class="topbar-title">ACERTIVE</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="cobrancas.html" class="active">Cobranças</a>
+    <a href="nova-cobranca.html">Nova Cobrança</a>
+    <a href="clientes-ativos.html">Clientes</a>
+  </nav>
+  <button class="btn-logout" onclick="logout()">Sair</button>
+</div>
+
+<!-- Container -->
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">💰 Cobranças</h1>
+    <div class="filters">
+      <button class="filter-btn active" data-status="">Todas</button>
+      <button class="filter-btn" data-status="pendente">Pendentes</button>
+      <button class="filter-btn" data-status="vencido">Vencidas</button>
+      <button class="filter-btn" data-status="pago">Pagas</button>
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar cliente...">
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Vencimento</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="cobrancas-tbody">
+        <tr>
+          <td colspan="6" class="empty-state">
+            <h3>Carregando...</h3>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal IA -->
+<div class="modal-overlay" id="modal-ia">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">✨ Gerar Mensagem com IA</h2>
+      <button class="modal-close" onclick="fecharModalIA()">&times;</button>
+    </div>
+    
+    <div class="info-box">
+      <p>A IA vai gerar uma mensagem personalizada baseada nos <strong>dados da cobrança</strong> e no <strong>histórico do cliente</strong>.</p>
+    </div>
+
+    <div id="modal-ia-info" style="margin-bottom: 20px;">
+      <p style="color: #ccc;"><strong style="color: #F6C84C;">Cliente:</strong> <span id="ia-cliente">-</span></p>
+      <p style="color: #ccc;"><strong style="color: #F6C84C;">Valor:</strong> <span id="ia-valor">-</span></p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tipo de Mensagem</label>
+      <select class="form-select" id="ia-tipo">
+        <option value="whatsapp">📱 WhatsApp (curta)</option>
+        <option value="email">📧 E-mail (detalhada)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tom da Mensagem</label>
+      <select class="form-select" id="ia-tom">
+        <option value="profissional">💼 Profissional</option>
+        <option value="amigavel">😊 Amigável</option>
+        <option value="firme">⚠️ Firme</option>
+      </select>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn-gerar" id="btn-gerar-ia" onclick="gerarMensagemIA()">
+        <span id="btn-gerar-texto">✨ Gerar Mensagem</span>
+      </button>
+    </div>
+
+    <div class="mensagem-container" id="mensagem-container" style="display: none;">
+      <div class="mensagem-header">
+        <span class="mensagem-label">📝 Mensagem Gerada</span>
+        <button class="btn-copiar" onclick="copiarMensagem()">📋 Copiar</button>
+      </div>
+      <div class="mensagem-texto" id="mensagem-texto"></div>
+    </div>
+
+    <div id="ia-acoes" style="display: none; margin-top: 20px;">
+      <button class="btn-enviar-whatsapp" onclick="enviarWhatsAppIA()">
+        📱 Enviar via WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = '';
+let cobrancasData = [];
+let filtroAtual = '';
+let cobrancaAtualIA = null;
+let mensagemGeradaIA = '';
+
+// Auth
+function getToken() {
+  return localStorage.getItem('token');
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
+// Verificar login
+if (!getToken()) {
+  window.location.href = 'login.html';
+}
+
+// Toast
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Formatar valores
+function fmtMoney(n) {
+  return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
+}
+
+// Carregar cobranças
+async function carregarCobrancas() {
+  try {
+    const params = new URLSearchParams();
+    if (filtroAtual) params.append('status', filtroAtual);
+    
+    const searchTerm = document.getElementById('searchInput').value.trim();
+    if (searchTerm) params.append('q', searchTerm);
+
+    const resp = await fetch(`${API_BASE}/api/cobrancas?${params}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    if (!resp.ok) throw new Error('Erro ao carregar');
+
+    const json = await resp.json();
+    cobrancasData = json.data || [];
+    renderizarTabela();
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao carregar cobranças', true);
+  }
+}
+
+// Renderizar tabela
+function renderizarTabela() {
+  const tbody = document.getElementById('cobrancas-tbody');
+  
+  if (!cobrancasData.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          <h3>Nenhuma cobrança encontrada</h3>
+          <p>Crie uma nova cobrança para começar</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = cobrancasData.map(c => {
+    const badgeClass = c.status === 'pago' ? 'badge-pago' : c.status === 'vencido' ? 'badge-vencido' : 'badge-pendente';
+    const statusLabel = c.status === 'pago' ? 'PAGO' : c.status === 'vencido' ? 'VENCIDO' : 'PENDENTE';
+    
+    return `
+      <tr>
+        <td><span class="cliente-nome">${c.cliente || '—'}</span></td>
+        <td>${c.descricao || '—'}</td>
+        <td><span class="valor">${fmtMoney(c.valorAtualizado)}</span></td>
+        <td>${fmtDate(c.vencimento)}</td>
+        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+        <td>
+          <div class="acoes">
+            <button class="btn-acao btn-ia" onclick="abrirModalIA('${c.id}')" title="Gerar mensagem com IA">✨ IA</button>
+            <button class="btn-acao btn-pdf" onclick="baixarPDF('${c.id}')" title="Baixar PDF">📄</button>
+            <button class="btn-acao btn-whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp">📱</button>
+            <button class="btn-acao btn-email" onclick="enviarEmail('${c.id}')" title="E-mail">📧</button>
+            <button class="btn-acao btn-status" onclick="alterarStatus('${c.id}', '${c.status}')" title="Alterar Status">🔄</button>
+            <button class="btn-acao btn-excluir" onclick="excluirCobranca('${c.id}')" title="Excluir">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Filtros
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroAtual = btn.dataset.status;
+    carregarCobrancas();
+  });
+});
+
+// Busca
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(carregarCobrancas, 300);
+});
+
+// ========== FUNÇÕES DE AÇÃO ==========
+
+async function baixarPDF(id) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!resp.ok) throw new Error('Erro ao gerar PDF');
+    
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cobranca_${id.slice(0,8)}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('PDF baixado com sucesso!');
+  } catch (err) {
+    showToast('Erro ao gerar PDF', true);
+  }
+}
+
+async function enviarEmail(id) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const json = await resp.json();
+    if (json.success) {
+      showToast(`E-mail enviado para ${json.destinatario}!`);
+    } else {
+      showToast(json.message || 'Erro ao enviar e-mail', true);
+    }
+  } catch (err) {
+    showToast('Erro ao enviar e-mail', true);
+  }
+}
+
+async function enviarWhatsApp(id) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const json = await resp.json();
+    if (json.success && json.link) {
+      window.open(json.link, '_blank');
+    } else {
+      showToast(json.message || 'Erro ao gerar link', true);
+    }
+  } catch (err) {
+    showToast('Erro ao gerar link do WhatsApp', true);
+  }
+}
+
+async function alterarStatus(id, statusAtual) {
+  const opcoes = ['pendente', 'pago', 'vencido'].filter(s => s !== statusAtual);
+  const novoStatus = prompt(`Status atual: ${statusAtual.toUpperCase()}\n\nDigite o novo status:\n- ${opcoes.join('\n- ')}`);
+  
+  if (!novoStatus || !['pendente', 'pago', 'vencido'].includes(novoStatus.toLowerCase())) {
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: novoStatus.toLowerCase() })
+    });
+    const json = await resp.json();
+    if (json.success) {
+      showToast('Status atualizado!');
+      carregarCobrancas();
+    } else {
+      showToast(json.message || 'Erro ao atualizar', true);
+    }
+  } catch (err) {
+    showToast('Erro ao atualizar status', true);
+  }
+}
+
+async function excluirCobranca(id) {
+  if (!confirm('Tem certeza que deseja excluir esta cobrança?')) return;
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const json = await resp.json();
+    if (json.success) {
+      showToast('Cobrança excluída!');
+      carregarCobrancas();
+    } else {
+      showToast(json.message || 'Erro ao excluir', true);
+    }
+  } catch (err) {
+    showToast('Erro ao excluir cobrança', true);
+  }
+}
+
+// ========== FUNÇÕES DE IA ==========
+
+function abrirModalIA(id) {
+  const cobranca = cobrancasData.find(c => c.id === id);
+  if (!cobranca) return;
+
+  cobrancaAtualIA = cobranca;
+  mensagemGeradaIA = '';
+
+  document.getElementById('ia-cliente').textContent = cobranca.cliente || '—';
+  document.getElementById('ia-valor').textContent = fmtMoney(cobranca.valorAtualizado);
+  document.getElementById('mensagem-container').style.display = 'none';
+  document.getElementById('ia-acoes').style.display = 'none';
+  document.getElementById('btn-gerar-texto').textContent = '✨ Gerar Mensagem';
+  document.getElementById('btn-gerar-ia').disabled = false;
+
+  document.getElementById('modal-ia').classList.add('active');
+}
+
+function fecharModalIA() {
+  document.getElementById('modal-ia').classList.remove('active');
+  cobrancaAtualIA = null;
+  mensagemGeradaIA = '';
+}
+
+async function gerarMensagemIA() {
+  if (!cobrancaAtualIA) return;
+
+  const btn = document.getElementById('btn-gerar-ia');
+  const btnTexto = document.getElementById('btn-gerar-texto');
+  
+  btn.disabled = true;
+  btnTexto.innerHTML = '<span class="loading"></span> Gerando...';
+
+  try {
+    const tipo = document.getElementById('ia-tipo').value;
+    const tom = document.getElementById('ia-tom').value;
+
+    const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualIA.id}/gerar-mensagem-ia`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ tipo, tom })
+    });
+
+    const json = await resp.json();
+
+    if (json.success && json.mensagem) {
+      mensagemGeradaIA = json.mensagem;
+      document.getElementById('mensagem-texto').textContent = json.mensagem;
+      document.getElementById('mensagem-container').style.display = 'block';
+      
+      if (tipo === 'whatsapp') {
+        document.getElementById('ia-acoes').style.display = 'block';
+      } else {
+        document.getElementById('ia-acoes').style.display = 'none';
+      }
+      
+      showToast('Mensagem gerada com sucesso!');
+    } else {
+      showToast(json.message || 'Erro ao gerar mensagem', true);
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao conectar com a IA', true);
+  } finally {
+    btn.disabled = false;
+    btnTexto.textContent = '🔄 Gerar Nova';
+  }
+}
+
+function copiarMensagem() {
+  if (!mensagemGeradaIA) return;
+  
+  navigator.clipboard.writeText(mensagemGeradaIA).then(() => {
+    showToast('Mensagem copiada!');
+  }).catch(() => {
+    showToast('Erro ao copiar', true);
+  });
+}
+
+function enviarWhatsAppIA() {
+  if (!cobrancaAtualIA || !mensagemGeradaIA) return;
+
+  const telefone = cobrancaAtualIA.cliente_telefone || '';
+  let tel = telefone.replace(/\D/g, '');
+  if (tel.length === 10 || tel.length === 11) {
+    tel = '55' + tel;
+  }
+
+  const link = `https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`;
+  window.open(link, '_blank');
+  fecharModalIA();
+}
+
+// Fechar modal ao clicar fora
+document.getElementById('modal-ia').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-ia') {
+    fecharModalIA();
+  }
+});
+
+// Inicializar
+carregarCobrancas();
+</script>
+</body>
+</html>

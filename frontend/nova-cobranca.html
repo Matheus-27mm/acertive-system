@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Nova Cobrança</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      /* ===== Paleta premium (padronizada) ===== */
+      --bg1:#070707;
+      --bg2:#0f0f12;
+
+      --card: rgba(17,17,20,.72);
+      --card2: rgba(10,10,12,.92);
+
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      --gold:#F6C84C;
+      --gold2:#FFD56A;
+      --gold-weak: rgba(246,200,76,.35);
+
+      --line: rgba(246,200,76,.14);
+
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
+      --radius:18px;
+
+      /* inputs/select */
+      --input-bg: rgba(255,255,255,.04);
+      --input-border: rgba(246,200,76,.16);
+      --option-bg: #0b0b0f;
+      --option-text: #f2f2f2;
+      --option-hover-bg: rgba(246,200,76,.12);
+      --option-hover-text: #101010;
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
+      --orange: #FF9800;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding: 22px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    /* ===== Topbar ===== */
+    .topbar{
+      width:100%;
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 7.8s ease-in-out infinite;
+      pointer-events:none;
+      opacity:.65;
+    }
+
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.4px;
+      position:relative; z-index:1;
+      color: var(--text);
+    }
+
+    .brand .mark{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 10px 20px rgba(246,200,76,.14);
+      color:#111; display:flex; align-items:center; justify-content:center;
+      font-weight:900; user-select:none;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand .titleWrap{display:flex;flex-direction:column;line-height:1.05}
+    .brand .titleWrap strong{color: rgba(246,200,76,.95)}
+    .brand .titleWrap small{margin-top:2px;color: rgba(246,200,76,.80);font-weight:800;font-size:12px;letter-spacing:.2px}
+
+    .navbtns{
+      display:flex; gap:10px; align-items:center;
+      position:relative; z-index:1;
+      flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    .navbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color: var(--text2);
+      text-decoration:none;
+      font-weight:900;
+      cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .navbtn i{color: var(--gold)}
+    .navbtn:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+    }
+
+    /* ===== Layout ===== */
+    .container{
+      max-width: 1100px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap: 18px;
+      align-items:start;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:first-of-type { animation-delay: 0.1s; }
+    .card:last-of-type { animation-delay: 0.15s; }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+    .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
+
+    .cardHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+      position:relative;
+      z-index:1;
+    }
+
+    .cardHeader h2{
+      color: var(--gold);
+      font-size:18px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      margin:0;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color: var(--text2);
+      font-weight:900;
+      white-space:nowrap;
+      animation: fadeIn 0.6s ease 0.3s both;
+    }
+    .pill i{color: var(--gold)}
+
+    .sub{
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(246,200,76,.18), transparent);
+      margin: 12px 0;
+      position:relative;
+      z-index:1;
+    }
+
+    /* ===== Stepper (novo) ===== */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: rgba(246,200,76,.14);
+      z-index: -1;
+    }
+
+    .step:first-child::before {
+      left: 50%;
+      width: 50%;
+    }
+
+    .step:last-child::before {
+      width: 50%;
+    }
+
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.22);
+      border: 2px solid rgba(246,200,76,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-circle {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-color: var(--gold);
+      color: #111;
+      box-shadow: 0 0 20px rgba(246,200,76,.4);
+      transform: scale(1.1);
+    }
+
+    .step.completed .step-circle {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step.active .step-label {
+      color: var(--gold);
+    }
+
+    .step.completed .step-label {
+      color: var(--green);
+    }
+
+    /* ===== Form ===== */
+    .form{ 
+      display:grid; 
+      gap:12px; 
+      position:relative; 
+      z-index:1;
+    }
+    
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:900;
+      color: rgba(234,234,234,.78);
+      letter-spacing:.2px;
+      margin-bottom:6px;
+      transition: color 0.2s ease;
+    }
+
+    .field-group {
+      position: relative;
+    }
+
+    .field-group.filled label {
+      color: var(--gold);
+    }
+
+    .field-group.error label {
+      color: var(--red);
+    }
+
+    .control{ 
+      position:relative;
+    }
+
+    .iconLeft{
+      position:absolute; left:8px; top:50%;
+      transform:translateY(-50%);
+      width:36px;height:36px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--gold);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(246,200,76,.14);
+      pointer-events:none;
+      transition: all 0.3s ease;
+    }
+
+    .field-group.filled .iconLeft,
+    .field-group.error .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .field-group.filled .iconLeft {
+      background: rgba(246,200,76,.15);
+      border-color: rgba(246,200,76,.3);
+    }
+
+    .field-group.error .iconLeft {
+      background: rgba(244,67,54,.15);
+      border-color: rgba(244,67,54,.3);
+      color: var(--red);
+    }
+
+    input[type="text"], 
+    input[type="number"], 
+    input[type="date"], 
+    select{
+      width:100%;
+      padding:12px 14px 12px 52px;
+      border-radius:12px;
+      border:1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size:14px;
+      transition: all 0.2s ease;
+      outline:none;
+      font-weight: 600;
+    }
+
+    input::placeholder{ 
+      color: rgba(167,167,167,.85);
+      font-weight: 400;
+    }
+
+    input:focus, select:focus{
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .field-group.error input,
+    .field-group.error select {
+      border-color: var(--red);
+      background: rgba(244,67,54,.05);
+    }
+
+    .field-group.error input:focus,
+    .field-group.error select:focus {
+      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
+    }
+
+    .error-message {
+      display: none;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-left: 52px;
+      animation: shake 0.3s ease;
+    }
+
+    .field-group.error .error-message {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+
+    /* ===== Select premium ===== */
+    select{
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      appearance:none;
+      font-weight: 900;
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(234,234,234,.7) 50%),
+        linear-gradient(135deg, rgba(234,234,234,.7) 50%, transparent 50%),
+        linear-gradient(to right, rgba(255,255,255,0.02), rgba(255,255,255,0.02));
+      background-position:
+        calc(100% - 18px) calc(1em + 2px),
+        calc(100% - 13px) calc(1em + 2px),
+        100% 0;
+      background-size: 6px 6px, 6px 6px, 1px 1.5em;
+      background-repeat: no-repeat;
+    }
+
+    select option{
+      background: var(--option-bg);
+      color: var(--option-text);
+      font-weight: 800;
+    }
+    select option:hover,
+    select option:checked{
+      background: var(--option-hover-bg);
+      color: var(--option-hover-text);
+    }
+
+    /* ===== Buttons ===== */
+    .btnRow{
+      display:grid;
+      grid-template-columns: 1fr 160px;
+      gap:12px;
+      margin-top: 6px;
+    }
+
+    .btn{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:0;
+      cursor:pointer;
+      font-weight:900;
+      color:#111;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(246,200,76,.16);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      user-select:none;
+      white-space:nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(246,200,76,.18);
+      filter: saturate(1.03);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.secondary{
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border: 1px solid rgba(246,200,76,.18);
+      box-shadow: none;
+    }
+    .btn.secondary i{color: var(--gold)}
+    .btn.secondary:hover{
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+      transform: translateY(-1px);
+    }
+
+    .btn[disabled]{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none !important;
+      filter:none !important;
+    }
+
+    .btn.loading {
+      pointer-events: none;
+    }
+
+    .btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== Resumo ===== */
+    .resultCard{ display:block; }
+
+    .kv{ 
+      display:grid; 
+      gap:10px; 
+      margin-top:8px; 
+      position:relative; 
+      z-index:1;
+    }
+
+    .kvItem{
+      padding:12px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
+      border:1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      transition: all 0.3s ease;
+      opacity: 0.5;
+    }
+
+    .kvItem.filled {
+      opacity: 1;
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .kvItem b{
+      display:block;
+      color: rgba(246,200,76,.95);
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kvItem span{
+      color: rgba(234,234,234,.96);
+      font-weight:900;
+      font-size:14px;
+      word-break:break-word;
+    }
+
+    .kvItem.highlight {
+      background: linear-gradient(135deg, rgba(246,200,76,.15), rgba(0,0,0,.12));
+      border: 2px solid var(--gold);
+      transform: scale(1.02);
+    }
+
+    .kvItem.highlight span {
+      font-size: 16px;
+      color: var(--gold);
+    }
+
+    .note{
+      margin-top:10px;
+      color: rgba(234,234,234,.62);
+      font-size:12px;
+      position:relative;
+      z-index:1;
+    }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+
+    .status-badge.aguardando {
+      background: rgba(167,167,167,.2);
+      color: var(--muted);
+    }
+
+    .status-badge.calculando {
+      background: rgba(33,150,243,.2);
+      color: var(--blue);
+    }
+
+    .status-badge.sucesso {
+      background: rgba(76,175,80,.2);
+      color: var(--green);
+    }
+
+    .status-badge.erro {
+      background: rgba(244,67,54,.2);
+      color: var(--red);
+    }
+
+    @media (max-width: 920px){
+      .container{ grid-template-columns: 1fr; padding-bottom: 40px }
+      .row2{ grid-template-columns: 1fr }
+      .btnRow{ grid-template-columns: 1fr }
+      .stepper { font-size: 10px; }
+      .step-circle { width: 26px; height: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (!localStorage.getItem('usuarioLogado') && localStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = '/login';
+    }
+  </script>
+
+  <div class="topbar">
+    <div class="brand">
+      <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:50px;height:50px;">
+      <div class="titleWrap">
+        <strong>ACERTIVE</strong>
+        <small>Nova Cobrança</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Left: Form -->
+    <section class="card">
+      <div class="cardHeader">
+        <div>
+          <h2><i class="fas fa-plus-circle"></i> Gerar Cobrança</h2>
+          <div class="sub">O cálculo segue o padrão do seu servidor (multa fixa 2% + juros por dia).</div>
+        </div>
+        <div class="pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Emissão</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step active" data-step="1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Dados</div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Cálculo</div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Salvar</div>
+        </div>
+      </div>
+
+      <form id="formCobranca" class="form" autocomplete="on">
+        <!-- Cliente -->
+        <div class="field-group">
+          <label for="cliente_nome">Cliente</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
+            <input id="cliente_nome" type="text" name="cliente_nome" placeholder="Nome do cliente" list="listaClientes" required />
+            <input id="cliente_id" type="hidden" name="cliente_id" />
+            <datalist id="listaClientes"></datalist>
+          </div>
+          <div class="error-message">Selecione um cliente válido</div>
+        </div>
+
+        <!-- Valor Original -->
+        <div class="field-group">
+          <label for="valorOriginal">Valor Original (R$)</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-brazilian-real-sign"></i></span>
+            <input id="valorOriginal" type="number" step="0.01" min="0" name="valorOriginal" placeholder="Ex.: 250.00" required />
+          </div>
+          <div class="error-message">Informe um valor válido maior que zero</div>
+        </div>
+
+        <!-- Datas -->
+        <div class="row2">
+          <div class="field-group">
+            <label for="vencimento">Data de Vencimento</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-calendar-day"></i></span>
+              <input id="vencimento" type="date" name="vencimento" required />
+            </div>
+            <div class="error-message">Data obrigatória</div>
+          </div>
+
+          <div class="field-group">
+            <label for="pagamento">Data do Pagamento (opcional)</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-calendar-check"></i></span>
+              <input id="pagamento" type="date" name="pagamento" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Taxa -->
+        <div class="field-group">
+          <label for="taxa">Taxa de Juros</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-percent"></i></span>
+            <select id="taxa" name="taxa" required>
+              <option value="8%">8% (padrão)</option>
+              <option value="6%">6%</option>
+              <option value="4%">4%</option>
+              <option value="3%">3%</option>
+              <option value="2%">2%</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnRow">
+          <button class="btn" type="submit">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Calcular e Salvar
+          </button>
+
+          <button class="btn secondary" id="btnPdf" type="button" disabled>
+            <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+          </button>
+        </div>
+
+        <div class="note">Se "Data do Pagamento" estiver vazia, o cálculo usa a data de hoje como referência.</div>
+      </form>
+    </section>
+
+    <!-- Right: Resumo -->
+    <aside class="card resultCard"> 
+
+      <div class="cardHeader">
+        <div>
+          <h2><i class="fa-solid fa-receipt"></i> Resumo</h2>
+          <div class="sub">
+            <div class="status-badge aguardando" id="statusBadge">
+              <i class="fa-solid fa-clock"></i> Aguardando cálculo
+            </div>
+          </div>
+        </div>
+        <div class="pill"><i class="fa-solid fa-clipboard-check"></i> Detalhes</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="kv">
+        <div class="kvItem" id="kvCliente"><b>Cliente</b><span id="resCliente">—</span></div>
+        <div class="kvItem" id="kvOriginal"><b>Valor Original</b><span id="resOriginal">—</span></div>
+        <div class="kvItem" id="kvVencimento"><b>Vencimento</b><span id="resVencimento">—</span></div>
+        <div class="kvItem" id="kvPagamento"><b>Pagamento (referência)</b><span id="resPagamento">—</span></div>
+        <div class="kvItem" id="kvDias"><b>Dias em Atraso</b><span id="resDias">—</span></div>
+        <div class="kvItem" id="kvJuros"><b>Juros</b><span id="resJuros">—</span></div>
+        <div class="kvItem" id="kvMulta"><b>Multa (2%)</b><span id="resMulta">—</span></div>
+        <div class="kvItem highlight" id="kvAtualizado"><b>Valor Atualizado</b><span id="resAtualizado">—</span></div>
+      </div>
+
+      <div class="note">Após salvar, o botão de PDF é liberado automaticamente.</div>
+    </aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/nova-cobranca.js"></script>
+</body>
+</html>

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+  <style>
+    :root{
+      --bg1:#070707;
+      --bg2:#0f0f12;
+      --card: rgba(17,17,20,.72);
+      --card2: rgba(10,10,12,.92);
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+      --gold:#F6C84C;
+      --gold2:#FFD56A;
+      --gold-weak: rgba(246,200,76,.35);
+      --line: rgba(246,200,76,.14);
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+      --radius:18px;
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
+      --orange: #FF9800;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+      overflow-x: hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed; inset:0; pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 7, 7, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(246,200,76,.2);
+      border-top: 4px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .topbar{
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .topbar::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 7.8s ease-in-out infinite;
+      pointer-events:none;
+      opacity:.65;
+    }
+
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.4px;
+      position:relative; z-index:1;
+    }
+
+    .brand small{
+      display:block; margin-top:2px;
+      color: rgba(246,200,76,.95);
+      font-weight:800; letter-spacing:.2px; font-size: 12px;
+    }
+
+    .navbtns{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+      position:relative; z-index:1;
+      align-items:center;
+    }
+
+    .navbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(246,200,76,.18);
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      font-weight:800; text-decoration:none; cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .navbtn i{ color: var(--gold); }
+    .navbtn:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      display:grid;
+      gap: 18px;
+    }
+
+    .hero{
+      text-align:center;
+      padding: 14px 0 6px;
+      animation: fadeIn 0.6s ease 0.1s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1{
+      font-size: 36px;
+      letter-spacing: .3px;
+      color: var(--gold);
+      font-weight: 900;
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero h1::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      border-radius: 2px;
+    }
+
+    .hero p{
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.15s; }
+    .card:nth-child(3) { animation-delay: 0.2s; }
+    .card:nth-child(4) { animation-delay: 0.25s; }
+    .card:nth-child(5) { animation-delay: 0.3s; }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+
+    .card:hover{
+      transform: translateY(-4px);
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    }
+    .card:hover::after{ opacity:.45; animation: shine 7.8s ease-in-out infinite; }
+
+    .kpiIcon{
+      width:48px;height:48px;border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      color:#111;
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 12px 22px rgba(246,200,76,.12);
+      margin: 2px auto 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .kpiIcon { transform: scale(1.1) rotate(5deg); }
+    .card.recebido .kpiIcon { background: linear-gradient(135deg, var(--green), #66BB6A); }
+    .card.pendente .kpiIcon { background: linear-gradient(135deg, var(--orange), #FFB74D); }
+    .card.vencido .kpiIcon { background: linear-gradient(135deg, var(--red), #EF5350); }
+
+    .kpiTitle{
+      text-align:center;
+      color: rgba(246,200,76,.95);
+      font-weight: 900;
+      margin-top: 2px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpiValue{
+      text-align:center;
+      font-weight: 900;
+      font-size: 28px;
+      margin-top: 8px;
+      color: rgba(234,234,234,.98);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .kpiValue { transform: scale(1.05); }
+
+    .kpiBadge {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      opacity: 0.8;
+    }
+
+    .kpiBadge.up { color: var(--green); }
+    .kpiBadge.down { color: var(--red); }
+    .kpiBadge.neutral { color: var(--muted); }
+
+    /* ========== SEÇÃO DE GRÁFICOS ========== */
+    .charts-section {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 18px;
+      animation: fadeIn 0.6s ease 0.32s both;
+    }
+
+    .chart-card {
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::after {
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+
+    .chart-card:hover::after { opacity:.35; }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .chart-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .chart-title i {
+      font-size: 18px;
+    }
+
+    .chart-subtitle {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 220px;
+      width: 100%;
+    }
+
+    .chart-container-donut {
+      position: relative;
+      height: 220px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.pago { background: var(--green); }
+    .legend-dot.pendente { background: var(--orange); }
+    .legend-dot.vencido { background: var(--red); }
+
+    .chart-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 10px;
+    }
+
+    .chart-loading i {
+      animation: spin 1s linear infinite;
+      color: var(--gold);
+    }
+
+    .chart-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 10px;
+    }
+
+    .chart-empty i {
+      font-size: 32px;
+      opacity: 0.5;
+    }
+
+    /* ========== PAINEL DE AÇÕES ========== */
+    .panel{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.12));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.6s ease 0.35s both;
+    }
+
+    .panelHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panelHeader h2{
+      display:flex; align-items:center; gap:10px;
+      color: var(--gold);
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: .2px;
+    }
+
+    .statusBar{
+      color: var(--muted);
+      font-size: 12px;
+      text-align:right;
+      max-width: 520px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .statusBar.loading::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(246,200,76,.3);
+      border-top: 2px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .statusBar.success::before { content: '✓'; color: var(--green); font-weight: 900; }
+    .statusBar.error::before { content: '⚠'; color: var(--red); }
+
+    .actions{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .actions-row-2 {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn{
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: #121212;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      box-shadow: 0 10px 24px rgba(246,200,76,.16);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      user-select:none;
+      text-decoration:none;
+      white-space:nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before { width: 300px; height: 300px; }
+
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(246,200,76,.22);
+      filter: saturate(1.05);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.secondary{
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border: 1px solid rgba(246,200,76,.18);
+      box-shadow: none;
+    }
+    .btn.secondary i{ color: var(--gold); }
+    .btn.secondary:hover{
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+    }
+
+    .btn.enterprise {
+      background: linear-gradient(135deg, rgba(246,200,76,.15), rgba(246,200,76,.08));
+      color: var(--gold);
+      border: 1px solid rgba(246,200,76,.35);
+      box-shadow: 0 4px 15px rgba(246,200,76,.1);
+    }
+    .btn.enterprise i { color: var(--gold); }
+    .btn.enterprise:hover {
+      background: linear-gradient(135deg, rgba(246,200,76,.25), rgba(246,200,76,.15));
+      border-color: rgba(246,200,76,.5);
+      box-shadow: 0 8px 25px rgba(246,200,76,.2);
+    }
+
+    .btn .badge-admin {
+      font-size: 9px;
+      background: var(--gold);
+      color: #111;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      font-weight: 900;
+    }
+
+    footer{
+      text-align:center;
+      color: rgba(234,234,234,.55);
+      font-size: 12px;
+      padding: 18px 0 6px;
+      animation: fadeIn 0.6s ease 0.4s both;
+    }
+
+    @media (max-width: 1020px){
+      .grid{grid-template-columns: repeat(2, 1fr)}
+      .charts-section{grid-template-columns: 1fr}
+      .actions{grid-template-columns: 1fr 1fr}
+      .actions-row-2{grid-template-columns: 1fr 1fr}
+      .statusBar{max-width: 100%; text-align:left;}
+    }
+    @media (max-width: 560px){
+      .grid{grid-template-columns: 1fr}
+      .charts-section{grid-template-columns: 1fr}
+      .actions{grid-template-columns: 1fr}
+      .actions-row-2{grid-template-columns: 1fr}
+      .hero h1{font-size: 28px}
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .navbtns { width: 100%; justify-content: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Carregando dashboard...</div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">
+      <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:150px;height:150px;">
+      <div>
+        ACERTIVE
+        <small>Painel de Controle</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <div class="navbtn" style="cursor:default;">
+        <i class="fa-solid fa-user"></i>
+        <span id="userName">Usuário</span>
+      </div>
+      <button class="navbtn" id="btnLogout" type="button">
+        <i class="fa-solid fa-right-from-bracket"></i> Sair
+      </button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Painel de Controle</h1>
+      <p>Bem-vindo ao sistema de cobranças profissional</p>
+    </section>
+
+    <section class="grid">
+      <div class="card recebido">
+        <div class="kpiIcon"><i class="fa-solid fa-dollar-sign"></i></div>
+        <div class="kpiTitle">Total Recebido</div>
+        <div class="kpiValue" id="totalRecebido">R$ 0,00</div>
+        <div class="kpiBadge neutral" id="badgeRecebido">
+          <i class="fa-solid fa-minus"></i> Sem dados
+        </div>
+      </div>
+
+      <div class="card pendente">
+        <div class="kpiIcon"><i class="fa-regular fa-clock"></i></div>
+        <div class="kpiTitle">Pendentes</div>
+        <div class="kpiValue" id="totalPendentes">R$ 0,00</div>
+        <div class="kpiBadge neutral" id="badgePendentes">
+          <i class="fa-solid fa-minus"></i> Sem dados
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kpiIcon"><i class="fa-solid fa-users"></i></div>
+        <div class="kpiTitle">Clientes Ativos</div>
+        <div class="kpiValue" id="totalClientes">0</div>
+        <div class="kpiBadge neutral" id="badgeClientes">
+          <i class="fa-solid fa-minus"></i> Sem dados
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kpiIcon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="kpiTitle">Cobranças Emitidas</div>
+        <div class="kpiValue" id="totalTitulos">0</div>
+        <div class="kpiBadge neutral" id="badgeTitulos">
+          <i class="fa-solid fa-minus"></i> Sem dados
+        </div>
+      </div>
+
+      <div class="card vencido">
+        <div class="kpiIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="kpiTitle">Vencidos</div>
+        <div class="kpiValue" id="totalVencidos">R$ 0,00</div>
+        <div class="kpiBadge neutral" id="badgeVencidos">
+          <i class="fa-solid fa-minus"></i> Sem dados
+        </div>
+      </div>
+    </section>
+
+    <!-- NOVA SEÇÃO: GRÁFICOS -->
+    <section class="charts-section">
+      <!-- Gráfico de Linha - Faturamento Mensal -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">
+              <i class="fa-solid fa-chart-line"></i>
+              Faturamento Mensal
+            </div>
+            <div class="chart-subtitle">Evolução dos últimos 6 meses</div>
+          </div>
+        </div>
+        <div class="chart-container" id="chartFaturamentoContainer">
+          <div class="chart-loading">
+            <i class="fa-solid fa-spinner"></i> Carregando gráfico...
+          </div>
+          <canvas id="chartFaturamento"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico Donut - Status das Cobranças -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">
+              <i class="fa-solid fa-chart-pie"></i>
+              Status das Cobranças
+            </div>
+            <div class="chart-subtitle">Distribuição atual</div>
+          </div>
+        </div>
+        <div class="chart-container-donut" id="chartStatusContainer">
+          <div class="chart-loading">
+            <i class="fa-solid fa-spinner"></i> Carregando...
+          </div>
+          <canvas id="chartStatus"></canvas>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot pago"></div>
+            <span>Pago</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot pendente"></div>
+            <span>Pendente</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot vencido"></div>
+            <span>Vencido</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h2><i class="fa-solid fa-bolt"></i> Ações Rápidas</h2>
+        <div class="statusBar" id="statusBar"></div>
+      </div>
+
+      <div class="actions">
+        <a class="btn secondary" id="btnNovaCobranca" href="/nova-cobranca">
+          <i class="fa-solid fa-plus"></i> Nova Cobrança
+        </a>
+
+        <a class="btn secondary" id="btnClientesAtivos" href="/clientes-ativos">
+          <i class="fa-solid fa-users"></i> Clientes Ativos
+        </a>
+
+        <a class="btn secondary" id="btnNovoCliente" href="/novo-cliente">
+          <i class="fa-solid fa-user-plus"></i> Novo Cliente
+        </a>
+
+        <a class="btn secondary" id="btnVerCobrancas" href="/cobrancas">
+          <i class="fa-solid fa-list"></i> Ver Cobranças
+        </a>
+      </div>
+
+      <!-- Funcionalidades Enterprise -->
+      <div class="actions-row-2">
+        <a class="btn enterprise" href="/cobrancas-recorrentes">
+          <i class="fa-solid fa-repeat"></i> Recorrentes
+        </a>
+
+        <a class="btn enterprise" href="/historico">
+          <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+        </a>
+
+        <a class="btn enterprise" href="/usuarios" id="btnUsuarios">
+          <i class="fa-solid fa-users-gear"></i> Usuários
+          <span class="badge-admin">ADMIN</span>
+        </a>
+
+        <button class="btn secondary" id="btnExportar" type="button">
+          <i class="fa-solid fa-download"></i> Exportar
+        </button>
+      </div>
+    </section>
+
+    <footer>© 2025 Acertive • Todos os direitos reservados</footer>
+  </main>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

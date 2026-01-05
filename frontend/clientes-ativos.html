@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACERTIVE • Clientes</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+  <!-- SheetJS (opcional no front; leitura é feita no backend) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      /* Base */
+      --bg1:#070707;
+      --bg2:#0f0f12;
+
+      /* Cards */
+      --card: rgba(17,17,20,.70);
+      --card2: rgba(10,10,12,.92);
+
+      /* Texto */
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      /* Accent (dourado controlado) */
+      --gold:#F6C84C;
+      --gold-weak: rgba(246,200,76,.35);
+      --gold2:#FFD56A;
+
+      /* Linhas / bordas */
+      --line: rgba(246,200,76,.14);
+
+      /* Sombras */
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
+      --radius:18px;
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
+      --orange: #FF9800;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    /* ===== Loading Overlay ===== */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 7, 7, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(246,200,76,.2);
+      border-top: 4px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== Topbar ===== */
+    .topbar{
+      width:100%;
+      max-width: 1180px;
+      margin: 0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 7.8s ease-in-out infinite;
+      pointer-events:none;
+      opacity:.65;
+    }
+
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      letter-spacing:.4px;
+      color:var(--text)
+    }
+    .mark{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background:linear-gradient(135deg,rgba(246,200,76,.95),rgba(255,213,106,.95));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111;
+      font-weight:900;
+      box-shadow: 0 10px 20px rgba(246,200,76,.14);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand small{
+      display:block;
+      color:rgba(246,200,76,.85);
+      font-weight:800;
+      margin-top:2px;
+      letter-spacing:.2px;
+      font-size:12px
+    }
+
+    .navbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .navbtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .navbtn i{color:var(--gold)}
+    .navbtn:hover{
+      transform:translateY(-1px);
+      background:rgba(0,0,0,.32);
+      border-color:rgba(246,200,76,.28)
+    }
+
+    .wrap{
+      width:100%;
+      max-width:1180px;
+      margin:0 auto;
+      display:grid;
+      gap:18px
+    }
+    
+    .card{
+      border-radius:var(--radius);
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid rgba(246,200,76,.14);
+      box-shadow:var(--shadow);
+      padding:20px;
+      backdrop-filter:blur(10px);
+      position:relative;
+      overflow:hidden;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+    .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:22px;
+      font-weight:900;
+      color:var(--gold)
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+      opacity:.95
+    }
+
+    .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .fileInput{display:none}
+    .divider{
+      height:1px;
+      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
+      margin:14px 0
+    }
+
+    .filters{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap: wrap;
+    }
+    
+    .search{
+      flex:1;
+      min-width:260px;
+      position:relative
+    }
+    
+    .search input{
+      width:100%;
+      padding:12px 14px 12px 44px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      font-weight: 600;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .search input::placeholder{
+      color: rgba(234,234,234,.45);
+      font-weight: 400;
+    }
+    
+    .search input:focus {
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+    
+    .search i{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      color:var(--gold);
+      transition: transform 0.3s ease;
+    }
+
+    .search input:focus + i {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    select{
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+      cursor:pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    select:focus {
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
+    }
+
+    .tableWrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid rgba(246,200,76,.12);
+      background:rgba(0,0,0,.22);
+      box-shadow:var(--shadowSoft);
+      max-height: 600px;
+    }
+    
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:980px
+    }
+    
+    th,td{
+      padding:14px 14px;
+      text-align:left;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:14px;
+      color:var(--text2)
+    }
+    
+    th{
+      font-size:12px;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      background:rgba(0,0,0,.36);
+      position:sticky;
+      top:0;
+      z-index:10;
+      color: rgba(246,200,76,.95);
+      font-weight: 900;
+    }
+
+    tbody tr {
+      transition: all 0.2s ease;
+      animation: slideIn 0.3s ease both;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    tbody tr:hover {
+      background: rgba(246,200,76,.05);
+      transform: translateX(4px);
+    }
+
+    .nameCell{
+      font-weight:900;
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      gap:3px
+    }
+
+    .nameCell .small {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid rgba(246,200,76,.22);
+      background:rgba(246,200,76,.08);
+      color:var(--gold2);
+      transition: all 0.2s ease;
+    }
+    
+    .badge:hover {
+      transform: scale(1.05);
+    }
+    
+    .badge.inativo{
+      border-color:rgba(220,53,69,.35);
+      background:rgba(220,53,69,.10);
+      color:rgba(255,120,130,.95)
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .iconBtn{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.24);
+      color:var(--gold);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .iconBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.4s, height 0.4s;
+    }
+
+    .iconBtn:hover::before {
+      width: 100px;
+      height: 100px;
+    }
+
+    .iconBtn:hover{
+      transform:translateY(-2px) scale(1.05);
+      background:rgba(0,0,0,.34);
+      box-shadow: 0 4px 12px rgba(246,200,76,.2);
+    }
+
+    .iconBtn.danger:hover {
+      border-color: rgba(244,67,54,.4);
+      background: rgba(244,67,54,.1);
+      color: var(--red);
+    }
+
+    .empty{
+      display:none;
+      text-align:center;
+      padding:36px 12px;
+      color:var(--muted);
+      animation: fadeIn 0.6s ease;
+    }
+    
+    .empty i{
+      font-size:44px;
+      opacity:.55;
+      margin-bottom:10px;
+      color:rgba(246,200,76,.55)
+    }
+    
+    .footerInfo{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight: 700;
+    }
+
+    .footerInfo #clientCount {
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    /* ===== Modal de Edição ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      opacity: 0;
+      animation: fadeInOverlay 0.3s ease forwards;
+    }
+
+    @keyframes fadeInOverlay {
+      to { opacity: 1; }
+    }
+
+    .modal {
+      width: 520px;
+      max-width: 94%;
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      padding: 24px;
+      border-radius: 18px;
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadow);
+      color: #fff;
+      transform: scale(0.9);
+      animation: popIn 0.3s ease forwards;
+    }
+
+    @keyframes popIn {
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .modal h3 {
+      margin-bottom: 16px;
+      color: var(--gold);
+      font-weight: 900;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(246,200,76,.14);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      font-weight: 600;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .modal input:focus {
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
+      background: rgba(255,255,255,.06);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .modal-buttons button {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 0;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-buttons .btn-cancel {
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border: 1px solid rgba(246,200,76,.18);
+    }
+
+    .modal-buttons .btn-cancel:hover {
+      background: rgba(0,0,0,.30);
+    }
+
+    .modal-buttons .btn-save {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #111;
+      box-shadow: 0 10px 24px rgba(246,200,76,.16);
+    }
+
+    .modal-buttons .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(246,200,76,.22);
+    }
+
+    @media (max-width:920px){
+      body{padding:18px}
+      table{min-width:860px}
+      .tools {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Carregando clientes...</div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">
+      <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:50px;height:50px;"><div>
+        ACERTIVE
+        <small>Clientes</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="card">
+      <div class="row">
+        <div>
+          <div class="title"><i class="fa-solid fa-users"></i> Gerenciamento de Clientes</div>
+          <div class="sub">Importe do Excel, pesquise e mantenha seus clientes organizados no padrão ACERTIVE.</div>
+        </div>
+
+        <div class="tools">
+          <button class="navbtn" id="btnVoltar" type="button"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+          <button class="navbtn" id="btnNovo" type="button"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
+
+          <!-- aceitar CSV também -->
+          <input class="fileInput" id="fileExcel" type="file" accept=".xlsx,.xls,.csv" />
+          <button class="navbtn" id="btnImportar" type="button"><i class="fa-solid fa-file-import"></i> Importar Excel</button>
+
+          <button class="navbtn" id="btnExportar" type="button"><i class="fa-solid fa-download"></i> Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filters">
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="Pesquisar por nome, email, telefone..." />
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+
+        <select id="statusFilter">
+          <option value="">Todos os Status</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>CPF/CNPJ</th>
+              <th>Status</th>
+              <th>Cadastro</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="empty" id="empty">
+          <i class="fa-solid fa-user-slash"></i>
+          <h3>Nenhum cliente encontrado</h3>
+          <div>Importe uma planilha ou cadastre um novo cliente.</div>
+        </div>
+      </div>
+
+      <div class="footerInfo">
+        <div id="clientCount">0 clientes</div>
+        <div id="statusBar"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toastify e script do front -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/clientes-ativos.js"></script>
+
+  <script>
+    (function () {
+      const btnNovo = document.getElementById('btnNovo');
+      if (btnNovo) btnNovo.addEventListener('click', () => { window.location.href = '/novo-cliente'; });
+
+      const btnVoltar = document.getElementById('btnVoltar');
+      if (btnVoltar) btnVoltar.addEventListener('click', () => { window.history.back(); });
+
+      const btnLogout = document.getElementById('btnLogout');
+      if (btnLogout) btnLogout.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuarioLogado');
+        window.location.href = '/login';
+      });
+
+      const btnExportar = document.getElementById('btnExportar');
+      if (btnExportar) {
+        btnExportar.addEventListener('click', async () => {
+          try {
+            btnExportar.disabled = true;
+            btnExportar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exportando...';
+            
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+            const resp = await fetch('/api/clientes/export-csv', { headers });
+            
+            if (resp.ok) {
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `clientes-${new Date().toISOString().split('T')[0]}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              
+              Toastify({ 
+                text: 'CSV exportado com sucesso!', 
+                duration: 3000, 
+                gravity: 'top', 
+                position: 'right', 
+                style: { background: '#27ae60' } 
+              }).showToast();
+              return;
+            }
+            Toastify({ text: 'Exportação indisponível no servidor.', duration: 3000, gravity: 'top', position: 'right', style: { background: '#e67e22' } }).showToast();
+          } catch (err) {
+            console.error('[clientes-ativos] export error', err);
+            Toastify({ text: 'Erro ao exportar: ' + (err.message || err), duration: 3500, gravity: 'top', position: 'right', style: { background: '#dc3545' } }).showToast();
+          } finally {
+            btnExportar.disabled = false;
+            btnExportar.innerHTML = '<i class="fa-solid fa-download"></i> Exportar CSV';
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

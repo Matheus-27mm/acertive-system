@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Novo Cliente</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+  <style>
+    :root{
+      /* ===== Paleta premium (mesma linha do Clientes Ativos / Dashboard) ===== */
+      --bg1:#070707;
+      --bg2:#0f0f12;
+
+      --card: rgba(17,17,20,.72);
+      --card2: rgba(10,10,12,.92);
+
+      --text:#EAEAEA;
+      --text2:#CFCFCF;
+      --muted:#A7A7A7;
+
+      --gold:#F6C84C;
+      --gold2:#FFD56A;
+      --gold-weak: rgba(246,200,76,.35);
+
+      --line: rgba(246,200,76,.14);
+
+      --shadow: 0 18px 60px rgba(0,0,0,.62);
+      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+
+      --radius:18px;
+      
+      /* Status colors */
+      --green: #4CAF50;
+      --red: #F44336;
+      --blue: #2196F3;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+
+    body{
+      font-family:'Montserrat',sans-serif;
+      min-height:100vh;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
+        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:22px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
+    }
+
+    /* ===== Topbar ===== */
+    .topbar{
+      width:100%;
+      max-width:1100px;
+      margin:0 auto 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadowSoft);
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-30%);
+      animation: shine 7.8s ease-in-out infinite;
+      pointer-events:none;
+      opacity:.65;
+    }
+
+    @keyframes shine{
+      0%{transform:translateX(-45%)}
+      50%{transform:translateX(35%)}
+      100%{transform:translateX(-45%)}
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      letter-spacing:.4px;
+      position:relative;
+      z-index:1;
+    }
+    
+    .mark{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
+      box-shadow: 0 10px 20px rgba(246,200,76,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111;
+      font-weight:900;
+      user-select:none;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand small{
+      display:block;
+      color:rgba(246,200,76,.95);
+      font-weight:800;
+      font-size:12px;
+      margin-top:2px;
+      letter-spacing:.2px;
+    }
+
+    .navbtns{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      position:relative;
+      z-index:1;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    
+    .navbtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
+      font-weight:800;
+      text-decoration:none;
+      cursor:pointer;
+      transition:all 0.2s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .navbtn i{color:var(--gold)}
+    .navbtn:hover{
+      transform:translateY(-1px);
+      background:rgba(0,0,0,.30);
+      border-color:rgba(246,200,76,.28);
+    }
+
+    .wrap{
+      width:100%;
+      max-width:1100px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:20px;
+      align-items:start;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(246,200,76,.14);
+      box-shadow: var(--shadow);
+      padding:20px;
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+      color: var(--text);
+      animation: fadeIn 0.6s ease both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:first-of-type { animation-delay: 0.1s; }
+    .card:last-of-type { animation-delay: 0.15s; }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
+      transform: translateX(-45%);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .35s ease;
+    }
+    .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
+
+    .cardHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+      position:relative;
+      z-index:1;
+    }
+    
+    .cardHeader h2{
+      font-size:20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--gold);
+      font-weight:900;
+    }
+    
+    .cardHeader p{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(246,200,76,.18);
+      background:rgba(0,0,0,.22);
+      color:var(--text2);
+      font-weight:900;
+      white-space:nowrap;
+      animation: fadeIn 0.6s ease 0.3s both;
+    }
+    .pill i{color:var(--gold)}
+
+    .divider{
+      height:1px;
+      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
+      margin:12px 0;
+      position:relative;
+      z-index:1;
+    }
+
+    /* ===== Form ===== */
+    .form{display:grid;gap:12px;position:relative;z-index:1}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    
+    .field{
+      display:grid;
+      gap:6px;
+      position: relative;
+    }
+
+    .field.filled label {
+      color: var(--gold);
+    }
+
+    .field.error label {
+      color: var(--red);
+    }
+    
+    label{
+      font-size:12px;
+      color:rgba(234,234,234,.78);
+      font-weight:800;
+      letter-spacing:.2px;
+      transition: color 0.2s ease;
+    }
+
+    .control{position:relative}
+
+    .control input, 
+    .control select, 
+    .control textarea{
+      width:100%;
+      padding:12px 14px 12px 44px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.16);
+      background:rgba(255,255,255,.04);
+      color: var(--text);
+      font-size:14px;
+      font-weight: 600;
+      outline:none;
+      transition: all 0.2s ease;
+    }
+
+    .control input::placeholder, 
+    .control textarea::placeholder{
+      color:rgba(167,167,167,.85);
+      font-weight: 400;
+    }
+
+    .control input:focus, 
+    .control select:focus, 
+    .control textarea:focus{
+      border-color: rgba(246,200,76,.45);
+      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+
+    .field.error .control input,
+    .field.error .control select,
+    .field.error .control textarea {
+      border-color: var(--red);
+      background: rgba(244,67,54,.05);
+    }
+
+    .field.error .control input:focus,
+    .field.error .control select:focus,
+    .field.error .control textarea:focus {
+      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
+    }
+
+    .control textarea{
+      min-height: 92px;
+      resize: vertical;
+      padding-top: 12px;
+    }
+
+    .iconLeft{
+      position:absolute;
+      top:50%;
+      left:8px;
+      transform:translateY(-50%);
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--gold);
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(246,200,76,.14);
+      pointer-events:none;
+      transition: all 0.3s ease;
+    }
+
+    .field.filled .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+      background: rgba(246,200,76,.15);
+      border-color: rgba(246,200,76,.3);
+    }
+
+    .field.error .iconLeft {
+      transform: translateY(-50%) scale(1.1);
+      background: rgba(244,67,54,.15);
+      border-color: rgba(244,67,54,.3);
+      color: var(--red);
+    }
+
+    .iconLeft.top{ 
+      top:18px; 
+      transform:none; 
+    }
+
+    .field.filled .iconLeft.top {
+      transform: scale(1.1);
+    }
+
+    .field.error .iconLeft.top {
+      transform: scale(1.1);
+    }
+
+    .error-message {
+      display: none;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-left: 44px;
+      animation: shake 0.3s ease;
+    }
+
+    .field.error .error-message {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* ===== Buttons ===== */
+    .btnRow{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:6px;
+    }
+
+    .btn{
+      padding:12px 14px;
+      border-radius:12px;
+      border:0;
+      cursor:pointer;
+      font-weight:900;
+      color:#111;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      box-shadow:0 10px 24px rgba(246,200,76,.16);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition: all 0.2s ease;
+      user-select:none;
+      text-decoration:none;
+      white-space:nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover{
+      transform: translateY(-2px);
+      box-shadow:0 14px 30px rgba(246,200,76,.18);
+      filter: saturate(1.03);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.secondary{
+      background: rgba(0,0,0,.22);
+      color: var(--text2);
+      border:1px solid rgba(246,200,76,.18);
+      box-shadow:none;
+    }
+    .btn.secondary i{color:var(--gold)}
+    .btn.secondary:hover{
+      background: rgba(0,0,0,.30);
+      border-color: rgba(246,200,76,.28);
+      transform: translateY(-1px);
+    }
+
+    .btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .note{
+      font-size:12px;
+      color: rgba(234,234,234,.62);
+      margin-top:8px;
+    }
+
+    /* ===== Preview ===== */
+    #preview{position:relative}
+    .kv{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    
+    .kvItem{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(246,200,76,.14);
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
+      box-shadow: var(--shadowSoft);
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      transition: all 0.3s ease;
+      opacity: 0.5;
+    }
+
+    .kvItem.filled {
+      opacity: 1;
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .kvItem b{
+      font-size:12px;
+      color:rgba(246,200,76,.95);
+      font-weight:900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .kvItem span{
+      font-weight:800;
+      color:rgba(234,234,234,.96);
+      font-size:14px;
+      word-break:break-word;
+    }
+
+    /* Success feedback */
+    .success-message {
+      display: none;
+      padding: 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(76,175,80,.2), rgba(76,175,80,.1));
+      border: 1px solid rgba(76,175,80,.3);
+      color: var(--green);
+      font-weight: 700;
+      margin-top: 12px;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .success-message.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr;gap:14px}
+      .row2{grid-template-columns:1fr}
+      .btnRow{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+     <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:50px;height:50px;">      <div>
+        ACERTIVE
+        <small>Novo Cliente</small>
+      </div>
+    </div>
+
+    <div class="navbtns">
+      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <a class="navbtn" href="/clientes-ativos"><i class="fa-solid fa-users"></i> Clientes</a>
+      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- FORM -->
+    <section class="card" aria-labelledby="cadastro-title">
+      <div class="cardHeader">
+        <div>
+          <h2 id="cadastro-title"><i class="fa-solid fa-user-plus"></i> Cadastro de Cliente</h2>
+          <p>Registre clientes PF/PJ, com status e dados de contato centralizados.</p>
+        </div>
+        <div class="pill"><i class="fa-solid fa-id-card"></i> Cadastro</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <form id="formNovoCliente" class="form" autocomplete="on" novalidate>
+        <div class="row2">
+          <div class="field">
+            <label for="tipo">Tipo</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-building-user"></i></span>
+              <select id="tipo" name="type" required>
+                <option value="pf">Pessoa Física (PF)</option>
+                <option value="pj">Pessoa Jurídica (PJ)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="status">Status</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-toggle-on"></i></span>
+              <select id="status" name="status" required>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cliente_nome_input">Nome / Razão Social</label>
+          <div class="control">
+            <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
+            <input id="cliente_nome_input" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
+          </div>
+          <div class="error-message">Nome é obrigatório</div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="cliente_email_input">E-mail</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
+              <input id="cliente_email_input" name="email" type="email" placeholder="ex.: cliente@email.com" />
+            </div>
+            <div class="error-message">E-mail inválido</div>
+          </div>
+
+          <div class="field">
+            <label for="cliente_telefone_input">Telefone</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-phone"></i></span>
+              <input id="cliente_telefone_input" name="phone" type="tel" placeholder="(99) 99999-9999" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="cliente_cpf_cnpj_input">CPF / CNPJ</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-fingerprint"></i></span>
+              <input id="cliente_cpf_cnpj_input" name="cpf_cnpj" type="text" placeholder="000.000.000-00" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="endereco">Endereço</label>
+            <div class="control">
+              <span class="iconLeft"><i class="fa-solid fa-location-dot"></i></span>
+              <input id="endereco" name="address" type="text" placeholder="Rua, número, bairro, cidade/UF" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="observacoes">Observações</label>
+          <div class="control">
+            <span class="iconLeft top"><i class="fa-solid fa-note-sticky"></i></span>
+            <textarea id="observacoes" name="observacoes" placeholder="Ex.: cliente VIP, preferências, detalhes de cobrança..."></textarea>
+          </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+          <i class="fa-solid fa-circle-check"></i>
+          Cliente cadastrado com sucesso!
+        </div>
+
+        <div class="btnRow">
+          <button class="btn" type="submit" id="btnSalvar">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Salvar Cliente
+          </button>
+
+          <button class="btn secondary" id="btnLimpar" type="button">
+            <i class="fa-solid fa-eraser"></i>
+            Limpar
+          </button>
+        </div>
+
+        <div class="note">
+          💡 Dica: CPF/CNPJ é opcional, mas ajuda no controle e exportações futuras.
+        </div>
+      </form>
+    </section>
+
+    <!-- RESUMO -->
+    <section class="card" id="preview" aria-labelledby="resumo-title">
+      <div class="cardHeader">
+        <div>
+          <h2 id="resumo-title"><i class="fa-solid fa-clipboard-check"></i> Resumo</h2>
+          <p id="statusMsg">Preencha o formulário para visualizar o resumo.</p>
+        </div>
+        <div class="pill"><i class="fa-solid fa-shield"></i> Registro</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="kv" role="list">
+        <div class="kvItem" id="kvTipo" role="listitem"><b>Tipo</b><span id="pTipo">—</span></div>
+        <div class="kvItem" id="kvStatus" role="listitem"><b>Status</b><span id="pStatus">—</span></div>
+        <div class="kvItem" id="kvNome" role="listitem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
+        <div class="kvItem" id="kvEmail" role="listitem"><b>E-mail</b><span id="pEmail">—</span></div>
+        <div class="kvItem" id="kvTelefone" role="listitem"><b>Telefone</b><span id="pTelefone">—</span></div>
+        <div class="kvItem" id="kvCpfCnpj" role="listitem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
+        <div class="kvItem" id="kvEndereco" role="listitem"><b>Endereço</b><span id="pEndereco">—</span></div>
+        <div class="kvItem" id="kvObs" role="listitem"><b>Observações</b><span id="pObs">—</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="/js/novo-cliente.js"></script>
+
+  <script>
+    (function () {
+      const form = document.getElementById('formNovoCliente');
+      const btnLimpar = document.getElementById('btnLimpar');
+      
+      const pTipo = document.getElementById('pTipo');
+      const pStatus = document.getElementById('pStatus');
+      const pNome = document.getElementById('pNome');
+      const pEmail = document.getElementById('pEmail');
+      const pTelefone = document.getElementById('pTelefone');
+      const pCpfCnpj = document.getElementById('pCpfCnpj');
+      const pEndereco = document.getElementById('pEndereco');
+      const pObs = document.getElementById('pObs');
+
+      function updatePreview() {
+        const tipo = document.getElementById('tipo')?.value || '—';
+        const status = document.getElementById('status')?.value || '—';
+        const nome = document.getElementById('cliente_nome_input')?.value || '—';
+        const email = document.getElementById('cliente_email_input')?.value || '—';
+        const telefone = document.getElementById('cliente_telefone_input')?.value || '—';
+        const cpfCnpj = document.getElementById('cliente_cpf_cnpj_input')?.value || '—';
+        const endereco = document.getElementById('endereco')?.value || '—';
+        const obs = document.getElementById('observacoes')?.value || '—';
+
+        pTipo.textContent = tipo;
+        pStatus.textContent = status;
+        pNome.textContent = nome;
+        pEmail.textContent = email;
+        pTelefone.textContent = telefone;
+        pCpfCnpj.textContent = cpfCnpj;
+        pEndereco.textContent = endereco;
+        pObs.textContent = obs;
+
+        // Update kvItem filled state
+        updateKvItem('kvTipo', tipo);
+        updateKvItem('kvStatus', status);
+        updateKvItem('kvNome', nome);
+        updateKvItem('kvEmail', email);
+        updateKvItem('kvTelefone', telefone);
+        updateKvItem('kvCpfCnpj', cpfCnpj);
+        updateKvItem('kvEndereco', endereco);
+        updateKvItem('kvObs', obs);
+
+        // Update field filled state
+        updateFieldState('tipo', tipo !== '—');
+        updateFieldState('status', status !== '—');
+        updateFieldState('cliente_nome_input', nome !== '—');
+        updateFieldState('cliente_email_input', email !== '—');
+        updateFieldState('cliente_telefone_input', telefone !== '—');
+        updateFieldState('cliente_cpf_cnpj_input', cpfCnpj !== '—');
+        updateFieldState('endereco', endereco !== '—');
+        updateFieldState('observacoes', obs !== '—');
+      }
+
+      function updateKvItem(id, value) {
+        const kvItem = document.getElementById(id);
+        if (!kvItem) return;
+        
+        if (value !== '—') {
+          kvItem.classList.add('filled');
+        } else {
+          kvItem.classList.remove('filled');
+        }
+      }
+
+      function updateFieldState(inputId, isFilled) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        
+        const field = input.closest('.field');
+        if (!field) return;
+        
+        if (isFilled) {
+          field.classList.add('filled');
+        } else {
+          field.classList.remove('filled');
+        }
+      }
+
+      if (form) {
+        form.addEventListener('input', updatePreview);
+        form.addEventListener('change', updatePreview);
+      }
+      
+      if (btnLimpar) {
+        btnLimpar.addEventListener('click', () => {
+          if (!form) return;
+          form.reset();
+          updatePreview();
+          
+          // Remove all field states
+          document.querySelectorAll('.field').forEach(field => {
+            field.classList.remove('filled', 'error');
+          });
+        });
+      }
+      
+      updatePreview();
+    })();
+  </script>
+</body>
+</html>
