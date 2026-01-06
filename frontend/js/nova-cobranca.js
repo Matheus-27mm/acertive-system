@@ -1,4 +1,4 @@
-// nova-cobranca.js — versão melhorada com validações visuais e animações
+// nova-cobranca.js — versão melhorada com máscara de moeda e validações
 (function () {
   const logado = localStorage.getItem("usuarioLogado");
   const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -58,7 +58,17 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  const TAXAS = { "8%": 0.0027, "6%": 0.002, "4%": 0.0014, "3%": 0.001, "2%": 0.0007 };
+  // Taxas de juros por dia (atualizado com novas opções)
+  const TAXAS = { 
+    "10%": 0.0033,
+    "8%": 0.0027, 
+    "6%": 0.002, 
+    "4%": 0.0014, 
+    "3%": 0.001, 
+    "2%": 0.0007,
+    "1%": 0.00033,
+    "0%": 0
+  };
   const MULTA = 0.02;
 
   // ===============
@@ -86,6 +96,33 @@
   let clientesCache = [];
 
   if (!form || !btnPdf) return;
+
+  // ===============
+  // Função para obter valor numérico do campo formatado
+  // ===============
+  function getValorOriginal() {
+    // Primeiro tenta usar a função global definida no HTML
+    if (typeof window.getValorOriginalNumerico === 'function') {
+      return window.getValorOriginalNumerico();
+    }
+    
+    // Fallback: tenta pegar do campo hidden
+    const valorNumerico = document.getElementById("valorOriginalNumerico");
+    if (valorNumerico && valorNumerico.value) {
+      return parseFloat(valorNumerico.value) || 0;
+    }
+    
+    // Último fallback: tenta converter o valor do campo texto
+    const valorInput = document.getElementById("valorOriginal");
+    if (valorInput) {
+      const valorTexto = valorInput.value || "";
+      // Remove pontos de milhar e troca vírgula por ponto
+      const valorLimpo = valorTexto.replace(/\./g, '').replace(',', '.');
+      return parseFloat(valorLimpo) || 0;
+    }
+    
+    return 0;
+  }
 
   // ===============
   // Stepper Control
@@ -166,8 +203,8 @@
     }
   }
 
-  // Add real-time validation
-  const inputs = form.querySelectorAll('input, select');
+  // Add real-time validation (exceto para o campo de valor que tem seu próprio handler)
+  const inputs = form.querySelectorAll('input:not(#valorOriginal):not(#valorOriginalNumerico), select');
   inputs.forEach(input => {
     input.addEventListener('blur', () => {
       if (input.hasAttribute('required') && !input.value.trim()) {
@@ -402,6 +439,12 @@
         const match = clientesCache.find((c) => c.nome === inputNome.value);
         inputId.value = match ? match.id : "";
         clearFieldError(inputNome);
+        
+        // Atualiza resumo
+        if (resCliente) {
+          resCliente.textContent = inputNome.value || "—";
+          updateResumeField('kvCliente', inputNome.value || "—");
+        }
       });
 
       inputNome.addEventListener("blur", () => {
@@ -415,12 +458,49 @@
         if (!clientesCache.some((c) => c.nome === inputNome.value)) {
           inputId.value = "";
         }
+        
+        // Atualiza resumo em tempo real
+        if (resCliente) {
+          resCliente.textContent = inputNome.value || "—";
+          const kvCliente = document.getElementById('kvCliente');
+          if (kvCliente) {
+            if (inputNome.value) {
+              kvCliente.classList.add('filled');
+            } else {
+              kvCliente.classList.remove('filled');
+            }
+          }
+        }
       });
     } catch (e) {
       showToast("Erro ao carregar clientes ativos.", "error");
     }
   }
   carregarClientes();
+
+  // ===============
+  // Atualiza resumo das datas em tempo real
+  // ===============
+  const vencimentoInput = document.getElementById("vencimento");
+  const pagamentoInput = document.getElementById("pagamento");
+
+  if (vencimentoInput) {
+    vencimentoInput.addEventListener("change", () => {
+      if (resVencimento) {
+        resVencimento.textContent = formatarDataBR(vencimentoInput.value);
+        updateResumeField('kvVencimento', formatarDataBR(vencimentoInput.value));
+      }
+    });
+  }
+
+  if (pagamentoInput) {
+    pagamentoInput.addEventListener("change", () => {
+      if (resPagamento) {
+        resPagamento.textContent = formatarDataBR(pagamentoInput.value) || "Hoje";
+        updateResumeField('kvPagamento', formatarDataBR(pagamentoInput.value) || "Hoje");
+      }
+    });
+  }
 
   // ===============
   // Form Submit
@@ -434,7 +514,10 @@
 
     let cliente_id = inputId.value;
     const cliente_nome = inputNome.value.trim();
-    const valorOriginal = Number(document.getElementById("valorOriginal")?.value);
+    
+    // *** USA A NOVA FUNÇÃO PARA OBTER O VALOR ***
+    const valorOriginal = getValorOriginal();
+    
     const vencimento = document.getElementById("vencimento")?.value;
     const pagamento = document.getElementById("pagamento")?.value;
     const taxa = document.getElementById("taxa")?.value || "8%";
@@ -457,8 +540,8 @@
     const valorInput = document.getElementById("valorOriginal");
     isValid = validateField(valorInput, valorOriginal && !Number.isNaN(valorOriginal) && valorOriginal > 0, "Informe um valor válido maior que zero") && isValid;
 
-    const vencimentoInput = document.getElementById("vencimento");
-    isValid = validateField(vencimentoInput, vencimento !== "", "Informe a data de vencimento") && isValid;
+    const vencimentoInputEl = document.getElementById("vencimento");
+    isValid = validateField(vencimentoInputEl, vencimento !== "", "Informe a data de vencimento") && isValid;
 
     if (!isValid) {
       updateStepper(1);
@@ -521,7 +604,8 @@
 
     const payload = {
       cliente_id: cliente_id,
-      valorOriginal,
+      valor_original: valorOriginal,
+      valorOriginal: valorOriginal,
       vencimento: vencimento.slice(0, 10),
       pagamento: pagamento ? pagamento.slice(0, 10) : "",
       taxa,
@@ -530,6 +614,7 @@
       juros: Number(juros.toFixed(2)),
       multa: Number(multa.toFixed(2)),
       valorAtualizado: Number(valorAtualizado),
+      valor_atualizado: Number(valorAtualizado),
       status: pagamento ? "pago" : dias > 0 ? "pendente" : "em-dia",
     };
 
