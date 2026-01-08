@@ -1,4 +1,4 @@
-// nova-cobranca.js — versão melhorada com máscara de moeda e validações
+// nova-cobranca.js — versão com checkbox de multa/juros
 (function () {
   const logado = localStorage.getItem("usuarioLogado");
   const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -69,7 +69,7 @@
     "1%": 0.00033,
     "0%": 0
   };
-  const MULTA = 0.02;
+  const MULTA = 0.02; // 2% de multa
 
   // ===============
   // DOM Elements
@@ -91,6 +91,9 @@
   const resJuros = document.getElementById("resJuros");
   const resMulta = document.getElementById("resMulta");
   const resAtualizado = document.getElementById("resAtualizado");
+
+  // Elemento do checkbox de multa
+  const checkboxMulta = document.getElementById("aplicarMulta");
 
   let dadosCobranca = null;
   let clientesCache = [];
@@ -122,6 +125,24 @@
     }
     
     return 0;
+  }
+
+  // ===============
+  // Função para verificar se multa está ativa
+  // ===============
+  function isMultaAtiva() {
+    // Primeiro tenta usar a função global definida no HTML
+    if (typeof window.isMultaAtiva === 'function') {
+      return window.isMultaAtiva();
+    }
+    
+    // Fallback: verifica diretamente o checkbox
+    if (checkboxMulta) {
+      return checkboxMulta.checked;
+    }
+    
+    // Default: aplica multa
+    return true;
   }
 
   // ===============
@@ -204,7 +225,7 @@
   }
 
   // Add real-time validation (exceto para o campo de valor que tem seu próprio handler)
-  const inputs = form.querySelectorAll('input:not(#valorOriginal):not(#valorOriginalNumerico), select');
+  const inputs = form.querySelectorAll('input:not(#valorOriginal):not(#valorOriginalNumerico):not(#aplicarMulta), select');
   inputs.forEach(input => {
     input.addEventListener('blur', () => {
       if (input.hasAttribute('required') && !input.value.trim()) {
@@ -521,6 +542,9 @@
     const vencimento = document.getElementById("vencimento")?.value;
     const pagamento = document.getElementById("pagamento")?.value;
     const taxa = document.getElementById("taxa")?.value || "8%";
+    
+    // *** VERIFICA SE MULTA ESTÁ ATIVA ***
+    const aplicarMultaJuros = isMultaAtiva();
 
     // Validations
     let isValid = true;
@@ -556,9 +580,16 @@
     const diffMs = pag.getTime() - venc.getTime();
     const dias = diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
 
-    const txDia = TAXAS[taxa] ?? TAXAS["8%"];
-    const juros = dias > 0 ? valorOriginal * txDia * dias : 0;
-    const multa = dias > 0 ? valorOriginal * MULTA : 0;
+    // *** CALCULA JUROS E MULTA COM BASE NO CHECKBOX ***
+    let juros = 0;
+    let multa = 0;
+    
+    if (aplicarMultaJuros && dias > 0) {
+      const txDia = TAXAS[taxa] ?? TAXAS["8%"];
+      juros = valorOriginal * txDia * dias;
+      multa = valorOriginal * MULTA;
+    }
+    
     const valorAtualizado = Number((valorOriginal + juros + multa).toFixed(2));
 
     // Update resume with animation
@@ -588,12 +619,22 @@
     }
     
     if (resJuros) {
-      resJuros.textContent = moedaBR(juros);
+      // Mostra se multa está desativada
+      if (!aplicarMultaJuros) {
+        resJuros.textContent = "R$ 0,00 (desativado)";
+      } else {
+        resJuros.textContent = moedaBR(juros);
+      }
       updateResumeField('kvJuros', moedaBR(juros), true);
     }
     
     if (resMulta) {
-      resMulta.textContent = moedaBR(multa);
+      // Mostra se multa está desativada
+      if (!aplicarMultaJuros) {
+        resMulta.textContent = "R$ 0,00 (desativado)";
+      } else {
+        resMulta.textContent = moedaBR(multa);
+      }
       updateResumeField('kvMulta', moedaBR(multa), true);
     }
     
@@ -608,13 +649,14 @@
       valorOriginal: valorOriginal,
       vencimento: vencimento.slice(0, 10),
       pagamento: pagamento ? pagamento.slice(0, 10) : "",
-      taxa,
-      taxaPercent: normalizePercent(taxa),
+      taxa: aplicarMultaJuros ? taxa : "0%", // Se multa desativada, taxa = 0%
+      taxaPercent: aplicarMultaJuros ? normalizePercent(taxa) : 0,
       dias,
       juros: Number(juros.toFixed(2)),
       multa: Number(multa.toFixed(2)),
       valorAtualizado: Number(valorAtualizado),
       valor_atualizado: Number(valorAtualizado),
+      aplicarMultaJuros: aplicarMultaJuros, // Novo campo para indicar se multa foi aplicada
       status: pagamento ? "pago" : dias > 0 ? "pendente" : "em-dia",
     };
 
@@ -646,16 +688,23 @@
         vencimento,
         pagamentoRef,
         dias,
-        taxa,
+        taxa: aplicarMultaJuros ? taxa : "0%",
         juros: Number(juros.toFixed(2)),
         multa: Number(multa.toFixed(2)),
         valorAtualizado,
+        aplicarMultaJuros,
         ...cobrancaSalva,
       };
 
       updateStatusBadge('sucesso', 'Cobrança salva com sucesso!');
       btnPdf.disabled = false;
-      showToast("Cobrança criada e salva com sucesso!", "success");
+      
+      // Mostra mensagem diferente se multa foi desativada
+      if (!aplicarMultaJuros) {
+        showToast("Cobrança criada SEM multa/juros!", "success");
+      } else {
+        showToast("Cobrança criada e salva com sucesso!", "success");
+      }
 
       // Highlight the PDF button
       setTimeout(() => {
@@ -672,10 +721,11 @@
         vencimento,
         pagamentoRef,
         dias,
-        taxa,
+        taxa: aplicarMultaJuros ? taxa : "0%",
         juros: Number(juros.toFixed(2)),
         multa: Number(multa.toFixed(2)),
         valorAtualizado,
+        aplicarMultaJuros,
       };
 
       updateStatusBadge('erro', 'Falha ao salvar no servidor');

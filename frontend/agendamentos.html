@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agendamentos - ACERTIVE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+      border-right: 1px solid #2a2a2a;
+      padding: 30px 20px;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #F6C84C, #f5b800);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #000;
+      box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4);
+    }
+    .logo-text { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+
+    .nav-section { margin-bottom: 30px; }
+    .nav-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 15px;
+      padding-left: 15px;
+    }
+    .nav-links { display: flex; flex-direction: column; gap: 5px; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 15px;
+      color: #888;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .nav-link:hover { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
+    .nav-link.active {
+      background: linear-gradient(135deg, rgba(246, 200, 76, 0.2), rgba(246, 200, 76, 0.1));
+      color: #F6C84C;
+      border-left: 3px solid #F6C84C;
+    }
+    .nav-link svg { width: 20px; height: 20px; }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 280px;
+      padding: 30px;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .page-title {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, #ccc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle { color: #666; margin-top: 5px; font-size: 14px; }
+
+    .header-actions { display: flex; gap: 15px; align-items: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #F6C84C, #f5b800);
+      color: #000;
+      box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(246, 200, 76, 0.5); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid #333;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+    .btn-sm { padding: 8px 16px; font-size: 12px; }
+
+    /* Filtros */
+    .filters-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; }
+    .filter-select, .filter-input {
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      min-width: 150px;
+    }
+    .filter-select:focus, .filter-input:focus {
+      outline: none;
+      border-color: #F6C84C;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: linear-gradient(145deg, #1e1e1e, #252525);
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+    }
+    .stat-card.destaque {
+      background: linear-gradient(135deg, rgba(246, 200, 76, 0.15), rgba(246, 200, 76, 0.05));
+      border-color: rgba(246, 200, 76, 0.3);
+    }
+    .stat-label { font-size: 12px; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: 600; }
+    .stat-value { font-size: 36px; font-weight: 900; color: #fff; }
+    .stat-card.destaque .stat-value { color: #F6C84C; }
+
+    /* Table Container */
+    .table-container {
+      background: linear-gradient(145deg, #1e1e1e, #252525);
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .table-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .table-title { font-size: 18px; font-weight: 700; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(0,0,0,0.3); }
+    th {
+      padding: 15px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    td {
+      padding: 18px 20px;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 14px;
+    }
+    tr:hover { background: rgba(246, 200, 76, 0.05); }
+    tr:last-child td { border-bottom: none; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-pendente { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .badge-concluido { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .badge-cancelado { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .badge-alta { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .badge-normal { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .badge-baixa { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+
+    /* Tipo Badge */
+    .tipo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tipo-novo_contato { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .tipo-renegociacao { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .tipo-liquidacao { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .tipo-cobranca { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+    .tipo-lembrete { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    .tipo-retorno { background: rgba(20, 184, 166, 0.15); color: #14b8a6; }
+    .tipo-visita { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+
+    .actions-cell { display: flex; gap: 8px; }
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .action-btn.edit { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .action-btn.complete { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .action-btn.delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .action-btn:hover { transform: scale(1.1); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .empty-state svg { width: 80px; height: 80px; margin-bottom: 20px; opacity: 0.5; }
+    .empty-state h3 { font-size: 20px; margin-bottom: 10px; color: #888; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #333;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: #F6C84C;
+    }
+    .modal-actions { display: flex; gap: 15px; margin-top: 25px; }
+    .modal-actions .btn { flex: 1; justify-content: center; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 3000;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.success { background: #10b981; color: #fff; }
+    .toast.error { background: #ef4444; color: #fff; }
+    .toast.active { display: block; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #333;
+      border-top-color: #F6C84C;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsivo */
+    @media (max-width: 1024px) {
+      .sidebar { width: 80px; padding: 20px 10px; }
+      .logo-text, .nav-title, .nav-link span { display: none; }
+      .logo { justify-content: center; padding-bottom: 20px; }
+      .nav-link { justify-content: center; padding: 14px; }
+      .main-content { margin-left: 80px; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding: 20px; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+      .filters-bar { flex-direction: column; }
+      .filter-group { width: 100%; }
+      .filter-select, .filter-input { width: 100%; }
+      th, td { padding: 12px 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">A</div>
+      <span class="logo-text">ACERTIVE</span>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-title">Menu Principal</div>
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="/cobrancas" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          <span>Cobranças</span>
+        </a>
+        <a href="/clientes-ativos" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Clientes</span>
+        </a>
+        <a href="/agendamentos" class="nav-link active">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span>Agendamentos</span>
+        </a>
+        <a href="/cobrancas-recorrentes" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span>Recorrentes</span>
+        </a>
+      </div>
+    </nav>
+    <nav class="nav-section">
+      <div class="nav-title">Sistema</div>
+      <div class="nav-links">
+        <a href="/configuracoes" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Configurações</span>
+        </a>
+        <a href="/historico" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Histórico</span>
+        </a>
+        <a href="#" onclick="logout()" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          <span>Sair</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">📅 Agendamentos</h1>
+        <p class="page-subtitle">Gerencie seus contatos, renegociações e liquidações</p>
+      </div>
+      <div class="header-actions">
+        <a href="/novo-agendamento" class="btn btn-primary">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Novo Agendamento
+        </a>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card destaque">
+        <div class="stat-label">Hoje</div>
+        <div class="stat-value" id="statHoje">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-value" id="statPendentes">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Concluídos</div>
+        <div class="stat-value" id="statConcluidos">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label>Status</label>
+        <select class="filter-select" id="filterStatus" onchange="carregarAgendamentos()">
+          <option value="">Todos</option>
+          <option value="pendente">Pendentes</option>
+          <option value="concluido">Concluídos</option>
+          <option value="cancelado">Cancelados</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Tipo</label>
+        <select class="filter-select" id="filterTipo" onchange="carregarAgendamentos()">
+          <option value="">Todos</option>
+          <option value="novo_contato">Novo Contato</option>
+          <option value="renegociacao">Renegociação</option>
+          <option value="liquidacao">Liquidação</option>
+          <option value="cobranca">Cobrança</option>
+          <option value="lembrete">Lembrete</option>
+          <option value="retorno">Retorno</option>
+          <option value="visita">Visita</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Data Início</label>
+        <input type="date" class="filter-input" id="filterDataInicio" onchange="carregarAgendamentos()">
+      </div>
+      <div class="filter-group">
+        <label>Data Fim</label>
+        <input type="date" class="filter-input" id="filterDataFim" onchange="carregarAgendamentos()">
+      </div>
+      <div class="filter-group" style="align-self: flex-end;">
+        <button class="btn btn-secondary btn-sm" onclick="limparFiltros()">Limpar Filtros</button>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2 class="table-title">Lista de Agendamentos</h2>
+      </div>
+      <div id="tableContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Concluir -->
+  <div class="modal-overlay" id="modalConcluir">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">✅ Concluir Agendamento</h3>
+        <button class="modal-close" onclick="fecharModal()">&times;</button>
+      </div>
+      <form onsubmit="confirmarConclusao(event)">
+        <input type="hidden" id="concluirId">
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="concluirCliente" readonly style="opacity: 0.7;">
+        </div>
+        <div class="form-group">
+          <label>Resultado / Observação</label>
+          <textarea id="concluirResultado" placeholder="Descreva o resultado do contato..." required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+          <button type="submit" class="btn btn-success">Concluir Agendamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_URL = window.location.origin;
+    let token = localStorage.getItem('token');
+
+    // Verificar autenticação
+    if (!token) {
+      window.location.href = '/login';
+    }
+
+    // Headers para requisições
+    function getHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
+    // Formatar data
+    function formatarData(data) {
+      if (!data) return '—';
+      const d = new Date(data);
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    function formatarDataHora(data) {
+      if (!data) return '—';
+      const d = new Date(data);
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Traduzir tipo
+    function traduzirTipo(tipo) {
+      const tipos = {
+        'novo_contato': '📞 Novo Contato',
+        'renegociacao': '🤝 Renegociação',
+        'liquidacao': '💰 Liquidação',
+        'cobranca': '📄 Cobrança',
+        'lembrete': '⏰ Lembrete',
+        'retorno': '↩️ Retorno',
+        'visita': '🏠 Visita'
+      };
+      return tipos[tipo] || tipo;
+    }
+
+    // Carregar agendamentos
+    async function carregarAgendamentos() {
+      try {
+        const status = document.getElementById('filterStatus').value;
+        const tipo = document.getElementById('filterTipo').value;
+        const dataInicio = document.getElementById('filterDataInicio').value;
+        const dataFim = document.getElementById('filterDataFim').value;
+
+        let url = `${API_URL}/api/agendamentos?`;
+        if (status) url += `status=${status}&`;
+        if (tipo) url += `tipo=${tipo}&`;
+        if (dataInicio) url += `data_inicio=${dataInicio}&`;
+        if (dataFim) url += `data_fim=${dataFim}&`;
+
+        const response = await fetch(url, { headers: getHeaders() });
+        const result = await response.json();
+
+        if (!result.success) throw new Error(result.message);
+
+        const agendamentos = result.data || [];
+        renderizarTabela(agendamentos);
+        atualizarStats(agendamentos);
+      } catch (err) {
+        console.error('Erro ao carregar agendamentos:', err);
+        showToast('Erro ao carregar agendamentos', 'error');
+      }
+    }
+
+    // Atualizar estatísticas
+    function atualizarStats(agendamentos) {
+      const hoje = new Date().toISOString().split('T')[0];
+      
+      const hojeCount = agendamentos.filter(a => 
+        a.data_agendamento && a.data_agendamento.split('T')[0] === hoje && a.status === 'pendente'
+      ).length;
+      
+      const pendentesCount = agendamentos.filter(a => a.status === 'pendente').length;
+      const concluidosCount = agendamentos.filter(a => a.status === 'concluido').length;
+
+      document.getElementById('statHoje').textContent = hojeCount;
+      document.getElementById('statPendentes').textContent = pendentesCount;
+      document.getElementById('statConcluidos').textContent = concluidosCount;
+      document.getElementById('statTotal').textContent = agendamentos.length;
+    }
+
+    // Renderizar tabela
+    function renderizarTabela(agendamentos) {
+      const container = document.getElementById('tableContent');
+
+      if (!agendamentos || agendamentos.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <h3>Nenhum agendamento encontrado</h3>
+            <p>Clique em "Novo Agendamento" para criar o primeiro.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Cliente</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Prioridade</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      agendamentos.forEach(a => {
+        const statusClass = a.status || 'pendente';
+        const prioridadeClass = a.prioridade || 'normal';
+        
+        html += `
+          <tr>
+            <td><strong>${formatarDataHora(a.data_agendamento)}</strong></td>
+            <td>
+              <div>${a.cliente_nome || '—'}</div>
+              <small style="color: #666;">${a.cliente_telefone || ''}</small>
+            </td>
+            <td><span class="tipo-badge tipo-${a.tipo}">${traduzirTipo(a.tipo)}</span></td>
+            <td>${a.descricao || '—'}</td>
+            <td><span class="badge badge-${prioridadeClass}">${prioridadeClass}</span></td>
+            <td><span class="badge badge-${statusClass}">${statusClass}</span></td>
+            <td>
+              <div class="actions-cell">
+                ${a.status === 'pendente' ? `
+                  <button class="action-btn complete" onclick="abrirModalConcluir('${a.id}', '${a.cliente_nome || ''}')" title="Concluir">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  </button>
+                ` : ''}
+                <button class="action-btn delete" onclick="excluirAgendamento('${a.id}')" title="Excluir">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // Limpar filtros
+    function limparFiltros() {
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterTipo').value = '';
+      document.getElementById('filterDataInicio').value = '';
+      document.getElementById('filterDataFim').value = '';
+      carregarAgendamentos();
+    }
+
+    // Modal Concluir
+    function abrirModalConcluir(id, clienteNome) {
+      document.getElementById('concluirId').value = id;
+      document.getElementById('concluirCliente').value = clienteNome;
+      document.getElementById('concluirResultado').value = '';
+      document.getElementById('modalConcluir').classList.add('active');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalConcluir').classList.remove('active');
+    }
+
+    async function confirmarConclusao(e) {
+      e.preventDefault();
+      const id = document.getElementById('concluirId').value;
+      const resultado = document.getElementById('concluirResultado').value;
+
+      try {
+        const response = await fetch(`${API_URL}/api/agendamentos/${id}/concluir`, {
+          method: 'PUT',
+          headers: getHeaders(),
+          body: JSON.stringify({ resultado })
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+
+        showToast('Agendamento concluído com sucesso!', 'success');
+        fecharModal();
+        carregarAgendamentos();
+      } catch (err) {
+        console.error('Erro ao concluir:', err);
+        showToast('Erro ao concluir agendamento', 'error');
+      }
+    }
+
+    // Excluir agendamento
+    async function excluirAgendamento(id) {
+      if (!confirm('Deseja realmente excluir este agendamento?')) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/agendamentos/${id}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+
+        showToast('Agendamento excluído!', 'success');
+        carregarAgendamentos();
+      } catch (err) {
+        console.error('Erro ao excluir:', err);
+        showToast('Erro ao excluir agendamento', 'error');
+      }
+    }
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} active`;
+      setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarAgendamentos();
+    });
+  </script>
+</body>
+</html>

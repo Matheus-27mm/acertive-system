@@ -514,6 +514,106 @@
       letter-spacing: 0;
     }
 
+    /* ===== Checkbox de Multa/Juros ===== */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
+      border: 1px solid rgba(246,200,76,.14);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .checkbox-group:hover {
+      border-color: rgba(246,200,76,.28);
+      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
+    }
+
+    .checkbox-group.checked {
+      border-color: rgba(246,200,76,.4);
+      background: linear-gradient(180deg, rgba(246,200,76,.12), rgba(0,0,0,.12));
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      display: none;
+    }
+
+    .checkbox-custom {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 2px solid rgba(246,200,76,.3);
+      background: rgba(0,0,0,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .checkbox-custom i {
+      color: #111;
+      font-size: 12px;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.2s ease;
+    }
+
+    .checkbox-group.checked .checkbox-custom {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-color: var(--gold);
+    }
+
+    .checkbox-group.checked .checkbox-custom i {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .checkbox-content {
+      flex: 1;
+    }
+
+    .checkbox-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .checkbox-hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .checkbox-group.checked .checkbox-label {
+      color: var(--gold);
+    }
+
+    /* Badge de status no checkbox */
+    .checkbox-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .checkbox-badge.ativo {
+      background: rgba(76,175,80,.2);
+      color: var(--green);
+    }
+
+    .checkbox-badge.inativo {
+      background: rgba(167,167,167,.2);
+      color: var(--muted);
+    }
+
     @media (max-width: 920px){
       .container{ grid-template-columns: 1fr; padding-bottom: 40px }
       .row2{ grid-template-columns: 1fr }
@@ -622,8 +722,21 @@
           </div>
         </div>
 
+        <!-- Checkbox Aplicar Multa/Juros -->
+        <div class="checkbox-group checked" id="checkboxMultaGroup">
+          <input type="checkbox" id="aplicarMulta" name="aplicarMulta" checked />
+          <div class="checkbox-custom">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div class="checkbox-content">
+            <span class="checkbox-label">Aplicar Multa e Juros</span>
+            <span class="checkbox-hint">Multa de 2% + juros diários conforme taxa selecionada</span>
+          </div>
+          <span class="checkbox-badge ativo" id="multaBadge">Ativo</span>
+        </div>
+
         <!-- Taxa -->
-        <div class="field-group">
+        <div class="field-group" id="taxaFieldGroup">
           <label for="taxa">Taxa de Juros</label>
           <div class="control">
             <span class="iconLeft"><i class="fa-solid fa-percent"></i></span>
@@ -785,6 +898,47 @@
       valorInput.value = formatarMoeda(centavos);
       valorNumerico.value = valor;
       atualizarResumoValor();
+    };
+
+    // ===== CHECKBOX DE MULTA/JUROS =====
+    const checkboxGroup = document.getElementById('checkboxMultaGroup');
+    const checkboxInput = document.getElementById('aplicarMulta');
+    const multaBadge = document.getElementById('multaBadge');
+    const taxaFieldGroup = document.getElementById('taxaFieldGroup');
+
+    // Toggle do checkbox ao clicar no grupo
+    checkboxGroup.addEventListener('click', function(e) {
+      // Evita duplo toggle se clicar diretamente no input
+      if (e.target === checkboxInput) return;
+      
+      checkboxInput.checked = !checkboxInput.checked;
+      atualizarEstadoCheckbox();
+    });
+
+    // Atualiza estado quando o checkbox muda
+    checkboxInput.addEventListener('change', atualizarEstadoCheckbox);
+
+    function atualizarEstadoCheckbox() {
+      if (checkboxInput.checked) {
+        checkboxGroup.classList.add('checked');
+        multaBadge.textContent = 'Ativo';
+        multaBadge.classList.remove('inativo');
+        multaBadge.classList.add('ativo');
+        taxaFieldGroup.style.opacity = '1';
+        taxaFieldGroup.style.pointerEvents = 'auto';
+      } else {
+        checkboxGroup.classList.remove('checked');
+        multaBadge.textContent = 'Inativo';
+        multaBadge.classList.remove('ativo');
+        multaBadge.classList.add('inativo');
+        taxaFieldGroup.style.opacity = '0.5';
+        taxaFieldGroup.style.pointerEvents = 'none';
+      }
+    }
+
+    // Expõe função global para verificar se multa está ativa
+    window.isMultaAtiva = function() {
+      return checkboxInput.checked;
     };
   </script>
   
