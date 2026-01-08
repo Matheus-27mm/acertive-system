@@ -1,372 +1,190 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Histórico de Ações | ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Histórico - ACERTIVE Enterprise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    :root { --bg-primary: #09090b; --bg-card: rgba(17, 17, 21, 0.95); --bg-sidebar: #0c0c0f; --text-primary: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a; --gold: #F6C84C; --gold-light: #FFD56A; --gold-glow: rgba(246, 200, 76, 0.15); --gold-glow-strong: rgba(246, 200, 76, 0.3); --border: rgba(255, 255, 255, 0.08); --border-gold: rgba(246, 200, 76, 0.2); --green: #22c55e; --green-bg: rgba(34, 197, 94, 0.15); --red: #ef4444; --red-bg: rgba(239, 68, 68, 0.15); --blue: #3b82f6; --blue-bg: rgba(59, 130, 246, 0.15); --orange: #f59e0b; --orange-bg: rgba(245, 158, 11, 0.15); --purple: #a855f7; --purple-bg: rgba(168, 85, 247, 0.15); --cyan: #06b6d4; --cyan-bg: rgba(6, 182, 212, 0.15); --sidebar-width: 280px; --sidebar-collapsed: 80px; --header-height: 70px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2); --transition-fast: 0.15s ease; --transition-normal: 0.25s ease; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
-      min-height: 100vh;
-      color: #e0e0e0;
-    }
-    .navbar {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      padding: 15px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 3px solid #F6C84C;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .navbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .navbar-logo {
-      width: 45px;
-      height: 45px;
-      background: linear-gradient(135deg, #F6C84C, #FFD56A);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 22px;
-      color: #1a1a1a;
-    }
-    .navbar-title {
-      font-size: 24px;
-      font-weight: 900;
-      background: linear-gradient(135deg, #F6C84C, #FFD56A);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .navbar-menu {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .navbar-menu a {
-      color: #e0e0e0;
-      text-decoration: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 13px;
-      transition: all 0.3s;
-    }
-    .navbar-menu a:hover, .navbar-menu a.active {
-      background: linear-gradient(135deg, #F6C84C, #FFD56A);
-      color: #1a1a1a;
-    }
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .page-header {
-      margin-bottom: 30px;
-    }
-    .page-title {
-      font-size: 32px;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-    .page-subtitle {
-      color: #888;
-      font-size: 14px;
-    }
-    .filters-card {
-      background: linear-gradient(145deg, #1e1e1e, #252525);
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 25px;
-      border: 1px solid #333;
-    }
-    .filters-row {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      align-items: end;
-    }
-    .filter-group {
-      flex: 1;
-      min-width: 180px;
-    }
-    .filter-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: #888;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-    .filter-group select {
-      width: 100%;
-      padding: 12px 15px;
-      border-radius: 10px;
-      border: 2px solid #333;
-      background: #1a1a1a;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .filter-group select:focus {
-      outline: none;
-      border-color: #F6C84C;
-    }
-    .btn {
-      padding: 12px 25px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #F6C84C, #FFD56A);
-      color: #1a1a1a;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(246, 200, 76, 0.4);
-    }
-    .btn-secondary {
-      background: #333;
-      color: #fff;
-    }
-    .table-card {
-      background: linear-gradient(145deg, #1e1e1e, #252525);
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid #333;
-    }
-    .table-header {
-      padding: 20px 25px;
-      border-bottom: 1px solid #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .table-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: #fff;
-    }
-    .table-count {
-      background: #333;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #F6C84C;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead th {
-      background: #252525;
-      padding: 15px 20px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 800;
-      color: #888;
-      text-transform: uppercase;
-    }
-    tbody tr {
-      border-bottom: 1px solid #2a2a2a;
-      transition: background 0.2s;
-    }
-    tbody tr:hover {
-      background: rgba(246, 200, 76, 0.05);
-    }
-    tbody td {
-      padding: 15px 20px;
-      font-size: 13px;
-      color: #ccc;
-    }
-    .badge {
-      display: inline-block;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-    .badge-criar { background: #dcfce7; color: #166534; }
-    .badge-atualizar { background: #dbeafe; color: #1e40af; }
-    .badge-excluir { background: #fee2e2; color: #991b1b; }
-    .badge-login { background: #f3e8ff; color: #7c3aed; }
-    .badge-email { background: #fef3c7; color: #854d0e; }
-    .badge-pdf { background: #e0e7ff; color: #3730a3; }
-    .badge-backup { background: #ccfbf1; color: #0f766e; }
-    .badge-default { background: #333; color: #888; }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #F6C84C, #FFD56A);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 12px;
-      color: #1a1a1a;
-    }
-    .user-name {
-      font-weight: 700;
-      color: #fff;
-    }
-    .mono {
-      font-family: 'Courier New', monospace;
-      font-size: 11px;
-      color: #888;
-    }
-    .details-cell {
-      max-width: 250px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 25px;
-      border-top: 1px solid #333;
-    }
-    .pagination button {
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: 2px solid #333;
-      background: transparent;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .pagination button:hover:not(:disabled) {
-      border-color: #F6C84C;
-      color: #F6C84C;
-    }
-    .pagination button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #666;
-    }
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #888;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000; display: flex; flex-direction: column; transition: width var(--transition-normal); }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
+    .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-info, .sidebar.collapsed .nav-section-title { display: none; }
+    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+    .logo-icon { min-width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text span:first-child { font-size: 20px; font-weight: 800; }
+    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
+    .nav-links { display: flex; flex-direction: column; gap: 4px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative; }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0; }
+    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: var(--blue); color: white; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .user-menu-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
+
+    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left var(--transition-normal); }
+    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+
+    .header { height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .sidebar-toggle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-item { color: var(--text-muted); }
+    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
+
+    .page-content { padding: 32px; }
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .page-title-icon { width: 42px; height: 42px; background: var(--gold-glow-strong); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+    .page-subtitle { color: var(--text-muted); font-size: 14px; }
+
+    .filters-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; }
+    .filters-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-group { flex: 1; min-width: 180px; }
+    .filter-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .filter-select { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; cursor: pointer; }
+    .filter-select:focus { outline: none; border-color: var(--gold); }
+    .filter-select option { background: var(--bg-primary); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: all var(--transition-fast); border: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+
+    .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .table-title { font-size: 16px; font-weight: 700; }
+    .table-count { background: var(--gold-glow); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--gold); }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    thead th { background: rgba(0,0,0,0.3); padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    tbody td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+    tbody tr { transition: all var(--transition-fast); }
+    tbody tr:hover { background: var(--gold-glow); }
+
+    .user-cell { display: flex; align-items: center; gap: 10px; }
+    .user-cell-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; color: var(--bg-primary); }
+    .user-cell-name { font-weight: 600; color: var(--text-primary); }
+
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .badge-criar { background: var(--green-bg); color: var(--green); }
+    .badge-atualizar { background: var(--blue-bg); color: var(--blue); }
+    .badge-excluir { background: var(--red-bg); color: var(--red); }
+    .badge-login { background: var(--purple-bg); color: var(--purple); }
+    .badge-email { background: var(--orange-bg); color: var(--orange); }
+    .badge-pdf { background: var(--cyan-bg); color: var(--cyan); }
+    .badge-backup { background: var(--green-bg); color: var(--green); }
+    .badge-default { background: rgba(100,100,100,0.2); color: #888; }
+
+    .mono { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-muted); }
+    .details-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 20px; border-top: 1px solid var(--border); }
+    .pagination button { padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+    .pagination button:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pagination span { color: var(--text-muted); font-size: 13px; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: var(--gold); }
+    .loading-cell { text-align: center; padding: 40px !important; color: var(--text-muted); }
+
+    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-wrapper { margin-left: 0; } }
+    @media (max-width: 768px) { .filters-row { flex-direction: column; } .filter-group { width: 100%; } }
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="navbar-brand">
-      <div class="navbar-logo">A</div>
-      <span class="navbar-title">ACERTIVE</span>
-    </div>
-    <div class="navbar-menu">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/cobrancas">Cobranças</a>
-      <a href="/clientes-ativos">Clientes</a>
-      <a href="/historico" class="active">Histórico</a>
-      <a href="/usuarios">Usuários</a>
-      <a href="/login" id="btnLogout">Sair</a>
-    </div>
-  </nav>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links">
+        <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a>
+        <a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a>
+        <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a>
+        <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a>
+      </div></div>
+      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links">
+        <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a>
+        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a>
+        <a href="/historico" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a>
+      </div></div>
+      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links">
+        <a href="/usuarios" class="nav-link"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a>
+        <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a>
+      </div></div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+  </aside>
 
-  <div class="container">
-    <div class="page-header">
-      <h1 class="page-title">📜 Histórico de Ações</h1>
-      <p class="page-subtitle">Auditoria completa de todas as ações realizadas no sistema</p>
-    </div>
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+        <div class="breadcrumb"><span class="breadcrumb-item">Financeiro</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Histórico</span></div>
+      </div>
+    </header>
 
-    <div class="filters-card">
-      <div class="filters-row">
-        <div class="filter-group">
-          <label>Entidade</label>
-          <select id="filtroEntidade">
-            <option value="">Todas</option>
-            <option value="cobrancas">Cobranças</option>
-            <option value="clientes">Clientes</option>
-            <option value="users">Usuários</option>
-            <option value="sistema">Sistema</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Ação</label>
-          <select id="filtroAcao">
-            <option value="">Todas</option>
-            <option value="CRIAR">Criar</option>
-            <option value="ATUALIZAR">Atualizar</option>
-            <option value="ATUALIZAR_STATUS">Atualizar Status</option>
-            <option value="EXCLUIR">Excluir</option>
-            <option value="LOGIN">Login</option>
-            <option value="ENVIAR_EMAIL">Enviar E-mail</option>
-            <option value="GERAR_PDF">Gerar PDF</option>
-            <option value="BACKUP">Backup</option>
-          </select>
-        </div>
-        <div class="filter-group" style="flex: 0;">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary" onclick="carregarHistorico()">🔍 Filtrar</button>
-        </div>
-        <div class="filter-group" style="flex: 0;">
-          <label>&nbsp;</label>
-          <button class="btn btn-secondary" onclick="limparFiltros()">Limpar</button>
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>Histórico de Ações</h1>
+        <p class="page-subtitle">Auditoria completa de todas as ações do sistema</p>
+      </div>
+
+      <div class="filters-card">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label>Entidade</label>
+            <select class="filter-select" id="filtroEntidade"><option value="">Todas</option><option value="cobrancas">Cobranças</option><option value="clientes">Clientes</option><option value="users">Usuários</option><option value="sistema">Sistema</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Ação</label>
+            <select class="filter-select" id="filtroAcao"><option value="">Todas</option><option value="CRIAR">Criar</option><option value="ATUALIZAR">Atualizar</option><option value="ATUALIZAR_STATUS">Atualizar Status</option><option value="EXCLUIR">Excluir</option><option value="LOGIN">Login</option><option value="ENVIAR_EMAIL">Enviar E-mail</option><option value="GERAR_PDF">Gerar PDF</option><option value="BACKUP">Backup</option></select>
+          </div>
+          <div class="filter-group" style="flex:0;"><label>&nbsp;</label><button class="btn btn-primary" onclick="carregarHistorico()"><i class="fa-solid fa-search"></i> Filtrar</button></div>
+          <div class="filter-group" style="flex:0;"><label>&nbsp;</label><button class="btn btn-secondary" onclick="limparFiltros()">Limpar</button></div>
         </div>
       </div>
-    </div>
 
-    <div class="table-card">
-      <div class="table-header">
-        <h3 class="table-title">Registros de Auditoria</h3>
-        <span class="table-count" id="totalRegistros">0 registros</span>
+      <div class="table-card">
+        <div class="table-header"><h3 class="table-title">Registros de Auditoria</h3><span class="table-count" id="totalRegistros">0 registros</span></div>
+        <div class="table-wrapper" id="tabelaContainer"><div class="loading-cell"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div></div>
+        <div class="pagination" id="paginacao"></div>
       </div>
-      <div id="tabelaContainer">
-        <div class="loading">Carregando...</div>
-      </div>
-      <div class="pagination" id="paginacao"></div>
-    </div>
+    </main>
   </div>
 
   <script>
     const API_URL = window.location.origin;
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
     let paginaAtual = 0;
     const limitePorPagina = 50;
 
-    function getToken() { return localStorage.getItem('token'); }
-    function checkAuth() { if (!getToken()) window.location.href = '/login'; }
-
-    document.getElementById('btnLogout').addEventListener('click', (e) => {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 1024) sidebar.classList.toggle('open');
+      else sidebar.classList.toggle('collapsed');
     });
+    document.getElementById('btnLogout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = '/login'; });
 
     function getBadgeClass(acao) {
       if (acao.includes('CRIAR') || acao.includes('IMPORTAR')) return 'badge-criar';
@@ -379,27 +197,17 @@
       return 'badge-default';
     }
 
-    function formatarData(data) {
-      if (!data) return '—';
-      return new Date(data).toLocaleString('pt-BR');
-    }
-
+    function formatarData(data) { if (!data) return '—'; return new Date(data).toLocaleString('pt-BR'); }
     function formatarDetalhes(detalhes) {
       if (!detalhes) return '—';
-      try {
-        const obj = typeof detalhes === 'string' ? JSON.parse(detalhes) : detalhes;
-        return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(', ');
-      } catch { return String(detalhes); }
+      try { const obj = typeof detalhes === 'string' ? JSON.parse(detalhes) : detalhes; return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(', '); }
+      catch { return String(detalhes); }
     }
-
-    function getIniciais(nome) {
-      if (!nome) return '?';
-      return nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    }
+    function getIniciais(nome) { if (!nome) return '?'; return nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(); }
 
     async function carregarHistorico() {
       const container = document.getElementById('tabelaContainer');
-      container.innerHTML = '<div class="loading">Carregando...</div>';
+      container.innerHTML = '<div class="loading-cell"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
 
       const params = new URLSearchParams();
       const entidade = document.getElementById('filtroEntidade').value;
@@ -410,20 +218,13 @@
       params.append('offset', paginaAtual * limitePorPagina);
 
       try {
-        const res = await fetch(`${API_URL}/api/historico?${params}`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        const res = await fetch(`${API_URL}/api/historico?${params}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
-
-        if (!data.success) {
-          container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><p>${data.message}</p></div>`;
-          return;
-        }
 
         document.getElementById('totalRegistros').textContent = `${data.total || 0} registros`;
 
-        if (!data.data?.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhum registro encontrado</p></div>';
+        if (!data.success || !data.data?.length) {
+          container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><h3>Nenhum registro encontrado</h3></div>';
           renderizarPaginacao(0);
           return;
         }
@@ -431,7 +232,7 @@
         let html = `<table><thead><tr><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Detalhes</th><th>IP</th><th>Data/Hora</th></tr></thead><tbody>`;
         data.data.forEach(log => {
           html += `<tr>
-            <td><div class="user-info"><div class="user-avatar">${getIniciais(log.usuario_nome)}</div><span class="user-name">${log.usuario_nome || 'Sistema'}</span></div></td>
+            <td><div class="user-cell"><div class="user-cell-avatar">${getIniciais(log.usuario_nome)}</div><span class="user-cell-name">${log.usuario_nome || 'Sistema'}</span></div></td>
             <td><span class="badge ${getBadgeClass(log.acao)}">${log.acao}</span></td>
             <td>${log.entidade}</td>
             <td class="details-cell" title="${formatarDetalhes(log.detalhes)}">${formatarDetalhes(log.detalhes)}</td>
@@ -444,7 +245,7 @@
         renderizarPaginacao(data.total || 0);
       } catch (err) {
         console.error(err);
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>Erro ao carregar</p></div>';
+        container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-exclamation-triangle"></i><h3>Erro ao carregar</h3></div>';
       }
     }
 
@@ -452,22 +253,25 @@
       const totalPaginas = Math.ceil(total / limitePorPagina);
       const pag = document.getElementById('paginacao');
       if (totalPaginas <= 1) { pag.innerHTML = ''; return; }
-      pag.innerHTML = `
-        <button onclick="mudarPagina(-1)" ${paginaAtual === 0 ? 'disabled' : ''}>← Anterior</button>
-        <span style="padding:10px 20px;color:#888">Página ${paginaAtual + 1} de ${totalPaginas}</span>
-        <button onclick="mudarPagina(1)" ${paginaAtual >= totalPaginas - 1 ? 'disabled' : ''}>Próxima →</button>
-      `;
+      pag.innerHTML = `<button onclick="mudarPagina(-1)" ${paginaAtual === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Anterior</button><span>Página ${paginaAtual + 1} de ${totalPaginas}</span><button onclick="mudarPagina(1)" ${paginaAtual >= totalPaginas - 1 ? 'disabled' : ''}>Próxima <i class="fa-solid fa-chevron-right"></i></button>`;
     }
 
     function mudarPagina(d) { paginaAtual += d; carregarHistorico(); }
-    function limparFiltros() {
-      document.getElementById('filtroEntidade').value = '';
-      document.getElementById('filtroAcao').value = '';
-      paginaAtual = 0;
-      carregarHistorico();
+    function limparFiltros() { document.getElementById('filtroEntidade').value = ''; document.getElementById('filtroAcao').value = ''; paginaAtual = 0; carregarHistorico(); }
+
+    async function carregarUsuario() {
+      try {
+        const resp = await fetch(`${API_URL}/api/usuarios/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await resp.json();
+        if (result.success && result.data) {
+          document.getElementById('userName').textContent = result.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = result.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (result.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (err) {}
     }
 
-    checkAuth();
+    carregarUsuario();
     carregarHistorico();
   </script>
 </body>

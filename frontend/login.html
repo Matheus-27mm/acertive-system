@@ -1,688 +1,209 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acertive • Login</title>
-
-  <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - ACERTIVE Enterprise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
   <style>
-    :root{
-      /* ===== Paleta premium (mesmo padrão do sistema) ===== */
-      --bg1:#070707;
-      --bg2:#0f0f12;
-
-      --card: rgba(17,17,20,.72);
-      --card2: rgba(10,10,12,.92);
-
-      --text:#EAEAEA;
-      --text2:#CFCFCF;
-      --muted:#A7A7A7;
-
-      --gold:#F6C84C;
-      --gold2:#FFD56A;
-      --gold-weak: rgba(246,200,76,.35);
-
-      --line: rgba(246,200,76,.14);
-
-      --shadow: 0 18px 60px rgba(0,0,0,.62);
-      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
-
-      --radius:18px;
-      
-      /* Status colors */
-      --green: #4CAF50;
-      --red: #F44336;
+    :root {
+      --bg-primary: #09090b; --bg-card: rgba(17, 17, 21, 0.95);
+      --text-primary: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a;
+      --gold: #F6C84C; --gold-light: #FFD56A; --gold-glow: rgba(246, 200, 76, 0.15);
+      --border: rgba(255, 255, 255, 0.08); --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e; --red: #ef4444;
+      --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
+      --transition-fast: 0.15s ease;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(246,200,76,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(246,200,76,0.05) 0%, transparent 50%);
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.1;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
     }
 
-    *{margin:0;padding:0;box-sizing:border-box}
+    .login-wrapper { width: 100%; max-width: 440px; animation: fadeUp 0.6s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-    body{
-      font-family:'Montserrat',sans-serif;
-      min-height:100vh;
-      color:var(--text);
-      background:
-        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
-        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      position: relative;
-      overflow: hidden;
+    .brand { text-align: center; margin-bottom: 32px; }
+    .logo-icon {
+      width: 80px; height: 80px; margin: 0 auto 20px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 20px; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 36px; color: var(--bg-primary);
+      box-shadow: var(--shadow-gold); animation: pulse 3s ease-in-out infinite;
     }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .brand h1 { font-size: 32px; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--gold-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+    .brand p { color: var(--text-muted); font-size: 14px; font-weight: 500; }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      opacity:.18;
-      background-image:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
-      animation: gridMove 30s linear infinite;
+    .login-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+      padding: 36px; backdrop-filter: blur(20px); position: relative; overflow: hidden;
+    }
+    .login-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
     }
 
-    @keyframes gridMove {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(40px, 40px); }
-    }
+    .card-header { margin-bottom: 28px; text-align: center; }
+    .card-header h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+    .card-header p { color: var(--text-muted); font-size: 14px; }
 
-    /* Floating particles */
-    .particles {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .input-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 16px; pointer-events: none; transition: all var(--transition-fast); }
+    .form-input {
+      width: 100%; padding: 16px 16px 16px 50px; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: var(--radius-md); color: var(--text-primary); font-size: 15px; font-weight: 500; transition: all var(--transition-fast);
     }
+    .form-input:focus { outline: none; border-color: var(--gold); background: var(--gold-glow); box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.1); }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-group.error .form-input { border-color: var(--red); }
+    .form-group.error .input-icon { color: var(--red); }
+    .form-group:focus-within .input-icon { transform: translateY(-50%) scale(1.1); }
 
-    .particle {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: var(--gold);
-      border-radius: 50%;
-      opacity: 0;
-      animation: float 15s infinite;
+    .toggle-password {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast);
     }
+    .toggle-password:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
 
-    @keyframes float {
-      0% {
-        opacity: 0;
-        transform: translateY(100vh) translateX(0) scale(0);
-      }
-      10% {
-        opacity: 0.5;
-      }
-      90% {
-        opacity: 0.5;
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-100vh) translateX(100px) scale(1);
-      }
+    .btn-login {
+      width: 100%; padding: 16px; margin-top: 8px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light)); border: none;
+      border-radius: var(--radius-md); color: var(--bg-primary); font-size: 15px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all var(--transition-fast); box-shadow: var(--shadow-gold);
     }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(246, 200, 76, 0.3); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+    .btn-login.loading i { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .wrap{
-      width:100%;
-      max-width:520px;
-      position:relative;
-      z-index:1;
-      animation: zoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+    .card-footer { margin-top: 28px; text-align: center; padding-top: 24px; border-top: 1px solid var(--border); }
+    .card-footer p { color: var(--text-muted); font-size: 12px; font-weight: 500; }
+    .card-footer strong { color: var(--gold); }
 
-    @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
+    .error-message { display: none; color: var(--red); font-size: 12px; font-weight: 600; margin-top: 8px; padding-left: 50px; }
+    .form-group.error .error-message { display: block; animation: shake 0.3s ease; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-    /* =======================
-       BRAND LOGO
-    ======================= */
-    .brand {
-      text-align: center;
-      margin-bottom: 24px;
-      animation: slideDown 0.8s ease 0.2s both;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 16px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
-      box-shadow: 0 20px 40px rgba(246,200,76,.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      font-weight: 900;
-      color: #111;
-      animation: pulse 3s ease-in-out infinite;
-      position: relative;
-    }
-
-    @keyframes pulse {
-      0%, 100% { 
-        transform: scale(1);
-        box-shadow: 0 20px 40px rgba(246,200,76,.3);
-      }
-      50% { 
-        transform: scale(1.05);
-        box-shadow: 0 25px 50px rgba(246,200,76,.4);
-      }
-    }
-
-    .logo::before {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      opacity: 0.3;
-      filter: blur(20px);
-      z-index: -1;
-    }
-
-    .brand h1 {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-    }
-
-    .brand p {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* =======================
-       CARD
-    ======================= */
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(246,200,76,.14);
-      box-shadow: var(--shadow);
-      padding: 32px 30px;
-      position: relative;
-      overflow: hidden;
-      animation: fadeUp 0.6s ease 0.3s both;
-      backdrop-filter: blur(10px);
-    }
-
-    @keyframes fadeUp{
-      from{opacity:0; transform:translateY(20px)}
-      to{opacity:1; transform:translateY(0)}
-    }
-
-    /* Shine effect */
-    .card::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: linear-gradient(
-        120deg,
-        transparent 0%,
-        rgba(246,200,76,.12) 25%,
-        transparent 55%
-      );
-      transform: translateX(-45%);
-      opacity: 0;
-      pointer-events:none;
-      transition: opacity .4s ease;
-    }
-
-    .card:hover::after,
-    .card:focus-within::after{
-      opacity: .55;
-      animation: shine 6.5s ease-in-out infinite;
-    }
-
-    @keyframes shine{
-      0%{transform:translateX(-45%)}
-      50%{transform:translateX(35%)}
-      100%{transform:translateX(-45%)}
-    }
-
-    .cardHeader{
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:20px;
-      position:relative;
-      z-index:2;
-      align-items: flex-start;
-    }
-
-    .cardHeader h2{
-      font-size:22px;
-      color: var(--gold);
-      letter-spacing:.3px;
-      font-weight: 900;
-    }
-
-    .cardHeader p{
-      margin-top:8px;
-      font-size:13px;
-      color: var(--muted);
-      opacity:.95;
-      line-height: 1.5;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(246,200,76,.18);
-      background:rgba(0,0,0,.22);
-      color: var(--text2);
-      font-weight:800;
-      font-size:12px;
-      white-space:nowrap;
-      flex-shrink: 0;
-    }
-    .pill i{color: var(--gold);}
-
-    .divider{
-      height:1px;
-      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
-      margin:16px 0;
-      position:relative;
-      z-index:2;
-    }
-
-    /* =======================
-       FORM
-    ======================= */
-    .form{
-      display:grid;
-      gap:16px;
-      position:relative;
-      z-index:2;
-    }
-
-    .field{
-      display:grid;
-      gap:8px;
-      transition: transform .2s ease;
-    }
-
-    .field:focus-within{
-      transform: translateY(-2px);
-    }
-
-    .field.error {
-      animation: shake 0.3s ease;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-
-    .field label{
-      font-size:13px;
-      font-weight:700;
-      color: var(--text2);
-      opacity:.95;
-      letter-spacing: 0.3px;
-    }
-
-    .field.filled label {
-      color: var(--gold);
-    }
-
-    .field.error label {
-      color: var(--red);
-    }
-
-    .control{
-      position:relative;
-    }
-
-    .control input{
-      width:100%;
-      padding:14px 48px;
-      border-radius:12px;
-      border:1px solid rgba(246,200,76,.14);
-      background:rgba(0,0,0,.22);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.2s ease;
-    }
-    
-    .control input::placeholder{
-      color: rgba(234,234,234,.40);
-      font-weight: 400;
-    }
-
-    .control input:focus{
-      outline:none;
-      border-color:rgba(246,200,76,.45);
-      box-shadow:0 0 0 4px rgba(246,200,76,.12);
-      background:rgba(0,0,0,.30);
-      transform: translateY(-1px);
-    }
-
-    .field.error .control input {
-      border-color: var(--red);
-      background: rgba(244,67,54,.05);
-    }
-
-    .field.error .control input:focus {
-      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
-    }
-
-    .iconLeft,.iconRight{
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-      width:40px;
-      height:40px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: var(--gold);
-      transition: all 0.3s ease;
-    }
-
-    .field:focus-within .iconLeft {
-      transform: translateY(-50%) scale(1.15);
-    }
-
-    .field.error .iconLeft,
-    .field.error .iconRight {
-      color: var(--red);
-    }
-
-    .iconLeft{left:4px}
-    .iconRight{right:4px}
-
-    .btnIcon{
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(246,200,76,.18);
-      border-radius:10px;
-      cursor:pointer;
-      transition: all 0.2s ease;
-      width: 36px;
-      height: 36px;
-    }
-    
-    .btnIcon:hover{
-      transform: translateY(-1px) scale(1.05);
-      background: rgba(0,0,0,.32);
-      border-color: rgba(246,200,76,.28);
-    }
-
-    .error-message {
-      display: none;
-      color: var(--red);
-      font-size: 12px;
-      font-weight: 700;
-      margin-top: -4px;
-      padding-left: 48px;
-    }
-
-    .field.error .error-message {
-      display: block;
-    }
-
-    /* =======================
-       BOTÃO
-    ======================= */
-    .btn{
-      margin-top:12px;
-      width:100%;
-      padding:15px;
-      border-radius:12px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      font-size: 15px;
-      letter-spacing: 0.5px;
-      color:#121212;
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
-      box-shadow:0 10px 24px rgba(246,200,76,.2);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .btn:hover::before {
-      width: 400px;
-      height: 400px;
-    }
-
-    .btn:hover{
-      transform:translateY(-2px);
-      box-shadow:0 14px 32px rgba(246,200,76,.25);
-      filter: saturate(1.05);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn.loading{
-      pointer-events:none;
-      opacity:.85;
-    }
-
-    .btn.loading i{
-      animation: spin .9s linear infinite;
-    }
-
-    @keyframes spin{
-      to{transform:rotate(360deg)}
-    }
-
-    .foot{
-      margin-top:20px;
-      font-size:12px;
-      text-align:center;
-      color: var(--muted);
-      line-height: 1.6;
-      position: relative;
-      z-index: 2;
-    }
-
-    .foot::before {
-      content: '';
-      display: block;
-      width: 60px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 16px auto;
-    }
-
-    .link{
-      color: var(--gold2);
-      font-weight:800;
-      text-decoration:none;
-      transition: all 0.2s ease;
-    }
-    
-    .link:hover{ 
-      text-decoration: underline;
-      color: var(--gold);
-    }
-
-    /* Success animation */
-    @keyframes successPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
-    .card.success {
-      animation: successPulse 0.5s ease;
-      border-color: var(--green);
-    }
-
-    /* Mobile adjustments */
-    @media (max-width: 560px) {
-      .brand h1 { font-size: 26px; }
-      .logo { width: 70px; height: 70px; font-size: 32px; }
-      .card { padding: 28px 24px; }
-      .cardHeader { flex-direction: column; }
-      .pill { align-self: flex-start; }
-    }
+    @media (max-width: 480px) { .login-card { padding: 28px 24px; } .brand h1 { font-size: 28px; } .logo-icon { width: 70px; height: 70px; font-size: 30px; } }
   </style>
 </head>
-
 <body>
-  <!-- Floating particles -->
-  <div class="particles" id="particles"></div>
-
-  <div class="wrap">
-    <!-- Brand -->
+  <div class="login-wrapper">
     <div class="brand">
-    <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:200px;height:200px;">      <p>Sistema de Cobranças Premium</p>
+      <div class="logo-icon">A</div>
+      <h1>ACERTIVE</h1>
+      <p>Sistema de Cobranças Enterprise</p>
     </div>
 
-    <!-- Login Card -->
-    <main class="card">
-      <div class="cardHeader">
-        <div>
-          <h2>Bem-vindo de volta</h2>
-          <p>Use suas credenciais para acessar o painel administrativo.</p>
-        </div>
-        <div class="pill"><i class="fa-solid fa-shield-halved"></i> Seguro</div>
+    <div class="login-card">
+      <div class="card-header">
+        <h2>Bem-vindo de volta</h2>
+        <p>Faça login para acessar o sistema</p>
       </div>
 
-      <div class="divider"></div>
-
-      <form id="loginForm" class="form">
-        <div class="field">
-          <label>E-mail</label>
-          <div class="control">
-            <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
-            <input type="email" id="email" placeholder="seu@email.com" required autocomplete="email">
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">E-mail</label>
+          <div class="input-wrapper">
+            <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+            <input type="email" class="form-input" id="email" placeholder="seu@email.com" required autocomplete="email">
           </div>
           <div class="error-message">E-mail inválido</div>
         </div>
 
-        <div class="field">
-          <label>Senha</label>
-          <div class="control">
-            <span class="iconLeft"><i class="fa-solid fa-key"></i></span>
-            <input type="password" id="senha" placeholder="••••••••" required autocomplete="current-password">
-            <button type="button" class="iconRight btnIcon" id="toggleSenha" title="Mostrar/Ocultar senha">
-              <i class="fa-solid fa-eye"></i>
-            </button>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <div class="input-wrapper">
+            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" class="form-input" id="senha" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-password" id="toggleSenha"><i class="fa-solid fa-eye"></i></button>
           </div>
           <div class="error-message">Senha incorreta</div>
         </div>
 
-        <button class="btn" type="submit">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          Entrar
+        <button type="submit" class="btn-login" id="btnLogin">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
         </button>
-
-        <div class="foot">
-          <strong>ACERTIVE</strong> © 2025 • Todos os direitos reservados
-        </div>
       </form>
-    </main>
+
+      <div class="card-footer">
+        <p><strong>ACERTIVE</strong> © 2025 • Todos os direitos reservados</p>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
-
-  <!-- Generate floating particles -->
   <script>
-    (function() {
-      const particlesContainer = document.getElementById('particles');
-      const particleCount = 15;
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 15 + 's';
-        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-        particlesContainer.appendChild(particle);
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('btnLogin');
+    const toggleSenha = document.getElementById('toggleSenha');
+    const senha = document.getElementById('senha');
+    const email = document.getElementById('email');
+
+    toggleSenha.addEventListener('click', () => {
+      const isPassword = senha.type === 'password';
+      senha.type = isPassword ? 'text' : 'password';
+      toggleSenha.innerHTML = `<i class="fa-solid fa-eye${isPassword ? '-slash' : ''}"></i>`;
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Entrando...';
+
+      try {
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.value, senha: senha.value })
+        });
+        const data = await resp.json();
+
+        if (data.success && data.token) {
+          localStorage.setItem('token', data.token);
+          if (data.user) localStorage.setItem('usuarioLogado', JSON.stringify(data.user));
+          Toastify({ text: 'Login realizado com sucesso!', duration: 2000, gravity: 'top', position: 'right', style: { background: '#22c55e', borderRadius: '12px', fontWeight: '600' } }).showToast();
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+        } else {
+          document.querySelectorAll('.form-group').forEach(g => g.classList.add('error'));
+          Toastify({ text: data.message || 'Credenciais inválidas', duration: 3000, gravity: 'top', position: 'right', style: { background: '#ef4444', borderRadius: '12px', fontWeight: '600' } }).showToast();
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+        }
+      } catch (err) {
+        console.error(err);
+        Toastify({ text: 'Erro de conexão', duration: 3000, gravity: 'top', position: 'right', style: { background: '#ef4444', borderRadius: '12px', fontWeight: '600' } }).showToast();
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
       }
-    })();
+    });
+
+    email.addEventListener('input', () => email.closest('.form-group').classList.remove('error'));
+    senha.addEventListener('input', () => senha.closest('.form-group').classList.remove('error'));
+    window.addEventListener('load', () => setTimeout(() => email.focus(), 300));
   </script>
-
-  <!-- UX: loading + toggle senha + field states -->
-  <script>
-    const form = document.getElementById("loginForm");
-    const btn = form.querySelector(".btn");
-    const toggleSenha = document.getElementById("toggleSenha");
-    const senha = document.getElementById("senha");
-    const email = document.getElementById("email");
-
-    // Field state management
-    function updateFieldState(input) {
-      const field = input.closest('.field');
-      if (!field) return;
-      
-      if (input.value.trim()) {
-        field.classList.add('filled');
-        field.classList.remove('error');
-      } else {
-        field.classList.remove('filled');
-      }
-    }
-
-    email.addEventListener('input', () => updateFieldState(email));
-    senha.addEventListener('input', () => updateFieldState(senha));
-
-    // Form submission
-    form.addEventListener("submit", () => {
-      btn.classList.add("loading");
-      btn.innerHTML = '<i class="fa-solid fa-circle-notch"></i> Entrando...';
-    });
-
-    // Toggle password visibility
-    toggleSenha.addEventListener("click", () => {
-      const isPassword = senha.type === "password";
-      senha.type = isPassword ? "text" : "password";
-      toggleSenha.innerHTML = isPassword
-        ? '<i class="fa-solid fa-eye-slash"></i>'
-        : '<i class="fa-solid fa-eye"></i>';
-    });
-
-    // Auto-focus email on load
-    window.addEventListener('load', () => {
-      setTimeout(() => email.focus(), 300);
-    });
-  </script>
-
-  <!-- Main login logic -->
   <script src="/js/login.js"></script>
 </body>
 </html>

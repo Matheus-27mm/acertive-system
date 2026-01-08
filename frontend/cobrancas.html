@@ -1,571 +1,1355 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cobranças - ACERTIVE</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); min-height: 100vh; color: #fff; }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cobranças - ACERTIVE Enterprise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #0f0f12;
+      --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-card-hover: rgba(24, 24, 30, 0.98);
+      --bg-sidebar: #0c0c0f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #F6C84C;
+      --gold-light: #FFD56A;
+      --gold-dark: #d4a833;
+      --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 280px;
+      --sidebar-collapsed: 80px;
+      --header-height: 70px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s ease;
+    }
 
-/* Topbar */
-.topbar { background: linear-gradient(135deg, #1a1a1a, #252525); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #F6C84C; position: sticky; top: 0; z-index: 100; }
-.topbar-left { display: flex; align-items: center; gap: 15px; }
-.topbar-logo { width: 50px; height: 50px; border-radius: 12px; }
-.topbar-title { font-size: 24px; font-weight: 900; color: #F6C84C; letter-spacing: 1px; }
-.topbar-nav { display: flex; gap: 10px; }
-.topbar-nav a { color: #ccc; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.3s; }
-.topbar-nav a:hover, .topbar-nav a.active { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; }
-.btn-logout { background: #dc3545; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-.btn-logout:hover { background: #c82333; transform: scale(1.05); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-/* Container */
-.container { max-width: 1400px; margin: 0 auto; padding: 30px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
-.page-title { font-size: 32px; font-weight: 900; color: #F6C84C; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold-glow); }
 
-/* Filtros */
-.filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
-.filter-btn { background: #2a2a2a; color: #ccc; border: 2px solid #333; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.filter-btn:hover, .filter-btn.active { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; border-color: #F6C84C; }
-.search-input { background: #2a2a2a; border: 2px solid #333; color: #fff; padding: 10px 15px; border-radius: 10px; font-size: 14px; width: 250px; }
-.search-input:focus { outline: none; border-color: #F6C84C; }
-.search-input::placeholder { color: #666; }
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      position: fixed; left: 0; top: 0;
+      width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      z-index: 1000;
+      display: flex; flex-direction: column;
+      transition: width var(--transition-normal);
+    }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
+    .sidebar.collapsed .nav-text,
+    .sidebar.collapsed .logo-text,
+    .sidebar.collapsed .user-info,
+    .sidebar.collapsed .nav-section-title { display: none; }
+    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
+    .sidebar.collapsed .user-avatar { margin: 0 auto; }
 
-/* Tabela */
-.table-container { background: linear-gradient(135deg, #1e1e1e, #252525); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-table { width: 100%; border-collapse: collapse; }
-thead th { background: linear-gradient(135deg, #1a1a1a, #2a2a2a); color: #F6C84C; padding: 18px 15px; text-align: left; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 3px solid #F6C84C; }
-tbody tr { border-bottom: 1px solid #333; transition: all 0.3s; }
-tbody tr:hover { background: rgba(246, 200, 76, 0.05); }
-tbody td { padding: 18px 15px; color: #ddd; font-size: 14px; }
-.cliente-nome { font-weight: 700; color: #fff; }
-.valor { font-weight: 800; color: #F6C84C; font-size: 16px; }
+    .sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .logo-icon {
+      min-width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 22px; color: var(--bg-primary);
+      box-shadow: var(--shadow-gold);
+    }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text span:first-child { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-/* Badges de Status */
-.badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-.badge-pago { background: #dcfce7; color: #166534; }
-.badge-pendente { background: #fef3c7; color: #854d0e; }
-.badge-vencido { background: #fee2e2; color: #991b1b; }
+    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-section-title {
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      padding: 0 12px; margin-bottom: 10px;
+    }
+    .nav-links { display: flex; flex-direction: column; gap: 4px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: var(--radius-md);
+      color: var(--text-secondary); text-decoration: none;
+      font-weight: 500; font-size: 14px;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active {
+      background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
+      color: var(--gold);
+    }
+    .nav-link.active::before {
+      content: ''; position: absolute; left: 0; top: 50%;
+      transform: translateY(-50%); width: 3px; height: 24px;
+      background: var(--gold); border-radius: 0 3px 3px 0;
+    }
+    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-badge {
+      margin-left: auto; padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 700;
+    }
+    .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
+    .nav-badge.red { background: var(--red); color: white; }
+    .nav-badge.blue { background: var(--blue); color: white; }
 
-/* Ações */
-.acoes { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-acao { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
-.btn-pdf { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; }
-.btn-email { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #fff; }
-.btn-whatsapp { background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; }
-.btn-ia { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
-.btn-status { background: #333; color: #ccc; }
-.btn-excluir { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; }
-.btn-acao:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-md); cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .user-card:hover { background: rgba(255,255,255,0.06); }
+    .user-avatar {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; color: var(--bg-primary);
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .user-menu-btn {
+      width: 28px; height: 28px; background: transparent; border: none;
+      color: var(--text-muted); cursor: pointer; border-radius: 6px;
+      transition: all var(--transition-fast);
+    }
+    .user-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 
-/* Empty State */
-.empty-state { text-align: center; padding: 60px 20px; color: #666; }
-.empty-state h3 { font-size: 24px; margin-bottom: 10px; color: #888; }
+    /* ========== MAIN CONTENT ========== */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+      transition: margin-left var(--transition-normal);
+    }
+    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
 
-/* Modal */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-.modal-overlay.active { display: flex; }
-.modal { background: linear-gradient(135deg, #1e1e1e, #252525); border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 2px solid #F6C84C; box-shadow: 0 20px 60px rgba(246, 200, 76, 0.2); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #333; }
-.modal-title { font-size: 22px; font-weight: 900; color: #F6C84C; display: flex; align-items: center; gap: 10px; }
-.modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; transition: color 0.3s; }
-.modal-close:hover { color: #F6C84C; }
+    /* ========== HEADER ========== */
+    .header {
+      height: var(--header-height);
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+    }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .sidebar-toggle {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
+    
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-item { color: var(--text-muted); }
+    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
+    .breadcrumb-separator { color: var(--text-muted); }
 
-/* Form no Modal */
-.form-group { margin-bottom: 20px; }
-.form-label { display: block; color: #ccc; font-weight: 700; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-.form-select { width: 100%; background: #2a2a2a; border: 2px solid #333; color: #fff; padding: 12px 15px; border-radius: 10px; font-size: 14px; cursor: pointer; }
-.form-select:focus { outline: none; border-color: #F6C84C; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-btn {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .header-btn:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
+    
+    .header-search {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      min-width: 280px;
+      transition: all var(--transition-fast);
+    }
+    .header-search:focus-within { border-color: var(--border-gold); background: var(--gold-glow); }
+    .header-search i { color: var(--text-muted); font-size: 14px; }
+    .header-search input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text-primary); font-size: 13px;
+    }
+    .header-search input::placeholder { color: var(--text-muted); }
 
-/* Mensagem Gerada */
-.mensagem-container { background: #2a2a2a; border: 2px solid #333; border-radius: 12px; padding: 20px; margin-top: 20px; }
-.mensagem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.mensagem-label { color: #F6C84C; font-weight: 700; font-size: 14px; }
-.btn-copiar { background: linear-gradient(135deg, #F6C84C, #FFD56A); color: #1a1a1a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.3s; }
-.btn-copiar:hover { transform: scale(1.05); }
-.mensagem-texto { color: #ddd; font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+    /* ========== PAGE CONTENT ========== */
+    .page-content { padding: 32px; }
+    
+    .page-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 32px; gap: 24px; flex-wrap: wrap;
+    }
+    .page-title {
+      font-size: 28px; font-weight: 800; color: var(--text-primary);
+      display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+    }
+    .page-title-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold);
+    }
+    .page-subtitle { color: var(--text-muted); font-size: 14px; }
+    .page-header-right { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* Botões do Modal */
-.modal-buttons { display: flex; gap: 15px; margin-top: 25px; }
-.btn-gerar { flex: 1; background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.btn-gerar:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
-.btn-gerar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.btn-enviar-whatsapp { flex: 1; background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.btn-enviar-whatsapp:hover { transform: scale(1.02); }
-
-/* Loading */
-.loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Info Box */
-.info-box { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-.info-box p { color: #a78bfa; font-size: 13px; line-height: 1.6; }
-.info-box strong { color: #F6C84C; }
-
-/* Toast */
-.toast { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; padding: 15px 25px; border-radius: 12px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; }
-.toast.show { transform: translateY(0); opacity: 1; }
-.toast.error { background: linear-gradient(135deg, #ef4444, #f87171); }
-
-@media (max-width: 768px) {
-  .topbar { flex-direction: column; gap: 15px; }
-  .topbar-nav { flex-wrap: wrap; justify-content: center; }
-  .filters { width: 100%; }
-  .search-input { width: 100%; }
-  table { font-size: 12px; }
-  .acoes { flex-direction: column; }
-}
+    /* ========== BUTTONS ========== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px; border-radius: var(--radius-md);
+      font-weight: 600; font-size: 14px; cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none; text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--bg-primary); box-shadow: var(--shadow-gold);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(246, 200, 76, 0.3); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05); color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
 </style>
 </head>
 <body>
-
-<!-- Topbar -->
-<div class="topbar">
-  <div class="topbar-left">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Logo" class="topbar-logo" id="topbar-logo">
-    <span class="topbar-title">ACERTIVE</span>
-  </div>
-  <nav class="topbar-nav">
-    <a href="dashboard.html">Dashboard</a>
-    <a href="cobrancas.html" class="active">Cobranças</a>
-    <a href="nova-cobranca.html">Nova Cobrança</a>
-    <a href="clientes-ativos.html">Clientes</a>
-  </nav>
-  <button class="btn-logout" onclick="logout()">Sair</button>
-</div>
-
-<!-- Container -->
-<div class="container">
-  <div class="page-header">
-    <h1 class="page-title">💰 Cobranças</h1>
-    <div class="filters">
-      <button class="filter-btn active" data-status="">Todas</button>
-      <button class="filter-btn" data-status="pendente">Pendentes</button>
-      <button class="filter-btn" data-status="vencido">Vencidas</button>
-      <button class="filter-btn" data-status="pago">Pagas</button>
-      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar cliente...">
-    </div>
-  </div>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Cliente</th>
-          <th>Descrição</th>
-          <th>Valor</th>
-          <th>Vencimento</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="cobrancas-tbody">
-        <tr>
-          <td colspan="6" class="empty-state">
-            <h3>Carregando...</h3>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Modal IA -->
-<div class="modal-overlay" id="modal-ia">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title">✨ Gerar Mensagem com IA</h2>
-      <button class="modal-close" onclick="fecharModalIA()">&times;</button>
-    </div>
-    
-    <div class="info-box">
-      <p>A IA vai gerar uma mensagem personalizada baseada nos <strong>dados da cobrança</strong> e no <strong>histórico do cliente</strong>.</p>
-    </div>
-
-    <div id="modal-ia-info" style="margin-bottom: 20px;">
-      <p style="color: #ccc;"><strong style="color: #F6C84C;">Cliente:</strong> <span id="ia-cliente">-</span></p>
-      <p style="color: #ccc;"><strong style="color: #F6C84C;">Valor:</strong> <span id="ia-valor">-</span></p>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Tipo de Mensagem</label>
-      <select class="form-select" id="ia-tipo">
-        <option value="whatsapp">📱 WhatsApp (curta)</option>
-        <option value="email">📧 E-mail (detalhada)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Tom da Mensagem</label>
-      <select class="form-select" id="ia-tom">
-        <option value="profissional">💼 Profissional</option>
-        <option value="amigavel">😊 Amigável</option>
-        <option value="firme">⚠️ Firme</option>
-      </select>
-    </div>
-
-    <div class="modal-buttons">
-      <button class="btn-gerar" id="btn-gerar-ia" onclick="gerarMensagemIA()">
-        <span id="btn-gerar-texto">✨ Gerar Mensagem</span>
-      </button>
-    </div>
-
-    <div class="mensagem-container" id="mensagem-container" style="display: none;">
-      <div class="mensagem-header">
-        <span class="mensagem-label">📝 Mensagem Gerada</span>
-        <button class="btn-copiar" onclick="copiarMensagem()">📋 Copiar</button>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">
+        <span>ACERTIVE</span>
+        <span>Enterprise</span>
       </div>
-      <div class="mensagem-texto" id="mensagem-texto"></div>
     </div>
 
-    <div id="ia-acoes" style="display: none; margin-top: 20px;">
-      <button class="btn-enviar-whatsapp" onclick="enviarWhatsAppIA()">
-        📱 Enviar via WhatsApp
-      </button>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-links">
+          <a href="/dashboard" class="nav-link">
+            <i class="fa-solid fa-grid-2"></i>
+            <span class="nav-text">Dashboard</span>
+          </a>
+          <a href="/cobrancas" class="nav-link active">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span class="nav-text">Cobranças</span>
+          </a>
+          <a href="/clientes-ativos" class="nav-link">
+            <i class="fa-solid fa-users"></i>
+            <span class="nav-text">Clientes</span>
+          </a>
+          <a href="/agendamentos" class="nav-link">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span class="nav-text">Agendamentos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <div class="nav-links">
+          <a href="/nova-cobranca" class="nav-link">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span class="nav-text">Nova Cobrança</span>
+          </a>
+          <a href="/cobrancas-recorrentes" class="nav-link">
+            <i class="fa-solid fa-repeat"></i>
+            <span class="nav-text">Recorrentes</span>
+          </a>
+          <a href="/historico" class="nav-link">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span class="nav-text">Histórico</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <div class="nav-links">
+          <a href="/usuarios" class="nav-link" id="navUsuarios">
+            <i class="fa-solid fa-user-shield"></i>
+            <span class="nav-text">Usuários</span>
+            <span class="nav-badge blue">ADM</span>
+          </a>
+          <a href="/configuracoes" class="nav-link">
+            <i class="fa-solid fa-gear"></i>
+            <span class="nav-text">Configurações</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="userCard">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Usuário</div>
+          <div class="user-role" id="userRole">Operador</div>
+        </div>
+        <button class="user-menu-btn" id="btnLogout" title="Sair">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">ACERTIVE</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active">Cobranças</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-search">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" placeholder="Buscar cobrança..." id="searchInput">
+        </div>
+        <button class="header-btn" id="btnRefresh" title="Atualizar">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">
+            <div class="page-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            Cobranças
+          </h1>
+          <p class="page-subtitle">Gerencie todas as cobranças do sistema</p>
+        </div>
+        <div class="page-header-right">
+          <a href="/nova-cobranca" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Nova Cobrança
+          </a>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="filters-row">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-status="">Todas</button>
+            <button class="filter-tab" data-status="pendente">Pendentes</button>
+            <button class="filter-tab" data-status="vencido">Vencidas</button>
+            <button class="filter-tab" data-status="pago">Pagas</button>
+            <button class="filter-tab" data-status="negociando">Negociando</button>
+          </div>
+          <div class="filters-actions">
+            <button class="btn btn-secondary btn-sm" id="btnExportCsv">
+              <i class="fa-solid fa-download"></i> Exportar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--green-bg); color: var(--green);"><i class="fa-solid fa-check-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPagas">0</span>
+            <span class="stat-label">Pagas</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--orange-bg); color: var(--orange);"><i class="fa-solid fa-clock"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPendentes">0</span>
+            <span class="stat-label">Pendentes</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--red-bg); color: var(--red);"><i class="fa-solid fa-exclamation-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statVencidas">0</span>
+            <span class="stat-label">Vencidas</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i class="fa-solid fa-coins"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTotal">R$ 0</span>
+            <span class="stat-label">Total Pendente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="cobrancas-tbody">
+              <tr>
+                <td colspan="6" class="loading-cell">
+                  <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                  <span>Carregando cobranças...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tableInfo">0 cobranças</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal IA -->
+  <div class="modal-overlay" id="modal-ia">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Mensagem com IA</h2>
+        <button class="modal-close" onclick="fecharModalIA()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="modal-info-box">
+        <p>A IA vai gerar uma mensagem personalizada baseada nos dados da cobrança e histórico do cliente.</p>
+      </div>
+
+      <div class="modal-client-info">
+        <div class="info-row">
+          <span class="info-label">Cliente:</span>
+          <span class="info-value" id="ia-cliente">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Valor:</span>
+          <span class="info-value" id="ia-valor">-</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tipo de Mensagem</label>
+        <select class="form-select" id="ia-tipo">
+          <option value="whatsapp">📱 WhatsApp (curta)</option>
+          <option value="email">📧 E-mail (detalhada)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tom da Mensagem</label>
+        <select class="form-select" id="ia-tom">
+          <option value="profissional">💼 Profissional</option>
+          <option value="amigavel">😊 Amigável</option>
+          <option value="firme">⚠️ Firme</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-lg" id="btn-gerar-ia" onclick="gerarMensagemIA()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span id="btn-gerar-texto">Gerar Mensagem</span>
+        </button>
+      </div>
+
+      <div class="mensagem-container" id="mensagem-container" style="display: none;">
+        <div class="mensagem-header">
+          <span class="mensagem-label"><i class="fa-solid fa-message"></i> Mensagem Gerada</span>
+          <button class="btn btn-sm btn-secondary" onclick="copiarMensagem()"><i class="fa-solid fa-copy"></i> Copiar</button>
+        </div>
+        <div class="mensagem-texto" id="mensagem-texto"></div>
+      </div>
+
+      <div id="ia-acoes" style="display: none; margin-top: 20px;">
+        <button class="btn btn-lg" style="width: 100%; background: var(--green); color: white;" onclick="enviarWhatsAppIA()">
+          <i class="fa-brands fa-whatsapp"></i> Enviar via WhatsApp
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<script>
-const API_BASE = '';
-let cobrancasData = [];
-let filtroAtual = '';
-let cobrancaAtualIA = null;
-let mensagemGeradaIA = '';
-
-// Auth
-function getToken() {
-  return localStorage.getItem('token');
-}
-
-function logout() {
-  localStorage.removeItem('token');
-  window.location.href = 'login.html';
-}
-
-// Verificar login
-if (!getToken()) {
-  window.location.href = 'login.html';
-}
-
-// Toast
-function showToast(msg, isError = false) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.className = 'toast' + (isError ? ' error' : '');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-// Formatar valores
-function fmtMoney(n) {
-  return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function fmtDate(d) {
-  if (!d) return '—';
-  const dt = new Date(d);
-  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
-}
-
-// Carregar cobranças
-async function carregarCobrancas() {
-  try {
-    const params = new URLSearchParams();
-    if (filtroAtual) params.append('status', filtroAtual);
-    
-    const searchTerm = document.getElementById('searchInput').value.trim();
-    if (searchTerm) params.append('q', searchTerm);
-
-    const resp = await fetch(`${API_BASE}/api/cobrancas?${params}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    if (!resp.ok) throw new Error('Erro ao carregar');
-
-    const json = await resp.json();
-    cobrancasData = json.data || [];
-    renderizarTabela();
-  } catch (err) {
-    console.error(err);
-    showToast('Erro ao carregar cobranças', true);
-  }
-}
-
-// Renderizar tabela
-function renderizarTabela() {
-  const tbody = document.getElementById('cobrancas-tbody');
-  
-  if (!cobrancasData.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="empty-state">
-          <h3>Nenhuma cobrança encontrada</h3>
-          <p>Crie uma nova cobrança para começar</p>
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = cobrancasData.map(c => {
-    const badgeClass = c.status === 'pago' ? 'badge-pago' : c.status === 'vencido' ? 'badge-vencido' : 'badge-pendente';
-    const statusLabel = c.status === 'pago' ? 'PAGO' : c.status === 'vencido' ? 'VENCIDO' : 'PENDENTE';
-    
-    return `
-      <tr>
-        <td><span class="cliente-nome">${c.cliente || '—'}</span></td>
-        <td>${c.descricao || '—'}</td>
-        <td><span class="valor">${fmtMoney(c.valorAtualizado)}</span></td>
-        <td>${fmtDate(c.vencimento)}</td>
-        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
-        <td>
-          <div class="acoes">
-            <button class="btn-acao btn-ia" onclick="abrirModalIA('${c.id}')" title="Gerar mensagem com IA">✨ IA</button>
-            <button class="btn-acao btn-pdf" onclick="baixarPDF('${c.id}')" title="Baixar PDF">📄</button>
-            <button class="btn-acao btn-whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp">📱</button>
-            <button class="btn-acao btn-email" onclick="enviarEmail('${c.id}')" title="E-mail">📧</button>
-            <button class="btn-acao btn-status" onclick="alterarStatus('${c.id}', '${c.status}')" title="Alterar Status">🔄</button>
-            <button class="btn-acao btn-excluir" onclick="excluirCobranca('${c.id}')" title="Excluir">🗑️</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-// Filtros
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    filtroAtual = btn.dataset.status;
-    carregarCobrancas();
-  });
-});
-
-// Busca
-let searchTimeout;
-document.getElementById('searchInput').addEventListener('input', () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(carregarCobrancas, 300);
-});
-
-// ========== FUNÇÕES DE AÇÃO ==========
-
-async function baixarPDF(id) {
-  try {
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    if (!resp.ok) throw new Error('Erro ao gerar PDF');
-    
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cobranca_${id.slice(0,8)}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('PDF baixado com sucesso!');
-  } catch (err) {
-    showToast('Erro ao gerar PDF', true);
-  }
-}
-
-async function enviarEmail(id) {
-  try {
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    const json = await resp.json();
-    if (json.success) {
-      showToast(`E-mail enviado para ${json.destinatario}!`);
-    } else {
-      showToast(json.message || 'Erro ao enviar e-mail', true);
-    }
-  } catch (err) {
-    showToast('Erro ao enviar e-mail', true);
-  }
-}
-
-async function enviarWhatsApp(id) {
-  try {
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    const json = await resp.json();
-    if (json.success && json.link) {
-      window.open(json.link, '_blank');
-    } else {
-      showToast(json.message || 'Erro ao gerar link', true);
-    }
-  } catch (err) {
-    showToast('Erro ao gerar link do WhatsApp', true);
-  }
-}
-
-async function alterarStatus(id, statusAtual) {
-  const opcoes = ['pendente', 'pago', 'vencido'].filter(s => s !== statusAtual);
-  const novoStatus = prompt(`Status atual: ${statusAtual.toUpperCase()}\n\nDigite o novo status:\n- ${opcoes.join('\n- ')}`);
-  
-  if (!novoStatus || !['pendente', 'pago', 'vencido'].includes(novoStatus.toLowerCase())) {
-    return;
-  }
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/status`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ status: novoStatus.toLowerCase() })
-    });
-    const json = await resp.json();
-    if (json.success) {
-      showToast('Status atualizado!');
-      carregarCobrancas();
-    } else {
-      showToast(json.message || 'Erro ao atualizar', true);
-    }
-  } catch (err) {
-    showToast('Erro ao atualizar status', true);
-  }
-}
-
-async function excluirCobranca(id) {
-  if (!confirm('Tem certeza que deseja excluir esta cobrança?')) return;
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    const json = await resp.json();
-    if (json.success) {
-      showToast('Cobrança excluída!');
-      carregarCobrancas();
-    } else {
-      showToast(json.message || 'Erro ao excluir', true);
-    }
-  } catch (err) {
-    showToast('Erro ao excluir cobrança', true);
-  }
-}
-
-// ========== FUNÇÕES DE IA ==========
-
-function abrirModalIA(id) {
-  const cobranca = cobrancasData.find(c => c.id === id);
-  if (!cobranca) return;
-
-  cobrancaAtualIA = cobranca;
-  mensagemGeradaIA = '';
-
-  document.getElementById('ia-cliente').textContent = cobranca.cliente || '—';
-  document.getElementById('ia-valor').textContent = fmtMoney(cobranca.valorAtualizado);
-  document.getElementById('mensagem-container').style.display = 'none';
-  document.getElementById('ia-acoes').style.display = 'none';
-  document.getElementById('btn-gerar-texto').textContent = '✨ Gerar Mensagem';
-  document.getElementById('btn-gerar-ia').disabled = false;
-
-  document.getElementById('modal-ia').classList.add('active');
-}
-
-function fecharModalIA() {
-  document.getElementById('modal-ia').classList.remove('active');
-  cobrancaAtualIA = null;
-  mensagemGeradaIA = '';
-}
-
-async function gerarMensagemIA() {
-  if (!cobrancaAtualIA) return;
-
-  const btn = document.getElementById('btn-gerar-ia');
-  const btnTexto = document.getElementById('btn-gerar-texto');
-  
-  btn.disabled = true;
-  btnTexto.innerHTML = '<span class="loading"></span> Gerando...';
-
-  try {
-    const tipo = document.getElementById('ia-tipo').value;
-    const tom = document.getElementById('ia-tom').value;
-
-    const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualIA.id}/gerar-mensagem-ia`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ tipo, tom })
-    });
-
-    const json = await resp.json();
-
-    if (json.success && json.mensagem) {
-      mensagemGeradaIA = json.mensagem;
-      document.getElementById('mensagem-texto').textContent = json.mensagem;
-      document.getElementById('mensagem-container').style.display = 'block';
+  <!-- Modal Status -->
+  <div class="modal-overlay" id="modal-status">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fa-solid fa-rotate"></i> Alterar Status</h2>
+        <button class="modal-close" onclick="fecharModalStatus()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
       
-      if (tipo === 'whatsapp') {
-        document.getElementById('ia-acoes').style.display = 'block';
+      <div class="modal-client-info">
+        <div class="info-row">
+          <span class="info-label">Cliente:</span>
+          <span class="info-value" id="status-cliente">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status Atual:</span>
+          <span class="info-value" id="status-atual">-</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Novo Status</label>
+        <select class="form-select" id="status-novo">
+          <option value="pendente">⏳ Pendente</option>
+          <option value="pago">✅ Pago</option>
+          <option value="vencido">❌ Vencido</option>
+          <option value="negociando">🤝 Negociando</option>
+          <option value="cancelado">🚫 Cancelado</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModalStatus()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarStatus()">
+          <i class="fa-solid fa-check"></i> Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <style>
+    /* ========== FILTERS ========== */
+    .filters-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .filters-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-tab {
+      padding: 10px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .filter-tab:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
+    .filter-tab.active {
+      background: var(--gold);
+      color: var(--bg-primary);
+      border-color: var(--gold);
+    }
+
+    /* ========== STATS ROW ========== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all var(--transition-fast);
+    }
+    .stat-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+    /* ========== TABLE ========== */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    thead th {
+      background: rgba(0,0,0,0.3);
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    tbody tr { transition: all var(--transition-fast); }
+    tbody tr:hover { background: var(--gold-glow); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .client-cell { display: flex; flex-direction: column; gap: 2px; }
+    .client-name { font-weight: 700; color: var(--text-primary); }
+    .client-phone { font-size: 12px; color: var(--text-muted); }
+    .valor-cell { font-weight: 800; color: var(--gold); font-size: 16px; }
+    
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+    }
+    .badge-pago { background: var(--green-bg); color: var(--green); }
+    .badge-pendente { background: var(--orange-bg); color: var(--orange); }
+    .badge-vencido { background: var(--red-bg); color: var(--red); }
+    .badge-negociando { background: var(--purple-bg); color: var(--purple); }
+    .badge-cancelado { background: rgba(100,100,100,0.2); color: #888; }
+
+    .actions-cell { display: flex; gap: 6px; }
+    .action-btn {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+    }
+    .action-btn:hover { transform: scale(1.1); }
+    .action-btn.ia { color: var(--purple); border-color: var(--purple-bg); }
+    .action-btn.ia:hover { background: var(--purple-bg); }
+    .action-btn.pdf { color: var(--gold); border-color: var(--gold-glow); }
+    .action-btn.pdf:hover { background: var(--gold-glow); }
+    .action-btn.whatsapp { color: var(--green); border-color: var(--green-bg); }
+    .action-btn.whatsapp:hover { background: var(--green-bg); }
+    .action-btn.email { color: var(--blue); border-color: var(--blue-bg); }
+    .action-btn.email:hover { background: var(--blue-bg); }
+    .action-btn.status { color: var(--orange); border-color: var(--orange-bg); }
+    .action-btn.status:hover { background: var(--orange-bg); }
+    .action-btn.delete { color: var(--red); border-color: var(--red-bg); }
+    .action-btn.delete:hover { background: var(--red-bg); }
+
+    .table-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .loading-cell {
+      text-align: center;
+      padding: 60px 20px !important;
+      color: var(--text-muted);
+    }
+    .loading-spinner { font-size: 32px; color: var(--gold); margin-bottom: 16px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-secondary); }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      width: 90%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .modal-close:hover { background: var(--red-bg); color: var(--red); }
+    
+    .modal-info-box {
+      background: var(--purple-bg);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .modal-info-box p { color: var(--purple); font-size: 13px; }
+    
+    .modal-client-info {
+      background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+    .info-label { color: var(--text-muted); font-size: 13px; }
+    .info-value { color: var(--text-primary); font-weight: 600; font-size: 13px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .form-select:focus { outline: none; border-color: var(--gold); }
+    .form-select option { background: var(--bg-primary); }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn-lg { padding: 14px 24px; font-size: 15px; }
+
+    .mensagem-container {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .mensagem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .mensagem-label {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mensagem-texto {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--green); color: white; }
+    .toast.error { background: var(--red); color: white; }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-wrapper { margin-left: 0; }
+    }
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; }
+      .header-search { display: none; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script>
+    // ========== CONFIG ==========
+    const API_BASE = '';
+    let cobrancasData = [];
+    let filtroAtual = '';
+    let cobrancaAtualIA = null;
+    let cobrancaAtualStatus = null;
+    let mensagemGeradaIA = '';
+
+    // ========== AUTH ==========
+    function getToken() { return localStorage.getItem('token'); }
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    if (!getToken()) window.location.href = '/login';
+
+    // ========== SIDEBAR ==========
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    sidebarToggle.addEventListener('click', () => {
+      if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle('open');
       } else {
-        document.getElementById('ia-acoes').style.display = 'none';
+        sidebar.classList.toggle('collapsed');
       }
-      
-      showToast('Mensagem gerada com sucesso!');
-    } else {
-      showToast(json.message || 'Erro ao gerar mensagem', true);
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', logout);
+
+    // ========== HELPERS ==========
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast ' + (isError ? 'error' : 'success') + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
-  } catch (err) {
-    console.error(err);
-    showToast('Erro ao conectar com a IA', true);
-  } finally {
-    btn.disabled = false;
-    btnTexto.textContent = '🔄 Gerar Nova';
-  }
-}
 
-function copiarMensagem() {
-  if (!mensagemGeradaIA) return;
-  
-  navigator.clipboard.writeText(mensagemGeradaIA).then(() => {
-    showToast('Mensagem copiada!');
-  }).catch(() => {
-    showToast('Erro ao copiar', true);
-  });
-}
+    function fmtMoney(n) {
+      return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
-function enviarWhatsAppIA() {
-  if (!cobrancaAtualIA || !mensagemGeradaIA) return;
+    function fmtDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
+    }
 
-  const telefone = cobrancaAtualIA.cliente_telefone || '';
-  let tel = telefone.replace(/\D/g, '');
-  if (tel.length === 10 || tel.length === 11) {
-    tel = '55' + tel;
-  }
+    // ========== CARREGAR COBRANÇAS ==========
+    async function carregarCobrancas() {
+      try {
+        const params = new URLSearchParams();
+        if (filtroAtual) params.append('status', filtroAtual);
+        
+        const searchTerm = document.getElementById('searchInput').value.trim();
+        if (searchTerm) params.append('q', searchTerm);
 
-  const link = `https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`;
-  window.open(link, '_blank');
-  fecharModalIA();
-}
+        const resp = await fetch(`${API_BASE}/api/cobrancas?${params}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
 
-// Fechar modal ao clicar fora
-document.getElementById('modal-ia').addEventListener('click', (e) => {
-  if (e.target.id === 'modal-ia') {
-    fecharModalIA();
-  }
-});
+        if (!resp.ok) throw new Error('Erro ao carregar');
 
-// Inicializar
-carregarCobrancas();
-</script>
+        const json = await resp.json();
+        cobrancasData = json.data || [];
+        renderizarTabela();
+        atualizarStats();
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao carregar cobranças', true);
+      }
+    }
+
+    // ========== ATUALIZAR STATS ==========
+    function atualizarStats() {
+      const pagas = cobrancasData.filter(c => c.status === 'pago').length;
+      const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
+      const vencidas = cobrancasData.filter(c => c.status === 'vencido').length;
+      const totalPendente = cobrancasData
+        .filter(c => c.status !== 'pago')
+        .reduce((sum, c) => sum + Number(c.valorAtualizado || 0), 0);
+
+      document.getElementById('statPagas').textContent = pagas;
+      document.getElementById('statPendentes').textContent = pendentes;
+      document.getElementById('statVencidas').textContent = vencidas;
+      document.getElementById('statTotal').textContent = fmtMoney(totalPendente);
+      document.getElementById('tableInfo').textContent = `${cobrancasData.length} cobrança(s)`;
+    }
+
+    // ========== RENDERIZAR TABELA ==========
+    function renderizarTabela() {
+      const tbody = document.getElementById('cobrancas-tbody');
+      
+      if (!cobrancasData.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="fa-solid fa-file-invoice"></i>
+                <h3>Nenhuma cobrança encontrada</h3>
+                <p>Crie uma nova cobrança para começar</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = cobrancasData.map(c => {
+        const badgeClass = {
+          'pago': 'badge-pago',
+          'vencido': 'badge-vencido',
+          'pendente': 'badge-pendente',
+          'negociando': 'badge-negociando',
+          'cancelado': 'badge-cancelado'
+        }[c.status] || 'badge-pendente';
+        
+        const statusLabel = {
+          'pago': '✓ Pago',
+          'vencido': '✗ Vencido',
+          'pendente': '⏳ Pendente',
+          'negociando': '🤝 Negociando',
+          'cancelado': '🚫 Cancelado'
+        }[c.status] || c.status;
+        
+        return `
+          <tr>
+            <td>
+              <div class="client-cell">
+                <span class="client-name">${c.cliente || '—'}</span>
+                <span class="client-phone">${c.cliente_telefone || ''}</span>
+              </div>
+            </td>
+            <td>${c.descricao || '—'}</td>
+            <td><span class="valor-cell">${fmtMoney(c.valorAtualizado)}</span></td>
+            <td>${fmtDate(c.vencimento)}</td>
+            <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn ia" onclick="abrirModalIA('${c.id}')" title="Gerar com IA">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+                <button class="action-btn pdf" onclick="baixarPDF('${c.id}')" title="PDF">
+                  <i class="fa-solid fa-file-pdf"></i>
+                </button>
+                <button class="action-btn whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp">
+                  <i class="fa-brands fa-whatsapp"></i>
+                </button>
+                <button class="action-btn email" onclick="enviarEmail('${c.id}')" title="E-mail">
+                  <i class="fa-solid fa-envelope"></i>
+                </button>
+                <button class="action-btn status" onclick="abrirModalStatus('${c.id}')" title="Status">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button class="action-btn delete" onclick="excluirCobranca('${c.id}')" title="Excluir">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ========== FILTROS ==========
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.status;
+        carregarCobrancas();
+      });
+    });
+
+    // ========== BUSCA ==========
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(carregarCobrancas, 300);
+    });
+
+    // ========== REFRESH ==========
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+      const btn = document.getElementById('btnRefresh');
+      btn.querySelector('i').classList.add('fa-spin');
+      carregarCobrancas().then(() => {
+        btn.querySelector('i').classList.remove('fa-spin');
+        showToast('Dados atualizados!');
+      });
+    });
+
+    // ========== AÇÕES ==========
+    async function baixarPDF(id) {
+      try {
+        showToast('Gerando PDF...');
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!resp.ok) throw new Error('Erro ao gerar PDF');
+        
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cobranca_${id.slice(0,8)}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF baixado com sucesso!');
+      } catch (err) {
+        showToast('Erro ao gerar PDF', true);
+      }
+    }
+
+    async function enviarEmail(id) {
+      try {
+        showToast('Enviando e-mail...');
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showToast(`E-mail enviado para ${json.destinatario}!`);
+        } else {
+          showToast(json.message || 'Erro ao enviar e-mail', true);
+        }
+      } catch (err) {
+        showToast('Erro ao enviar e-mail', true);
+      }
+    }
+
+    async function enviarWhatsApp(id) {
+      try {
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const json = await resp.json();
+        if (json.success && json.link) {
+          window.open(json.link, '_blank');
+        } else {
+          showToast(json.message || 'Erro ao gerar link', true);
+        }
+      } catch (err) {
+        showToast('Erro ao gerar link do WhatsApp', true);
+      }
+    }
+
+    async function excluirCobranca(id) {
+      if (!confirm('Tem certeza que deseja excluir esta cobrança?')) return;
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showToast('Cobrança excluída!');
+          carregarCobrancas();
+        } else {
+          showToast(json.message || 'Erro ao excluir', true);
+        }
+      } catch (err) {
+        showToast('Erro ao excluir cobrança', true);
+      }
+    }
+
+    // ========== MODAL STATUS ==========
+    function abrirModalStatus(id) {
+      const cobranca = cobrancasData.find(c => c.id === id);
+      if (!cobranca) return;
+
+      cobrancaAtualStatus = cobranca;
+      document.getElementById('status-cliente').textContent = cobranca.cliente || '—';
+      document.getElementById('status-atual').textContent = cobranca.status?.toUpperCase() || '—';
+      document.getElementById('status-novo').value = cobranca.status || 'pendente';
+      document.getElementById('modal-status').classList.add('active');
+    }
+
+    function fecharModalStatus() {
+      document.getElementById('modal-status').classList.remove('active');
+      cobrancaAtualStatus = null;
+    }
+
+    async function confirmarStatus() {
+      if (!cobrancaAtualStatus) return;
+      
+      const novoStatus = document.getElementById('status-novo').value;
+      
+      try {
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualStatus.id}/status`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: novoStatus })
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showToast('Status atualizado!');
+          fecharModalStatus();
+          carregarCobrancas();
+        } else {
+          showToast(json.message || 'Erro ao atualizar', true);
+        }
+      } catch (err) {
+        showToast('Erro ao atualizar status', true);
+      }
+    }
+
+    // ========== MODAL IA ==========
+    function abrirModalIA(id) {
+      const cobranca = cobrancasData.find(c => c.id === id);
+      if (!cobranca) return;
+
+      cobrancaAtualIA = cobranca;
+      mensagemGeradaIA = '';
+
+      document.getElementById('ia-cliente').textContent = cobranca.cliente || '—';
+      document.getElementById('ia-valor').textContent = fmtMoney(cobranca.valorAtualizado);
+      document.getElementById('mensagem-container').style.display = 'none';
+      document.getElementById('ia-acoes').style.display = 'none';
+      document.getElementById('btn-gerar-texto').textContent = 'Gerar Mensagem';
+      document.getElementById('btn-gerar-ia').disabled = false;
+
+      document.getElementById('modal-ia').classList.add('active');
+    }
+
+    function fecharModalIA() {
+      document.getElementById('modal-ia').classList.remove('active');
+      cobrancaAtualIA = null;
+      mensagemGeradaIA = '';
+    }
+
+    async function gerarMensagemIA() {
+      if (!cobrancaAtualIA) return;
+
+      const btn = document.getElementById('btn-gerar-ia');
+      const btnTexto = document.getElementById('btn-gerar-texto');
+      
+      btn.disabled = true;
+      btnTexto.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+
+      try {
+        const tipo = document.getElementById('ia-tipo').value;
+        const tom = document.getElementById('ia-tom').value;
+
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualIA.id}/gerar-mensagem-ia`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ tipo, tom })
+        });
+
+        const json = await resp.json();
+
+        if (json.success && json.mensagem) {
+          mensagemGeradaIA = json.mensagem;
+          document.getElementById('mensagem-texto').textContent = json.mensagem;
+          document.getElementById('mensagem-container').style.display = 'block';
+          
+          if (tipo === 'whatsapp') {
+            document.getElementById('ia-acoes').style.display = 'block';
+          } else {
+            document.getElementById('ia-acoes').style.display = 'none';
+          }
+          
+          showToast('Mensagem gerada com sucesso!');
+        } else {
+          showToast(json.message || 'Erro ao gerar mensagem', true);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao conectar com a IA', true);
+      } finally {
+        btn.disabled = false;
+        btnTexto.innerHTML = '<i class="fa-solid fa-rotate"></i> Gerar Nova';
+      }
+    }
+
+    function copiarMensagem() {
+      if (!mensagemGeradaIA) return;
+      navigator.clipboard.writeText(mensagemGeradaIA).then(() => {
+        showToast('Mensagem copiada!');
+      }).catch(() => {
+        showToast('Erro ao copiar', true);
+      });
+    }
+
+    function enviarWhatsAppIA() {
+      if (!cobrancaAtualIA || !mensagemGeradaIA) return;
+
+      const telefone = cobrancaAtualIA.cliente_telefone || '';
+      let tel = telefone.replace(/\D/g, '');
+      if (tel.length === 10 || tel.length === 11) {
+        tel = '55' + tel;
+      }
+
+      const link = `https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`;
+      window.open(link, '_blank');
+      fecharModalIA();
+    }
+
+    // Fechar modal ao clicar fora
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+
+    // Export CSV
+    document.getElementById('btnExportCsv').addEventListener('click', async () => {
+      try {
+        showToast('Gerando relatório...');
+        const resp = await fetch(`${API_BASE}/api/relatorios/export-csv`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!resp.ok) throw new Error('Erro');
+        
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_cobrancas.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Relatório exportado!');
+      } catch (err) {
+        showToast('Erro ao exportar', true);
+      }
+    });
+
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/usuarios/me`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await resp.json();
+        if (result.success && result.data) {
+          document.getElementById('userName').textContent = result.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = result.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (result.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (err) {}
+    }
+
+    // Init
+    carregarUsuario();
+    carregarCobrancas();
+  </script>
 </body>
 </html>

@@ -3,862 +3,324 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ACERTIVE • Novo Cliente</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Novo Cliente - ACERTIVE Enterprise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
   <style>
-    :root{
-      /* ===== Paleta premium (mesma linha do Clientes Ativos / Dashboard) ===== */
-      --bg1:#070707;
-      --bg2:#0f0f12;
+    :root {
+      --bg-primary: #09090b; --bg-secondary: #0f0f12; --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-sidebar: #0c0c0f; --text-primary: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a;
+      --gold: #F6C84C; --gold-light: #FFD56A; --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3); --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2); --green: #22c55e; --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444; --red-bg: rgba(239, 68, 68, 0.15); --blue: #3b82f6; --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b; --orange-bg: rgba(245, 158, 11, 0.15); --purple: #a855f7; --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 280px; --sidebar-collapsed: 80px; --header-height: 70px;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2); --transition-fast: 0.15s ease; --transition-normal: 0.25s ease;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-      --card: rgba(17,17,20,.72);
-      --card2: rgba(10,10,12,.92);
+    /* Sidebar */
+    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000; display: flex; flex-direction: column; transition: width var(--transition-normal); }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
+    .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-info, .sidebar.collapsed .nav-section-title { display: none; }
+    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+    .logo-icon { min-width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text span:first-child { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
+    .nav-links { display: flex; flex-direction: column; gap: 4px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative; }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0; }
+    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: var(--blue); color: white; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .user-menu-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: all var(--transition-fast); }
+    .user-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 
-      --text:#EAEAEA;
-      --text2:#CFCFCF;
-      --muted:#A7A7A7;
+    /* Main */
+    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left var(--transition-normal); }
+    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
 
-      --gold:#F6C84C;
-      --gold2:#FFD56A;
-      --gold-weak: rgba(246,200,76,.35);
+    /* Header */
+    .header { height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .sidebar-toggle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-item { color: var(--text-muted); }
+    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
 
-      --line: rgba(246,200,76,.14);
+    /* Page Content */
+    .page-content { padding: 32px; }
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .page-title-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+    .page-subtitle { color: var(--text-muted); font-size: 14px; }
 
-      --shadow: 0 18px 60px rgba(0,0,0,.62);
-      --shadowSoft: 0 10px 28px rgba(0,0,0,.50);
+    /* Form Layout */
+    .form-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; }
+    .form-card, .preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; transition: border-color var(--transition-fast); }
+    .form-card:hover, .preview-card:hover { border-color: var(--border-gold); }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .card-header-icon { width: 40px; height: 40px; background: var(--gold-glow); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 18px; }
+    .card-header h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .card-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
-      --radius:18px;
-      
-      /* Status colors */
-      --green: #4CAF50;
-      --red: #F44336;
-      --blue: #2196F3;
-    }
+    /* Form Elements */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .input-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 16px; pointer-events: none; z-index: 1; }
+    .input-icon.textarea { top: 18px; transform: none; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 14px 14px 14px 48px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; transition: all var(--transition-fast); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--gold); background: var(--gold-glow); box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.1); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-select { cursor: pointer; }
+    .form-select option { background: var(--bg-primary); }
+    .form-textarea { min-height: 100px; resize: vertical; padding-top: 14px; }
 
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{height:100%}
+    /* Preview */
+    .preview-list { display: flex; flex-direction: column; gap: 12px; }
+    .preview-item { padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius-md); transition: all var(--transition-fast); opacity: 0.5; }
+    .preview-item.filled { opacity: 1; border-color: var(--border-gold); background: var(--gold-glow); }
+    .preview-item-label { font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .preview-item-value { font-size: 14px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
 
-    body{
-      font-family:'Montserrat',sans-serif;
-      min-height:100vh;
-      color: var(--text);
-      background:
-        radial-gradient(900px 520px at 18% 18%, rgba(246,200,76,.09), transparent 56%),
-        radial-gradient(760px 520px at 86% 22%, rgba(255,213,106,.06), transparent 52%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      padding:22px;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+    /* Buttons */
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: all var(--transition-fast); border: none; flex: 1; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(246, 200, 76, 0.3); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      opacity:.18;
-      background-image:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: radial-gradient(circle at 50% 30%, black 0%, transparent 62%);
-    }
+    /* Success Message */
+    .success-message { display: none; padding: 16px; background: var(--green-bg); border: 1px solid var(--green); border-radius: var(--radius-md); color: var(--green); font-weight: 600; margin-top: 16px; text-align: center; }
+    .success-message.show { display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-    /* ===== Topbar ===== */
-    .topbar{
-      width:100%;
-      max-width:1100px;
-      margin:0 auto 18px;
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(246,200,76,.14);
-      box-shadow: var(--shadowSoft);
-      padding: 14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      position:relative;
-      overflow:hidden;
-      backdrop-filter: blur(10px);
-      animation: slideDown 0.5s ease;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .topbar::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
-      transform: translateX(-30%);
-      animation: shine 7.8s ease-in-out infinite;
-      pointer-events:none;
-      opacity:.65;
-    }
-
-    @keyframes shine{
-      0%{transform:translateX(-45%)}
-      50%{transform:translateX(35%)}
-      100%{transform:translateX(-45%)}
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:900;
-      letter-spacing:.4px;
-      position:relative;
-      z-index:1;
-    }
-    
-    .mark{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      background: linear-gradient(135deg, rgba(246,200,76,.95), rgba(255,213,106,.92));
-      box-shadow: 0 10px 20px rgba(246,200,76,.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#111;
-      font-weight:900;
-      user-select:none;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    .brand small{
-      display:block;
-      color:rgba(246,200,76,.95);
-      font-weight:800;
-      font-size:12px;
-      margin-top:2px;
-      letter-spacing:.2px;
-    }
-
-    .navbtns{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      position:relative;
-      z-index:1;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    
-    .navbtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(246,200,76,.18);
-      background:rgba(0,0,0,.22);
-      color:var(--text2);
-      font-weight:800;
-      text-decoration:none;
-      cursor:pointer;
-      transition:all 0.2s ease;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .navbtn i{color:var(--gold)}
-    .navbtn:hover{
-      transform:translateY(-1px);
-      background:rgba(0,0,0,.30);
-      border-color:rgba(246,200,76,.28);
-    }
-
-    .wrap{
-      width:100%;
-      max-width:1100px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:20px;
-      align-items:start;
-    }
-
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(246,200,76,.14);
-      box-shadow: var(--shadow);
-      padding:20px;
-      backdrop-filter: blur(10px);
-      position:relative;
-      overflow:hidden;
-      color: var(--text);
-      animation: fadeIn 0.6s ease both;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .card:first-of-type { animation-delay: 0.1s; }
-    .card:last-of-type { animation-delay: 0.15s; }
-
-    .card::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: linear-gradient(120deg, transparent 0%, rgba(246,200,76,.10) 25%, transparent 55%);
-      transform: translateX(-45%);
-      opacity: 0;
-      pointer-events:none;
-      transition: opacity .35s ease;
-    }
-    .card:hover::after{opacity:.35; animation: shine 7.8s ease-in-out infinite;}
-
-    .cardHeader{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:12px;
-      position:relative;
-      z-index:1;
-    }
-    
-    .cardHeader h2{
-      font-size:20px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:var(--gold);
-      font-weight:900;
-    }
-    
-    .cardHeader p{
-      color:var(--muted);
-      font-size:13px;
-      margin-top:6px;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(246,200,76,.18);
-      background:rgba(0,0,0,.22);
-      color:var(--text2);
-      font-weight:900;
-      white-space:nowrap;
-      animation: fadeIn 0.6s ease 0.3s both;
-    }
-    .pill i{color:var(--gold)}
-
-    .divider{
-      height:1px;
-      background:linear-gradient(90deg,transparent,rgba(246,200,76,.18),transparent);
-      margin:12px 0;
-      position:relative;
-      z-index:1;
-    }
-
-    /* ===== Form ===== */
-    .form{display:grid;gap:12px;position:relative;z-index:1}
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    
-    .field{
-      display:grid;
-      gap:6px;
-      position: relative;
-    }
-
-    .field.filled label {
-      color: var(--gold);
-    }
-
-    .field.error label {
-      color: var(--red);
-    }
-    
-    label{
-      font-size:12px;
-      color:rgba(234,234,234,.78);
-      font-weight:800;
-      letter-spacing:.2px;
-      transition: color 0.2s ease;
-    }
-
-    .control{position:relative}
-
-    .control input, 
-    .control select, 
-    .control textarea{
-      width:100%;
-      padding:12px 14px 12px 44px;
-      border-radius:12px;
-      border:1px solid rgba(246,200,76,.16);
-      background:rgba(255,255,255,.04);
-      color: var(--text);
-      font-size:14px;
-      font-weight: 600;
-      outline:none;
-      transition: all 0.2s ease;
-    }
-
-    .control input::placeholder, 
-    .control textarea::placeholder{
-      color:rgba(167,167,167,.85);
-      font-weight: 400;
-    }
-
-    .control input:focus, 
-    .control select:focus, 
-    .control textarea:focus{
-      border-color: rgba(246,200,76,.45);
-      box-shadow: 0 0 0 4px rgba(246,200,76,.12);
-      background: rgba(255,255,255,.06);
-      transform: translateY(-1px);
-    }
-
-    .field.error .control input,
-    .field.error .control select,
-    .field.error .control textarea {
-      border-color: var(--red);
-      background: rgba(244,67,54,.05);
-    }
-
-    .field.error .control input:focus,
-    .field.error .control select:focus,
-    .field.error .control textarea:focus {
-      box-shadow: 0 0 0 4px rgba(244,67,54,.12);
-    }
-
-    .control textarea{
-      min-height: 92px;
-      resize: vertical;
-      padding-top: 12px;
-    }
-
-    .iconLeft{
-      position:absolute;
-      top:50%;
-      left:8px;
-      transform:translateY(-50%);
-      width:36px;
-      height:36px;
-      border-radius:10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--gold);
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(246,200,76,.14);
-      pointer-events:none;
-      transition: all 0.3s ease;
-    }
-
-    .field.filled .iconLeft {
-      transform: translateY(-50%) scale(1.1);
-      background: rgba(246,200,76,.15);
-      border-color: rgba(246,200,76,.3);
-    }
-
-    .field.error .iconLeft {
-      transform: translateY(-50%) scale(1.1);
-      background: rgba(244,67,54,.15);
-      border-color: rgba(244,67,54,.3);
-      color: var(--red);
-    }
-
-    .iconLeft.top{ 
-      top:18px; 
-      transform:none; 
-    }
-
-    .field.filled .iconLeft.top {
-      transform: scale(1.1);
-    }
-
-    .field.error .iconLeft.top {
-      transform: scale(1.1);
-    }
-
-    .error-message {
-      display: none;
-      color: var(--red);
-      font-size: 11px;
-      font-weight: 700;
-      margin-top: 4px;
-      padding-left: 44px;
-      animation: shake 0.3s ease;
-    }
-
-    .field.error .error-message {
-      display: block;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
-
-    /* ===== Buttons ===== */
-    .btnRow{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-top:6px;
-    }
-
-    .btn{
-      padding:12px 14px;
-      border-radius:12px;
-      border:0;
-      cursor:pointer;
-      font-weight:900;
-      color:#111;
-      background:linear-gradient(135deg,var(--gold),var(--gold2));
-      box-shadow:0 10px 24px rgba(246,200,76,.16);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      transition: all 0.2s ease;
-      user-select:none;
-      text-decoration:none;
-      white-space:nowrap;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .btn:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-
-    .btn:hover{
-      transform: translateY(-2px);
-      box-shadow:0 14px 30px rgba(246,200,76,.18);
-      filter: saturate(1.03);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn.secondary{
-      background: rgba(0,0,0,.22);
-      color: var(--text2);
-      border:1px solid rgba(246,200,76,.18);
-      box-shadow:none;
-    }
-    .btn.secondary i{color:var(--gold)}
-    .btn.secondary:hover{
-      background: rgba(0,0,0,.30);
-      border-color: rgba(246,200,76,.28);
-      transform: translateY(-1px);
-    }
-
-    .btn[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .btn.loading i {
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .note{
-      font-size:12px;
-      color: rgba(234,234,234,.62);
-      margin-top:8px;
-    }
-
-    /* ===== Preview ===== */
-    #preview{position:relative}
-    .kv{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-      position:relative;
-      z-index:1;
-    }
-    
-    .kvItem{
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(246,200,76,.14);
-      background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12));
-      box-shadow: var(--shadowSoft);
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      transition: all 0.3s ease;
-      opacity: 0.5;
-    }
-
-    .kvItem.filled {
-      opacity: 1;
-      border-color: rgba(246,200,76,.28);
-      background: linear-gradient(180deg, rgba(246,200,76,.08), rgba(0,0,0,.12));
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    .kvItem b{
-      font-size:12px;
-      color:rgba(246,200,76,.95);
-      font-weight:900;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .kvItem span{
-      font-weight:800;
-      color:rgba(234,234,234,.96);
-      font-size:14px;
-      word-break:break-word;
-    }
-
-    /* Success feedback */
-    .success-message {
-      display: none;
-      padding: 16px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(76,175,80,.2), rgba(76,175,80,.1));
-      border: 1px solid rgba(76,175,80,.3);
-      color: var(--green);
-      font-weight: 700;
-      margin-top: 12px;
-      text-align: center;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .success-message.show {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    @media (max-width:980px){
-      .wrap{grid-template-columns:1fr;gap:14px}
-      .row2{grid-template-columns:1fr}
-      .btnRow{grid-template-columns:1fr}
-    }
+    /* Responsive */
+    @media (max-width: 1200px) { .form-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-wrapper { margin-left: 0; } }
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .form-actions { flex-direction: column; } }
   </style>
 </head>
-
 <body>
-  <div class="topbar">
-    <div class="brand">
-     <img src="/img/logo_acertive_transparente2.png" alt="ACERTIVE" style="width:50px;height:50px;">      <div>
-        ACERTIVE
-        <small>Novo Cliente</small>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links">
+        <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a>
+        <a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a>
+        <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a>
+        <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a>
+      </div></div>
+      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links">
+        <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a>
+        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a>
+        <a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a>
+      </div></div>
+      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links">
+        <a href="/usuarios" class="nav-link"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a>
+        <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a>
+      </div></div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+        <div class="breadcrumb"><span class="breadcrumb-item">Clientes</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Novo Cliente</span></div>
       </div>
-    </div>
+    </header>
 
-    <div class="navbtns">
-      <a class="navbtn" href="/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-      <a class="navbtn" href="/clientes-ativos"><i class="fa-solid fa-users"></i> Clientes</a>
-      <button class="navbtn" id="btnLogout" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
-    </div>
-  </div>
-
-  <div class="wrap">
-    <!-- FORM -->
-    <section class="card" aria-labelledby="cadastro-title">
-      <div class="cardHeader">
-        <div>
-          <h2 id="cadastro-title"><i class="fa-solid fa-user-plus"></i> Cadastro de Cliente</h2>
-          <p>Registre clientes PF/PJ, com status e dados de contato centralizados.</p>
-        </div>
-        <div class="pill"><i class="fa-solid fa-id-card"></i> Cadastro</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <form id="formNovoCliente" class="form" autocomplete="on" novalidate>
-        <div class="row2">
-          <div class="field">
-            <label for="tipo">Tipo</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-building-user"></i></span>
-              <select id="tipo" name="type" required>
-                <option value="pf">Pessoa Física (PF)</option>
-                <option value="pj">Pessoa Jurídica (PJ)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="status">Status</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-toggle-on"></i></span>
-              <select id="status" name="status" required>
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="cliente_nome_input">Nome / Razão Social</label>
-          <div class="control">
-            <span class="iconLeft"><i class="fa-solid fa-user"></i></span>
-            <input id="cliente_nome_input" name="name" type="text" placeholder="Ex.: João Silva / Empresa XYZ LTDA" required />
-          </div>
-          <div class="error-message">Nome é obrigatório</div>
-        </div>
-
-        <div class="row2">
-          <div class="field">
-            <label for="cliente_email_input">E-mail</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-envelope"></i></span>
-              <input id="cliente_email_input" name="email" type="email" placeholder="ex.: cliente@email.com" />
-            </div>
-            <div class="error-message">E-mail inválido</div>
-          </div>
-
-          <div class="field">
-            <label for="cliente_telefone_input">Telefone</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-phone"></i></span>
-              <input id="cliente_telefone_input" name="phone" type="tel" placeholder="(99) 99999-9999" />
-            </div>
-          </div>
-        </div>
-
-        <div class="row2">
-          <div class="field">
-            <label for="cliente_cpf_cnpj_input">CPF / CNPJ</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-fingerprint"></i></span>
-              <input id="cliente_cpf_cnpj_input" name="cpf_cnpj" type="text" placeholder="000.000.000-00" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="endereco">Endereço</label>
-            <div class="control">
-              <span class="iconLeft"><i class="fa-solid fa-location-dot"></i></span>
-              <input id="endereco" name="address" type="text" placeholder="Rua, número, bairro, cidade/UF" />
-            </div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="observacoes">Observações</label>
-          <div class="control">
-            <span class="iconLeft top"><i class="fa-solid fa-note-sticky"></i></span>
-            <textarea id="observacoes" name="observacoes" placeholder="Ex.: cliente VIP, preferências, detalhes de cobrança..."></textarea>
-          </div>
-        </div>
-
-        <div class="success-message" id="successMessage">
-          <i class="fa-solid fa-circle-check"></i>
-          Cliente cadastrado com sucesso!
-        </div>
-
-        <div class="btnRow">
-          <button class="btn" type="submit" id="btnSalvar">
-            <i class="fa-solid fa-floppy-disk"></i>
-            Salvar Cliente
-          </button>
-
-          <button class="btn secondary" id="btnLimpar" type="button">
-            <i class="fa-solid fa-eraser"></i>
-            Limpar
-          </button>
-        </div>
-
-        <div class="note">
-          💡 Dica: CPF/CNPJ é opcional, mas ajuda no controle e exportações futuras.
-        </div>
-      </form>
-    </section>
-
-    <!-- RESUMO -->
-    <section class="card" id="preview" aria-labelledby="resumo-title">
-      <div class="cardHeader">
-        <div>
-          <h2 id="resumo-title"><i class="fa-solid fa-clipboard-check"></i> Resumo</h2>
-          <p id="statusMsg">Preencha o formulário para visualizar o resumo.</p>
-        </div>
-        <div class="pill"><i class="fa-solid fa-shield"></i> Registro</div>
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-user-plus"></i></div>Novo Cliente</h1>
+        <p class="page-subtitle">Cadastre um novo cliente no sistema</p>
       </div>
 
-      <div class="divider"></div>
+      <div class="form-grid">
+        <div class="form-card">
+          <div class="card-header"><div class="card-header-icon"><i class="fa-solid fa-id-card"></i></div><div><h3>Dados do Cliente</h3><p>Preencha as informações do cliente</p></div></div>
+          
+          <form id="formCliente">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Tipo</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-building-user"></i></span><select class="form-select" id="tipo"><option value="pf">Pessoa Física (PF)</option><option value="pj">Pessoa Jurídica (PJ)</option></select></div></div>
+              <div class="form-group"><label class="form-label">Status</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-toggle-on"></i></span><select class="form-select" id="status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div></div>
+            </div>
 
-      <div class="kv" role="list">
-        <div class="kvItem" id="kvTipo" role="listitem"><b>Tipo</b><span id="pTipo">—</span></div>
-        <div class="kvItem" id="kvStatus" role="listitem"><b>Status</b><span id="pStatus">—</span></div>
-        <div class="kvItem" id="kvNome" role="listitem"><b>Nome / Razão Social</b><span id="pNome">—</span></div>
-        <div class="kvItem" id="kvEmail" role="listitem"><b>E-mail</b><span id="pEmail">—</span></div>
-        <div class="kvItem" id="kvTelefone" role="listitem"><b>Telefone</b><span id="pTelefone">—</span></div>
-        <div class="kvItem" id="kvCpfCnpj" role="listitem"><b>CPF/CNPJ</b><span id="pCpfCnpj">—</span></div>
-        <div class="kvItem" id="kvEndereco" role="listitem"><b>Endereço</b><span id="pEndereco">—</span></div>
-        <div class="kvItem" id="kvObs" role="listitem"><b>Observações</b><span id="pObs">—</span></div>
+            <div class="form-group"><label class="form-label">Nome / Razão Social *</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-user"></i></span><input type="text" class="form-input" id="nome" placeholder="Ex: João Silva ou Empresa XYZ LTDA" required></div></div>
+
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">E-mail</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input type="email" class="form-input" id="email" placeholder="cliente@email.com"></div></div>
+              <div class="form-group"><label class="form-label">Telefone</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-phone"></i></span><input type="tel" class="form-input" id="telefone" placeholder="(99) 99999-9999"></div></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">CPF / CNPJ</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-fingerprint"></i></span><input type="text" class="form-input" id="cpf_cnpj" placeholder="000.000.000-00"></div></div>
+              <div class="form-group"><label class="form-label">Situação do Cliente</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-chart-line"></i></span><select class="form-select" id="status_cliente"><option value="novo">Novo</option><option value="regular">Regular</option><option value="inadimplente">Inadimplente</option><option value="negociando">Negociando</option><option value="bom_pagador">Bom Pagador</option></select></div></div>
+            </div>
+
+            <div class="form-group"><label class="form-label">Endereço</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-location-dot"></i></span><input type="text" class="form-input" id="endereco" placeholder="Rua, número, bairro, cidade/UF"></div></div>
+
+            <div class="form-group"><label class="form-label">Observações</label><div class="input-wrapper"><span class="input-icon textarea"><i class="fa-solid fa-note-sticky"></i></span><textarea class="form-textarea" id="observacoes" placeholder="Anotações sobre o cliente..."></textarea></div></div>
+
+            <div class="success-message" id="successMsg"><i class="fa-solid fa-check-circle"></i> Cliente cadastrado com sucesso!</div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar Cliente</button>
+              <button type="button" class="btn btn-secondary" id="btnLimpar"><i class="fa-solid fa-eraser"></i> Limpar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="preview-card">
+          <div class="card-header"><div class="card-header-icon"><i class="fa-solid fa-eye"></i></div><div><h3>Resumo</h3><p>Visualize os dados antes de salvar</p></div></div>
+          <div class="preview-list">
+            <div class="preview-item" id="pvTipo"><div class="preview-item-label">Tipo</div><div class="preview-item-value" id="pTipo">—</div></div>
+            <div class="preview-item" id="pvStatus"><div class="preview-item-label">Status</div><div class="preview-item-value" id="pStatus">—</div></div>
+            <div class="preview-item" id="pvNome"><div class="preview-item-label">Nome</div><div class="preview-item-value" id="pNome">—</div></div>
+            <div class="preview-item" id="pvEmail"><div class="preview-item-label">E-mail</div><div class="preview-item-value" id="pEmail">—</div></div>
+            <div class="preview-item" id="pvTelefone"><div class="preview-item-label">Telefone</div><div class="preview-item-value" id="pTelefone">—</div></div>
+            <div class="preview-item" id="pvCpfCnpj"><div class="preview-item-label">CPF/CNPJ</div><div class="preview-item-value" id="pCpfCnpj">—</div></div>
+            <div class="preview-item" id="pvSituacao"><div class="preview-item-label">Situação</div><div class="preview-item-value" id="pSituacao">—</div></div>
+            <div class="preview-item" id="pvEndereco"><div class="preview-item-label">Endereço</div><div class="preview-item-value" id="pEndereco">—</div></div>
+          </div>
+        </div>
       </div>
-    </section>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
-  <script src="/js/novo-cliente.js"></script>
-
   <script>
-    (function () {
-      const form = document.getElementById('formNovoCliente');
-      const btnLimpar = document.getElementById('btnLimpar');
-      
-      const pTipo = document.getElementById('pTipo');
-      const pStatus = document.getElementById('pStatus');
-      const pNome = document.getElementById('pNome');
-      const pEmail = document.getElementById('pEmail');
-      const pTelefone = document.getElementById('pTelefone');
-      const pCpfCnpj = document.getElementById('pCpfCnpj');
-      const pEndereco = document.getElementById('pEndereco');
-      const pObs = document.getElementById('pObs');
+    const API_BASE = '';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
 
-      function updatePreview() {
-        const tipo = document.getElementById('tipo')?.value || '—';
-        const status = document.getElementById('status')?.value || '—';
-        const nome = document.getElementById('cliente_nome_input')?.value || '—';
-        const email = document.getElementById('cliente_email_input')?.value || '—';
-        const telefone = document.getElementById('cliente_telefone_input')?.value || '—';
-        const cpfCnpj = document.getElementById('cliente_cpf_cnpj_input')?.value || '—';
-        const endereco = document.getElementById('endereco')?.value || '—';
-        const obs = document.getElementById('observacoes')?.value || '—';
+    // Sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 1024) sidebar.classList.toggle('open');
+      else sidebar.classList.toggle('collapsed');
+    });
+    document.getElementById('btnLogout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = '/login'; });
 
-        pTipo.textContent = tipo;
-        pStatus.textContent = status;
-        pNome.textContent = nome;
-        pEmail.textContent = email;
-        pTelefone.textContent = telefone;
-        pCpfCnpj.textContent = cpfCnpj;
-        pEndereco.textContent = endereco;
-        pObs.textContent = obs;
+    function showToast(msg, type = 'success') {
+      Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'error' ? '#ef4444' : '#22c55e', borderRadius: '12px', fontWeight: '600' } }).showToast();
+    }
 
-        // Update kvItem filled state
-        updateKvItem('kvTipo', tipo);
-        updateKvItem('kvStatus', status);
-        updateKvItem('kvNome', nome);
-        updateKvItem('kvEmail', email);
-        updateKvItem('kvTelefone', telefone);
-        updateKvItem('kvCpfCnpj', cpfCnpj);
-        updateKvItem('kvEndereco', endereco);
-        updateKvItem('kvObs', obs);
+    // Preview
+    function updatePreview() {
+      const fields = [
+        { id: 'tipo', pv: 'pvTipo', p: 'pTipo' },
+        { id: 'status', pv: 'pvStatus', p: 'pStatus' },
+        { id: 'nome', pv: 'pvNome', p: 'pNome' },
+        { id: 'email', pv: 'pvEmail', p: 'pEmail' },
+        { id: 'telefone', pv: 'pvTelefone', p: 'pTelefone' },
+        { id: 'cpf_cnpj', pv: 'pvCpfCnpj', p: 'pCpfCnpj' },
+        { id: 'status_cliente', pv: 'pvSituacao', p: 'pSituacao' },
+        { id: 'endereco', pv: 'pvEndereco', p: 'pEndereco' }
+      ];
+      fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        const val = el?.value || '';
+        const display = el?.tagName === 'SELECT' ? el.options[el.selectedIndex]?.text : val;
+        document.getElementById(f.p).textContent = display || '—';
+        const pvEl = document.getElementById(f.pv);
+        if (val && val !== '') pvEl.classList.add('filled');
+        else pvEl.classList.remove('filled');
+      });
+    }
 
-        // Update field filled state
-        updateFieldState('tipo', tipo !== '—');
-        updateFieldState('status', status !== '—');
-        updateFieldState('cliente_nome_input', nome !== '—');
-        updateFieldState('cliente_email_input', email !== '—');
-        updateFieldState('cliente_telefone_input', telefone !== '—');
-        updateFieldState('cliente_cpf_cnpj_input', cpfCnpj !== '—');
-        updateFieldState('endereco', endereco !== '—');
-        updateFieldState('observacoes', obs !== '—');
-      }
+    document.querySelectorAll('#formCliente input, #formCliente select, #formCliente textarea').forEach(el => {
+      el.addEventListener('input', updatePreview);
+      el.addEventListener('change', updatePreview);
+    });
+    updatePreview();
 
-      function updateKvItem(id, value) {
-        const kvItem = document.getElementById(id);
-        if (!kvItem) return;
-        
-        if (value !== '—') {
-          kvItem.classList.add('filled');
-        } else {
-          kvItem.classList.remove('filled');
-        }
-      }
-
-      function updateFieldState(inputId, isFilled) {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        
-        const field = input.closest('.field');
-        if (!field) return;
-        
-        if (isFilled) {
-          field.classList.add('filled');
-        } else {
-          field.classList.remove('filled');
-        }
-      }
-
-      if (form) {
-        form.addEventListener('input', updatePreview);
-        form.addEventListener('change', updatePreview);
-      }
-      
-      if (btnLimpar) {
-        btnLimpar.addEventListener('click', () => {
-          if (!form) return;
-          form.reset();
-          updatePreview();
-          
-          // Remove all field states
-          document.querySelectorAll('.field').forEach(field => {
-            field.classList.remove('filled', 'error');
-          });
-        });
-      }
-      
+    // Limpar
+    document.getElementById('btnLimpar').addEventListener('click', () => {
+      document.getElementById('formCliente').reset();
       updatePreview();
-    })();
+      document.getElementById('successMsg').classList.remove('show');
+    });
+
+    // Salvar
+    document.getElementById('formCliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvar');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+      const dados = {
+        tipo: document.getElementById('tipo').value,
+        status: document.getElementById('status').value,
+        nome: document.getElementById('nome').value,
+        email: document.getElementById('email').value,
+        telefone: document.getElementById('telefone').value,
+        cpf_cnpj: document.getElementById('cpf_cnpj').value,
+        status_cliente: document.getElementById('status_cliente').value,
+        endereco: document.getElementById('endereco').value,
+        observacoes: document.getElementById('observacoes').value
+      };
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/clientes`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+        const json = await resp.json();
+        
+        if (json.success) {
+          document.getElementById('successMsg').classList.add('show');
+          showToast('Cliente cadastrado com sucesso!');
+          setTimeout(() => { window.location.href = '/clientes-ativos'; }, 1500);
+        } else {
+          showToast(json.message || 'Erro ao cadastrar', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao cadastrar cliente', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Cliente';
+      }
+    });
+
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/usuarios/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await resp.json();
+        if (result.success && result.data) {
+          document.getElementById('userName').textContent = result.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = result.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (result.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (err) {}
+    }
+    carregarUsuario();
   </script>
 </body>
 </html>

@@ -3,121 +3,135 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Acertive - Upload de Planilha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400 ;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
+  <title>Upload de Planilha - ACERTIVE Enterprise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
-    :root {
-      --black: #0a0a0a;
-      --gold: #FFD700;
-      --dark-gold: #FFA500;
-      --gray: #1a1a1a;
-      --white: #FFFFFF;
-    }
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, var(--black) 0%, var(--gray) 100%);
-      color: var(--white);
-      padding: 40px;
-    }
-    .upload-box {
-      max-width: 600px;
-      margin: auto;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid var(--gold);
-      border-radius: 16px;
-      padding: 40px;
-      box-shadow: 0 10px 30px rgba(255,215,0,0.2);
-    }
-    .upload-box h2 {
-      text-align: center;
-      color: var(--gold);
-      margin-bottom: 30px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--gold);
-    }
-    select, input[type=file] {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--gold);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      color: var(--white);
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
-      color: var(--black);
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(255,215,0,0.4);
-    }
-    #resumo {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #ccc;
-    }
+    :root{--bg-primary:#09090b;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:280px;--header-height:70px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}.sidebar.collapsed{width:80px}.sidebar.collapsed .nav-text,.sidebar.collapsed .logo-text,.sidebar.collapsed .user-info,.sidebar.collapsed .nav-section-title{display:none}.sidebar.collapsed .nav-link{justify-content:center;padding:14px}
+    .sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}.logo-icon{min-width:46px;height:46px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--bg-primary)}.logo-text span:first-child{font-size:20px;font-weight:800}.logo-text span:last-child{font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase}
+    .sidebar-nav{flex:1;padding:20px 12px;overflow-y:auto}.nav-section{margin-bottom:28px}.nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:10px}.nav-links{display:flex;flex-direction:column;gap:4px}.nav-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-md);color:var(--text-secondary);text-decoration:none;font-weight:500;font-size:14px;transition:all var(--transition-fast);position:relative}.nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow-strong);color:var(--gold)}.nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold);border-radius:0 3px 3px 0}.nav-link i{width:20px;text-align:center}.nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--blue);color:white}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}.user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}.user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}.user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}.user-menu-btn{width:28px;height:28px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;border-radius:6px}
+    .main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.sidebar.collapsed~.main-wrapper{margin-left:80px}
+    .header{height:var(--header-height);background:rgba(9,9,11,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;padding:0 32px}.header-left{display:flex;align-items:center;gap:20px}.sidebar-toggle{width:40px;height:40px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center}.sidebar-toggle:hover{background:var(--gold-glow);color:var(--gold)}.breadcrumb{display:flex;align-items:center;gap:8px;font-size:14px}.breadcrumb-item{color:var(--text-muted)}.breadcrumb-item.active{color:var(--text-primary);font-weight:600}
+    .page-content{padding:32px;max-width:800px;margin:0 auto}.page-header{margin-bottom:32px}.page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px;margin-bottom:8px}.page-title-icon{width:42px;height:42px;background:var(--gold-glow-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}.page-subtitle{color:var(--text-muted);font-size:14px}
+    .upload-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px}.card-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}.card-header-icon{width:40px;height:40px;background:var(--gold-glow);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}.card-header h3{font-size:18px;font-weight:700}.card-header p{font-size:13px;color:var(--text-muted);margin-top:4px}
+    .form-group{margin-bottom:20px}.form-label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}.input-wrapper{position:relative}.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold)}.form-select{width:100%;padding:14px 14px 14px 48px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px;cursor:pointer}.form-select:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}.form-select option{background:var(--bg-primary)}
+    .dropzone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:48px 24px;text-align:center;transition:all 0.3s;cursor:pointer;background:rgba(255,255,255,0.01)}.dropzone:hover,.dropzone.dragover{border-color:var(--gold);background:var(--gold-glow)}.dropzone-icon{width:64px;height:64px;background:var(--gold-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--gold);font-size:24px}.dropzone-text{font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:8px}.dropzone-hint{font-size:13px;color:var(--text-muted)}.dropzone input{display:none}
+    .file-info{display:none;padding:16px;background:var(--green-bg);border:1px solid var(--green);border-radius:var(--radius-md);margin-top:16px}.file-info.show{display:flex;align-items:center;gap:12px}.file-info i{color:var(--green);font-size:20px}.file-name{font-weight:600;color:var(--green)}.file-size{font-size:12px;color:var(--text-muted)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;width:100%;transition:all var(--transition-fast)}.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .result-card{display:none;margin-top:24px;padding:24px;background:var(--bg-card);border:1px solid var(--green);border-radius:var(--radius-lg)}.result-card.show{display:block}.result-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:16px;display:flex;align-items:center;gap:8px}.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px}.result-stat{padding:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius-md);text-align:center}.result-stat-value{font-size:24px;font-weight:800;color:var(--gold)}.result-stat-label{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .info-box{margin-top:24px;padding:16px;background:var(--blue-bg);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-md)}.info-box p{color:var(--blue);font-size:13px;line-height:1.6}.info-box i{margin-right:8px}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-wrapper{margin-left:0}}@media(max-width:768px){.result-stats{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="upload-box">
-    <h2><i class="fas fa-file-excel"></i> Upload de Planilha</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <div class="form-group">
-        <label>Taxa de Juros</label>
-        <select name="taxa">
-          <option value="8%">8% ao mês</option>
-          <option value="6%">6% ao mês</option>
-          <option value="4%">4% ao mês</option>
-          <option value="3%">3% ao mês</option>
-          <option value="2%">2% ao mês</option>
-        </select>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links"><a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a><a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a><a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a><a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a></div></div>
+      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links"><a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a><a href="/upload" class="nav-link active"><i class="fa-solid fa-file-arrow-up"></i><span class="nav-text">Upload Planilha</span></a><a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a><a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a></div></div>
+      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links"><a href="/usuarios" class="nav-link"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a><a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a></div></div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header"><div class="header-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button><div class="breadcrumb"><span class="breadcrumb-item">Financeiro</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Upload Planilha</span></div></div></header>
+    <main class="page-content">
+      <div class="page-header"><h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-file-arrow-up"></i></div>Upload de Planilha</h1><p class="page-subtitle">Importe cobranças em lote via Excel ou CSV</p></div>
+      
+      <div class="upload-card">
+        <div class="card-header"><div class="card-header-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><div><h3>Importar Cobranças</h3><p>Faça upload de uma planilha para gerar cobranças em massa</p></div></div>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label class="form-label">Taxa de Juros</label>
+            <div class="input-wrapper">
+              <span class="input-icon"><i class="fa-solid fa-percent"></i></span>
+              <select class="form-select" name="taxa" id="taxa">
+                <option value="8%">8% ao mês (padrão)</option>
+                <option value="10%">10% ao mês</option>
+                <option value="6%">6% ao mês</option>
+                <option value="4%">4% ao mês</option>
+                <option value="3%">3% ao mês</option>
+                <option value="2%">2% ao mês</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Arquivo (Excel/CSV)</label>
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+              <div class="dropzone-text">Arraste o arquivo aqui ou clique para selecionar</div>
+              <div class="dropzone-hint">Formatos aceitos: .xlsx, .xls, .csv</div>
+              <input type="file" name="planilha" id="fileInput" accept=".xlsx,.xls,.csv" required>
+            </div>
+            <div class="file-info" id="fileInfo">
+              <i class="fa-solid fa-file-excel"></i>
+              <div>
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btnSubmit" disabled>
+            <i class="fa-solid fa-upload"></i> Processar Planilha
+          </button>
+        </form>
+
+        <div class="result-card" id="resultCard">
+          <div class="result-title"><i class="fa-solid fa-check-circle"></i> Importação Concluída</div>
+          <div class="result-stats">
+            <div class="result-stat"><div class="result-stat-value" id="resultCount">0</div><div class="result-stat-label">Cobranças Geradas</div></div>
+            <div class="result-stat"><div class="result-stat-value" id="resultTotal">R$ 0,00</div><div class="result-stat-label">Total a Receber</div></div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <p><i class="fa-solid fa-lightbulb"></i> <strong>Dica:</strong> A planilha deve conter colunas com Nome do Cliente, Valor, Data de Vencimento. Baixe o modelo de exemplo para facilitar.</p>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Arquivo (Excel/CSV)</label>
-        <input type="file" name="planilha" accept=".xlsx,.xls,.csv" required>
-      </div>
-      <button type="submit">Processar Planilha</button>
-    </form>
-    <div id="resumo"></div>
+    </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      try {
-        const res = await fetch('http://192.168.68.102:3000/api/cobrancas/lote ', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.sucesso) {
-          const total = data.cobrancas.reduce((s,c) => s + c.valorAtualizado, 0);
-          document.getElementById('resumo').innerHTML =
-            `<b>${data.cobrancas.length} cobranças geradas</b><br>Total a receber: R$ ${total.toFixed(2)}`;
-        } else {
-          alert(data.mensagem);
-        }
-      } catch (err) {
-        alert('Erro ao enviar planilha');
-      }
-    });
+    const token=localStorage.getItem('token');if(!token)window.location.href='/login';
+    document.getElementById('sidebarToggle').addEventListener('click',()=>{const s=document.getElementById('sidebar');if(window.innerWidth<=1024)s.classList.toggle('open');else s.classList.toggle('collapsed')});
+    document.getElementById('btnLogout').addEventListener('click',()=>{localStorage.removeItem('token');window.location.href='/login'});
+
+    function showToast(m,t='success'){Toastify({text:m,duration:3000,gravity:'top',position:'right',style:{background:t==='error'?'#ef4444':'#22c55e',borderRadius:'12px',fontWeight:'600'}}).showToast()}
+    function formatBytes(b){if(b===0)return'0 Bytes';const k=1024,s=['Bytes','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(2))+' '+s[i]}
+
+    const dropzone=document.getElementById('dropzone'),fileInput=document.getElementById('fileInput'),fileInfo=document.getElementById('fileInfo'),fileName=document.getElementById('fileName'),fileSize=document.getElementById('fileSize'),btnSubmit=document.getElementById('btnSubmit');
+
+    dropzone.addEventListener('click',()=>fileInput.click());
+    dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('dragover')});
+    dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop',e=>{e.preventDefault();dropzone.classList.remove('dragover');if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;handleFile(e.dataTransfer.files[0])}});
+    fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
+
+    function handleFile(file){const validTypes=['.xlsx','.xls','.csv'];const ext='.'+file.name.split('.').pop().toLowerCase();if(!validTypes.includes(ext)){showToast('Formato inválido. Use Excel ou CSV.','error');return}
+      fileName.textContent=file.name;fileSize.textContent=formatBytes(file.size);fileInfo.classList.add('show');btnSubmit.disabled=false}
+
+    document.getElementById('uploadForm').addEventListener('submit',async e=>{e.preventDefault();const formData=new FormData(e.target);
+      btnSubmit.disabled=true;btnSubmit.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+      try{const res=await fetch('/api/cobrancas/lote',{method:'POST',headers:{'Authorization':`Bearer ${token}`},body:formData});const data=await res.json();
+        if(data.sucesso||data.success){const total=data.cobrancas?data.cobrancas.reduce((s,c)=>s+(c.valorAtualizado||c.valor_atualizado||0),0):0;
+          document.getElementById('resultCount').textContent=data.cobrancas?data.cobrancas.length:0;
+          document.getElementById('resultTotal').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+          document.getElementById('resultCard').classList.add('show');showToast('Planilha processada com sucesso!')}
+        else{showToast(data.mensagem||data.message||'Erro ao processar','error')}}
+      catch(err){console.error(err);showToast('Erro ao enviar planilha','error')}
+      finally{btnSubmit.disabled=false;btnSubmit.innerHTML='<i class="fa-solid fa-upload"></i> Processar Planilha'}});
+
+    async function carregarUsuario(){try{const r=await fetch('/api/usuarios/me',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success&&d.data){document.getElementById('userName').textContent=d.data.nome||'Usuário';document.getElementById('userRole').textContent=d.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(d.data.nome||'U').charAt(0).toUpperCase()}}catch(e){}}
+    carregarUsuario();
   </script>
 </body>
 </html>
