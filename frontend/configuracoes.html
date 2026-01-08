@@ -94,7 +94,7 @@
             <div class="form-section-title"><i class="fa-solid fa-building"></i> Dados da Empresa</div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Nome/Razão Social <span class="required">*</span></label><input type="text" class="form-input" id="nome" placeholder="Ex: ACERTIVE Cobranças LTDA" required></div>
-              <div class="form-group"><label class="form-label">CNPJ <span class="required">*</span></label><input type="text" class="form-input" id="cnpj" placeholder="00.000.000/0000-00" required></div>
+              <div class="form-group"><label class="form-label">CNPJ</label><input type="text" class="form-input" id="cnpj" placeholder="00.000.000/0000-00"></div>
             </div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Telefone</label><input type="text" class="form-input" id="telefone" placeholder="(00) 00000-0000"></div>
@@ -136,102 +136,361 @@
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-    const token=localStorage.getItem('token');if(!token)window.location.href='/login';
-    let empresas=[];let editandoId=null;
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/login';
 
-    document.getElementById('sidebarToggle').addEventListener('click',()=>{const s=document.getElementById('sidebar');if(window.innerWidth<=1024)s.classList.toggle('open');else s.classList.toggle('collapsed')});
-    document.getElementById('btnLogout').addEventListener('click',()=>{localStorage.removeItem('token');window.location.href='/login'});
-    document.getElementById('btnNovaEmpresa').addEventListener('click',()=>abrirModal());
+let empresas = [];
+let editandoId = null;
 
-    function showToast(m,t='success'){Toastify({text:m,duration:3000,gravity:'top',position:'right',style:{background:t==='error'?'linear-gradient(135deg,#ef4444,#dc2626)':'linear-gradient(135deg,#22c55e,#16a34a)',borderRadius:'12px',fontWeight:'600'}}).showToast()}
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  const s = document.getElementById('sidebar');
+  if (window.innerWidth <= 1024) s.classList.toggle('open');
+  else s.classList.toggle('collapsed');
+});
 
-    document.getElementById('cnpj').addEventListener('input',function(e){let v=e.target.value.replace(/\D/g,'');if(v.length>14)v=v.slice(0,14);v=v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');e.target.value=v});
-    document.getElementById('telefone').addEventListener('input',function(e){let v=e.target.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);if(v.length>10)v=v.replace(/^(\d{2})(\d{5})(\d{4})$/,'($1) $2-$3');else if(v.length>6)v=v.replace(/^(\d{2})(\d{4})(\d+)$/,'($1) $2-$3');else if(v.length>2)v=v.replace(/^(\d{2})(\d+)$/,'($1) $2');e.target.value=v});
-    document.getElementById('cpfCnpjTitular').addEventListener('input',function(e){let v=e.target.value.replace(/\D/g,'');if(v.length>14)v=v.slice(0,14);if(v.length<=11)v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');else v=v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');e.target.value=v});
+document.getElementById('btnLogout').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+});
 
-    function abrirModal(empresa=null){
-      editandoId=empresa?empresa.id:null;
-      document.getElementById('modalTitulo').textContent=empresa?'Editar Empresa':'Nova Empresa';
-      document.getElementById('formEmpresa').reset();
-      if(empresa){
-        document.getElementById('empresaId').value=empresa.id;
-        document.getElementById('nome').value=empresa.nome||'';
-        document.getElementById('cnpj').value=empresa.cnpj||'';
-        document.getElementById('telefone').value=empresa.telefone||'';
-        document.getElementById('email').value=empresa.email||'';
-        document.getElementById('endereco').value=empresa.endereco||'';
-        document.getElementById('banco').value=empresa.banco||'';
-        document.getElementById('tipoConta').value=empresa.tipo_conta||'corrente';
-        document.getElementById('agencia').value=empresa.agencia||'';
-        document.getElementById('conta').value=empresa.conta||'';
-        document.getElementById('digito').value=empresa.digito||'';
-        document.getElementById('titular').value=empresa.titular||'';
-        document.getElementById('cpfCnpjTitular').value=empresa.cpf_cnpj_titular||'';
-        document.getElementById('tipoChavePix').value=empresa.tipo_chave_pix||'';
-        document.getElementById('chavePix').value=empresa.chave_pix||'';
-      }
-      document.getElementById('modalEmpresa').classList.add('show');
+document.getElementById('btnNovaEmpresa').addEventListener('click', () => abrirModal());
+
+function showToast(m, t = 'success') {
+  Toastify({
+    text: m,
+    duration: 3000,
+    gravity: 'top',
+    position: 'right',
+    style: {
+      background: t === 'error' ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#22c55e,#16a34a)',
+      borderRadius: '12px',
+      fontWeight: '600'
     }
+  }).showToast();
+}
 
-    function fecharModal(){document.getElementById('modalEmpresa').classList.remove('show');editandoId=null}
+// Máscaras
+document.getElementById('cnpj').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+       .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+       .replace(/\.(\d{3})(\d)/, '.$1/$2')
+       .replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v;
+});
 
-    async function salvarEmpresa(){
-      const nome=document.getElementById('nome').value.trim();
-      const cnpj=document.getElementById('cnpj').value.trim();
-      if(!nome||!cnpj){showToast('Nome e CNPJ são obrigatórios','error');return}
-      const dados={nome,cnpj,telefone:document.getElementById('telefone').value.trim(),email:document.getElementById('email').value.trim(),endereco:document.getElementById('endereco').value.trim(),banco:document.getElementById('banco').value,tipo_conta:document.getElementById('tipoConta').value,agencia:document.getElementById('agencia').value.trim(),conta:document.getElementById('conta').value.trim(),digito:document.getElementById('digito').value.trim(),titular:document.getElementById('titular').value.trim(),cpf_cnpj_titular:document.getElementById('cpfCnpjTitular').value.trim(),tipo_chave_pix:document.getElementById('tipoChavePix').value,chave_pix:document.getElementById('chavePix').value.trim()};
-      const btn=document.getElementById('btnSalvar');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-      try{
-        const url=editandoId?`/api/empresas/${editandoId}`:'/api/empresas';
-        const method=editandoId?'PUT':'POST';
-        const r=await fetch(url,{method,headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(dados)});
-        const d=await r.json();
-        if(d.success){showToast(editandoId?'Empresa atualizada!':'Empresa cadastrada!');fecharModal();carregarEmpresas()}else showToast(d.message||'Erro ao salvar','error');
-      }catch(e){console.error(e);showToast('Erro ao salvar empresa','error')}
-      finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-check"></i> Salvar Empresa'}
+document.getElementById('telefone').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d+)$/, '($1) $2-$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d+)$/, '($1) $2');
+  e.target.value = v;
+});
+
+document.getElementById('cpfCnpjTitular').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  if (v.length <= 11) {
+    v = v.replace(/(\d{3})(\d)/, '$1.$2')
+         .replace(/(\d{3})(\d)/, '$1.$2')
+         .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  } else {
+    v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+         .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+         .replace(/\.(\d{3})(\d)/, '.$1/$2')
+         .replace(/(\d{4})(\d)/, '$1-$2');
+  }
+  e.target.value = v;
+});
+
+function abrirModal(empresa = null) {
+  editandoId = empresa ? empresa.id : null;
+  document.getElementById('modalTitulo').textContent = empresa ? 'Editar Empresa' : 'Nova Empresa';
+  document.getElementById('formEmpresa').reset();
+  
+  if (empresa) {
+    document.getElementById('empresaId').value = empresa.id || '';
+    document.getElementById('nome').value = empresa.nome || '';
+    document.getElementById('cnpj').value = empresa.cnpj || '';
+    document.getElementById('telefone').value = empresa.telefone || '';
+    document.getElementById('email').value = empresa.email || '';
+    document.getElementById('endereco').value = empresa.endereco || '';
+    document.getElementById('banco').value = empresa.banco || '';
+    document.getElementById('tipoConta').value = empresa.tipo_conta || 'corrente';
+    document.getElementById('agencia').value = empresa.agencia || '';
+    document.getElementById('conta').value = empresa.conta || '';
+    document.getElementById('digito').value = empresa.digito || '';
+    document.getElementById('titular').value = empresa.titular || '';
+    document.getElementById('cpfCnpjTitular').value = empresa.cpf_cnpj_titular || '';
+    document.getElementById('tipoChavePix').value = empresa.tipo_chave_pix || '';
+    document.getElementById('chavePix').value = empresa.chave_pix || '';
+  }
+  
+  document.getElementById('modalEmpresa').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modalEmpresa').classList.remove('show');
+  editandoId = null;
+}
+
+async function salvarEmpresa() {
+  const nome = document.getElementById('nome').value.trim();
+  
+  if (!nome) {
+    showToast('Nome da empresa é obrigatório', 'error');
+    return;
+  }
+  
+  const dados = {
+    nome,
+    cnpj: document.getElementById('cnpj').value.trim(),
+    telefone: document.getElementById('telefone').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    endereco: document.getElementById('endereco').value.trim(),
+    banco: document.getElementById('banco').value,
+    tipo_conta: document.getElementById('tipoConta').value,
+    agencia: document.getElementById('agencia').value.trim(),
+    conta: document.getElementById('conta').value.trim(),
+    digito: document.getElementById('digito').value.trim(),
+    titular: document.getElementById('titular').value.trim(),
+    cpf_cnpj_titular: document.getElementById('cpfCnpjTitular').value.trim(),
+    tipo_chave_pix: document.getElementById('tipoChavePix').value,
+    chave_pix: document.getElementById('chavePix').value.trim()
+  };
+  
+  const btn = document.getElementById('btnSalvar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+  
+  try {
+    const url = editandoId ? `/api/empresas/${editandoId}` : '/api/empresas';
+    const method = editandoId ? 'PUT' : 'POST';
+    
+    const r = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dados)
+    });
+    
+    const d = await r.json();
+    
+    if (d.success) {
+      showToast(editandoId ? 'Empresa atualizada!' : 'Empresa cadastrada!');
+      fecharModal();
+      carregarEmpresas();
+    } else {
+      showToast(d.message || 'Erro ao salvar', 'error');
     }
+  } catch (e) {
+    console.error(e);
+    showToast('Erro ao salvar empresa', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvar Empresa';
+  }
+}
 
-    async function excluirEmpresa(id){if(!confirm('Tem certeza que deseja excluir esta empresa?'))return;try{const r=await fetch(`/api/empresas/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success){showToast('Empresa excluída!');carregarEmpresas()}else showToast(d.message||'Erro','error')}catch(e){showToast('Erro ao excluir','error')}}
+async function excluirEmpresa(id) {
+  if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
+  
+  try {
+    const r = await fetch(`/api/empresas/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d = await r.json();
+    
+    if (d.success) {
+      showToast('Empresa excluída!');
+      carregarEmpresas();
+    } else {
+      showToast(d.message || 'Erro', 'error');
+    }
+  } catch (e) {
+    showToast('Erro ao excluir', 'error');
+  }
+}
 
-    async function definirPadrao(id){try{const r=await fetch(`/api/empresas/${id}/padrao`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success){showToast('Empresa definida como padrão!');carregarEmpresas()}else showToast(d.message||'Erro','error')}catch(e){showToast('Erro','error')}}
+async function definirPadrao(id) {
+  try {
+    const r = await fetch(`/api/empresas/${id}/padrao`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d = await r.json();
+    
+    if (d.success) {
+      showToast('Empresa definida como padrão!');
+      carregarEmpresas();
+    } else {
+      showToast(d.message || 'Erro', 'error');
+    }
+  } catch (e) {
+    showToast('Erro', 'error');
+  }
+}
 
-    function getBancoNome(c){const b={'001':'Banco do Brasil','033':'Santander','104':'Caixa','237':'Bradesco','341':'Itaú','260':'Nubank','077':'Inter','212':'Original','336':'C6 Bank','290':'PagSeguro','380':'PicPay','323':'Mercado Pago'};return b[c]||c||'—'}
-    function getTipoPixLabel(t){const x={'cpf':'CPF','cnpj':'CNPJ','email':'E-mail','telefone':'Telefone','aleatoria':'Chave Aleatória'};return x[t]||t||''}
+function getBancoNome(c) {
+  const b = {
+    '001': 'Banco do Brasil', '033': 'Santander', '104': 'Caixa',
+    '237': 'Bradesco', '341': 'Itaú', '260': 'Nubank',
+    '077': 'Inter', '212': 'Original', '336': 'C6 Bank',
+    '290': 'PagSeguro', '380': 'PicPay', '323': 'Mercado Pago'
+  };
+  return b[c] || c || '—';
+}
 
-    function renderEmpresas(){
-      const grid=document.getElementById('empresasGrid');const empty=document.getElementById('emptyState');
-      if(!empresas.length){grid.innerHTML='';grid.appendChild(empty);empty.style.display='block';return}
-      empty.style.display='none';
-      grid.innerHTML=empresas.map(e=>`
-        <div class="empresa-card ${e.padrao?'padrao':''}">
-          <div class="empresa-header">
-            <div class="empresa-avatar">${(e.nome||'E').charAt(0).toUpperCase()}</div>
-            <div class="empresa-info">
-              <div class="empresa-nome">${e.nome||'—'} ${e.padrao?'<span class="badge-padrao">⭐ Padrão</span>':''}</div>
-              <div class="empresa-cnpj">${e.cnpj||'—'}</div>
+function getTipoPixLabel(t) {
+  const x = { 'cpf': 'CPF', 'cnpj': 'CNPJ', 'email': 'E-mail', 'telefone': 'Telefone', 'aleatoria': 'Chave Aleatória' };
+  return x[t] || t || '';
+}
+
+function editarEmpresa(index) {
+  const empresa = empresas[index];
+  if (empresa) abrirModal(empresa);
+}
+
+function renderEmpresas() {
+  const grid = document.getElementById('empresasGrid');
+  const empty = document.getElementById('emptyState');
+  
+  if (!empresas || empresas.length === 0) {
+    grid.innerHTML = '';
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'empty-state';
+    emptyDiv.innerHTML = `
+      <div class="empty-icon"><i class="fa-solid fa-building"></i></div>
+      <div class="empty-title">Nenhuma empresa cadastrada</div>
+      <div class="empty-desc">Cadastre sua primeira empresa para começar a emitir cobranças</div>
+      <button class="btn btn-primary" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Cadastrar Empresa</button>
+    `;
+    grid.appendChild(emptyDiv);
+    return;
+  }
+  
+  grid.innerHTML = empresas.map((e, index) => `
+    <div class="empresa-card ${e.padrao ? 'padrao' : ''}">
+      <div class="empresa-header">
+        <div class="empresa-avatar">${(e.nome || 'E').charAt(0).toUpperCase()}</div>
+        <div class="empresa-info">
+          <div class="empresa-nome">
+            ${e.nome || '—'}
+            ${e.padrao ? '<span class="badge-padrao">⭐ PADRÃO</span>' : ''}
+          </div>
+          <div class="empresa-cnpj">${e.cnpj || '—'}</div>
+        </div>
+      </div>
+      <div class="empresa-body">
+        <div class="empresa-section">
+          <div class="empresa-section-title"><i class="fa-solid fa-id-card"></i> CONTATO</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Telefone</div>
+              <div class="info-value">${e.telefone || '—'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">E-mail</div>
+              <div class="info-value">${e.email || '—'}</div>
+            </div>
+            ${e.endereco ? `<div class="info-item full"><div class="info-label">Endereço</div><div class="info-value">${e.endereco}</div></div>` : ''}
+          </div>
+        </div>
+        ${e.banco ? `
+          <div class="empresa-section">
+            <div class="empresa-section-title"><i class="fa-solid fa-university"></i> DADOS BANCÁRIOS</div>
+            <div class="banco-info">
+              <div class="banco-icon"><i class="fa-solid fa-building-columns"></i></div>
+              <div>
+                <div class="banco-nome">${getBancoNome(e.banco)}</div>
+                <div class="banco-dados">Ag: ${e.agencia || '—'} | Conta: ${e.conta || '—'}${e.digito ? '-' + e.digito : ''} | ${e.tipo_conta || 'corrente'}</div>
+              </div>
             </div>
           </div>
-          <div class="empresa-body">
-            <div class="empresa-section"><div class="empresa-section-title"><i class="fa-solid fa-id-card"></i> Contato</div><div class="info-grid"><div class="info-item"><div class="info-label">Telefone</div><div class="info-value">${e.telefone||'—'}</div></div><div class="info-item"><div class="info-label">E-mail</div><div class="info-value">${e.email||'—'}</div></div>${e.endereco?`<div class="info-item full"><div class="info-label">Endereço</div><div class="info-value">${e.endereco}</div></div>`:''}</div></div>
-            ${e.banco?`<div class="empresa-section"><div class="empresa-section-title"><i class="fa-solid fa-university"></i> Dados Bancários</div><div class="banco-info"><div class="banco-icon"><i class="fa-solid fa-building-columns"></i></div><div><div class="banco-nome">${getBancoNome(e.banco)}</div><div class="banco-dados">Ag: ${e.agencia||'—'} | Conta: ${e.conta||'—'}${e.digito?'-'+e.digito:''} | ${e.tipo_conta||'Corrente'}</div></div></div></div>`:''}
-            ${e.chave_pix?`<div class="empresa-section"><div class="empresa-section-title"><i class="fa-brands fa-pix"></i> Chave PIX</div><div class="pix-info"><div class="pix-icon">PIX</div><div><div class="pix-tipo">${getTipoPixLabel(e.tipo_chave_pix)}</div><div class="pix-chave">${e.chave_pix}</div></div></div></div>`:''}
+        ` : ''}
+        ${e.chave_pix ? `
+          <div class="empresa-section">
+            <div class="empresa-section-title"><i class="fa-brands fa-pix"></i> CHAVE PIX</div>
+            <div class="pix-info">
+              <div class="pix-icon">PIX</div>
+              <div>
+                <div class="pix-tipo">${getTipoPixLabel(e.tipo_chave_pix)}</div>
+                <div class="pix-chave">${e.chave_pix}</div>
+              </div>
+            </div>
           </div>
-          <div class="empresa-footer">
-            <button class="btn btn-secondary btn-sm" onclick='abrirModal(${JSON.stringify(e).replace(/'/g,"\\'")})'><i class="fa-solid fa-pen"></i> Editar</button>
-            ${!e.padrao?`<button class="btn btn-secondary btn-sm" onclick="definirPadrao(${e.id})"><i class="fa-solid fa-star"></i> Padrão</button>`:''}
-            <button class="btn btn-danger btn-sm" onclick="excluirEmpresa(${e.id})"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>`).join('');
+        ` : ''}
+      </div>
+      <div class="empresa-footer">
+        <button class="btn btn-secondary btn-sm" onclick="editarEmpresa(${index})">
+          <i class="fa-solid fa-pen"></i> Editar
+        </button>
+        ${!e.padrao ? `
+          <button class="btn btn-secondary btn-sm" onclick="definirPadrao('${e.id}')">
+            <i class="fa-solid fa-star"></i> Padrão
+          </button>
+        ` : ''}
+        <button class="btn btn-danger btn-sm" onclick="excluirEmpresa('${e.id}')">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function atualizarStats() {
+  document.getElementById('statTotal').textContent = empresas.length;
+  document.getElementById('statBancos').textContent = empresas.filter(e => e.banco).length;
+  document.getElementById('statPix').textContent = empresas.filter(e => e.chave_pix).length;
+}
+
+async function carregarEmpresas() {
+  try {
+    const r = await fetch('/api/empresas', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d = await r.json();
+    
+    if (d.success) {
+      empresas = d.data || [];
+      renderEmpresas();
+      atualizarStats();
     }
+  } catch (e) {
+    console.error('Erro ao carregar empresas:', e);
+  }
+}
 
-    function atualizarStats(){document.getElementById('statTotal').textContent=empresas.length;document.getElementById('statBancos').textContent=empresas.filter(e=>e.banco).length;document.getElementById('statPix').textContent=empresas.filter(e=>e.chave_pix).length}
+async function carregarUsuario() {
+  try {
+    const r = await fetch('/api/usuarios/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d = await r.json();
+    
+    if (d.success && d.data) {
+      document.getElementById('userName').textContent = d.data.nome || 'Usuário';
+      document.getElementById('userRole').textContent = d.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+      document.getElementById('userAvatar').textContent = (d.data.nome || 'U').charAt(0).toUpperCase();
+    }
+  } catch (e) {
+    console.error('Erro ao carregar usuário:', e);
+  }
+}
 
-    async function carregarEmpresas(){try{const r=await fetch('/api/empresas',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success){empresas=d.data||[];renderEmpresas();atualizarStats()}}catch(e){console.error(e)}}
+// Fechar modal ao clicar fora
+document.getElementById('modalEmpresa').addEventListener('click', function(e) {
+  if (e.target === this) fecharModal();
+});
 
-    async function carregarUsuario(){try{const r=await fetch('/api/usuarios/me',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success&&d.data){document.getElementById('userName').textContent=d.data.nome||'Usuário';document.getElementById('userRole').textContent=d.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(d.data.nome||'U').charAt(0).toUpperCase()}}catch(e){}}
-
-    document.getElementById('modalEmpresa').addEventListener('click',function(e){if(e.target===this)fecharModal()});
-    carregarUsuario();carregarEmpresas();
+// Inicializar
+carregarUsuario();
+carregarEmpresas();
   </script>
 </body>
 </html>
