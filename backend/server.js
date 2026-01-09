@@ -786,37 +786,6 @@ app.get("/api/config/ia-status", auth, (req, res) => {
 });
 
 // =====================================================
-// COBRANÇAS - PDF
-// =====================================================
-app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
-  let browser = null;
-  try {
-    const id = String(req.params.id || "").trim();
-    const q = await pool.query(`SELECT c.*, COALESCE(cl.nome, '') AS cliente FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id WHERE c.id = $1::uuid LIMIT 1`, [id]);
-    if (!q.rows.length) return res.status(404).json({ success: false, message: "Cobrança não encontrada." });
-    const r = q.rows[0];
-    const esc = (s) => String(s || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const idStr = String(r.id);
-    const refCode = `AC-C${idStr.slice(0, 2).toUpperCase()}D${idStr.slice(2, 6).toUpperCase()}`;
-    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"/><title>Cobrança ${refCode}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;padding:40px;color:#333}.header{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);padding:30px;border-radius:16px;margin-bottom:30px;border-left:6px solid #F6C84C;display:flex;justify-content:space-between;align-items:center}.logo{width:60px;height:60px;background:#F6C84C;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#1a1a1a}.title{color:#fff;margin-left:15px}.title h1{font-size:24px}.title h2{color:#F6C84C;font-size:12px}.info{text-align:right;color:#fff;font-size:12px}.info strong{color:#F6C84C}.badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700}.badge.pago{background:#dcfce7;color:#166534}.badge.pendente{background:#fef3c7;color:#854d0e}.badge.vencido{background:#fee2e2;color:#991b1b}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px}.card{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center}.card.destaque{background:linear-gradient(135deg,#F6C84C,#FFD56A)}.card label{font-size:10px;color:#666;display:block;margin-bottom:8px;text-transform:uppercase;font-weight:700}.card.destaque label{color:#1a1a1a}.card span{font-size:22px;font-weight:900;color:#1a1a1a}.section{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:12px;padding:25px;margin-bottom:20px}.section h3{font-size:14px;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid #F6C84C}.row{display:flex;margin-bottom:10px}.row label{width:140px;font-size:11px;color:#666;font-weight:700}.row span{font-size:13px;color:#1a1a1a;font-weight:600}.footer{margin-top:30px;padding-top:20px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#666}</style></head><body><div class="header"><div style="display:flex;align-items:center"><div class="logo">A</div><div class="title"><h1>ACERTIVE</h1><h2>Documento de Cobrança</h2></div></div><div class="info"><p><strong>Ref:</strong> ${refCode}</p><p><strong>Status:</strong> <span class="badge ${r.status}">${(r.status || 'pendente').toUpperCase()}</span></p><p><strong>Gerado:</strong> ${fmtDateTime(new Date())}</p></div></div><div class="grid"><div class="card destaque"><label>Valor Atualizado</label><span>${fmtMoney(r.valor_atualizado)}</span></div><div class="card"><label>Vencimento</label><span>${fmtDate(r.vencimento)}</span></div><div class="card"><label>Valor Original</label><span>${fmtMoney(r.valor_original)}</span></div><div class="card"><label>Juros + Multa</label><span>${fmtMoney((r.juros || 0) + (r.multa || 0))}</span></div></div><div class="section"><h3>📋 Dados da Cobrança</h3><div class="row"><label>Cliente:</label><span>${esc(r.cliente)}</span></div><div class="row"><label>Descrição:</label><span>${esc(r.descricao) || '—'}</span></div><div class="row"><label>Data Compromisso:</label><span>${fmtDate(r.data_compromisso) || '—'}</span></div><div class="row"><label>Criada em:</label><span>${fmtDateTime(r.created_at)}</span></div></div><div class="section" style="background:#fef3c7;border-color:#F6C84C"><h3 style="color:#854d0e">📊 Resumo Financeiro</h3><div class="row"><label>Valor Original:</label><span>${fmtMoney(r.valor_original)}</span></div><div class="row"><label>Juros:</label><span>${fmtMoney(r.juros)}</span></div><div class="row"><label>Multa:</label><span>${fmtMoney(r.multa)}</span></div><div class="row"><label>Desconto:</label><span>${fmtMoney(r.desconto)}</span></div><div class="row"><label><strong>TOTAL:</strong></label><span style="font-size:18px;color:#854d0e">${fmtMoney(r.valor_atualizado)}</span></div></div><div class="footer"><div><p>Gerado por: Sistema ACERTIVE</p><p>Usuário: ${req.user?.nome || 'Admin'}</p></div><div style="text-align:right"><p><strong>ACERTIVE</strong></p><p>Gestão de Cobranças</p></div></div></body></html>`;
-    browser = await chromium.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle" });
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-    await browser.close();
-    browser = null;
-    await registrarLog(req, 'GERAR_PDF', 'cobrancas', id, null);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="cobranca_${refCode}.pdf"`);
-    return res.status(200).send(pdfBuffer);
-  } catch (err) {
-    if (browser) try { await browser.close(); } catch {}
-    console.error("[COBRANCA PDF] erro:", err.message);
-    return res.status(500).json({ success: false, message: "Erro ao gerar PDF.", error: err.message });
-  }
-});
-
-// =====================================================
 // CLIENTES - GET ATIVOS
 // =====================================================
 app.get("/api/clientes-ativos", async (req, res) => {
