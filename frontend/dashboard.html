@@ -207,6 +207,7 @@
     .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
     .nav-badge.red { background: var(--red); color: white; }
     .nav-badge.blue { background: var(--blue); color: white; }
+    .nav-badge.green { background: var(--green); color: white; }
 
     .sidebar-footer {
       padding: 16px;
@@ -432,6 +433,11 @@
             <i class="fa-solid fa-users"></i>
             <span class="nav-text">Clientes</span>
           </a>
+          <a href="/consulta-cliente" class="nav-link">
+            <i class="fa-solid fa-magnifying-glass-dollar"></i>
+            <span class="nav-text">Consulta Cliente</span>
+            <span class="nav-badge green">NOVO</span>
+          </a>
           <a href="/agendamentos" class="nav-link">
             <i class="fa-solid fa-calendar-check"></i>
             <span class="nav-text">Agendamentos</span>
@@ -446,6 +452,11 @@
           <a href="/nova-cobranca" class="nav-link">
             <i class="fa-solid fa-plus-circle"></i>
             <span class="nav-text">Nova Cobrança</span>
+          </a>
+          <a href="/importar-cobrancas" class="nav-link">
+            <i class="fa-solid fa-file-import"></i>
+            <span class="nav-text">Importar Cobranças</span>
+            <span class="nav-badge green">NOVO</span>
           </a>
           <a href="/cobrancas-recorrentes" class="nav-link">
             <i class="fa-solid fa-repeat"></i>
@@ -671,23 +682,23 @@
               </div>
               <span>Novo Cliente</span>
             </a>
-            <a href="/novo-agendamento" class="action-item">
-              <div class="action-icon" style="background: var(--purple-bg); color: var(--purple);">
-                <i class="fa-solid fa-calendar-plus"></i>
+            <a href="/consulta-cliente" class="action-item">
+              <div class="action-icon" style="background: var(--green-bg); color: var(--green);">
+                <i class="fa-solid fa-magnifying-glass-dollar"></i>
               </div>
-              <span>Agendar</span>
+              <span>Consulta Cliente</span>
+            </a>
+            <a href="/importar-cobrancas" class="action-item">
+              <div class="action-icon" style="background: var(--purple-bg); color: var(--purple);">
+                <i class="fa-solid fa-file-import"></i>
+              </div>
+              <span>Importar</span>
             </a>
             <a href="/cobrancas?status=vencido" class="action-item">
               <div class="action-icon" style="background: var(--red-bg); color: var(--red);">
                 <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <span>Ver Vencidos</span>
-            </a>
-            <a href="/cobrancas-recorrentes" class="action-item">
-              <div class="action-icon" style="background: var(--green-bg); color: var(--green);">
-                <i class="fa-solid fa-repeat"></i>
-              </div>
-              <span>Recorrentes</span>
             </a>
             <a href="/configuracoes" class="action-item">
               <div class="action-icon" style="background: var(--orange-bg); color: var(--orange);">
@@ -716,7 +727,7 @@
         <div class="debtors-card">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-ranking-star"></i> Maiores Devedores</h3>
-            <a href="/clientes-ativos" class="card-link">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="/consulta-cliente" class="card-link">Consultar <i class="fa-solid fa-arrow-right"></i></a>
           </div>
           <div class="debtors-list" id="listaDevedores">
             <div class="activity-empty">
@@ -1070,98 +1081,64 @@
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   
   <script>
-    // ========== CONFIGURAÇÃO ==========
     const API_URL = window.location.origin;
     let token = localStorage.getItem('token');
     let chartFaturamento = null;
     let chartStatus = null;
 
-    // ========== VERIFICAR AUTENTICAÇÃO ==========
-    if (!token) {
-      window.location.href = '/login';
-    }
+    if (!token) { window.location.href = '/login'; }
 
-    // ========== HELPERS ==========
-    function getHeaders() {
-      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-    }
-
-    function formatMoney(value) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-    }
-
-    function formatNumber(value) {
-      return new Intl.NumberFormat('pt-BR').format(value || 0);
-    }
-
-    function formatTime(date) {
-      return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    }
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+    function formatMoney(value) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0); }
+    function formatNumber(value) { return new Intl.NumberFormat('pt-BR').format(value || 0); }
+    function formatTime(date) { return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
 
     function showToast(message, type = 'success') {
       Toastify({
-        text: message,
-        duration: 3000,
-        gravity: "top",
-        position: "right",
+        text: message, duration: 3000, gravity: "top", position: "right",
         style: {
           background: type === 'success' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 
                       type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 
                       'linear-gradient(135deg, #F6C84C, #d4a833)',
-          borderRadius: '12px',
-          fontWeight: '600',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+          borderRadius: '12px', fontWeight: '600', boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
         }
       }).showToast();
     }
 
-    // ========== SIDEBAR TOGGLE ==========
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     
     sidebarToggle.addEventListener('click', () => {
-      if (window.innerWidth <= 1024) {
-        sidebar.classList.toggle('open');
-      } else {
-        sidebar.classList.toggle('collapsed');
-      }
+      if (window.innerWidth <= 1024) { sidebar.classList.toggle('open'); }
+      else { sidebar.classList.toggle('collapsed'); }
     });
 
-    // ========== LOGOUT ==========
     document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('token');
       window.location.href = '/login';
     });
 
-    // ========== CARREGAR USUÁRIO ==========
     async function carregarUsuario() {
       try {
         const response = await fetch(`${API_URL}/api/usuarios/me`, { headers: getHeaders() });
         const result = await response.json();
-        
         if (result.success && result.data) {
           const user = result.data;
           document.getElementById('userName').textContent = user.nome || user.email || 'Usuário';
           document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
           document.getElementById('userAvatar').textContent = (user.nome || user.email || 'U').charAt(0).toUpperCase();
-          
-          // Esconder botão de usuários se não for admin
           if (user.nivel !== 'admin') {
             const navUsuarios = document.getElementById('navUsuarios');
             if (navUsuarios) navUsuarios.style.display = 'none';
           }
         }
-      } catch (err) {
-        console.error('Erro ao carregar usuário:', err);
-      }
+      } catch (err) { console.error('Erro ao carregar usuário:', err); }
     }
 
-    // ========== CARREGAR DASHBOARD ==========
     async function carregarDashboard() {
       try {
         const response = await fetch(`${API_URL}/api/dashboard`, { headers: getHeaders() });
         const result = await response.json();
-        
         if (result.success) {
           document.getElementById('totalRecebido').textContent = formatMoney(result.totalRecebido);
           document.getElementById('totalPendentes').textContent = formatMoney(result.totalPendente);
@@ -1169,209 +1146,107 @@
           document.getElementById('totalClientes').textContent = formatNumber(result.clientesAtivos);
           document.getElementById('totalTitulos').textContent = formatNumber(result.totalCobrancas);
           document.getElementById('totalAgendamentos').textContent = formatNumber(result.agendamentosHoje || 0);
-          
-          // Badge no menu
           document.getElementById('navBadgeCobrancas').textContent = result.totalCobrancas || 0;
-          
           if (result.agendamentosHoje > 0) {
             document.getElementById('navBadgeAgendamentos').textContent = result.agendamentosHoje;
             document.getElementById('navBadgeAgendamentos').style.display = 'inline';
             document.getElementById('notificationDot').style.display = 'block';
           }
         }
-      } catch (err) {
-        console.error('Erro ao carregar dashboard:', err);
-        showToast('Erro ao carregar dados', 'error');
-      }
+      } catch (err) { console.error('Erro ao carregar dashboard:', err); showToast('Erro ao carregar dados', 'error'); }
     }
 
-    // ========== CARREGAR GRÁFICOS ==========
     async function carregarGraficos() {
       try {
         const response = await fetch(`${API_URL}/api/dashboard/graficos`, { headers: getHeaders() });
         const result = await response.json();
-        
         if (result.success) {
           renderizarGraficoFaturamento(result.faturamentoMensal);
           renderizarGraficoStatus(result.statusCobrancas);
           renderizarTopDevedores(result.topDevedores);
         }
-      } catch (err) {
-        console.error('Erro ao carregar gráficos:', err);
-      }
+      } catch (err) { console.error('Erro ao carregar gráficos:', err); }
     }
 
-    // ========== GRÁFICO FATURAMENTO ==========
     function renderizarGraficoFaturamento(dados) {
       const ctx = document.getElementById('chartFaturamento');
       if (!ctx) return;
-      
       if (chartFaturamento) chartFaturamento.destroy();
-      
       const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
       gradient.addColorStop(0, 'rgba(246, 200, 76, 0.3)');
       gradient.addColorStop(1, 'rgba(246, 200, 76, 0)');
-      
       chartFaturamento = new Chart(ctx, {
         type: 'line',
         data: {
           labels: dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
           datasets: [{
-            label: 'Faturado',
-            data: dados?.total || [0, 0, 0, 0, 0, 0],
-            borderColor: '#F6C84C',
-            backgroundColor: gradient,
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#F6C84C',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            label: 'Faturado', data: dados?.total || [0, 0, 0, 0, 0, 0],
+            borderColor: '#F6C84C', backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4,
+            pointBackgroundColor: '#F6C84C', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6
           }, {
-            label: 'Recebido',
-            data: dados?.recebido || [0, 0, 0, 0, 0, 0],
-            borderColor: '#22c55e',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            tension: 0.4,
-            pointRadius: 3,
-            pointHoverRadius: 5
+            label: 'Recebido', data: dados?.recebido || [0, 0, 0, 0, 0, 0],
+            borderColor: '#22c55e', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5],
+            tension: 0.4, pointRadius: 3, pointHoverRadius: 5
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-              align: 'end',
-              labels: { color: '#a1a1aa', usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(15, 15, 18, 0.95)',
-              titleColor: '#F6C84C',
-              bodyColor: '#fff',
-              borderColor: 'rgba(246, 200, 76, 0.3)',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: true,
-              callbacks: {
-                label: (context) => ` ${context.dataset.label}: ${formatMoney(context.raw)}`
-              }
-            }
+            legend: { display: true, position: 'top', align: 'end', labels: { color: '#a1a1aa', usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } } },
+            tooltip: { backgroundColor: 'rgba(15, 15, 18, 0.95)', titleColor: '#F6C84C', bodyColor: '#fff', borderColor: 'rgba(246, 200, 76, 0.3)', borderWidth: 1, padding: 12, displayColors: true, callbacks: { label: (context) => ` ${context.dataset.label}: ${formatMoney(context.raw)}` } }
           },
           scales: {
-            x: {
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#71717a', font: { size: 11 } }
-            },
-            y: {
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#71717a', font: { size: 11 }, callback: (value) => formatMoney(value) }
-            }
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', font: { size: 11 } } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', font: { size: 11 }, callback: (value) => formatMoney(value) } }
           },
           interaction: { intersect: false, mode: 'index' }
         }
       });
     }
 
-    // ========== GRÁFICO STATUS ==========
     function renderizarGraficoStatus(dados) {
       const ctx = document.getElementById('chartStatus');
       if (!ctx) return;
-      
       if (chartStatus) chartStatus.destroy();
-      
       const pago = dados?.pago || 0;
       const pendente = dados?.pendente || 0;
       const vencido = dados?.vencido || 0;
-      
       document.getElementById('legendPago').textContent = pago;
       document.getElementById('legendPendente').textContent = pendente;
       document.getElementById('legendVencido').textContent = vencido;
-      
       chartStatus = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-          labels: ['Pago', 'Pendente', 'Vencido'],
-          datasets: [{
-            data: [pago, pendente, vencido],
-            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
-            borderColor: '#09090b',
-            borderWidth: 4,
-            hoverBorderWidth: 0,
-            hoverOffset: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '70%',
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(15, 15, 18, 0.95)',
-              titleColor: '#F6C84C',
-              bodyColor: '#fff',
-              borderColor: 'rgba(246, 200, 76, 0.3)',
-              borderWidth: 1,
-              padding: 12
-            }
-          }
-        }
+        data: { labels: ['Pago', 'Pendente', 'Vencido'], datasets: [{ data: [pago, pendente, vencido], backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderColor: '#09090b', borderWidth: 4, hoverBorderWidth: 0, hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 15, 18, 0.95)', titleColor: '#F6C84C', bodyColor: '#fff', borderColor: 'rgba(246, 200, 76, 0.3)', borderWidth: 1, padding: 12 } } }
       });
     }
 
-    // ========== TOP DEVEDORES ==========
     function renderizarTopDevedores(devedores) {
       const container = document.getElementById('listaDevedores');
       if (!container) return;
-      
       if (!devedores || devedores.length === 0) {
-        container.innerHTML = `
-          <div class="activity-empty">
-            <i class="fa-solid fa-check-circle"></i>
-            <span>Nenhum devedor encontrado</span>
-          </div>
-        `;
+        container.innerHTML = `<div class="activity-empty"><i class="fa-solid fa-check-circle"></i><span>Nenhum devedor encontrado</span></div>`;
         return;
       }
-      
       container.innerHTML = devedores.map((d, i) => `
         <div class="debtor-item">
           <div class="debtor-rank ${i === 0 ? 'top' : ''}">${i + 1}º</div>
-          <div class="debtor-info">
-            <div class="debtor-name">${d.cliente || 'Sem nome'}</div>
-            <div class="debtor-details">Pendente</div>
-          </div>
+          <div class="debtor-info"><div class="debtor-name">${d.cliente || 'Sem nome'}</div><div class="debtor-details">Pendente</div></div>
           <div class="debtor-value">${formatMoney(d.total)}</div>
         </div>
       `).join('');
     }
 
-    // ========== AGENDAMENTOS DE HOJE ==========
     async function carregarAgendamentosHoje() {
       try {
         const response = await fetch(`${API_URL}/api/agendamentos/hoje`, { headers: getHeaders() });
         const result = await response.json();
-        
         const container = document.getElementById('listaAgendamentosHoje');
         if (!container) return;
-        
         if (!result.success || !result.data || result.data.length === 0) {
-          container.innerHTML = `
-            <div class="activity-empty">
-              <i class="fa-solid fa-calendar-check"></i>
-              <span>Nenhum agendamento para hoje</span>
-            </div>
-          `;
+          container.innerHTML = `<div class="activity-empty"><i class="fa-solid fa-calendar-check"></i><span>Nenhum agendamento para hoje</span></div>`;
           return;
         }
-        
         const tipoIcons = {
           'novo_contato': { icon: 'fa-phone', bg: 'var(--blue-bg)', color: 'var(--blue)' },
           'renegociacao': { icon: 'fa-handshake', bg: 'var(--purple-bg)', color: 'var(--purple)' },
@@ -1381,50 +1256,26 @@
           'retorno': { icon: 'fa-reply', bg: 'var(--blue-bg)', color: 'var(--blue)' },
           'visita': { icon: 'fa-location-dot', bg: 'var(--red-bg)', color: 'var(--red)' }
         };
-        
         container.innerHTML = result.data.slice(0, 5).map(a => {
           const tipo = tipoIcons[a.tipo] || tipoIcons['lembrete'];
-          return `
-            <div class="activity-item">
-              <div class="activity-icon" style="background: ${tipo.bg}; color: ${tipo.color};">
-                <i class="fa-solid ${tipo.icon}"></i>
-              </div>
-              <div class="activity-info">
-                <div class="activity-title">${a.cliente_nome || 'Cliente'}</div>
-                <div class="activity-subtitle">${a.descricao || a.tipo}</div>
-              </div>
-              <div class="activity-time">${formatTime(a.data_agendamento)}</div>
-            </div>
-          `;
+          return `<div class="activity-item"><div class="activity-icon" style="background: ${tipo.bg}; color: ${tipo.color};"><i class="fa-solid ${tipo.icon}"></i></div><div class="activity-info"><div class="activity-title">${a.cliente_nome || 'Cliente'}</div><div class="activity-subtitle">${a.descricao || a.tipo}</div></div><div class="activity-time">${formatTime(a.data_agendamento)}</div></div>`;
         }).join('');
-      } catch (err) {
-        console.error('Erro ao carregar agendamentos:', err);
-      }
+      } catch (err) { console.error('Erro ao carregar agendamentos:', err); }
     }
 
-    // ========== ATUALIZAR DADOS ==========
     document.getElementById('btnRefresh').addEventListener('click', async () => {
       const btn = document.getElementById('btnRefresh');
       btn.querySelector('i').classList.add('fa-spin');
-      
-      await Promise.all([
-        carregarDashboard(),
-        carregarGraficos(),
-        carregarAgendamentosHoje()
-      ]);
-      
+      await Promise.all([carregarDashboard(), carregarGraficos(), carregarAgendamentosHoje()]);
       btn.querySelector('i').classList.remove('fa-spin');
       showToast('Dados atualizados!', 'success');
     });
 
-    // ========== EXPORTAR ==========
     document.getElementById('btnExportar').addEventListener('click', async () => {
       try {
         showToast('Gerando relatório...', 'info');
         const response = await fetch(`${API_URL}/api/relatorios/export-csv`, { headers: getHeaders() });
-        
         if (!response.ok) throw new Error('Erro ao gerar relatório');
-        
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1432,27 +1283,17 @@
         a.download = `relatorio_acertive_${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         window.URL.revokeObjectURL(url);
-        
         showToast('Relatório exportado!', 'success');
-      } catch (err) {
-        console.error('Erro ao exportar:', err);
-        showToast('Erro ao exportar relatório', 'error');
-      }
+      } catch (err) { console.error('Erro ao exportar:', err); showToast('Erro ao exportar relatório', 'error'); }
     });
 
-    // ========== BUSCA GLOBAL ==========
     const globalSearch = document.getElementById('globalSearch');
-    let searchTimeout;
-    
     globalSearch.addEventListener('keyup', (e) => {
-      clearTimeout(searchTimeout);
-      
       if (e.key === 'Enter' && globalSearch.value.trim()) {
-        window.location.href = `/cobrancas?q=${encodeURIComponent(globalSearch.value.trim())}`;
+        window.location.href = `/consulta-cliente?q=${encodeURIComponent(globalSearch.value.trim())}`;
       }
     });
 
-    // Atalho CMD+K ou CTRL+K
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -1460,26 +1301,13 @@
       }
     });
 
-    // ========== INICIALIZAÇÃO ==========
     async function init() {
       try {
-        await Promise.all([
-          carregarUsuario(),
-          carregarDashboard(),
-          carregarGraficos(),
-          carregarAgendamentosHoje()
-        ]);
-      } catch (err) {
-        console.error('Erro na inicialização:', err);
-      } finally {
-        // Esconder loading screen
-        setTimeout(() => {
-          document.getElementById('loadingScreen').classList.add('hidden');
-        }, 800);
-      }
+        await Promise.all([carregarUsuario(), carregarDashboard(), carregarGraficos(), carregarAgendamentosHoje()]);
+      } catch (err) { console.error('Erro na inicialização:', err); }
+      finally { setTimeout(() => { document.getElementById('loadingScreen').classList.add('hidden'); }, 800); }
     }
 
-    // Iniciar quando DOM estiver pronto
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
