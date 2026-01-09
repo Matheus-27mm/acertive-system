@@ -5,440 +5,367 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nova Cobrança - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #0f0f12;
+      --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-sidebar: #0c0c0f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #F6C84C;
+      --gold-light: #FFD56A;
+      --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 260px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f9fa; min-height: 100vh; display: flex; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 
-    .sidebar { width: 260px; background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); min-height: 100vh; padding: 20px 0; position: fixed; left: 0; top: 0; z-index: 100; }
-    .logo-section { padding: 0 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #1a1a1a; }
-    .logo-text { font-size: 22px; font-weight: 800; color: #fff; }
-    .logo-text span { color: #F6C84C; }
-    .nav-menu { list-style: none; padding: 0 12px; }
-    .nav-item { margin-bottom: 4px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #a1a1aa; text-decoration: none; border-radius: 12px; transition: all 0.2s; font-weight: 500; }
-    .nav-link:hover, .nav-link.active { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
-    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
-    .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 12px; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
+      display: flex; flex-direction: column; padding: 20px 0;
+    }
+    .sidebar-header { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: var(--bg-primary); }
+    .logo-text { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span { color: var(--gold); }
 
-    .main-content { flex: 1; margin-left: 260px; padding: 24px; }
+    .nav-menu { flex: 1; padding: 0 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md); font-weight: 500; font-size: 14px; transition: all 0.2s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
+    .nav-badge.blue { background: var(--blue); color: white; }
 
-    .page-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #F6C84C; }
-    .page-title h1 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .page-title p { color: #a1a1aa; font-size: 14px; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
+    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
 
-    .form-container { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .main-content { margin-left: var(--sidebar-width); padding: 32px; min-height: 100vh; }
 
-    .section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f3f4f6; }
-    .section-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-    .section-icon i { font-size: 18px; color: #1a1a1a; }
-    .section-title h2 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+    .page-header { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 24px; }
+    .page-title { display: flex; align-items: center; gap: 16px; }
+    .page-title-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+    .page-title-icon i { font-size: 22px; color: var(--gold); }
+    .page-title h1 { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .page-title p { color: var(--text-muted); font-size: 14px; }
 
-    .client-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
-    .client-tab { flex: 1; padding: 16px 24px; border: 2px solid #e5e7eb; background: #fff; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .client-tab:hover { border-color: #F6C84C; }
-    .client-tab.active { border-color: #F6C84C; background: #fefce8; }
-    .client-tab i { font-size: 24px; color: #6b7280; margin-bottom: 8px; display: block; }
-    .client-tab.active i { color: #F6C84C; }
-    .client-tab-title { font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .client-tab-desc { font-size: 12px; color: #6b7280; }
+    .form-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
+    .form-card h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .form-card h3 i { color: var(--gold); }
 
-    .client-section { display: none; margin-bottom: 24px; }
-    .client-section.active { display: block; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid.full { grid-template-columns: 1fr; }
 
-    .search-wrapper { position: relative; margin-bottom: 16px; }
-    .search-input { width: 100%; padding: 16px 20px 16px 50px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; transition: all 0.2s; }
-    .search-input:focus { outline: none; border-color: #F6C84C; box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.15); }
-    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 18px; }
-    .search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 2px solid #F6C84C; border-top: none; border-radius: 0 0 12px 12px; max-height: 300px; overflow-y: auto; display: none; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-    .search-results.active { display: block; }
-    .search-result-item { padding: 14px 18px; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
-    .search-result-item:hover { background: #fefce8; }
-    .search-result-item:last-child { border-bottom: none; }
-    .search-result-name { font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .search-result-info { font-size: 12px; color: #6b7280; display: flex; gap: 16px; }
-    .search-result-info span { display: flex; align-items: center; gap: 4px; }
-    .search-no-results { padding: 20px; text-align: center; color: #6b7280; }
-
-    .selected-client { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 14px; padding: 20px; display: none; }
-    .selected-client.active { display: flex; align-items: center; justify-content: space-between; }
-    .selected-client-info { display: flex; align-items: center; gap: 16px; }
-    .selected-client-avatar { width: 50px; height: 50px; background: #F6C84C; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #1a1a1a; }
-    .selected-client-name { color: #fff; font-weight: 700; font-size: 16px; }
-    .selected-client-cpf { color: #a1a1aa; font-size: 13px; }
-    .selected-client-stats { display: flex; gap: 24px; }
-    .selected-client-stat { text-align: center; }
-    .selected-client-stat-value { color: #F6C84C; font-size: 18px; font-weight: 800; }
-    .selected-client-stat-label { color: #a1a1aa; font-size: 11px; text-transform: uppercase; }
-    .btn-change-client { padding: 10px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-    .btn-change-client:hover { background: rgba(255,255,255,0.2); }
-
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .form-group { margin-bottom: 20px; }
-    .form-group.full { grid-column: span 2; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
-    .form-label .required { color: #dc2626; }
-    .form-control { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; transition: all 0.2s; }
-    .form-control:focus { outline: none; border-color: #F6C84C; box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.15); }
-    .form-control::placeholder { color: #9ca3af; }
-    select.form-control { cursor: pointer; background: #fff; }
-    textarea.form-control { resize: vertical; min-height: 100px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-group label .required { color: var(--red); }
 
-    .input-group { position: relative; }
-    .input-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: 600; }
-    .input-group .form-control { padding-left: 50px; }
+    .form-control { width: 100%; padding: 12px 16px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; transition: all 0.2s; }
+    .form-control:focus { outline: none; border-color: var(--gold); background: var(--gold-glow); }
+    .form-control::placeholder { color: var(--text-muted); }
 
-    .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 2px solid #f3f4f6; }
-    .btn { padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, #F6C84C, #F9D77E); border: none; color: #1a1a1a; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(246, 200, 76, 0.4); }
-    .btn-secondary { background: #fff; border: 2px solid #e5e7eb; color: #374151; }
-    .btn-secondary:hover { border-color: #d1d5db; background: #f9fafb; }
+    select.form-control { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    select.form-control option { background: var(--bg-secondary); color: var(--text-primary); }
 
-    .empresa-select { margin-bottom: 24px; }
-    .empresa-select .form-control { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; font-weight: 600; }
-    .empresa-select .form-control option { background: #fff; color: #1a1a1a; }
+    .cliente-tabs { display: flex; gap: 12px; margin-bottom: 20px; }
+    .cliente-tab { flex: 1; padding: 16px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-md); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .cliente-tab:hover { border-color: var(--border-gold); }
+    .cliente-tab.active { border-color: var(--gold); background: var(--gold-glow); }
+    .cliente-tab i { font-size: 24px; color: var(--text-muted); margin-bottom: 8px; display: block; }
+    .cliente-tab.active i { color: var(--gold); }
+    .cliente-tab span { font-size: 14px; font-weight: 600; color: var(--text-secondary); display: block; }
+    .cliente-tab.active span { color: var(--gold); }
+    .cliente-tab small { font-size: 11px; color: var(--text-muted); }
 
-    .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; display: none; }
-    .alert.success { background: #dcfce7; color: #166534; display: block; }
-    .alert.error { background: #fee2e2; color: #991b1b; display: block; }
+    .search-cliente { position: relative; margin-bottom: 16px; }
+    .search-cliente i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .search-cliente input { padding-left: 48px; }
+    
+    .search-results { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); display: none; }
+    .search-results.active { display: block; }
+    .search-result-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+    .search-result-item:hover { background: var(--gold-glow); }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-name { font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .search-result-cpf { font-size: 12px; color: var(--text-muted); }
 
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
+    .cliente-selecionado { display: none; padding: 16px; background: var(--green-bg); border: 1px solid var(--green); border-radius: var(--radius-md); margin-bottom: 16px; }
+    .cliente-selecionado.active { display: flex; align-items: center; gap: 12px; }
+    .cliente-selecionado-avatar { width: 40px; height: 40px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+    .cliente-selecionado-info { flex: 1; }
+    .cliente-selecionado-nome { font-weight: 600; color: var(--text-primary); }
+    .cliente-selecionado-cpf { font-size: 12px; color: var(--text-muted); }
+    .cliente-selecionado-remove { background: none; border: none; color: var(--red); cursor: pointer; padding: 8px; }
+
+    .novo-cliente-form { display: none; }
+    .novo-cliente-form.active { display: block; }
+
+    .valor-input { position: relative; }
+    .valor-input span { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600; }
+    .valor-input input { padding-left: 48px; }
+
+    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+    .checkbox-group label { font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+
+    .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .btn { padding: 12px 24px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; border: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--border-gold); background: var(--gold-glow); }
+
+    .toast { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: var(--radius-md); font-weight: 600; z-index: 9999; display: none; animation: slideIn 0.3s ease; }
+    .toast.success { background: var(--green); color: white; }
+    .toast.error { background: var(--red); color: white; }
+    .toast.active { display: block; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
       .main-content { margin-left: 0; }
       .form-grid { grid-template-columns: 1fr; }
-      .form-group.full { grid-column: span 1; }
-      .client-tabs { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <nav class="sidebar">
-    <div class="logo-section">
+  <aside class="sidebar">
+    <div class="sidebar-header">
       <div class="logo-icon">A</div>
       <div class="logo-text">ACERT<span>IVE</span></div>
     </div>
-    <ul class="nav-menu">
-      <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-      <li class="nav-item"><a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></li>
-      <li class="nav-item"><a href="clientes-ativos.html" class="nav-link"><i class="fas fa-users"></i> Clientes</a></li>
-      <li class="nav-item"><a href="consulta-cliente.html" class="nav-link"><i class="fas fa-search-dollar"></i> Consulta Cliente</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="nova-cobranca.html" class="nav-link active"><i class="fas fa-plus-circle"></i> Nova Cobrança</a></li>
-      <li class="nav-item"><a href="novo-cliente.html" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a></li>
-      <li class="nav-item"><a href="importar-cobrancas.html" class="nav-link"><i class="fas fa-file-import"></i> Importar Cobranças</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="agendamentos.html" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a></li>
-      <li class="nav-item"><a href="cobrancas-recorrentes.html" class="nav-link"><i class="fas fa-redo"></i> Recorrentes</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="historico.html" class="nav-link"><i class="fas fa-history"></i> Histórico</a></li>
-      <li class="nav-item"><a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a></li>
-    </ul>
-  </nav>
+    <nav class="nav-menu">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes-ativos" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/consulta-cliente" class="nav-link"><i class="fas fa-magnifying-glass-dollar"></i> Consulta Cliente</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/nova-cobranca" class="nav-link active"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar Cobranças</a>
+        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fas fa-repeat"></i> Recorrentes</a>
+        <a href="/historico" class="nav-link"><i class="fas fa-clock-rotate-left"></i> Histórico</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link" id="navUsuarios"><i class="fas fa-user-shield"></i> Usuários <span class="nav-badge blue">ADM</span></a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Administrador</div>
+          <div class="user-role" id="userRole">Admin</div>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
 
   <main class="main-content">
-    <header class="page-header">
+    <div class="page-header">
       <div class="page-title">
-        <h1><i class="fas fa-plus-circle" style="color: #F6C84C; margin-right: 12px;"></i>Nova Cobrança</h1>
-        <p>Cadastre uma nova cobrança para um cliente</p>
+        <div class="page-title-icon"><i class="fas fa-plus-circle"></i></div>
+        <div>
+          <h1>Nova Cobrança</h1>
+          <p>Cadastre uma nova cobrança para um cliente</p>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <div class="form-container">
-      <div id="alertBox" class="alert"></div>
-
-      <form id="cobrancaForm">
-        <!-- Empresa -->
-        <div class="empresa-select">
-          <label class="form-label"><i class="fas fa-building" style="margin-right: 6px;"></i>Empresa Emissora</label>
-          <select id="empresaId" class="form-control" required>
+    <form id="formCobranca">
+      <!-- Empresa Emissora -->
+      <div class="form-card">
+        <h3><i class="fas fa-building"></i> Empresa Emissora</h3>
+        <div class="form-group">
+          <label>Selecione a empresa <span class="required">*</span></label>
+          <select class="form-control" id="empresaId" required>
             <option value="">Carregando empresas...</option>
           </select>
         </div>
+      </div>
 
-        <!-- Seção Cliente -->
-        <div class="section-title">
-          <div class="section-icon"><i class="fas fa-user"></i></div>
-          <h2>Selecionar Cliente</h2>
-        </div>
-
-        <!-- Tabs de seleção -->
-        <div class="client-tabs">
-          <div class="client-tab active" data-tab="existente" onclick="selecionarTab('existente')">
+      <!-- Selecionar Cliente -->
+      <div class="form-card">
+        <h3><i class="fas fa-user"></i> Selecionar Cliente</h3>
+        
+        <div class="cliente-tabs">
+          <div class="cliente-tab active" data-tab="existente" onclick="mudarTab('existente')">
             <i class="fas fa-search"></i>
-            <div class="client-tab-title">Cliente Existente</div>
-            <div class="client-tab-desc">Buscar cliente já cadastrado</div>
+            <span>Cliente Existente</span>
+            <small>Buscar cliente já cadastrado</small>
           </div>
-          <div class="client-tab" data-tab="novo" onclick="selecionarTab('novo')">
+          <div class="cliente-tab" data-tab="novo" onclick="mudarTab('novo')">
             <i class="fas fa-user-plus"></i>
-            <div class="client-tab-title">Novo Cliente</div>
-            <div class="client-tab-desc">Cadastrar durante a cobrança</div>
+            <span>Novo Cliente</span>
+            <small>Cadastrar durante a cobrança</small>
           </div>
         </div>
 
         <!-- Buscar Cliente Existente -->
-        <div class="client-section active" id="clienteExistente">
-          <div class="search-wrapper">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchCliente" class="search-input" placeholder="Digite o nome ou CPF/CNPJ do cliente..." autocomplete="off">
-            <div class="search-results" id="searchResults"></div>
-          </div>
-          <div class="selected-client" id="selectedClient">
-            <div class="selected-client-info">
-              <div class="selected-client-avatar" id="clienteAvatar">J</div>
-              <div>
-                <div class="selected-client-name" id="clienteNome">Nome do Cliente</div>
-                <div class="selected-client-cpf" id="clienteCpf">CPF/CNPJ</div>
-              </div>
+        <div id="tabExistente">
+          <div class="cliente-selecionado" id="clienteSelecionado">
+            <div class="cliente-selecionado-avatar" id="clienteAvatar">A</div>
+            <div class="cliente-selecionado-info">
+              <div class="cliente-selecionado-nome" id="clienteNome">Nome do Cliente</div>
+              <div class="cliente-selecionado-cpf" id="clienteCpf">CPF/CNPJ</div>
             </div>
-            <div class="selected-client-stats">
-              <div class="selected-client-stat">
-                <div class="selected-client-stat-value" id="clienteCobrancas">0</div>
-                <div class="selected-client-stat-label">Cobranças</div>
-              </div>
-              <div class="selected-client-stat">
-                <div class="selected-client-stat-value" id="clienteDivida">R$ 0</div>
-                <div class="selected-client-stat-label">Pendente</div>
-              </div>
-            </div>
-            <button type="button" class="btn-change-client" onclick="limparClienteSelecionado()">
-              <i class="fas fa-times"></i> Alterar
-            </button>
+            <button type="button" class="cliente-selecionado-remove" onclick="removerCliente()"><i class="fas fa-times"></i></button>
           </div>
-          <input type="hidden" id="clienteId" name="cliente_id">
+
+          <div class="search-cliente">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control" id="buscaCliente" placeholder="Digite o nome ou CPF/CNPJ do cliente..." autocomplete="off">
+          </div>
+          <div class="search-results" id="searchResults"></div>
         </div>
 
-        <!-- Cadastrar Novo Cliente -->
-        <div class="client-section" id="clienteNovo">
+        <!-- Novo Cliente -->
+        <div class="novo-cliente-form" id="tabNovo">
           <div class="form-grid">
-            <div class="form-group full">
-              <label class="form-label">Nome Completo <span class="required">*</span></label>
-              <input type="text" id="novoClienteNome" class="form-control" placeholder="Nome do cliente">
+            <div class="form-group">
+              <label>Nome completo <span class="required">*</span></label>
+              <input type="text" class="form-control" id="novoNome" placeholder="Nome do cliente">
             </div>
             <div class="form-group">
-              <label class="form-label">CPF/CNPJ</label>
-              <input type="text" id="novoClienteCpf" class="form-control" placeholder="000.000.000-00">
+              <label>CPF/CNPJ</label>
+              <input type="text" class="form-control" id="novoCpf" placeholder="000.000.000-00">
             </div>
             <div class="form-group">
-              <label class="form-label">Telefone</label>
-              <input type="text" id="novoClienteTelefone" class="form-control" placeholder="(00) 00000-0000">
+              <label>Telefone</label>
+              <input type="text" class="form-control" id="novoTelefone" placeholder="(00) 00000-0000">
             </div>
-            <div class="form-group full">
-              <label class="form-label">E-mail</label>
-              <input type="email" id="novoClienteEmail" class="form-control" placeholder="email@exemplo.com">
+            <div class="form-group">
+              <label>E-mail</label>
+              <input type="email" class="form-control" id="novoEmail" placeholder="email@exemplo.com">
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Seção Cobrança -->
-        <div class="section-title" style="margin-top: 32px;">
-          <div class="section-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-          <h2>Dados da Cobrança</h2>
-        </div>
-
+      <!-- Dados da Cobrança -->
+      <div class="form-card">
+        <h3><i class="fas fa-file-invoice-dollar"></i> Dados da Cobrança</h3>
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Valor <span class="required">*</span></label>
-            <div class="input-group">
-              <span class="input-prefix">R$</span>
-              <input type="text" id="valorOriginal" class="form-control" placeholder="0,00" required>
+            <label>Valor <span class="required">*</span></label>
+            <div class="valor-input">
+              <span>R$</span>
+              <input type="text" class="form-control" id="valor" placeholder="0,00" required>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Data de Vencimento <span class="required">*</span></label>
-            <input type="date" id="vencimento" class="form-control" required>
-          </div>
-          <div class="form-group full">
-            <label class="form-label">Descrição</label>
-            <input type="text" id="descricao" class="form-control" placeholder="Ex: Mensalidade Janeiro/2026, Serviço prestado...">
+            <label>Data de Vencimento <span class="required">*</span></label>
+            <input type="date" class="form-control" id="vencimento" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Status</label>
-            <select id="status" class="form-control">
-              <option value="pendente">Pendente</option>
-              <option value="pago">Pago</option>
-              <option value="vencido">Vencido</option>
-              <option value="negociando">Negociando</option>
-            </select>
+            <label>Descrição</label>
+            <input type="text" class="form-control" id="descricao" placeholder="Ex: Mensalidade, Serviço...">
           </div>
           <div class="form-group">
-            <label class="form-label">Data de Compromisso</label>
-            <input type="date" id="dataCompromisso" class="form-control">
-          </div>
-          <div class="form-group full">
-            <label class="form-label">Observações</label>
-            <textarea id="observacoes" class="form-control" placeholder="Observações adicionais sobre a cobrança..."></textarea>
+            <label>Data Compromisso</label>
+            <input type="date" class="form-control" id="dataCompromisso">
           </div>
         </div>
+        <div class="form-grid full">
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea class="form-control" id="observacoes" rows="3" placeholder="Informações adicionais sobre a cobrança..."></textarea>
+          </div>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="aplicarMultaJuros" checked>
+          <label for="aplicarMultaJuros">Aplicar multa e juros após vencimento</label>
+        </div>
+      </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" onclick="window.location.href='cobrancas.html'">
-            <i class="fas fa-times"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-check"></i> Salvar Cobrança
-          </button>
-        </div>
-      </form>
-    </div>
+      <!-- Ações -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+          <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+        <button type="submit" class="btn btn-primary" id="btnSalvar">
+          <i class="fas fa-check"></i> Salvar Cobrança
+        </button>
+      </div>
+    </form>
   </main>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     const API_BASE = '';
     let token = localStorage.getItem('token');
-    let clienteSelecionado = null;
+    let clienteIdSelecionado = null;
     let modoCliente = 'existente';
     let searchTimeout = null;
 
-    if (!token) window.location.href = 'login.html';
+    if (!token) window.location.href = '/login';
 
     function getHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     }
 
-    function fmtMoney(valor) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} active`;
+      setTimeout(() => toast.classList.remove('active'), 3000);
     }
 
-    // Verificar parâmetros da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const clienteIdParam = urlParams.get('cliente_id');
-    const clienteNomeParam = urlParams.get('cliente_nome');
-
-    // Carregar empresas
-    async function carregarEmpresas() {
-      try {
-        const res = await fetch(`${API_BASE}/api/empresas`, { headers: getHeaders() });
-        const data = await res.json();
-        const select = document.getElementById('empresaId');
-        if (data.success && data.data.length > 0) {
-          select.innerHTML = data.data.map(e => 
-            `<option value="${e.id}" ${e.padrao ? 'selected' : ''}>${e.nome}${e.padrao ? ' (Padrão)' : ''}</option>`
-          ).join('');
-        } else {
-          select.innerHTML = '<option value="">Nenhuma empresa cadastrada</option>';
-        }
-      } catch (err) {
-        console.error('Erro ao carregar empresas:', err);
-      }
-    }
-
-    // Tabs de cliente
-    function selecionarTab(tab) {
-      document.querySelectorAll('.client-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`.client-tab[data-tab="${tab}"]`).classList.add('active');
-      document.querySelectorAll('.client-section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tab === 'existente' ? 'clienteExistente' : 'clienteNovo').classList.add('active');
-      modoCliente = tab;
-      if (tab === 'novo') {
-        limparClienteSelecionado();
-      }
-    }
-
-    // Busca de cliente com debounce
-    document.getElementById('searchCliente').addEventListener('input', function() {
-      clearTimeout(searchTimeout);
-      const query = this.value.trim();
-      if (query.length < 2) {
-        document.getElementById('searchResults').classList.remove('active');
-        return;
-      }
-      searchTimeout = setTimeout(() => buscarClientes(query), 300);
-    });
-
-    document.getElementById('searchCliente').addEventListener('focus', function() {
-      if (this.value.trim().length >= 2) {
-        document.getElementById('searchResults').classList.add('active');
-      }
-    });
-
-    // Fechar resultados ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.search-wrapper')) {
-        document.getElementById('searchResults').classList.remove('active');
-      }
-    });
-
-    async function buscarClientes(query) {
-      try {
-        const res = await fetch(`${API_BASE}/api/clientes/buscar?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
-        const data = await res.json();
-        const container = document.getElementById('searchResults');
-        
-        if (data.success && data.data.length > 0) {
-          container.innerHTML = data.data.map(c => `
-            <div class="search-result-item" onclick="selecionarCliente(${JSON.stringify(c).replace(/"/g, '&quot;')})">
-              <div class="search-result-name">${c.nome}</div>
-              <div class="search-result-info">
-                <span><i class="fas fa-id-card"></i> ${c.cpf_cnpj || 'Sem CPF'}</span>
-                <span><i class="fas fa-file-invoice"></i> ${c.total_cobrancas || 0} cobranças</span>
-                <span><i class="fas fa-exclamation-circle"></i> ${fmtMoney(c.divida_total)} pendente</span>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          container.innerHTML = '<div class="search-no-results"><i class="fas fa-search"></i> Nenhum cliente encontrado</div>';
-        }
-        container.classList.add('active');
-      } catch (err) {
-        console.error('Erro na busca:', err);
-      }
-    }
-
-    function selecionarCliente(cliente) {
-      clienteSelecionado = cliente;
-      document.getElementById('clienteId').value = cliente.id;
-      document.getElementById('clienteAvatar').textContent = cliente.nome.charAt(0).toUpperCase();
-      document.getElementById('clienteNome').textContent = cliente.nome;
-      document.getElementById('clienteCpf').textContent = cliente.cpf_cnpj || 'CPF/CNPJ não informado';
-      document.getElementById('clienteCobrancas').textContent = cliente.total_cobrancas || 0;
-      document.getElementById('clienteDivida').textContent = fmtMoney(cliente.divida_total);
-      document.getElementById('selectedClient').classList.add('active');
-      document.getElementById('searchCliente').style.display = 'none';
-      document.getElementById('searchResults').classList.remove('active');
-    }
-
-    function limparClienteSelecionado() {
-      clienteSelecionado = null;
-      document.getElementById('clienteId').value = '';
-      document.getElementById('selectedClient').classList.remove('active');
-      document.getElementById('searchCliente').style.display = 'block';
-      document.getElementById('searchCliente').value = '';
-    }
-
-    // Carregar cliente da URL
-    async function carregarClienteUrl() {
-      if (clienteIdParam) {
-        try {
-          const res = await fetch(`${API_BASE}/api/clientes/${clienteIdParam}/completo`, { headers: getHeaders() });
-          const data = await res.json();
-          if (data.success) {
-            const c = data.data.cliente;
-            const stats = data.data.estatisticas;
-            selecionarCliente({
-              id: c.id,
-              nome: c.nome,
-              cpf_cnpj: c.cpf_cnpj,
-              total_cobrancas: stats.total_cobrancas,
-              divida_total: stats.valor_pendente
-            });
-          }
-        } catch (err) {
-          console.error('Erro ao carregar cliente:', err);
-        }
-      }
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
 
     // Máscaras
-    document.getElementById('valorOriginal').addEventListener('input', function() {
-      let v = this.value.replace(/\D/g, '');
+    function maskMoney(input) {
+      let v = input.value.replace(/\D/g, '');
       v = (parseInt(v) / 100).toFixed(2);
-      this.value = v.replace('.', ',');
-    });
+      v = v.replace('.', ',');
+      v = v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      input.value = v === 'NaN' ? '' : v;
+    }
 
-    document.getElementById('novoClienteCpf').addEventListener('input', function() {
-      let v = this.value.replace(/\D/g, '');
+    function maskCpfCnpj(input) {
+      let v = input.value.replace(/\D/g, '');
       if (v.length <= 11) {
         v = v.replace(/(\d{3})(\d)/, '$1.$2');
         v = v.replace(/(\d{3})(\d)/, '$1.$2');
@@ -449,115 +376,262 @@
         v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
         v = v.replace(/(\d{4})(\d)/, '$1-$2');
       }
-      this.value = v;
-    });
+      input.value = v;
+    }
 
-    document.getElementById('novoClienteTelefone').addEventListener('input', function() {
-      let v = this.value.replace(/\D/g, '');
+    function maskPhone(input) {
+      let v = input.value.replace(/\D/g, '');
       v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
-      v = v.replace(/(\d{5})(\d)/, '$1-$2');
-      this.value = v.substring(0, 15);
-    });
+      v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+      input.value = v;
+    }
 
-    // Submit
-    document.getElementById('cobrancaForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+    function parseMoney(str) {
+      if (!str) return 0;
+      return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(`${API_BASE}/api/usuarios/me`, { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') {
+            document.getElementById('navUsuarios').style.display = 'none';
+          }
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // Carregar empresas
+    async function carregarEmpresas() {
+      try {
+        const res = await fetch(`${API_BASE}/api/empresas`, { headers: getHeaders() });
+        const data = await res.json();
+        const select = document.getElementById('empresaId');
+        
+        if (data.success && data.data.length > 0) {
+          select.innerHTML = data.data.map(e => 
+            `<option value="${e.id}" ${e.padrao ? 'selected' : ''}>${e.nome}${e.padrao ? ' (Padrão)' : ''}</option>`
+          ).join('');
+        } else {
+          select.innerHTML = '<option value="">Nenhuma empresa cadastrada</option>';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('empresaId').innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    }
+
+    // Tabs cliente
+    function mudarTab(tab) {
+      modoCliente = tab;
+      document.querySelectorAll('.cliente-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.cliente-tab[data-tab="${tab}"]`).classList.add('active');
+      
+      if (tab === 'existente') {
+        document.getElementById('tabExistente').style.display = 'block';
+        document.getElementById('tabNovo').classList.remove('active');
+      } else {
+        document.getElementById('tabExistente').style.display = 'none';
+        document.getElementById('tabNovo').classList.add('active');
+        clienteIdSelecionado = null;
+      }
+    }
+
+    // Buscar clientes
+    async function buscarClientes(query) {
+      if (query.length < 2) {
+        document.getElementById('searchResults').classList.remove('active');
+        return;
+      }
 
       try {
-        let clienteIdFinal = document.getElementById('clienteId').value;
+        const res = await fetch(`${API_BASE}/api/clientes/buscar?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
+        const data = await res.json();
 
-        // Se modo novo cliente, criar primeiro
-        if (modoCliente === 'novo') {
-          const nomeNovo = document.getElementById('novoClienteNome').value.trim();
-          if (!nomeNovo) {
-            showAlert('Nome do cliente é obrigatório.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
-            return;
-          }
+        const container = document.getElementById('searchResults');
+        if (data.success && data.data.length > 0) {
+          container.innerHTML = data.data.map(c => `
+            <div class="search-result-item" onclick="selecionarCliente('${c.id}', '${c.nome.replace(/'/g, "\\'")}', '${c.cpf_cnpj || ''}')">
+              <div class="search-result-name">${c.nome}</div>
+              <div class="search-result-cpf">${c.cpf_cnpj || 'CPF/CNPJ não informado'}</div>
+            </div>
+          `).join('');
+          container.classList.add('active');
+        } else {
+          container.innerHTML = '<div class="search-result-item"><div class="search-result-name">Nenhum cliente encontrado</div></div>';
+          container.classList.add('active');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
+    function selecionarCliente(id, nome, cpf) {
+      clienteIdSelecionado = id;
+      document.getElementById('clienteNome').textContent = nome;
+      document.getElementById('clienteCpf').textContent = cpf || 'CPF/CNPJ não informado';
+      document.getElementById('clienteAvatar').textContent = nome.charAt(0).toUpperCase();
+      document.getElementById('clienteSelecionado').classList.add('active');
+      document.getElementById('searchResults').classList.remove('active');
+      document.getElementById('buscaCliente').value = '';
+    }
+
+    function removerCliente() {
+      clienteIdSelecionado = null;
+      document.getElementById('clienteSelecionado').classList.remove('active');
+    }
+
+    // Salvar cobrança
+    document.getElementById('formCobranca').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const empresaId = document.getElementById('empresaId').value;
+      const valor = parseMoney(document.getElementById('valor').value);
+      const vencimento = document.getElementById('vencimento').value;
+      const descricao = document.getElementById('descricao').value;
+      const dataCompromisso = document.getElementById('dataCompromisso').value;
+      const observacoes = document.getElementById('observacoes').value;
+      const aplicarMultaJuros = document.getElementById('aplicarMultaJuros').checked;
+
+      if (!empresaId) {
+        showToast('Selecione uma empresa emissora', 'error');
+        return;
+      }
+
+      if (!valor || valor <= 0) {
+        showToast('Informe um valor válido', 'error');
+        return;
+      }
+
+      if (!vencimento) {
+        showToast('Informe a data de vencimento', 'error');
+        return;
+      }
+
+      let finalClienteId = clienteIdSelecionado;
+
+      // Se é novo cliente, criar primeiro
+      if (modoCliente === 'novo') {
+        const novoNome = document.getElementById('novoNome').value.trim();
+        if (!novoNome) {
+          showToast('Informe o nome do cliente', 'error');
+          return;
+        }
+
+        try {
           const resCliente = await fetch(`${API_BASE}/api/clientes`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify({
-              nome: nomeNovo,
-              cpf_cnpj: document.getElementById('novoClienteCpf').value,
-              telefone: document.getElementById('novoClienteTelefone').value,
-              email: document.getElementById('novoClienteEmail').value,
-              empresa_id: document.getElementById('empresaId').value
+              nome: novoNome,
+              cpf_cnpj: document.getElementById('novoCpf').value,
+              telefone: document.getElementById('novoTelefone').value,
+              email: document.getElementById('novoEmail').value,
+              empresa_id: empresaId
             })
           });
           const dataCliente = await resCliente.json();
           if (!dataCliente.success) {
-            showAlert(dataCliente.message || 'Erro ao criar cliente.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+            showToast(dataCliente.message || 'Erro ao criar cliente', 'error');
             return;
           }
-          clienteIdFinal = dataCliente.data.id;
-        }
-
-        if (!clienteIdFinal) {
-          showAlert('Selecione ou cadastre um cliente.', 'error');
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+          finalClienteId = dataCliente.data.id;
+        } catch (err) {
+          showToast('Erro ao criar cliente', 'error');
           return;
         }
+      }
 
-        // Criar cobrança
-        const valorStr = document.getElementById('valorOriginal').value.replace(',', '.');
-        const payload = {
-          cliente_id: clienteIdFinal,
-          empresa_id: document.getElementById('empresaId').value,
-          valor_original: parseFloat(valorStr),
-          vencimento: document.getElementById('vencimento').value,
-          descricao: document.getElementById('descricao').value,
-          status: document.getElementById('status').value,
-          data_compromisso: document.getElementById('dataCompromisso').value || null,
-          observacoes: document.getElementById('observacoes').value
-        };
+      if (!finalClienteId) {
+        showToast('Selecione ou cadastre um cliente', 'error');
+        return;
+      }
 
+      // Criar cobrança
+      const btnSalvar = document.getElementById('btnSalvar');
+      btnSalvar.disabled = true;
+      btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+      try {
         const res = await fetch(`${API_BASE}/api/cobrancas`, {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            cliente_id: finalClienteId,
+            empresa_id: empresaId,
+            valor_original: valor,
+            vencimento: vencimento,
+            descricao: descricao || null,
+            data_compromisso: dataCompromisso || null,
+            observacoes: observacoes || null,
+            aplicarMultaJuros: aplicarMultaJuros
+          })
         });
-        const data = await res.json();
 
+        const data = await res.json();
         if (data.success) {
-          showAlert('Cobrança cadastrada com sucesso!', 'success');
-          setTimeout(() => window.location.href = 'cobrancas.html', 1500);
+          showToast('Cobrança criada com sucesso!', 'success');
+          setTimeout(() => window.location.href = '/cobrancas', 1500);
         } else {
-          showAlert(data.message || 'Erro ao cadastrar cobrança.', 'error');
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+          showToast(data.message || 'Erro ao criar cobrança', 'error');
+          btnSalvar.disabled = false;
+          btnSalvar.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
         }
       } catch (err) {
-        console.error('Erro:', err);
-        showAlert('Erro de conexão. Tente novamente.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+        console.error(err);
+        showToast('Erro ao criar cobrança', 'error');
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
       }
     });
 
-    function showAlert(msg, type) {
-      const box = document.getElementById('alertBox');
-      box.textContent = msg;
-      box.className = `alert ${type}`;
-      box.scrollIntoView({ behavior: 'smooth' });
+    // Event listeners
+    document.getElementById('valor').addEventListener('input', function() { maskMoney(this); });
+    document.getElementById('novoCpf').addEventListener('input', function() { maskCpfCnpj(this); });
+    document.getElementById('novoTelefone').addEventListener('input', function() { maskPhone(this); });
+
+    document.getElementById('buscaCliente').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => buscarClientes(this.value), 300);
+    });
+
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-cliente') && !e.target.closest('.search-results')) {
+        document.getElementById('searchResults').classList.remove('active');
+      }
+    });
+
+    // Verificar parâmetros da URL (cliente_id)
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteIdParam = urlParams.get('cliente_id');
+    if (clienteIdParam) {
+      // Buscar dados do cliente e selecionar
+      fetch(`${API_BASE}/api/clientes/${clienteIdParam}/completo`, { headers: getHeaders() })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data.cliente) {
+            const c = data.data.cliente;
+            selecionarCliente(c.id, c.nome, c.cpf_cnpj);
+          }
+        })
+        .catch(err => console.error(err));
     }
 
-    // Init
-    carregarEmpresas();
-    carregarClienteUrl();
-
-    // Data padrão
+    // Definir data de vencimento padrão (próximo mês)
     const hoje = new Date();
-    hoje.setDate(hoje.getDate() + 30);
-    document.getElementById('vencimento').value = hoje.toISOString().split('T')[0];
+    const proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 10);
+    document.getElementById('vencimento').value = proximoMes.toISOString().split('T')[0];
+
+    // Inicializar
+    carregarUsuario();
+    carregarEmpresas();
   </script>
 </body>
 </html>
