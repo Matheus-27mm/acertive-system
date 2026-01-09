@@ -2012,6 +2012,39 @@ app.get("/api/cobrancas/arquivadas", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao buscar arquivadas." });
   }
 });
+// =====================================================
+// ROTA ADMINISTRATIVA - ARQUIVAR COBRANÇAS ANTIGAS
+// =====================================================
+app.get("/api/admin/arquivar-antigas", async (req, res) => {
+  try {
+    // Verificar se é admin (opcional - remova se quiser acesso livre)
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'chave-secreta');
+      if (decoded.nivel !== 'admin') {
+        return res.status(403).json({ success: false, message: "Acesso negado" });
+      }
+    }
+
+    // Arquivar cobranças antigas (vencimento antes de 2025)
+    const resultado = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'arquivado'
+      WHERE vencimento < '2025-01-01'
+        AND status IN ('pendente', 'vencido')
+      RETURNING id
+    `);
+
+    return res.json({
+      success: true,
+      message: resultado.rowCount + " cobranças arquivadas com sucesso!",
+      arquivadas: resultado.rowCount
+    });
+  } catch (err) {
+    console.error("[ARQUIVAR] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao arquivar.", error: err.message });
+  }
+});
 
 // =====================
 // 404
