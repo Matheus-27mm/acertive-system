@@ -470,6 +470,8 @@ app.get("/usuarios", sendFront("usuarios.html"));
 app.get("/agendamentos", sendFront("agendamentos.html"));
 app.get("/novo-agendamento", sendFront("novo-agendamento.html"));
 app.get("/configuracoes", sendFront("configuracoes.html"));
+app.get("/consulta-cliente", sendFront("consulta-cliente.html"));
+app.get("/importar-cobrancas", sendFront("importar-cobrancas.html"));
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
@@ -1613,7 +1615,366 @@ app.get("/api/backup/exportar", authAdmin, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao gerar backup.", error: err.message });
   }
 });
+// =====================================================
+// BUSCA DE CLIENTES (para autocomplete e consulta)
+// =====================================================
+app.get("/api/clientes/buscar", auth, async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (q.length < 2) {
+      return res.json({ success: true, data: [] });
+    }
 
+    // Remove caracteres especiais do CPF/CNPJ para busca
+    const qDigits = q.replace(/\D/g, "");
+    
+    const resultado = await pool.query(`
+      SELECT c.*, 
+        COALESCE(c.status_cliente, 'regular') AS status_cliente,
+        COALESCE(e.nome, '') AS empresa_nome,
+        (SELECT COUNT(*)::int FROM cobrancas WHERE cliente_id = c.id) AS total_cobrancas,
+        (SELECT COALESCE(SUM(valor_atualizado), 0)::numeric FROM cobrancas WHERE cliente_id = c.id AND status IN ('pendente', 'vencido')) AS divida_total,
+        (SELECT COALESCE(SUM(valor_atualizado), 0)::numeric FROM cobrancas WHERE cliente_id = c.id AND status = 'pago') AS total_pago
+      FROM clientes c 
+      LEFT JOIN empresas e ON e.id = c.empresa_id
+      WHERE c.status = 'ativo' 
+        AND (
+          LOWER(c.nome) LIKE LOWER($1)
+          OR REPLACE(REPLACE(REPLACE(c.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE $2
+        )
+      ORDER BY c.nome ASC
+      LIMIT 20
+    `, [`%${q}%`, `%${qDigits}%`]);
+
+    return res.json({ success: true, data: resultado.rows });
+  } catch (err) {
+    console.error("[GET /api/clientes/buscar] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar clientes.", error: err.message });
+  }
+});
+
+// =====================================================
+// CONSULTA COMPLETA DO CLIENTE (com todas as cobranças)
+// =====================================================
+app.get("/api/clientes/:id/completo", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Dados do cliente
+    const clienteResult = await pool.query(`
+      SELECT c.*, 
+        COALESCE(c.status_cliente, 'regular') AS status_cliente,
+        COALESCE(e.nome, '') AS empresa_nome
+      FROM clientes c 
+      LEFT JOIN empresas e ON e.id = c.empresa_id
+      WHERE c.id = $1
+    `, [id]);
+
+    if (!clienteResult.rowCount) {
+      return res.status(404).json({ success: false, message: "Cliente não encontrado." });
+    }
+
+    const cliente = clienteResult.rows[0];
+
+    // Todas as cobranças do cliente
+    const cobrancasResult = await pool.query(`
+      SELECT c.*, 
+        COALESCE(e.nome, '') AS empresa_nome
+      FROM cobrancas c
+      LEFT JOIN empresas e ON e.id = c.empresa_id
+      WHERE c.cliente_id = $1 
+      ORDER BY c.vencimento DESC
+    `, [id]);
+
+    // Estatísticas
+    const statsResult = await pool.query(`
+      SELECT 
+        COUNT(*)::int AS total_cobrancas,
+        COUNT(*) FILTER (WHERE status = 'pago')::int AS total_pagas,
+        COUNT(*) FILTER (WHERE status = 'pendente')::int AS total_pendentes,
+        COUNT(*) FILTER (WHERE status = 'vencido')::int AS total_vencidas,
+        COALESCE(SUM(valor_atualizado), 0)::numeric AS valor_total,
+        COALESCE(SUM(valor_atualizado) FILTER (WHERE status = 'pago'), 0)::numeric AS valor_pago,
+        COALESCE(SUM(valor_atualizado) FILTER (WHERE status IN ('pendente', 'vencido')), 0)::numeric AS valor_pendente,
+        MIN(vencimento) FILTER (WHERE status IN ('pendente', 'vencido')) AS proxima_vencimento,
+        MAX(created_at) AS ultima_cobranca
+      FROM cobrancas 
+      WHERE cliente_id = $1
+    `, [id]);
+
+    // Agendamentos do cliente
+    const agendamentosResult = await pool.query(`
+      SELECT * FROM agendamentos 
+      WHERE cliente_id = $1 
+      ORDER BY data_agendamento DESC 
+      LIMIT 10
+    `, [id]);
+
+    return res.json({
+      success: true,
+      data: {
+        cliente,
+        cobrancas: cobrancasResult.rows,
+        estatisticas: statsResult.rows[0],
+        agendamentos: agendamentosResult.rows
+      }
+    });
+  } catch (err) {
+    console.error("[GET /api/clientes/:id/completo] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar cliente.", error: err.message });
+  }
+});
+
+// =====================================================
+// IMPORTAÇÃO DE COBRANÇAS (formato planilha do cliente)
+// =====================================================
+app.post("/api/cobrancas/import", auth, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Arquivo não enviado." });
+    }
+
+    const filename = (req.file.originalname || "").toLowerCase();
+    const isCsv = filename.endsWith(".csv");
+    let rows = [];
+
+    if (isCsv) {
+      const text = req.file.buffer.toString("utf-8");
+      const sep = text.includes(";") ? ";" : ",";
+      const lines = text.split(/\r?\n/).filter((l) => l && l.trim().length);
+      if (lines.length < 2) {
+        return res.status(400).json({ success: false, message: "CSV vazio." });
+      }
+      const headers = lines.shift().split(sep).map((h) => h.trim());
+      rows = lines.map((line) => {
+        const cols = line.split(sep);
+        const obj = {};
+        headers.forEach((h, i) => (obj[h] = (cols[i] ?? "").trim()));
+        return obj;
+      });
+    } else {
+      const wb = XLSX.read(req.file.buffer, { type: "buffer" });
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+    }
+
+    if (!rows.length) {
+      return res.status(400).json({ success: false, message: "Planilha vazia." });
+    }
+
+    // Funções auxiliares
+    const norm = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    const pick = (obj, keys) => {
+      const keyMap = new Map(Object.keys(obj).map((k) => [norm(k), obj[k]]));
+      for (const k of keys) {
+        const v = keyMap.get(norm(k));
+        if (v !== undefined && String(v).trim() !== "") return String(v).trim();
+      }
+      return "";
+    };
+    const normalizeCpfCnpj = (s) => String(s || "").replace(/\D/g, "");
+    const parseDate = (d) => {
+      if (!d) return null;
+      // Se for objeto Date do Excel
+      if (d instanceof Date) return d.toISOString().split('T')[0];
+      const str = String(d).trim();
+      // Formato YYYY-MM-DD HH:MM:SS ou YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.split(' ')[0].split('T')[0];
+      // Formato DD/MM/YYYY
+      const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+      return null;
+    };
+    const parseValor = (v) => {
+      if (!v) return 0;
+      const str = String(v).replace(/[^\d,.-]/g, "").replace(",", ".");
+      return parseFloat(str) || 0;
+    };
+
+    // Buscar empresa padrão
+    let empresaPadraoId = null;
+    const empresaPadrao = await pool.query("SELECT id FROM empresas WHERE padrao = true AND ativo = true LIMIT 1");
+    if (empresaPadrao.rowCount) empresaPadraoId = empresaPadrao.rows[0].id;
+
+    // Cache de clientes por CPF/CNPJ
+    const clienteCache = new Map();
+
+    let clientesCriados = 0;
+    let clientesExistentes = 0;
+    let cobrancasCriadas = 0;
+    let cobrancasIgnoradas = 0;
+    let erros = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      try {
+        // Extrair dados do cliente
+        const nome = pick(r, ["NOMECLI", "NOME_CLIENTE", "CLIENTE", "nome", "name"]);
+        const cpfCnpjRaw = pick(r, ["cnpj_cpf", "cpf_cnpj", "cpf/cnpj", "cpf", "cnpj"]);
+        const cpfCnpjDigits = normalizeCpfCnpj(cpfCnpjRaw);
+        const telefone = pick(r, ["telefone", "fone", "celular", "whatsapp", "telefone1"]);
+        const telefone2 = pick(r, ["telefone2", "fone2", "celular2"]);
+        const email = pick(r, ["email", "e-mail", "mail"]);
+
+        // Extrair dados da cobrança
+        const valor = parseValor(pick(r, ["valor", "value", "vlr", "valor_original"]));
+        const valorLiquido = parseValor(pick(r, ["Valor Líquido", "valor_liquido", "vlr_liquido"]));
+        const valorPago = parseValor(pick(r, ["Valor Pago", "valor_pago", "vlr_pago"]));
+        const vencimento = parseDate(pick(r, ["Data Vencimento", "vencimento", "dt_vencimento", "data_venc"]));
+        const emissao = parseDate(pick(r, ["Data Emissão", "emissao", "dt_emissao", "data_emissao"]));
+        const numDocumento = pick(r, ["Número do Documento", "num_documento", "documento", "nro_doc"]);
+        const historico = pick(r, ["Histórico", "historico", "obs", "observacao", "descricao"]);
+
+        // Validações
+        if (!nome) {
+          cobrancasIgnoradas++;
+          continue;
+        }
+        if (!valor || valor <= 0) {
+          cobrancasIgnoradas++;
+          continue;
+        }
+
+        // Buscar ou criar cliente
+        let clienteId = null;
+
+        // Primeiro tenta pelo cache
+        const cacheKey = cpfCnpjDigits || nome.toLowerCase();
+        if (clienteCache.has(cacheKey)) {
+          clienteId = clienteCache.get(cacheKey);
+          clientesExistentes++;
+        } else {
+          // Busca no banco por CPF/CNPJ
+          if (cpfCnpjDigits) {
+            const busca = await pool.query(
+              "SELECT id FROM clientes WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = $1 LIMIT 1",
+              [cpfCnpjDigits]
+            );
+            if (busca.rowCount > 0) {
+              clienteId = busca.rows[0].id;
+              clienteCache.set(cacheKey, clienteId);
+              clientesExistentes++;
+            }
+          }
+
+          // Se não achou por CPF, busca por nome exato
+          if (!clienteId) {
+            const buscaNome = await pool.query(
+              "SELECT id FROM clientes WHERE LOWER(TRIM(nome)) = LOWER($1) LIMIT 1",
+              [nome]
+            );
+            if (buscaNome.rowCount > 0) {
+              clienteId = buscaNome.rows[0].id;
+              clienteCache.set(cacheKey, clienteId);
+              clientesExistentes++;
+            }
+          }
+
+          // Se não existe, cria o cliente
+          if (!clienteId) {
+            const telefoneCompleto = telefone2 ? `${telefone} / ${telefone2}` : telefone;
+            const novoCliente = await pool.query(
+              `INSERT INTO clientes (nome, email, telefone, cpf_cnpj, status, status_cliente, empresa_id, data_primeiro_contato)
+               VALUES ($1, $2, $3, $4, 'ativo', 'regular', $5, CURRENT_DATE) RETURNING id`,
+              [nome, email || null, telefoneCompleto || null, cpfCnpjRaw || null, empresaPadraoId]
+            );
+            clienteId = novoCliente.rows[0].id;
+            clienteCache.set(cacheKey, clienteId);
+            clientesCriados++;
+          }
+        }
+
+        // Determinar status da cobrança
+        let status = 'pendente';
+        if (valorPago && valorPago > 0 && valorPago >= valor * 0.9) {
+          status = 'pago';
+        } else if (vencimento) {
+          const venc = new Date(vencimento);
+          const hoje = new Date();
+          if (venc < hoje) status = 'vencido';
+        }
+
+        // Criar a cobrança
+        const valorFinal = valorLiquido || valor;
+        const descricao = historico 
+          ? `${numDocumento ? 'Doc: ' + numDocumento + ' - ' : ''}${historico}`
+          : numDocumento 
+            ? `Documento: ${numDocumento}` 
+            : 'Cobrança importada';
+
+        await pool.query(
+          `INSERT INTO cobrancas (cliente_id, empresa_id, descricao, valor_original, valor_atualizado, vencimento, status, multa, juros, desconto, observacoes, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, 0, 0, 0, $8, $9)`,
+          [
+            clienteId,
+            empresaPadraoId,
+            descricao,
+            valor,
+            valorFinal,
+            vencimento || new Date().toISOString().split('T')[0],
+            status,
+            `Importado em ${new Date().toLocaleDateString('pt-BR')} | Doc: ${numDocumento || 'N/A'}`,
+            emissao ? new Date(emissao) : new Date()
+          ]
+        );
+
+        cobrancasCriadas++;
+
+      } catch (errRow) {
+        erros.push(`Linha ${i + 2}: ${errRow.message}`);
+        cobrancasIgnoradas++;
+      }
+    }
+
+    await registrarLog(req, 'IMPORTAR_COBRANCAS', 'cobrancas', null, {
+      clientes_criados: clientesCriados,
+      clientes_existentes: clientesExistentes,
+      cobrancas_criadas: cobrancasCriadas,
+      cobrancas_ignoradas: cobrancasIgnoradas
+    });
+
+    return res.json({
+      success: true,
+      message: "Importação concluída!",
+      resultado: {
+        clientesCriados,
+        clientesExistentes,
+        cobrancasCriadas,
+        cobrancasIgnoradas,
+        totalLinhas: rows.length,
+        erros: erros.slice(0, 10) // Mostra só os 10 primeiros erros
+      }
+    });
+
+  } catch (err) {
+    console.error("[IMPORT COBRANCAS] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao importar.", error: err.message });
+  }
+});
+
+// =====================================================
+// ESTATÍSTICAS GERAIS DE CLIENTES
+// =====================================================
+app.get("/api/clientes/estatisticas", auth, async (req, res) => {
+  try {
+    const stats = await pool.query(`
+      SELECT 
+        COUNT(DISTINCT c.id)::int AS total_clientes,
+        COUNT(DISTINCT c.id) FILTER (WHERE c.status = 'ativo')::int AS clientes_ativos,
+        (SELECT COUNT(*)::int FROM cobrancas) AS total_cobrancas,
+        (SELECT COALESCE(SUM(valor_atualizado), 0)::numeric FROM cobrancas WHERE status IN ('pendente', 'vencido')) AS total_a_receber,
+        (SELECT COALESCE(SUM(valor_atualizado), 0)::numeric FROM cobrancas WHERE status = 'pago') AS total_recebido,
+        (SELECT COUNT(*)::int FROM cobrancas WHERE status = 'vencido') AS cobrancas_vencidas
+      FROM clientes c
+    `);
+
+    return res.json({ success: true, data: stats.rows[0] });
+  } catch (err) {
+    console.error("[GET /api/clientes/estatisticas] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro.", error: err.message });
+  }
+});
 // =====================
 // 404
 // =====================
