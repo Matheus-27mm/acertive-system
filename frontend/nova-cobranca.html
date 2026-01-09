@@ -1,144 +1,563 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nova Cobrança - ACERTIVE Enterprise</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Cobrança - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-:root{--bg-primary:#09090b;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:280px;--header-height:70px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}.sidebar.collapsed{width:80px}.sidebar.collapsed .nav-text,.sidebar.collapsed .logo-text,.sidebar.collapsed .user-info,.sidebar.collapsed .nav-section-title{display:none}.sidebar.collapsed .nav-link{justify-content:center;padding:14px}
-.sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}.logo-icon{min-width:46px;height:46px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--bg-primary)}.logo-text span:first-child{font-size:20px;font-weight:800}.logo-text span:last-child{font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase}
-.sidebar-nav{flex:1;padding:20px 12px;overflow-y:auto}.nav-section{margin-bottom:28px}.nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:10px}.nav-links{display:flex;flex-direction:column;gap:4px}.nav-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-md);color:var(--text-secondary);text-decoration:none;font-weight:500;font-size:14px;transition:all var(--transition-fast);position:relative}.nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow-strong);color:var(--gold)}.nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold);border-radius:0 3px 3px 0}.nav-link i{width:20px;text-align:center}.nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--blue);color:white}
-.sidebar-footer{padding:16px;border-top:1px solid var(--border)}.user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}.user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}.user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}.user-menu-btn{width:28px;height:28px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;border-radius:6px}
-.main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.sidebar.collapsed~.main-wrapper{margin-left:80px}
-.header{height:var(--header-height);background:rgba(9,9,11,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;padding:0 32px}.header-left{display:flex;align-items:center;gap:20px}.sidebar-toggle{width:40px;height:40px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center}.sidebar-toggle:hover{background:var(--gold-glow);color:var(--gold)}.breadcrumb{display:flex;align-items:center;gap:8px;font-size:14px}.breadcrumb-item{color:var(--text-muted)}.breadcrumb-item.active{color:var(--text-primary);font-weight:600}
-.page-content{padding:32px}.page-header{margin-bottom:32px}.page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px;margin-bottom:8px}.page-title-icon{width:42px;height:42px;background:var(--gold-glow-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}.page-subtitle{color:var(--text-muted);font-size:14px}
-.form-grid{display:grid;grid-template-columns:1.2fr 0.8fr;gap:24px}.form-card,.preview-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}.card-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}.card-header-icon{width:40px;height:40px;background:var(--gold-glow);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}.card-header h3{font-size:18px;font-weight:700}.card-header p{font-size:13px;color:var(--text-muted);margin-top:4px}
-.empresa-selector{margin-bottom:24px;padding:16px;background:var(--purple-bg);border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius-md)}.empresa-selector-label{font-size:12px;font-weight:700;color:var(--purple);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}.empresa-select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius-sm);color:var(--text-primary);font-size:14px;font-weight:600;cursor:pointer}.empresa-select:focus{outline:none;border-color:var(--purple)}.empresa-select option{background:var(--bg-primary)}.empresa-info{margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted);display:none}.empresa-info.show{display:block}.empresa-info strong{color:var(--purple)}
-.stepper{display:flex;justify-content:space-between;margin-bottom:24px;position:relative}.step{flex:1;text-align:center;position:relative}.step::before{content:'';position:absolute;top:15px;left:50%;width:100%;height:2px;background:var(--border);z-index:-1}.step:last-child::before{display:none}.step-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.05);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:12px;font-weight:700;color:var(--text-muted);transition:all 0.3s}.step.active .step-circle{background:linear-gradient(135deg,var(--gold),var(--gold-light));border-color:var(--gold);color:var(--bg-primary);box-shadow:var(--shadow-gold)}.step.completed .step-circle{background:var(--green);border-color:var(--green);color:white}.step-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase}.step.active .step-label{color:var(--gold)}.step.completed .step-label{color:var(--green)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}.form-label .required{color:var(--red)}.input-wrapper{position:relative}.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold)}.currency-prefix{position:absolute;left:48px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:14px}.form-input,.form-select{width:100%;padding:14px 14px 14px 48px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}.form-input.valor-input{padding-left:80px;font-size:18px;font-weight:700}.form-input:focus,.form-select:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}.form-select{cursor:pointer}.form-select option{background:var(--bg-primary)}
-.checkbox-group{display:flex;align-items:center;gap:12px;padding:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast)}.checkbox-group:hover,.checkbox-group.checked{border-color:var(--border-gold);background:var(--gold-glow)}.checkbox-custom{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;transition:all 0.2s}.checkbox-custom i{color:var(--bg-primary);font-size:12px;opacity:0;transform:scale(0);transition:all 0.2s}.checkbox-group.checked .checkbox-custom{background:linear-gradient(135deg,var(--gold),var(--gold-light));border-color:var(--gold)}.checkbox-group.checked .checkbox-custom i{opacity:1;transform:scale(1)}.checkbox-content{flex:1}.checkbox-label{font-size:14px;font-weight:600;color:var(--text-primary)}.checkbox-hint{font-size:12px;color:var(--text-muted)}.checkbox-group.checked .checkbox-label{color:var(--gold)}.checkbox-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}.checkbox-badge.ativo{background:var(--green-bg);color:var(--green)}.checkbox-badge.inativo{background:rgba(100,100,100,0.2);color:#888}
-.form-actions{display:flex;gap:12px;margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;flex:1;text-decoration:none;transition:all var(--transition-fast)}.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}.btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold)}.btn:disabled{opacity:0.5;cursor:not-allowed}
-.preview-card{position:sticky;top:calc(var(--header-height)+32px)}.preview-list{display:flex;flex-direction:column;gap:10px}.preview-item{padding:14px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius-md);opacity:0.5;transition:all var(--transition-fast)}.preview-item.filled{opacity:1;border-color:var(--border-gold);background:var(--gold-glow)}.preview-item.highlight{background:var(--gold-glow-strong);border:2px solid var(--gold)}.preview-item-label{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;margin-bottom:4px}.preview-item-value{font-size:14px;font-weight:600}.preview-item.highlight .preview-item-value{font-size:20px;font-weight:800;color:var(--gold)}
-.preview-item.empresa{background:var(--purple-bg);border-color:rgba(168,85,247,0.3);opacity:1}.preview-item.empresa .preview-item-label{color:var(--purple)}
-.status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase}.status-badge.aguardando{background:rgba(100,100,100,0.2);color:#888}.status-badge.sucesso{background:var(--green-bg);color:var(--green)}.status-badge.erro{background:var(--red-bg);color:var(--red)}
-.form-hint{font-size:11px;color:var(--text-muted);margin-top:8px}
-.no-empresas{padding:16px;background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-md);text-align:center;margin-bottom:20px}.no-empresas i{font-size:24px;color:var(--red);margin-bottom:8px;display:block}.no-empresas p{font-size:13px;color:var(--red);margin-bottom:12px}.no-empresas a{color:var(--gold);font-weight:600}
-@media(max-width:1200px){.form-grid{grid-template-columns:1fr}.preview-card{position:static}}@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-wrapper{margin-left:0}}@media(max-width:768px){.form-row{grid-template-columns:1fr}.form-actions{flex-direction:column}}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f8f9fa; min-height: 100vh; display: flex; }
+
+    .sidebar { width: 260px; background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); min-height: 100vh; padding: 20px 0; position: fixed; left: 0; top: 0; z-index: 100; }
+    .logo-section { padding: 0 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #1a1a1a; }
+    .logo-text { font-size: 22px; font-weight: 800; color: #fff; }
+    .logo-text span { color: #F6C84C; }
+    .nav-menu { list-style: none; padding: 0 12px; }
+    .nav-item { margin-bottom: 4px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #a1a1aa; text-decoration: none; border-radius: 12px; transition: all 0.2s; font-weight: 500; }
+    .nav-link:hover, .nav-link.active { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
+    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 12px; }
+
+    .main-content { flex: 1; margin-left: 260px; padding: 24px; }
+
+    .page-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #F6C84C; }
+    .page-title h1 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .page-title p { color: #a1a1aa; font-size: 14px; }
+
+    .form-container { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+    .section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f3f4f6; }
+    .section-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .section-icon i { font-size: 18px; color: #1a1a1a; }
+    .section-title h2 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+
+    .client-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
+    .client-tab { flex: 1; padding: 16px 24px; border: 2px solid #e5e7eb; background: #fff; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .client-tab:hover { border-color: #F6C84C; }
+    .client-tab.active { border-color: #F6C84C; background: #fefce8; }
+    .client-tab i { font-size: 24px; color: #6b7280; margin-bottom: 8px; display: block; }
+    .client-tab.active i { color: #F6C84C; }
+    .client-tab-title { font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .client-tab-desc { font-size: 12px; color: #6b7280; }
+
+    .client-section { display: none; margin-bottom: 24px; }
+    .client-section.active { display: block; }
+
+    .search-wrapper { position: relative; margin-bottom: 16px; }
+    .search-input { width: 100%; padding: 16px 20px 16px 50px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; transition: all 0.2s; }
+    .search-input:focus { outline: none; border-color: #F6C84C; box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.15); }
+    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 18px; }
+    .search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 2px solid #F6C84C; border-top: none; border-radius: 0 0 12px 12px; max-height: 300px; overflow-y: auto; display: none; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .search-results.active { display: block; }
+    .search-result-item { padding: 14px 18px; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
+    .search-result-item:hover { background: #fefce8; }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-name { font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .search-result-info { font-size: 12px; color: #6b7280; display: flex; gap: 16px; }
+    .search-result-info span { display: flex; align-items: center; gap: 4px; }
+    .search-no-results { padding: 20px; text-align: center; color: #6b7280; }
+
+    .selected-client { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 14px; padding: 20px; display: none; }
+    .selected-client.active { display: flex; align-items: center; justify-content: space-between; }
+    .selected-client-info { display: flex; align-items: center; gap: 16px; }
+    .selected-client-avatar { width: 50px; height: 50px; background: #F6C84C; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #1a1a1a; }
+    .selected-client-name { color: #fff; font-weight: 700; font-size: 16px; }
+    .selected-client-cpf { color: #a1a1aa; font-size: 13px; }
+    .selected-client-stats { display: flex; gap: 24px; }
+    .selected-client-stat { text-align: center; }
+    .selected-client-stat-value { color: #F6C84C; font-size: 18px; font-weight: 800; }
+    .selected-client-stat-label { color: #a1a1aa; font-size: 11px; text-transform: uppercase; }
+    .btn-change-client { padding: 10px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .btn-change-client:hover { background: rgba(255,255,255,0.2); }
+
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group.full { grid-column: span 2; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .form-label .required { color: #dc2626; }
+    .form-control { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; transition: all 0.2s; }
+    .form-control:focus { outline: none; border-color: #F6C84C; box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.15); }
+    .form-control::placeholder { color: #9ca3af; }
+    select.form-control { cursor: pointer; background: #fff; }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+
+    .input-group { position: relative; }
+    .input-prefix { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: 600; }
+    .input-group .form-control { padding-left: 50px; }
+
+    .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 2px solid #f3f4f6; }
+    .btn { padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #F6C84C, #F9D77E); border: none; color: #1a1a1a; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(246, 200, 76, 0.4); }
+    .btn-secondary { background: #fff; border: 2px solid #e5e7eb; color: #374151; }
+    .btn-secondary:hover { border-color: #d1d5db; background: #f9fafb; }
+
+    .empresa-select { margin-bottom: 24px; }
+    .empresa-select .form-control { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; font-weight: 600; }
+    .empresa-select .form-control option { background: #fff; color: #1a1a1a; }
+
+    .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; display: none; }
+    .alert.success { background: #dcfce7; color: #166534; display: block; }
+    .alert.error { background: #fee2e2; color: #991b1b; display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .client-tabs { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links"><a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a><a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a><a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a><a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a></div></div>
-      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links"><a href="/nova-cobranca" class="nav-link active"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a><a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a><a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a></div></div>
-      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links"><a href="/usuarios" class="nav-link"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a><a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a></div></div>
-    </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
-  </aside>
+  <nav class="sidebar">
+    <div class="logo-section">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">ACERT<span>IVE</span></div>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+      <li class="nav-item"><a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></li>
+      <li class="nav-item"><a href="clientes-ativos.html" class="nav-link"><i class="fas fa-users"></i> Clientes</a></li>
+      <li class="nav-item"><a href="consulta-cliente.html" class="nav-link"><i class="fas fa-search-dollar"></i> Consulta Cliente</a></li>
+      <div class="nav-divider"></div>
+      <li class="nav-item"><a href="nova-cobranca.html" class="nav-link active"><i class="fas fa-plus-circle"></i> Nova Cobrança</a></li>
+      <li class="nav-item"><a href="novo-cliente.html" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a></li>
+      <li class="nav-item"><a href="importar-cobrancas.html" class="nav-link"><i class="fas fa-file-import"></i> Importar Cobranças</a></li>
+      <div class="nav-divider"></div>
+      <li class="nav-item"><a href="agendamentos.html" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a></li>
+      <li class="nav-item"><a href="cobrancas-recorrentes.html" class="nav-link"><i class="fas fa-redo"></i> Recorrentes</a></li>
+      <div class="nav-divider"></div>
+      <li class="nav-item"><a href="historico.html" class="nav-link"><i class="fas fa-history"></i> Histórico</a></li>
+      <li class="nav-item"><a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a></li>
+    </ul>
+  </nav>
 
-  <div class="main-wrapper">
-    <header class="header"><div class="header-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button><div class="breadcrumb"><span class="breadcrumb-item">Financeiro</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Nova Cobrança</span></div></div></header>
-    <main class="page-content">
-      <div class="page-header"><h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-plus-circle"></i></div>Nova Cobrança</h1><p class="page-subtitle">Gere uma cobrança com cálculo automático de multa e juros</p></div>
-      <div class="form-grid">
-        <div class="form-card">
-          <div class="card-header"><div class="card-header-icon"><i class="fa-solid fa-file-invoice"></i></div><div><h3>Dados da Cobrança</h3><p>Preencha os campos para gerar</p></div></div>
-          
-          <div class="no-empresas" id="noEmpresas" style="display:none"><i class="fa-solid fa-exclamation-triangle"></i><p>Nenhuma empresa cadastrada. Cadastre uma empresa antes de criar cobranças.</p><a href="/configuracoes"><i class="fa-solid fa-gear"></i> Ir para Configurações</a></div>
-
-          <div class="empresa-selector" id="empresaSelector">
-            <div class="empresa-selector-label"><i class="fa-solid fa-building"></i> Empresa Emissora</div>
-            <select class="empresa-select" id="empresaId"><option value="">Carregando...</option></select>
-            <div class="empresa-info" id="empresaInfo"></div>
-          </div>
-
-          <div class="stepper"><div class="step active"><div class="step-circle">1</div><div class="step-label">Dados</div></div><div class="step"><div class="step-circle">2</div><div class="step-label">Cálculo</div></div><div class="step"><div class="step-circle">3</div><div class="step-label">Salvar</div></div></div>
-          
-          <form id="formCobranca">
-            <div class="form-group"><label class="form-label">Cliente <span class="required">*</span></label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-user"></i></span><input type="text" class="form-input" id="cliente_nome" list="listaClientes" placeholder="Nome do cliente" required autocomplete="off"><input type="hidden" id="cliente_id"><datalist id="listaClientes"></datalist></div></div>
-            <div class="form-group"><label class="form-label">Valor Original <span class="required">*</span></label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-brazilian-real-sign"></i></span><span class="currency-prefix">R$</span><input type="text" class="form-input valor-input" id="valorOriginal" placeholder="0,00" required inputmode="numeric" autocomplete="off"><input type="hidden" id="valorOriginalNumerico"></div></div>
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Vencimento <span class="required">*</span></label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-calendar-day"></i></span><input type="date" class="form-input" id="vencimento" required></div></div>
-              <div class="form-group"><label class="form-label">Pagamento (opcional)</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-calendar-check"></i></span><input type="date" class="form-input" id="pagamento"></div></div>
-            </div>
-            <div class="checkbox-group checked" id="checkboxMultaGroup"><input type="checkbox" id="aplicarMulta" checked style="display:none"><div class="checkbox-custom"><i class="fa-solid fa-check"></i></div><div class="checkbox-content"><span class="checkbox-label">Aplicar Multa e Juros</span><span class="checkbox-hint">Multa de 2% + juros diários</span></div><span class="checkbox-badge ativo" id="multaBadge">Ativo</span></div>
-            <div class="form-group" id="taxaFieldGroup"><label class="form-label">Taxa de Juros</label><div class="input-wrapper"><span class="input-icon"><i class="fa-solid fa-percent"></i></span><select class="form-select" id="taxa"><option value="10%">10%</option><option value="8%" selected>8% (padrão)</option><option value="6%">6%</option><option value="4%">4%</option><option value="3%">3%</option><option value="2%">2%</option><option value="1%">1%</option><option value="0%">0% (sem juros)</option></select></div></div>
-            <div class="form-actions"><button type="submit" class="btn btn-primary" id="btnCalcular"><i class="fa-solid fa-wand-magic-sparkles"></i> Calcular e Salvar</button><button type="button" class="btn btn-secondary" id="btnPdf" disabled><i class="fa-solid fa-file-pdf"></i> PDF</button></div>
-            <p class="form-hint">Se "Data do Pagamento" estiver vazia, o cálculo usa a data de hoje.</p>
-          </form>
-        </div>
-        <aside class="preview-card">
-          <div class="card-header"><div class="card-header-icon"><i class="fa-solid fa-receipt"></i></div><div><h3>Resumo</h3><div class="status-badge aguardando" id="statusBadge"><i class="fa-solid fa-clock"></i> Aguardando</div></div></div>
-          <div class="preview-list">
-            <div class="preview-item empresa" id="kvEmpresa"><div class="preview-item-label">Empresa Emissora</div><div class="preview-item-value" id="resEmpresa">—</div></div>
-            <div class="preview-item" id="kvCliente"><div class="preview-item-label">Cliente</div><div class="preview-item-value" id="resCliente">—</div></div>
-            <div class="preview-item" id="kvOriginal"><div class="preview-item-label">Valor Original</div><div class="preview-item-value" id="resOriginal">—</div></div>
-            <div class="preview-item" id="kvVencimento"><div class="preview-item-label">Vencimento</div><div class="preview-item-value" id="resVencimento">—</div></div>
-            <div class="preview-item" id="kvPagamento"><div class="preview-item-label">Pagamento</div><div class="preview-item-value" id="resPagamento">—</div></div>
-            <div class="preview-item" id="kvDias"><div class="preview-item-label">Dias em Atraso</div><div class="preview-item-value" id="resDias">—</div></div>
-            <div class="preview-item" id="kvJuros"><div class="preview-item-label">Juros</div><div class="preview-item-value" id="resJuros">—</div></div>
-            <div class="preview-item" id="kvMulta"><div class="preview-item-label">Multa (2%)</div><div class="preview-item-value" id="resMulta">—</div></div>
-            <div class="preview-item highlight" id="kvAtualizado"><div class="preview-item-label">Valor Atualizado</div><div class="preview-item-value" id="resAtualizado">—</div></div>
-          </div>
-        </aside>
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-title">
+        <h1><i class="fas fa-plus-circle" style="color: #F6C84C; margin-right: 12px;"></i>Nova Cobrança</h1>
+        <p>Cadastre uma nova cobrança para um cliente</p>
       </div>
-    </main>
-  </div>
+    </header>
 
-  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+    <div class="form-container">
+      <div id="alertBox" class="alert"></div>
+
+      <form id="cobrancaForm">
+        <!-- Empresa -->
+        <div class="empresa-select">
+          <label class="form-label"><i class="fas fa-building" style="margin-right: 6px;"></i>Empresa Emissora</label>
+          <select id="empresaId" class="form-control" required>
+            <option value="">Carregando empresas...</option>
+          </select>
+        </div>
+
+        <!-- Seção Cliente -->
+        <div class="section-title">
+          <div class="section-icon"><i class="fas fa-user"></i></div>
+          <h2>Selecionar Cliente</h2>
+        </div>
+
+        <!-- Tabs de seleção -->
+        <div class="client-tabs">
+          <div class="client-tab active" data-tab="existente" onclick="selecionarTab('existente')">
+            <i class="fas fa-search"></i>
+            <div class="client-tab-title">Cliente Existente</div>
+            <div class="client-tab-desc">Buscar cliente já cadastrado</div>
+          </div>
+          <div class="client-tab" data-tab="novo" onclick="selecionarTab('novo')">
+            <i class="fas fa-user-plus"></i>
+            <div class="client-tab-title">Novo Cliente</div>
+            <div class="client-tab-desc">Cadastrar durante a cobrança</div>
+          </div>
+        </div>
+
+        <!-- Buscar Cliente Existente -->
+        <div class="client-section active" id="clienteExistente">
+          <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchCliente" class="search-input" placeholder="Digite o nome ou CPF/CNPJ do cliente..." autocomplete="off">
+            <div class="search-results" id="searchResults"></div>
+          </div>
+          <div class="selected-client" id="selectedClient">
+            <div class="selected-client-info">
+              <div class="selected-client-avatar" id="clienteAvatar">J</div>
+              <div>
+                <div class="selected-client-name" id="clienteNome">Nome do Cliente</div>
+                <div class="selected-client-cpf" id="clienteCpf">CPF/CNPJ</div>
+              </div>
+            </div>
+            <div class="selected-client-stats">
+              <div class="selected-client-stat">
+                <div class="selected-client-stat-value" id="clienteCobrancas">0</div>
+                <div class="selected-client-stat-label">Cobranças</div>
+              </div>
+              <div class="selected-client-stat">
+                <div class="selected-client-stat-value" id="clienteDivida">R$ 0</div>
+                <div class="selected-client-stat-label">Pendente</div>
+              </div>
+            </div>
+            <button type="button" class="btn-change-client" onclick="limparClienteSelecionado()">
+              <i class="fas fa-times"></i> Alterar
+            </button>
+          </div>
+          <input type="hidden" id="clienteId" name="cliente_id">
+        </div>
+
+        <!-- Cadastrar Novo Cliente -->
+        <div class="client-section" id="clienteNovo">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Nome Completo <span class="required">*</span></label>
+              <input type="text" id="novoClienteNome" class="form-control" placeholder="Nome do cliente">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CPF/CNPJ</label>
+              <input type="text" id="novoClienteCpf" class="form-control" placeholder="000.000.000-00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telefone</label>
+              <input type="text" id="novoClienteTelefone" class="form-control" placeholder="(00) 00000-0000">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">E-mail</label>
+              <input type="email" id="novoClienteEmail" class="form-control" placeholder="email@exemplo.com">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Cobrança -->
+        <div class="section-title" style="margin-top: 32px;">
+          <div class="section-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+          <h2>Dados da Cobrança</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Valor <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-prefix">R$</span>
+              <input type="text" id="valorOriginal" class="form-control" placeholder="0,00" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de Vencimento <span class="required">*</span></label>
+            <input type="date" id="vencimento" class="form-control" required>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Descrição</label>
+            <input type="text" id="descricao" class="form-control" placeholder="Ex: Mensalidade Janeiro/2026, Serviço prestado...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="status" class="form-control">
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+              <option value="vencido">Vencido</option>
+              <option value="negociando">Negociando</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de Compromisso</label>
+            <input type="date" id="dataCompromisso" class="form-control">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Observações</label>
+            <textarea id="observacoes" class="form-control" placeholder="Observações adicionais sobre a cobrança..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="window.location.href='cobrancas.html'">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check"></i> Salvar Cobrança
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
   <script>
-const token=localStorage.getItem('token');if(!token)window.location.href='/login';
-let empresasData=[];
+    const API_BASE = '';
+    let token = localStorage.getItem('token');
+    let clienteSelecionado = null;
+    let modoCliente = 'existente';
+    let searchTimeout = null;
 
-document.getElementById('sidebarToggle').addEventListener('click',()=>{const s=document.getElementById('sidebar');if(window.innerWidth<=1024)s.classList.toggle('open');else s.classList.toggle('collapsed')});
-document.getElementById('btnLogout').addEventListener('click',()=>{localStorage.removeItem('token');window.location.href='/login'});
+    if (!token) window.location.href = 'login.html';
 
-const valorInput=document.getElementById('valorOriginal'),valorNumerico=document.getElementById('valorOriginalNumerico');
-function formatarMoeda(v){let n=v.replace(/\D/g,'');if(n==='')return'';n=n.replace(/^0+/,'')||'0';return(parseInt(n,10)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function converterParaNumero(v){if(!v)return 0;return parseFloat(v.replace(/\./g,'').replace(',','.'))||0}
-valorInput.addEventListener('input',function(){let f=formatarMoeda(this.value);this.value=f;valorNumerico.value=converterParaNumero(f);atualizarResumo()});
-valorInput.addEventListener('focus',function(){setTimeout(()=>this.select(),50)});
-valorInput.addEventListener('keypress',function(e){if(!/[0-9]/.test(e.key)&&!e.ctrlKey&&!e.metaKey)e.preventDefault()});
-window.getValorOriginalNumerico=()=>converterParaNumero(valorInput.value);
+    function getHeaders() {
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+    }
 
-const checkboxGroup=document.getElementById('checkboxMultaGroup'),checkboxInput=document.getElementById('aplicarMulta'),multaBadge=document.getElementById('multaBadge'),taxaField=document.getElementById('taxaFieldGroup');
-checkboxGroup.addEventListener('click',e=>{if(e.target!==checkboxInput){checkboxInput.checked=!checkboxInput.checked;atualizarCheckbox()}});
-function atualizarCheckbox(){if(checkboxInput.checked){checkboxGroup.classList.add('checked');multaBadge.textContent='Ativo';multaBadge.className='checkbox-badge ativo';taxaField.style.opacity='1';taxaField.style.pointerEvents='auto'}else{checkboxGroup.classList.remove('checked');multaBadge.textContent='Inativo';multaBadge.className='checkbox-badge inativo';taxaField.style.opacity='0.5';taxaField.style.pointerEvents='none'}}
-window.isMultaAtiva=()=>checkboxInput.checked;
+    function fmtMoney(valor) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+    }
 
-document.getElementById('empresaId').addEventListener('change',function(){
-  const id=this.value;const emp=empresasData.find(e=>e.id==id);const info=document.getElementById('empresaInfo');
-  if(emp){let html=`<strong>${emp.nome}</strong><br>CNPJ: ${emp.cnpj||'—'}`;if(emp.chave_pix)html+=` | PIX: ${emp.chave_pix}`;info.innerHTML=html;info.classList.add('show');document.getElementById('resEmpresa').textContent=emp.nome;document.getElementById('kvEmpresa').classList.add('filled')}
-  else{info.classList.remove('show');document.getElementById('resEmpresa').textContent='—';document.getElementById('kvEmpresa').classList.remove('filled')}
-});
+    // Verificar parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteIdParam = urlParams.get('cliente_id');
+    const clienteNomeParam = urlParams.get('cliente_nome');
 
-function atualizarResumo(){const c=document.getElementById('cliente_nome').value,v=valorInput.value,venc=document.getElementById('vencimento').value;
-  document.getElementById('resCliente').textContent=c||'—';document.getElementById('kvCliente').classList.toggle('filled',!!c);
-  document.getElementById('resOriginal').textContent=v?'R$ '+v:'—';document.getElementById('kvOriginal').classList.toggle('filled',!!v);
-  document.getElementById('resVencimento').textContent=venc?new Date(venc+'T00:00:00').toLocaleDateString('pt-BR'):'—';document.getElementById('kvVencimento').classList.toggle('filled',!!venc)}
-['cliente_nome','valorOriginal','vencimento','pagamento'].forEach(id=>document.getElementById(id).addEventListener('input',atualizarResumo));
+    // Carregar empresas
+    async function carregarEmpresas() {
+      try {
+        const res = await fetch(`${API_BASE}/api/empresas`, { headers: getHeaders() });
+        const data = await res.json();
+        const select = document.getElementById('empresaId');
+        if (data.success && data.data.length > 0) {
+          select.innerHTML = data.data.map(e => 
+            `<option value="${e.id}" ${e.padrao ? 'selected' : ''}>${e.nome}${e.padrao ? ' (Padrão)' : ''}</option>`
+          ).join('');
+        } else {
+          select.innerHTML = '<option value="">Nenhuma empresa cadastrada</option>';
+        }
+      } catch (err) {
+        console.error('Erro ao carregar empresas:', err);
+      }
+    }
 
-async function carregarEmpresas(){
-  try{const r=await fetch('/api/empresas',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();
-    if(d.success&&d.data){empresasData=d.data;const sel=document.getElementById('empresaId');
-      if(empresasData.length===0){document.getElementById('noEmpresas').style.display='block';document.getElementById('empresaSelector').style.display='none';sel.innerHTML='<option value="">Nenhuma</option>'}
-      else{document.getElementById('noEmpresas').style.display='none';document.getElementById('empresaSelector').style.display='block';sel.innerHTML=empresasData.map(e=>`<option value="${e.id}" ${e.padrao?'selected':''}>${e.nome}${e.padrao?' ⭐':''}</option>`).join('');sel.dispatchEvent(new Event('change'))}}}catch(e){console.error(e)}}
+    // Tabs de cliente
+    function selecionarTab(tab) {
+      document.querySelectorAll('.client-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.client-tab[data-tab="${tab}"]`).classList.add('active');
+      document.querySelectorAll('.client-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(tab === 'existente' ? 'clienteExistente' : 'clienteNovo').classList.add('active');
+      modoCliente = tab;
+      if (tab === 'novo') {
+        limparClienteSelecionado();
+      }
+    }
 
-async function carregarClientes(){try{const r=await fetch('/api/clientes-ativos',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success&&d.data.length){document.getElementById('listaClientes').innerHTML=d.data.map(c=>`<option value="${c.nome}" data-id="${c.id}">${c.nome}</option>`).join('')}}catch(e){}}
-function getClienteId(){const n=document.getElementById('cliente_nome').value,opts=document.querySelectorAll('#listaClientes option');for(const o of opts)if(o.value===n)return o.dataset.id;return null}
+    // Busca de cliente com debounce
+    document.getElementById('searchCliente').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
+      if (query.length < 2) {
+        document.getElementById('searchResults').classList.remove('active');
+        return;
+      }
+      searchTimeout = setTimeout(() => buscarClientes(query), 300);
+    });
 
-async function carregarUsuario(){try{const r=await fetch('/api/usuarios/me',{headers:{'Authorization':`Bearer ${token}`}});const d=await r.json();if(d.success&&d.data){document.getElementById('userName').textContent=d.data.nome||'Usuário';document.getElementById('userRole').textContent=d.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(d.data.nome||'U').charAt(0).toUpperCase()}}catch(e){}}
+    document.getElementById('searchCliente').addEventListener('focus', function() {
+      if (this.value.trim().length >= 2) {
+        document.getElementById('searchResults').classList.add('active');
+      }
+    });
 
-window.getEmpresaId=()=>document.getElementById('empresaId').value;
-carregarUsuario();carregarEmpresas();carregarClientes();
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.search-wrapper')) {
+        document.getElementById('searchResults').classList.remove('active');
+      }
+    });
+
+    async function buscarClientes(query) {
+      try {
+        const res = await fetch(`${API_BASE}/api/clientes/buscar?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
+        const data = await res.json();
+        const container = document.getElementById('searchResults');
+        
+        if (data.success && data.data.length > 0) {
+          container.innerHTML = data.data.map(c => `
+            <div class="search-result-item" onclick="selecionarCliente(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+              <div class="search-result-name">${c.nome}</div>
+              <div class="search-result-info">
+                <span><i class="fas fa-id-card"></i> ${c.cpf_cnpj || 'Sem CPF'}</span>
+                <span><i class="fas fa-file-invoice"></i> ${c.total_cobrancas || 0} cobranças</span>
+                <span><i class="fas fa-exclamation-circle"></i> ${fmtMoney(c.divida_total)} pendente</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div class="search-no-results"><i class="fas fa-search"></i> Nenhum cliente encontrado</div>';
+        }
+        container.classList.add('active');
+      } catch (err) {
+        console.error('Erro na busca:', err);
+      }
+    }
+
+    function selecionarCliente(cliente) {
+      clienteSelecionado = cliente;
+      document.getElementById('clienteId').value = cliente.id;
+      document.getElementById('clienteAvatar').textContent = cliente.nome.charAt(0).toUpperCase();
+      document.getElementById('clienteNome').textContent = cliente.nome;
+      document.getElementById('clienteCpf').textContent = cliente.cpf_cnpj || 'CPF/CNPJ não informado';
+      document.getElementById('clienteCobrancas').textContent = cliente.total_cobrancas || 0;
+      document.getElementById('clienteDivida').textContent = fmtMoney(cliente.divida_total);
+      document.getElementById('selectedClient').classList.add('active');
+      document.getElementById('searchCliente').style.display = 'none';
+      document.getElementById('searchResults').classList.remove('active');
+    }
+
+    function limparClienteSelecionado() {
+      clienteSelecionado = null;
+      document.getElementById('clienteId').value = '';
+      document.getElementById('selectedClient').classList.remove('active');
+      document.getElementById('searchCliente').style.display = 'block';
+      document.getElementById('searchCliente').value = '';
+    }
+
+    // Carregar cliente da URL
+    async function carregarClienteUrl() {
+      if (clienteIdParam) {
+        try {
+          const res = await fetch(`${API_BASE}/api/clientes/${clienteIdParam}/completo`, { headers: getHeaders() });
+          const data = await res.json();
+          if (data.success) {
+            const c = data.data.cliente;
+            const stats = data.data.estatisticas;
+            selecionarCliente({
+              id: c.id,
+              nome: c.nome,
+              cpf_cnpj: c.cpf_cnpj,
+              total_cobrancas: stats.total_cobrancas,
+              divida_total: stats.valor_pendente
+            });
+          }
+        } catch (err) {
+          console.error('Erro ao carregar cliente:', err);
+        }
+      }
+    }
+
+    // Máscaras
+    document.getElementById('valorOriginal').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g, '');
+      v = (parseInt(v) / 100).toFixed(2);
+      this.value = v.replace('.', ',');
+    });
+
+    document.getElementById('novoClienteCpf').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g, '');
+      if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      } else {
+        v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+      }
+      this.value = v;
+    });
+
+    document.getElementById('novoClienteTelefone').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g, '');
+      v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+      v = v.replace(/(\d{5})(\d)/, '$1-$2');
+      this.value = v.substring(0, 15);
+    });
+
+    // Submit
+    document.getElementById('cobrancaForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+      try {
+        let clienteIdFinal = document.getElementById('clienteId').value;
+
+        // Se modo novo cliente, criar primeiro
+        if (modoCliente === 'novo') {
+          const nomeNovo = document.getElementById('novoClienteNome').value.trim();
+          if (!nomeNovo) {
+            showAlert('Nome do cliente é obrigatório.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+            return;
+          }
+
+          const resCliente = await fetch(`${API_BASE}/api/clientes`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({
+              nome: nomeNovo,
+              cpf_cnpj: document.getElementById('novoClienteCpf').value,
+              telefone: document.getElementById('novoClienteTelefone').value,
+              email: document.getElementById('novoClienteEmail').value,
+              empresa_id: document.getElementById('empresaId').value
+            })
+          });
+          const dataCliente = await resCliente.json();
+          if (!dataCliente.success) {
+            showAlert(dataCliente.message || 'Erro ao criar cliente.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+            return;
+          }
+          clienteIdFinal = dataCliente.data.id;
+        }
+
+        if (!clienteIdFinal) {
+          showAlert('Selecione ou cadastre um cliente.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+          return;
+        }
+
+        // Criar cobrança
+        const valorStr = document.getElementById('valorOriginal').value.replace(',', '.');
+        const payload = {
+          cliente_id: clienteIdFinal,
+          empresa_id: document.getElementById('empresaId').value,
+          valor_original: parseFloat(valorStr),
+          vencimento: document.getElementById('vencimento').value,
+          descricao: document.getElementById('descricao').value,
+          status: document.getElementById('status').value,
+          data_compromisso: document.getElementById('dataCompromisso').value || null,
+          observacoes: document.getElementById('observacoes').value
+        };
+
+        const res = await fetch(`${API_BASE}/api/cobrancas`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('Cobrança cadastrada com sucesso!', 'success');
+          setTimeout(() => window.location.href = 'cobrancas.html', 1500);
+        } else {
+          showAlert(data.message || 'Erro ao cadastrar cobrança.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+        }
+      } catch (err) {
+        console.error('Erro:', err);
+        showAlert('Erro de conexão. Tente novamente.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Salvar Cobrança';
+      }
+    });
+
+    function showAlert(msg, type) {
+      const box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = `alert ${type}`;
+      box.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Init
+    carregarEmpresas();
+    carregarClienteUrl();
+
+    // Data padrão
+    const hoje = new Date();
+    hoje.setDate(hoje.getDate() + 30);
+    document.getElementById('vencimento').value = hoje.toISOString().split('T')[0];
   </script>
-  <script src="/js/nova-cobranca.js"></script>
 </body>
 </html>
