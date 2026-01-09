@@ -1953,6 +1953,65 @@ app.get("/api/clientes/estatisticas", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao buscar estatísticas.", error: err.message });
   }
 });
+// =====================================================
+// ROTA - BUSCAR COBRANÇAS ARQUIVADAS
+// Adicione isso no server.js ANTES da linha 404
+// =====================================================
+
+// GET /api/cobrancas/arquivadas - Listar cobranças arquivadas
+app.get("/api/cobrancas/arquivadas", auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.descricao,
+        c.valor_original,
+        c.valor_atualizado,
+        c.vencimento,
+        c.status,
+        c.created_at,
+        cl.nome as cliente,
+        cl.telefone as cliente_telefone,
+        cl.cpf_cnpj as cliente_cpf
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
+      WHERE c.status = 'arquivado'
+      ORDER BY c.vencimento DESC
+      LIMIT 500
+    `);
+
+    // Calcular total
+    const totalResult = await pool.query(`
+      SELECT 
+        COUNT(*)::int as total,
+        COALESCE(SUM(valor_atualizado), 0)::numeric as valor_total
+      FROM cobrancas 
+      WHERE status = 'arquivado'
+    `);
+
+    return res.json({
+      success: true,
+      data: result.rows.map(r => ({
+        id: r.id,
+        descricao: r.descricao,
+        valorOriginal: r.valor_original,
+        valorAtualizado: r.valor_atualizado,
+        valor_atualizado: r.valor_atualizado,
+        vencimento: r.vencimento,
+        status: r.status,
+        cliente: r.cliente,
+        cliente_telefone: r.cliente_telefone,
+        cliente_cpf: r.cliente_cpf,
+        created_at: r.created_at
+      })),
+      total: totalResult.rows[0]?.total || 0,
+      valorTotal: totalResult.rows[0]?.valor_total || 0
+    });
+  } catch (err) {
+    console.error("[ARQUIVADAS] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar arquivadas." });
+  }
+});
 
 // =====================
 // 404

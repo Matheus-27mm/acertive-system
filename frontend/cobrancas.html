@@ -59,13 +59,11 @@
       overflow-x: hidden;
     }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--gold-glow); }
 
-    /* ========== SIDEBAR ========== */
     .sidebar {
       position: fixed; left: 0; top: 0;
       width: var(--sidebar-width); height: 100vh;
@@ -160,7 +158,6 @@
     }
     .user-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 
-    /* ========== MAIN CONTENT ========== */
     .main-wrapper {
       margin-left: var(--sidebar-width);
       min-height: 100vh;
@@ -168,7 +165,6 @@
     }
     .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
 
-    /* ========== HEADER ========== */
     .header {
       height: var(--header-height);
       background: rgba(9, 9, 11, 0.8);
@@ -224,7 +220,6 @@
     }
     .header-search input::placeholder { color: var(--text-muted); }
 
-    /* ========== PAGE CONTENT ========== */
     .page-content { padding: 32px; }
     
     .page-header {
@@ -245,7 +240,6 @@
     .page-subtitle { color: var(--text-muted); font-size: 14px; }
     .page-header-right { display: flex; gap: 12px; flex-wrap: wrap; }
 
-    /* ========== BUTTONS ========== */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       padding: 12px 20px; border-radius: var(--radius-md);
@@ -264,318 +258,15 @@
     }
     .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
     .btn-sm { padding: 8px 14px; font-size: 13px; }
-</style>
-</head>
-<body>
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-icon">A</div>
-      <div class="logo-text">
-        <span>ACERTIVE</span>
-        <span>Enterprise</span>
-      </div>
-    </div>
+    .btn-archive {
+      background: var(--purple-bg); color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .btn-archive:hover { background: rgba(168, 85, 247, 0.25); }
+    .btn-archive.active {
+      background: var(--purple); color: white;
+    }
 
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-title">Principal</div>
-        <div class="nav-links">
-          <a href="/dashboard" class="nav-link">
-            <i class="fa-solid fa-grid-2"></i>
-            <span class="nav-text">Dashboard</span>
-          </a>
-          <a href="/cobrancas" class="nav-link active">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <span class="nav-text">Cobranças</span>
-          </a>
-          <a href="/clientes-ativos" class="nav-link">
-            <i class="fa-solid fa-users"></i>
-            <span class="nav-text">Clientes</span>
-          </a>
-          <a href="/agendamentos" class="nav-link">
-            <i class="fa-solid fa-calendar-check"></i>
-            <span class="nav-text">Agendamentos</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-title">Financeiro</div>
-        <div class="nav-links">
-          <a href="/nova-cobranca" class="nav-link">
-            <i class="fa-solid fa-plus-circle"></i>
-            <span class="nav-text">Nova Cobrança</span>
-          </a>
-          <a href="/cobrancas-recorrentes" class="nav-link">
-            <i class="fa-solid fa-repeat"></i>
-            <span class="nav-text">Recorrentes</span>
-          </a>
-          <a href="/historico" class="nav-link">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span class="nav-text">Histórico</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-title">Administração</div>
-        <div class="nav-links">
-          <a href="/usuarios" class="nav-link" id="navUsuarios">
-            <i class="fa-solid fa-user-shield"></i>
-            <span class="nav-text">Usuários</span>
-            <span class="nav-badge blue">ADM</span>
-          </a>
-          <a href="/configuracoes" class="nav-link">
-            <i class="fa-solid fa-gear"></i>
-            <span class="nav-text">Configurações</span>
-          </a>
-        </div>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-card" id="userCard">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-info">
-          <div class="user-name" id="userName">Usuário</div>
-          <div class="user-role" id="userRole">Operador</div>
-        </div>
-        <button class="user-menu-btn" id="btnLogout" title="Sair">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
-    </div>
-  </aside>
-  <!-- Main Content -->
-  <div class="main-wrapper">
-    <header class="header">
-      <div class="header-left">
-        <button class="sidebar-toggle" id="sidebarToggle">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="breadcrumb">
-          <span class="breadcrumb-item">ACERTIVE</span>
-          <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-item active">Cobranças</span>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="header-search">
-          <i class="fa-solid fa-search"></i>
-          <input type="text" placeholder="Buscar cobrança..." id="searchInput">
-        </div>
-        <button class="header-btn" id="btnRefresh" title="Atualizar">
-          <i class="fa-solid fa-rotate"></i>
-        </button>
-      </div>
-    </header>
-
-    <main class="page-content">
-      <!-- Page Header -->
-      <div class="page-header">
-        <div class="page-header-left">
-          <h1 class="page-title">
-            <div class="page-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            Cobranças
-          </h1>
-          <p class="page-subtitle">Gerencie todas as cobranças do sistema</p>
-        </div>
-        <div class="page-header-right">
-          <a href="/nova-cobranca" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Nova Cobrança
-          </a>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="filters-card">
-        <div class="filters-row">
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-status="">Todas</button>
-            <button class="filter-tab" data-status="pendente">Pendentes</button>
-            <button class="filter-tab" data-status="vencido">Vencidas</button>
-            <button class="filter-tab" data-status="pago">Pagas</button>
-            <button class="filter-tab" data-status="negociando">Negociando</button>
-          </div>
-          <div class="filters-actions">
-            <button class="btn btn-secondary btn-sm" id="btnExportCsv">
-              <i class="fa-solid fa-download"></i> Exportar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--green-bg); color: var(--green);"><i class="fa-solid fa-check-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPagas">0</span>
-            <span class="stat-label">Pagas</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--orange-bg); color: var(--orange);"><i class="fa-solid fa-clock"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPendentes">0</span>
-            <span class="stat-label">Pendentes</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--red-bg); color: var(--red);"><i class="fa-solid fa-exclamation-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statVencidas">0</span>
-            <span class="stat-label">Vencidas</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i class="fa-solid fa-coins"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statTotal">R$ 0</span>
-            <span class="stat-label">Total Pendente</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Table -->
-      <div class="table-card">
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="cobrancas-tbody">
-              <tr>
-                <td colspan="6" class="loading-cell">
-                  <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>
-                  <span>Carregando cobranças...</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="table-footer">
-          <span id="tableInfo">0 cobranças</span>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <!-- Modal IA -->
-  <div class="modal-overlay" id="modal-ia">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Mensagem com IA</h2>
-        <button class="modal-close" onclick="fecharModalIA()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      
-      <div class="modal-info-box">
-        <p>A IA vai gerar uma mensagem personalizada baseada nos dados da cobrança e histórico do cliente.</p>
-      </div>
-
-      <div class="modal-client-info">
-        <div class="info-row">
-          <span class="info-label">Cliente:</span>
-          <span class="info-value" id="ia-cliente">-</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Valor:</span>
-          <span class="info-value" id="ia-valor">-</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Tipo de Mensagem</label>
-        <select class="form-select" id="ia-tipo">
-          <option value="whatsapp">📱 WhatsApp (curta)</option>
-          <option value="email">📧 E-mail (detalhada)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Tom da Mensagem</label>
-        <select class="form-select" id="ia-tom">
-          <option value="profissional">💼 Profissional</option>
-          <option value="amigavel">😊 Amigável</option>
-          <option value="firme">⚠️ Firme</option>
-        </select>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-primary btn-lg" id="btn-gerar-ia" onclick="gerarMensagemIA()">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span id="btn-gerar-texto">Gerar Mensagem</span>
-        </button>
-      </div>
-
-      <div class="mensagem-container" id="mensagem-container" style="display: none;">
-        <div class="mensagem-header">
-          <span class="mensagem-label"><i class="fa-solid fa-message"></i> Mensagem Gerada</span>
-          <button class="btn btn-sm btn-secondary" onclick="copiarMensagem()"><i class="fa-solid fa-copy"></i> Copiar</button>
-        </div>
-        <div class="mensagem-texto" id="mensagem-texto"></div>
-      </div>
-
-      <div id="ia-acoes" style="display: none; margin-top: 20px;">
-        <button class="btn btn-lg" style="width: 100%; background: var(--green); color: white;" onclick="enviarWhatsAppIA()">
-          <i class="fa-brands fa-whatsapp"></i> Enviar via WhatsApp
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Status -->
-  <div class="modal-overlay" id="modal-status">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title"><i class="fa-solid fa-rotate"></i> Alterar Status</h2>
-        <button class="modal-close" onclick="fecharModalStatus()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      
-      <div class="modal-client-info">
-        <div class="info-row">
-          <span class="info-label">Cliente:</span>
-          <span class="info-value" id="status-cliente">-</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Status Atual:</span>
-          <span class="info-value" id="status-atual">-</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Novo Status</label>
-        <select class="form-select" id="status-novo">
-          <option value="pendente">⏳ Pendente</option>
-          <option value="pago">✅ Pago</option>
-          <option value="vencido">❌ Vencido</option>
-          <option value="negociando">🤝 Negociando</option>
-          <option value="cancelado">🚫 Cancelado</option>
-        </select>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="fecharModalStatus()">Cancelar</button>
-        <button class="btn btn-primary" onclick="confirmarStatus()">
-          <i class="fa-solid fa-check"></i> Confirmar
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-
-  <style>
-    /* ========== FILTERS ========== */
     .filters-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -608,8 +299,8 @@
       color: var(--bg-primary);
       border-color: var(--gold);
     }
+    .filters-actions { display: flex; gap: 8px; align-items: center; }
 
-    /* ========== STATS ROW ========== */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -637,7 +328,34 @@
     .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
     .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
 
-    /* ========== TABLE ========== */
+    /* Banner Arquivadas */
+    .archive-banner {
+      display: none;
+      background: linear-gradient(135deg, var(--purple-bg), rgba(168, 85, 247, 0.05));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .archive-banner.active { display: flex; }
+    .archive-banner-info { display: flex; align-items: center; gap: 16px; }
+    .archive-banner-icon {
+      width: 48px; height: 48px;
+      background: var(--purple);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 20px;
+    }
+    .archive-banner-text h3 { color: var(--purple); font-size: 16px; margin-bottom: 4px; }
+    .archive-banner-text p { color: var(--text-muted); font-size: 13px; }
+    .archive-banner-stats { display: flex; gap: 24px; }
+    .archive-stat { text-align: center; }
+    .archive-stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+    .archive-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
     .table-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -682,6 +400,7 @@
     .badge-vencido { background: var(--red-bg); color: var(--red); }
     .badge-negociando { background: var(--purple-bg); color: var(--purple); }
     .badge-cancelado { background: rgba(100,100,100,0.2); color: #888; }
+    .badge-arquivado { background: rgba(100,100,100,0.2); color: #888; }
 
     .actions-cell { display: flex; gap: 6px; }
     .action-btn {
@@ -731,7 +450,6 @@
     .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
     .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-secondary); }
 
-    /* ========== MODAL ========== */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.8);
@@ -862,7 +580,6 @@
       white-space: pre-wrap;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 30px;
@@ -879,7 +596,6 @@
     .toast.success { background: var(--green); color: white; }
     .toast.error { background: var(--red); color: white; }
 
-    /* Responsive */
     @media (max-width: 1200px) {
       .stats-row { grid-template-columns: repeat(2, 1fr); }
     }
@@ -892,40 +608,304 @@
       .stats-row { grid-template-columns: 1fr; }
       .page-header { flex-direction: column; }
       .header-search { display: none; }
+      .archive-banner { flex-direction: column; text-align: center; }
     }
   </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">
+        <span>ACERTIVE</span>
+        <span>Enterprise</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-links">
+          <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a>
+          <a href="/cobrancas" class="nav-link active"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a>
+          <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a>
+          <a href="/consulta-cliente" class="nav-link"><i class="fa-solid fa-magnifying-glass-dollar"></i><span class="nav-text">Consulta Cliente</span></a>
+          <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <div class="nav-links">
+          <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a>
+          <a href="/importar-cobrancas" class="nav-link"><i class="fa-solid fa-file-import"></i><span class="nav-text">Importar Cobranças</span></a>
+          <a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a>
+          <a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <div class="nav-links">
+          <a href="/usuarios" class="nav-link" id="navUsuarios"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge blue">ADM</span></a>
+          <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="userCard">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Usuário</div>
+          <div class="user-role" id="userRole">Operador</div>
+        </div>
+        <button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">ACERTIVE</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active" id="breadcrumbTitle">Cobranças</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-search">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" placeholder="Buscar cobrança..." id="searchInput">
+        </div>
+        <button class="header-btn" id="btnRefresh" title="Atualizar"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">
+            <div class="page-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <span id="pageTitle">Cobranças</span>
+          </h1>
+          <p class="page-subtitle" id="pageSubtitle">Gerencie todas as cobranças do sistema</p>
+        </div>
+        <div class="page-header-right">
+          <button class="btn btn-archive btn-sm" id="btnVerArquivadas" onclick="toggleArquivadas()">
+            <i class="fa-solid fa-archive"></i>
+            <span id="btnArquivadasTexto">Ver Arquivadas</span>
+          </button>
+          <a href="/nova-cobranca" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Nova Cobrança
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner Arquivadas -->
+      <div class="archive-banner" id="archiveBanner">
+        <div class="archive-banner-info">
+          <div class="archive-banner-icon"><i class="fa-solid fa-archive"></i></div>
+          <div class="archive-banner-text">
+            <h3>📁 Modo Histórico - Cobranças Arquivadas</h3>
+            <p>Visualizando cobranças antigas (2024 e anteriores). Estes valores não afetam o Dashboard.</p>
+          </div>
+        </div>
+        <div class="archive-banner-stats">
+          <div class="archive-stat">
+            <div class="archive-stat-value" id="archiveQtd">0</div>
+            <div class="archive-stat-label">Cobranças</div>
+          </div>
+          <div class="archive-stat">
+            <div class="archive-stat-value" id="archiveTotal">R$ 0</div>
+            <div class="archive-stat-label">Total Movimentado</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-card" id="filtersCard">
+        <div class="filters-row">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-status="">Todas</button>
+            <button class="filter-tab" data-status="pendente">Pendentes</button>
+            <button class="filter-tab" data-status="vencido">Vencidas</button>
+            <button class="filter-tab" data-status="pago">Pagas</button>
+            <button class="filter-tab" data-status="negociando">Negociando</button>
+          </div>
+          <div class="filters-actions">
+            <button class="btn btn-secondary btn-sm" id="btnExportCsv">
+              <i class="fa-solid fa-download"></i> Exportar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--green-bg); color: var(--green);"><i class="fa-solid fa-check-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPagas">0</span>
+            <span class="stat-label">Pagas</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--orange-bg); color: var(--orange);"><i class="fa-solid fa-clock"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statPendentes">0</span>
+            <span class="stat-label">Pendentes</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--red-bg); color: var(--red);"><i class="fa-solid fa-exclamation-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statVencidas">0</span>
+            <span class="stat-label">Vencidas</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i class="fa-solid fa-coins"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="statTotal">R$ 0</span>
+            <span class="stat-label">Total Pendente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="cobrancas-tbody">
+              <tr>
+                <td colspan="6" class="loading-cell">
+                  <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                  <span>Carregando cobranças...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tableInfo">0 cobranças</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal IA -->
+  <div class="modal-overlay" id="modal-ia">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Mensagem com IA</h2>
+        <button class="modal-close" onclick="fecharModalIA()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-info-box"><p>A IA vai gerar uma mensagem personalizada baseada nos dados da cobrança.</p></div>
+      <div class="modal-client-info">
+        <div class="info-row"><span class="info-label">Cliente:</span><span class="info-value" id="ia-cliente">-</span></div>
+        <div class="info-row"><span class="info-label">Valor:</span><span class="info-value" id="ia-valor">-</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de Mensagem</label>
+        <select class="form-select" id="ia-tipo">
+          <option value="whatsapp">📱 WhatsApp (curta)</option>
+          <option value="email">📧 E-mail (detalhada)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tom da Mensagem</label>
+        <select class="form-select" id="ia-tom">
+          <option value="profissional">💼 Profissional</option>
+          <option value="amigavel">😊 Amigável</option>
+          <option value="firme">⚠️ Firme</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-lg" id="btn-gerar-ia" onclick="gerarMensagemIA()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span id="btn-gerar-texto">Gerar Mensagem</span>
+        </button>
+      </div>
+      <div class="mensagem-container" id="mensagem-container" style="display: none;">
+        <div class="mensagem-header">
+          <span class="mensagem-label"><i class="fa-solid fa-message"></i> Mensagem Gerada</span>
+          <button class="btn btn-sm btn-secondary" onclick="copiarMensagem()"><i class="fa-solid fa-copy"></i> Copiar</button>
+        </div>
+        <div class="mensagem-texto" id="mensagem-texto"></div>
+      </div>
+      <div id="ia-acoes" style="display: none; margin-top: 20px;">
+        <button class="btn btn-lg" style="width: 100%; background: var(--green); color: white;" onclick="enviarWhatsAppIA()">
+          <i class="fa-brands fa-whatsapp"></i> Enviar via WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Status -->
+  <div class="modal-overlay" id="modal-status">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fa-solid fa-rotate"></i> Alterar Status</h2>
+        <button class="modal-close" onclick="fecharModalStatus()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-client-info">
+        <div class="info-row"><span class="info-label">Cliente:</span><span class="info-value" id="status-cliente">-</span></div>
+        <div class="info-row"><span class="info-label">Status Atual:</span><span class="info-value" id="status-atual">-</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Novo Status</label>
+        <select class="form-select" id="status-novo">
+          <option value="pendente">⏳ Pendente</option>
+          <option value="pago">✅ Pago</option>
+          <option value="vencido">❌ Vencido</option>
+          <option value="negociando">🤝 Negociando</option>
+          <option value="cancelado">🚫 Cancelado</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModalStatus()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarStatus()"><i class="fa-solid fa-check"></i> Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-    // ========== CONFIG ==========
     const API_BASE = '';
     let cobrancasData = [];
     let filtroAtual = '';
     let cobrancaAtualIA = null;
     let cobrancaAtualStatus = null;
     let mensagemGeradaIA = '';
+    let modoArquivadas = false;
 
-    // ========== AUTH ==========
     function getToken() { return localStorage.getItem('token'); }
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
     if (!getToken()) window.location.href = '/login';
 
-    // ========== SIDEBAR ==========
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     sidebarToggle.addEventListener('click', () => {
-      if (window.innerWidth <= 1024) {
-        sidebar.classList.toggle('open');
-      } else {
-        sidebar.classList.toggle('collapsed');
-      }
+      if (window.innerWidth <= 1024) sidebar.classList.toggle('open');
+      else sidebar.classList.toggle('collapsed');
     });
-
     document.getElementById('btnLogout').addEventListener('click', logout);
 
-    // ========== HELPERS ==========
     function showToast(msg, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
@@ -933,22 +913,96 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function fmtMoney(n) {
-      return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
+    function fmtMoney(n) { return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
     function fmtDate(d) {
       if (!d) return '—';
       const dt = new Date(d);
       return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
     }
 
-    // ========== CARREGAR COBRANÇAS ==========
+    // ========== TOGGLE ARQUIVADAS ==========
+    async function toggleArquivadas() {
+      modoArquivadas = !modoArquivadas;
+      const btn = document.getElementById('btnVerArquivadas');
+      const btnTexto = document.getElementById('btnArquivadasTexto');
+      const banner = document.getElementById('archiveBanner');
+      const statsRow = document.getElementById('statsRow');
+      const filtersCard = document.getElementById('filtersCard');
+
+      if (modoArquivadas) {
+        btn.classList.add('active');
+        btnTexto.textContent = 'Voltar às Ativas';
+        banner.classList.add('active');
+        statsRow.style.display = 'none';
+        filtersCard.style.display = 'none';
+        document.getElementById('pageTitle').textContent = 'Cobranças Arquivadas';
+        document.getElementById('pageSubtitle').textContent = 'Histórico de cobranças antigas (2024 e anteriores)';
+        document.getElementById('breadcrumbTitle').textContent = 'Arquivadas';
+        await carregarArquivadas();
+      } else {
+        btn.classList.remove('active');
+        btnTexto.textContent = 'Ver Arquivadas';
+        banner.classList.remove('active');
+        statsRow.style.display = 'grid';
+        filtersCard.style.display = 'block';
+        document.getElementById('pageTitle').textContent = 'Cobranças';
+        document.getElementById('pageSubtitle').textContent = 'Gerencie todas as cobranças do sistema';
+        document.getElementById('breadcrumbTitle').textContent = 'Cobranças';
+        await carregarCobrancas();
+      }
+    }
+
+    async function carregarArquivadas() {
+      try {
+        const tbody = document.getElementById('cobrancas-tbody');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-cell"><div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div><span>Carregando arquivadas...</span></td></tr>';
+
+        const resp = await fetch(`${API_BASE}/api/cobrancas/arquivadas`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (!resp.ok) throw new Error('Erro ao carregar');
+
+        const json = await resp.json();
+        cobrancasData = json.data || [];
+        
+        // Atualizar banner
+        document.getElementById('archiveQtd').textContent = json.total || cobrancasData.length;
+        document.getElementById('archiveTotal').textContent = fmtMoney(json.valorTotal || 0);
+        
+        renderizarTabelaArquivadas();
+        document.getElementById('tableInfo').textContent = `${cobrancasData.length} cobrança(s) arquivada(s)`;
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao carregar arquivadas', true);
+      }
+    }
+
+    function renderizarTabelaArquivadas() {
+      const tbody = document.getElementById('cobrancas-tbody');
+      
+      if (!cobrancasData.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-archive"></i><h3>Nenhuma cobrança arquivada</h3><p>As cobranças antigas aparecerão aqui</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = cobrancasData.map(c => `
+        <tr style="opacity: 0.8;">
+          <td><div class="client-cell"><span class="client-name">${c.cliente || '—'}</span><span class="client-phone">${c.cliente_telefone || ''}</span></div></td>
+          <td>${c.descricao || '—'}</td>
+          <td><span class="valor-cell" style="color: var(--text-muted);">${fmtMoney(c.valorAtualizado || c.valor_atualizado)}</span></td>
+          <td>${fmtDate(c.vencimento)}</td>
+          <td><span class="badge badge-arquivado">📁 Arquivado</span></td>
+          <td><span style="color: var(--text-muted); font-size: 12px;">Somente leitura</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // ========== CARREGAR COBRANÇAS ATIVAS ==========
     async function carregarCobrancas() {
       try {
         const params = new URLSearchParams();
         if (filtroAtual) params.append('status', filtroAtual);
-        
         const searchTerm = document.getElementById('searchInput').value.trim();
         if (searchTerm) params.append('q', searchTerm);
 
@@ -968,7 +1022,6 @@
       }
     }
 
-    // ========== ATUALIZAR STATS ==========
     function atualizarStats() {
       const pagas = cobrancasData.filter(c => c.status === 'pago').length;
       const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
@@ -984,74 +1037,33 @@
       document.getElementById('tableInfo').textContent = `${cobrancasData.length} cobrança(s)`;
     }
 
-    // ========== RENDERIZAR TABELA ==========
     function renderizarTabela() {
       const tbody = document.getElementById('cobrancas-tbody');
       
       if (!cobrancasData.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6">
-              <div class="empty-state">
-                <i class="fa-solid fa-file-invoice"></i>
-                <h3>Nenhuma cobrança encontrada</h3>
-                <p>Crie uma nova cobrança para começar</p>
-              </div>
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-file-invoice"></i><h3>Nenhuma cobrança encontrada</h3><p>Crie uma nova cobrança para começar</p></div></td></tr>`;
         return;
       }
 
       tbody.innerHTML = cobrancasData.map(c => {
-        const badgeClass = {
-          'pago': 'badge-pago',
-          'vencido': 'badge-vencido',
-          'pendente': 'badge-pendente',
-          'negociando': 'badge-negociando',
-          'cancelado': 'badge-cancelado'
-        }[c.status] || 'badge-pendente';
-        
-        const statusLabel = {
-          'pago': '✓ Pago',
-          'vencido': '✗ Vencido',
-          'pendente': '⏳ Pendente',
-          'negociando': '🤝 Negociando',
-          'cancelado': '🚫 Cancelado'
-        }[c.status] || c.status;
+        const badgeClass = { 'pago': 'badge-pago', 'vencido': 'badge-vencido', 'pendente': 'badge-pendente', 'negociando': 'badge-negociando', 'cancelado': 'badge-cancelado' }[c.status] || 'badge-pendente';
+        const statusLabel = { 'pago': '✓ Pago', 'vencido': '✗ Vencido', 'pendente': '⏳ Pendente', 'negociando': '🤝 Negociando', 'cancelado': '🚫 Cancelado' }[c.status] || c.status;
         
         return `
           <tr>
-            <td>
-              <div class="client-cell">
-                <span class="client-name">${c.cliente || '—'}</span>
-                <span class="client-phone">${c.cliente_telefone || ''}</span>
-              </div>
-            </td>
+            <td><div class="client-cell"><span class="client-name">${c.cliente || '—'}</span><span class="client-phone">${c.cliente_telefone || ''}</span></div></td>
             <td>${c.descricao || '—'}</td>
             <td><span class="valor-cell">${fmtMoney(c.valorAtualizado)}</span></td>
             <td>${fmtDate(c.vencimento)}</td>
             <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
             <td>
               <div class="actions-cell">
-                <button class="action-btn ia" onclick="abrirModalIA('${c.id}')" title="Gerar com IA">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </button>
-                <button class="action-btn pdf" onclick="baixarPDF('${c.id}')" title="PDF">
-                  <i class="fa-solid fa-file-pdf"></i>
-                </button>
-                <button class="action-btn whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp">
-                  <i class="fa-brands fa-whatsapp"></i>
-                </button>
-                <button class="action-btn email" onclick="enviarEmail('${c.id}')" title="E-mail">
-                  <i class="fa-solid fa-envelope"></i>
-                </button>
-                <button class="action-btn status" onclick="abrirModalStatus('${c.id}')" title="Status">
-                  <i class="fa-solid fa-rotate"></i>
-                </button>
-                <button class="action-btn delete" onclick="excluirCobranca('${c.id}')" title="Excluir">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+                <button class="action-btn ia" onclick="abrirModalIA('${c.id}')" title="IA"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                <button class="action-btn pdf" onclick="baixarPDF('${c.id}')" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                <button class="action-btn whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                <button class="action-btn email" onclick="enviarEmail('${c.id}')" title="E-mail"><i class="fa-solid fa-envelope"></i></button>
+                <button class="action-btn status" onclick="abrirModalStatus('${c.id}')" title="Status"><i class="fa-solid fa-rotate"></i></button>
+                <button class="action-btn delete" onclick="excluirCobranca('${c.id}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -1059,7 +1071,7 @@
       }).join('');
     }
 
-    // ========== FILTROS ==========
+    // Filtros
     document.querySelectorAll('.filter-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
@@ -1069,275 +1081,171 @@
       });
     });
 
-    // ========== BUSCA ==========
+    // Busca
     let searchTimeout;
     document.getElementById('searchInput').addEventListener('input', () => {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(carregarCobrancas, 300);
+      searchTimeout = setTimeout(() => {
+        if (modoArquivadas) carregarArquivadas();
+        else carregarCobrancas();
+      }, 300);
     });
 
-    // ========== REFRESH ==========
+    // Refresh
     document.getElementById('btnRefresh').addEventListener('click', () => {
       const btn = document.getElementById('btnRefresh');
       btn.querySelector('i').classList.add('fa-spin');
-      carregarCobrancas().then(() => {
+      const promise = modoArquivadas ? carregarArquivadas() : carregarCobrancas();
+      promise.then(() => {
         btn.querySelector('i').classList.remove('fa-spin');
         showToast('Dados atualizados!');
       });
     });
 
-    // ========== AÇÕES ==========
+    // Ações
     async function baixarPDF(id) {
       try {
         showToast('Gerando PDF...');
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        if (!resp.ok) throw new Error('Erro ao gerar PDF');
-        
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!resp.ok) throw new Error('Erro');
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `cobranca_${id.slice(0,8)}.pdf`;
-        a.click();
+        a.href = url; a.download = `cobranca_${id.slice(0,8)}.pdf`; a.click();
         URL.revokeObjectURL(url);
-        showToast('PDF baixado com sucesso!');
-      } catch (err) {
-        showToast('Erro ao gerar PDF', true);
-      }
+        showToast('PDF baixado!');
+      } catch (err) { showToast('Erro ao gerar PDF', true); }
     }
 
     async function enviarEmail(id) {
       try {
         showToast('Enviando e-mail...');
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
         const json = await resp.json();
-        if (json.success) {
-          showToast(`E-mail enviado para ${json.destinatario}!`);
-        } else {
-          showToast(json.message || 'Erro ao enviar e-mail', true);
-        }
-      } catch (err) {
-        showToast('Erro ao enviar e-mail', true);
-      }
+        if (json.success) showToast(`E-mail enviado para ${json.destinatario}!`);
+        else showToast(json.message || 'Erro', true);
+      } catch (err) { showToast('Erro ao enviar', true); }
     }
 
     async function enviarWhatsApp(id) {
       try {
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
         const json = await resp.json();
-        if (json.success && json.link) {
-          window.open(json.link, '_blank');
-        } else {
-          showToast(json.message || 'Erro ao gerar link', true);
-        }
-      } catch (err) {
-        showToast('Erro ao gerar link do WhatsApp', true);
-      }
+        if (json.success && json.link) window.open(json.link, '_blank');
+        else showToast(json.message || 'Erro', true);
+      } catch (err) { showToast('Erro', true); }
     }
 
     async function excluirCobranca(id) {
-      if (!confirm('Tem certeza que deseja excluir esta cobrança?')) return;
-
+      if (!confirm('Excluir esta cobrança?')) return;
       try {
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
         const json = await resp.json();
-        if (json.success) {
-          showToast('Cobrança excluída!');
-          carregarCobrancas();
-        } else {
-          showToast(json.message || 'Erro ao excluir', true);
-        }
-      } catch (err) {
-        showToast('Erro ao excluir cobrança', true);
-      }
+        if (json.success) { showToast('Excluída!'); carregarCobrancas(); }
+        else showToast(json.message || 'Erro', true);
+      } catch (err) { showToast('Erro', true); }
     }
 
-    // ========== MODAL STATUS ==========
+    // Modal Status
     function abrirModalStatus(id) {
-      const cobranca = cobrancasData.find(c => c.id === id);
-      if (!cobranca) return;
-
-      cobrancaAtualStatus = cobranca;
-      document.getElementById('status-cliente').textContent = cobranca.cliente || '—';
-      document.getElementById('status-atual').textContent = cobranca.status?.toUpperCase() || '—';
-      document.getElementById('status-novo').value = cobranca.status || 'pendente';
+      const c = cobrancasData.find(x => x.id === id);
+      if (!c) return;
+      cobrancaAtualStatus = c;
+      document.getElementById('status-cliente').textContent = c.cliente || '—';
+      document.getElementById('status-atual').textContent = c.status?.toUpperCase() || '—';
+      document.getElementById('status-novo').value = c.status || 'pendente';
       document.getElementById('modal-status').classList.add('active');
     }
-
-    function fecharModalStatus() {
-      document.getElementById('modal-status').classList.remove('active');
-      cobrancaAtualStatus = null;
-    }
-
+    function fecharModalStatus() { document.getElementById('modal-status').classList.remove('active'); cobrancaAtualStatus = null; }
     async function confirmarStatus() {
       if (!cobrancaAtualStatus) return;
-      
       const novoStatus = document.getElementById('status-novo').value;
-      
       try {
         const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualStatus.id}/status`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          },
+          method: 'PUT', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: novoStatus })
         });
         const json = await resp.json();
-        if (json.success) {
-          showToast('Status atualizado!');
-          fecharModalStatus();
-          carregarCobrancas();
-        } else {
-          showToast(json.message || 'Erro ao atualizar', true);
-        }
-      } catch (err) {
-        showToast('Erro ao atualizar status', true);
-      }
+        if (json.success) { showToast('Status atualizado!'); fecharModalStatus(); carregarCobrancas(); }
+        else showToast(json.message || 'Erro', true);
+      } catch (err) { showToast('Erro', true); }
     }
 
-    // ========== MODAL IA ==========
+    // Modal IA
     function abrirModalIA(id) {
-      const cobranca = cobrancasData.find(c => c.id === id);
-      if (!cobranca) return;
-
-      cobrancaAtualIA = cobranca;
+      const c = cobrancasData.find(x => x.id === id);
+      if (!c) return;
+      cobrancaAtualIA = c;
       mensagemGeradaIA = '';
-
-      document.getElementById('ia-cliente').textContent = cobranca.cliente || '—';
-      document.getElementById('ia-valor').textContent = fmtMoney(cobranca.valorAtualizado);
+      document.getElementById('ia-cliente').textContent = c.cliente || '—';
+      document.getElementById('ia-valor').textContent = fmtMoney(c.valorAtualizado);
       document.getElementById('mensagem-container').style.display = 'none';
       document.getElementById('ia-acoes').style.display = 'none';
       document.getElementById('btn-gerar-texto').textContent = 'Gerar Mensagem';
       document.getElementById('btn-gerar-ia').disabled = false;
-
       document.getElementById('modal-ia').classList.add('active');
     }
-
-    function fecharModalIA() {
-      document.getElementById('modal-ia').classList.remove('active');
-      cobrancaAtualIA = null;
-      mensagemGeradaIA = '';
-    }
+    function fecharModalIA() { document.getElementById('modal-ia').classList.remove('active'); cobrancaAtualIA = null; mensagemGeradaIA = ''; }
 
     async function gerarMensagemIA() {
       if (!cobrancaAtualIA) return;
-
       const btn = document.getElementById('btn-gerar-ia');
       const btnTexto = document.getElementById('btn-gerar-texto');
-      
       btn.disabled = true;
       btnTexto.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
-
       try {
         const tipo = document.getElementById('ia-tipo').value;
         const tom = document.getElementById('ia-tom').value;
-
         const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualIA.id}/gerar-mensagem-ia`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          },
+          method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ tipo, tom })
         });
-
         const json = await resp.json();
-
         if (json.success && json.mensagem) {
           mensagemGeradaIA = json.mensagem;
           document.getElementById('mensagem-texto').textContent = json.mensagem;
           document.getElementById('mensagem-container').style.display = 'block';
-          
-          if (tipo === 'whatsapp') {
-            document.getElementById('ia-acoes').style.display = 'block';
-          } else {
-            document.getElementById('ia-acoes').style.display = 'none';
-          }
-          
-          showToast('Mensagem gerada com sucesso!');
-        } else {
-          showToast(json.message || 'Erro ao gerar mensagem', true);
-        }
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao conectar com a IA', true);
-      } finally {
-        btn.disabled = false;
-        btnTexto.innerHTML = '<i class="fa-solid fa-rotate"></i> Gerar Nova';
-      }
+          document.getElementById('ia-acoes').style.display = tipo === 'whatsapp' ? 'block' : 'none';
+          showToast('Mensagem gerada!');
+        } else showToast(json.message || 'Erro', true);
+      } catch (err) { showToast('Erro', true); }
+      finally { btn.disabled = false; btnTexto.innerHTML = '<i class="fa-solid fa-rotate"></i> Gerar Nova'; }
     }
 
     function copiarMensagem() {
       if (!mensagemGeradaIA) return;
-      navigator.clipboard.writeText(mensagemGeradaIA).then(() => {
-        showToast('Mensagem copiada!');
-      }).catch(() => {
-        showToast('Erro ao copiar', true);
-      });
+      navigator.clipboard.writeText(mensagemGeradaIA).then(() => showToast('Copiado!')).catch(() => showToast('Erro', true));
     }
 
     function enviarWhatsAppIA() {
       if (!cobrancaAtualIA || !mensagemGeradaIA) return;
-
-      const telefone = cobrancaAtualIA.cliente_telefone || '';
-      let tel = telefone.replace(/\D/g, '');
-      if (tel.length === 10 || tel.length === 11) {
-        tel = '55' + tel;
-      }
-
-      const link = `https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`;
-      window.open(link, '_blank');
+      let tel = (cobrancaAtualIA.cliente_telefone || '').replace(/\D/g, '');
+      if (tel.length === 10 || tel.length === 11) tel = '55' + tel;
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`, '_blank');
       fecharModalIA();
     }
 
-    // Fechar modal ao clicar fora
     document.querySelectorAll('.modal-overlay').forEach(modal => {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.classList.remove('active');
-        }
-      });
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
     });
 
-    // Export CSV
     document.getElementById('btnExportCsv').addEventListener('click', async () => {
       try {
-        showToast('Gerando relatório...');
-        const resp = await fetch(`${API_BASE}/api/relatorios/export-csv`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        showToast('Exportando...');
+        const resp = await fetch(`${API_BASE}/api/relatorios/export-csv`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
         if (!resp.ok) throw new Error('Erro');
-        
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `relatorio_cobrancas.csv`;
-        a.click();
+        a.href = url; a.download = 'relatorio_cobrancas.csv'; a.click();
         URL.revokeObjectURL(url);
-        showToast('Relatório exportado!');
-      } catch (err) {
-        showToast('Erro ao exportar', true);
-      }
+        showToast('Exportado!');
+      } catch (err) { showToast('Erro', true); }
     });
 
-    // Carregar usuário
     async function carregarUsuario() {
       try {
-        const resp = await fetch(`${API_BASE}/api/usuarios/me`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
+        const resp = await fetch(`${API_BASE}/api/usuarios/me`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
         const result = await resp.json();
         if (result.success && result.data) {
           document.getElementById('userName').textContent = result.data.nome || 'Usuário';
@@ -1347,7 +1255,6 @@
       } catch (err) {}
     }
 
-    // Init
     carregarUsuario();
     carregarCobrancas();
   </script>
