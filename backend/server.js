@@ -843,26 +843,225 @@ app.get("/api/clientes-ativos", async (req, res) => {
 // =====================================================
 // CLIENTES - GET POR ID
 // =====================================================
-app.get("/api/clientes/:id", auth, async (req, res) => {
+// =====================================================
+// COBRANÇAS - PDF COM DADOS DA EMPRESA
+// =====================================================
+// SUBSTITUA a rota app.get("/api/cobrancas/:id/pdf" no seu server.js por esta:
+
+app.get("/api/cobrancas/:id/pdf", auth, async (req, res) => {
+  let browser = null;
   try {
-    const { id } = req.params;
-    const cliente = await pool.query(`
-      SELECT c.*, 
-        COALESCE(c.status_cliente, 'regular') AS status_cliente,
+    const id = String(req.params.id || "").trim();
+
+    // Buscar cobrança com cliente E empresa
+    const q = await pool.query(
+      `SELECT c.*, 
+        COALESCE(cl.nome, '') AS cliente_nome,
+        COALESCE(cl.cpf_cnpj, '') AS cliente_cpf_cnpj,
+        COALESCE(cl.telefone, '') AS cliente_telefone,
+        COALESCE(cl.email, '') AS cliente_email,
+        COALESCE(cl.endereco, '') AS cliente_endereco,
         COALESCE(e.nome, '') AS empresa_nome,
-        COALESCE(e.id, NULL) AS empresa_id
-      FROM clientes c 
-      LEFT JOIN empresas e ON e.id = c.empresa_id
-      WHERE c.id = $1
-    `, [id]);
-    if (!cliente.rowCount) return res.status(404).json({ success: false, message: "Cliente não encontrado." });
-    const cobrancas = await pool.query(`SELECT * FROM cobrancas WHERE cliente_id = $1 ORDER BY created_at DESC`, [id]);
-    const agendamentos = await pool.query(`SELECT * FROM agendamentos WHERE cliente_id = $1 ORDER BY data_agendamento DESC`, [id]);
-    const stats = await pool.query(`SELECT COUNT(*)::int AS total_cobrancas, COALESCE(SUM(valor_atualizado), 0)::numeric AS valor_total, COALESCE(SUM(CASE WHEN status = 'pago' THEN valor_atualizado ELSE 0 END), 0)::numeric AS total_pago, COALESCE(SUM(CASE WHEN status IN ('pendente', 'vencido') THEN valor_atualizado ELSE 0 END), 0)::numeric AS total_pendente FROM cobrancas WHERE cliente_id = $1`, [id]);
-    return res.json({ success: true, data: { ...cliente.rows[0], cobrancas: cobrancas.rows, agendamentos: agendamentos.rows, estatisticas: stats.rows[0] } });
+        COALESCE(e.cnpj, '') AS empresa_cnpj,
+        COALESCE(e.telefone, '') AS empresa_telefone,
+        COALESCE(e.email, '') AS empresa_email,
+        COALESCE(e.endereco, '') AS empresa_endereco,
+        COALESCE(e.banco, '') AS empresa_banco,
+        COALESCE(e.tipo_conta, '') AS empresa_tipo_conta,
+        COALESCE(e.agencia, '') AS empresa_agencia,
+        COALESCE(e.conta, '') AS empresa_conta,
+        COALESCE(e.digito, '') AS empresa_digito,
+        COALESCE(e.titular, '') AS empresa_titular,
+        COALESCE(e.cpf_cnpj_titular, '') AS empresa_cpf_cnpj_titular,
+        COALESCE(e.tipo_chave_pix, '') AS empresa_tipo_chave_pix,
+        COALESCE(e.chave_pix, '') AS empresa_chave_pix
+       FROM cobrancas c 
+       LEFT JOIN clientes cl ON cl.id = c.cliente_id 
+       LEFT JOIN empresas e ON e.id = c.empresa_id
+       WHERE c.id = $1::uuid LIMIT 1`,
+      [id]
+    );
+
+    if (!q.rows.length) return res.status(404).json({ success: false, message: "Cobrança não encontrada." });
+
+    const r = q.rows[0];
+    const esc = (s) => String(s || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const idStr = String(r.id);
+    const refCode = `AC-C${idStr.slice(0, 2).toUpperCase()}D${idStr.slice(2, 6).toUpperCase()}`;
+
+    // Mapeamento de bancos
+    const bancoNomes = {
+      '001': 'Banco do Brasil', '033': 'Santander', '104': 'Caixa Econômica',
+      '237': 'Bradesco', '341': 'Itaú', '260': 'Nubank',
+      '077': 'Inter', '212': 'Original', '336': 'C6 Bank',
+      '290': 'PagSeguro', '380': 'PicPay', '323': 'Mercado Pago'
+    };
+    const bancoNome = bancoNomes[r.empresa_banco] || r.empresa_banco || '';
+
+    // Mapeamento tipo PIX
+    const tipoPixLabels = {
+      'cpf': 'CPF', 'cnpj': 'CNPJ', 'email': 'E-mail', 
+      'telefone': 'Telefone', 'aleatoria': 'Chave Aleatória'
+    };
+    const tipoPixLabel = tipoPixLabels[r.empresa_tipo_chave_pix] || r.empresa_tipo_chave_pix || '';
+
+    // Verificar se tem dados bancários e PIX
+    const temBanco = r.empresa_banco && r.empresa_agencia && r.empresa_conta;
+    const temPix = r.empresa_chave_pix;
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"/><title>Cobrança ${refCode}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;padding:30px;color:#333;font-size:12px}
+.header{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);padding:25px;border-radius:12px;margin-bottom:20px;border-left:6px solid #F6C84C;display:flex;justify-content:space-between;align-items:center}
+.logo{width:55px;height:55px;background:#F6C84C;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#1a1a1a}
+.title{color:#fff;margin-left:12px}.title h1{font-size:22px;margin-bottom:2px}.title h2{color:#F6C84C;font-size:11px;font-weight:600}
+.info{text-align:right;color:#fff;font-size:11px;line-height:1.6}.info strong{color:#F6C84C}
+.badge{display:inline-block;padding:4px 10px;border-radius:15px;font-size:10px;font-weight:700}
+.badge.pago{background:#dcfce7;color:#166534}.badge.pendente{background:#fef3c7;color:#854d0e}.badge.vencido{background:#fee2e2;color:#991b1b}.badge.negociando{background:#dbeafe;color:#1e40af}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.card{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:10px;padding:15px;text-align:center}
+.card.destaque{background:linear-gradient(135deg,#F6C84C,#FFD56A)}
+.card label{font-size:9px;color:#666;display:block;margin-bottom:6px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px}
+.card.destaque label{color:#1a1a1a}.card span{font-size:18px;font-weight:800;color:#1a1a1a}
+.section{background:#f8f9fa;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:15px}
+.section h3{font-size:12px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #F6C84C;color:#1a1a1a;display:flex;align-items:center;gap:8px}
+.section h3 .icon{width:20px;height:20px;background:#F6C84C;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px}
+.row{display:flex;margin-bottom:8px}.row label{width:130px;font-size:10px;color:#666;font-weight:600}.row span{font-size:11px;color:#1a1a1a;font-weight:600}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.empresa-section{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);border-radius:10px;padding:20px;margin-bottom:15px;color:#fff}
+.empresa-section h3{color:#F6C84C;font-size:12px;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid rgba(246,200,76,0.3)}
+.empresa-section .row label{color:#a1a1aa}.empresa-section .row span{color:#fff}
+.pagamento-box{background:#fef3c7;border:2px solid #F6C84C;border-radius:10px;padding:20px;margin-bottom:15px}
+.pagamento-box h3{color:#854d0e;font-size:13px;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+.pagamento-box h3::before{content:"💰";font-size:16px}
+.banco-info{background:rgba(255,255,255,0.7);border-radius:8px;padding:15px;margin-bottom:12px}
+.banco-info h4{font-size:11px;color:#854d0e;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+.banco-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.banco-grid .item{font-size:10px}.banco-grid .item label{color:#666;display:block}.banco-grid .item span{font-weight:700;color:#1a1a1a}
+.pix-info{background:#22c55e;border-radius:8px;padding:15px;color:#fff}
+.pix-info h4{font-size:11px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pix-info h4::before{content:"";display:inline-block;width:30px;height:12px;background:#fff;border-radius:3px}
+.pix-tipo{font-size:9px;text-transform:uppercase;opacity:0.8;margin-bottom:4px}
+.pix-chave{font-size:13px;font-weight:700;word-break:break-all;background:rgba(255,255,255,0.2);padding:8px 12px;border-radius:6px;margin-top:8px}
+.resumo-section{background:#fef3c7;border:1px solid #F6C84C;border-radius:10px;padding:20px}
+.resumo-section h3{color:#854d0e}
+.resumo-total{font-size:20px;font-weight:900;color:#854d0e;text-align:right;margin-top:10px;padding-top:10px;border-top:2px dashed #F6C84C}
+.footer{margin-top:20px;padding-top:15px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#666}
+.footer-empresa{text-align:right}.footer-empresa strong{color:#1a1a1a;font-size:11px}
+.aviso{background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-top:15px;font-size:10px;color:#991b1b;text-align:center}
+</style></head><body>
+
+<div class="header">
+  <div style="display:flex;align-items:center">
+    <div class="logo">${r.empresa_nome ? r.empresa_nome.charAt(0).toUpperCase() : 'A'}</div>
+    <div class="title">
+      <h1>${esc(r.empresa_nome) || 'ACERTIVE'}</h1>
+      <h2>${r.empresa_cnpj ? 'CNPJ: ' + esc(r.empresa_cnpj) : 'Sistema de Cobranças'}</h2>
+    </div>
+  </div>
+  <div class="info">
+    <p><strong>Documento:</strong> ${refCode}</p>
+    <p><strong>Status:</strong> <span class="badge ${r.status}">${(r.status || 'pendente').toUpperCase()}</span></p>
+    <p><strong>Emissão:</strong> ${fmtDateTime(new Date())}</p>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card destaque"><label>Valor Total</label><span>${fmtMoney(r.valor_atualizado)}</span></div>
+  <div class="card"><label>Vencimento</label><span>${fmtDate(r.vencimento)}</span></div>
+  <div class="card"><label>Valor Original</label><span>${fmtMoney(r.valor_original)}</span></div>
+  <div class="card"><label>Acréscimos</label><span>${fmtMoney((r.juros || 0) + (r.multa || 0))}</span></div>
+</div>
+
+<div class="two-col">
+  <div class="section">
+    <h3><span class="icon">👤</span> Dados do Cliente</h3>
+    <div class="row"><label>Nome:</label><span>${esc(r.cliente_nome) || '—'}</span></div>
+    <div class="row"><label>CPF/CNPJ:</label><span>${esc(r.cliente_cpf_cnpj) || '—'}</span></div>
+    <div class="row"><label>Telefone:</label><span>${esc(r.cliente_telefone) || '—'}</span></div>
+    <div class="row"><label>E-mail:</label><span>${esc(r.cliente_email) || '—'}</span></div>
+  </div>
+  <div class="section">
+    <h3><span class="icon">📋</span> Dados da Cobrança</h3>
+    <div class="row"><label>Descrição:</label><span>${esc(r.descricao) || '—'}</span></div>
+    <div class="row"><label>Data Compromisso:</label><span>${fmtDate(r.data_compromisso) || '—'}</span></div>
+    <div class="row"><label>Criada em:</label><span>${fmtDateTime(r.created_at)}</span></div>
+    <div class="row"><label>Referência:</label><span>${refCode}</span></div>
+  </div>
+</div>
+
+${(temBanco || temPix) ? `
+<div class="pagamento-box">
+  <h3>Informações para Pagamento</h3>
+  
+  ${temBanco ? `
+  <div class="banco-info">
+    <h4>🏦 Transferência Bancária</h4>
+    <div class="banco-grid">
+      <div class="item"><label>Banco</label><span>${bancoNome}</span></div>
+      <div class="item"><label>Tipo</label><span>${r.empresa_tipo_conta === 'poupanca' ? 'Poupança' : 'Corrente'}</span></div>
+      <div class="item"><label>Agência</label><span>${esc(r.empresa_agencia)}</span></div>
+      <div class="item"><label>Conta</label><span>${esc(r.empresa_conta)}${r.empresa_digito ? '-' + esc(r.empresa_digito) : ''}</span></div>
+      <div class="item"><label>Titular</label><span>${esc(r.empresa_titular) || esc(r.empresa_nome)}</span></div>
+      <div class="item"><label>CPF/CNPJ</label><span>${esc(r.empresa_cpf_cnpj_titular) || esc(r.empresa_cnpj)}</span></div>
+    </div>
+  </div>
+  ` : ''}
+  
+  ${temPix ? `
+  <div class="pix-info">
+    <h4>PIX - Pagamento Instantâneo</h4>
+    <div class="pix-tipo">${tipoPixLabel}</div>
+    <div class="pix-chave">${esc(r.empresa_chave_pix)}</div>
+  </div>
+  ` : ''}
+</div>
+` : ''}
+
+<div class="resumo-section">
+  <h3><span class="icon">📊</span> Resumo Financeiro</h3>
+  <div class="row"><label>Valor Original:</label><span>${fmtMoney(r.valor_original)}</span></div>
+  <div class="row"><label>Juros:</label><span>${fmtMoney(r.juros)}</span></div>
+  <div class="row"><label>Multa:</label><span>${fmtMoney(r.multa)}</span></div>
+  <div class="row"><label>Desconto:</label><span>- ${fmtMoney(r.desconto)}</span></div>
+  <div class="resumo-total">TOTAL A PAGAR: ${fmtMoney(r.valor_atualizado)}</div>
+</div>
+
+${r.status === 'vencido' ? '<div class="aviso">⚠️ ATENÇÃO: Esta cobrança está VENCIDA. Entre em contato para regularização.</div>' : ''}
+${r.status === 'pendente' ? '<div class="aviso" style="background:#fff8e1;border-color:#F6C84C;color:#854d0e">⏰ Efetue o pagamento até a data de vencimento para evitar juros e multas.</div>' : ''}
+
+<div class="footer">
+  <div>
+    <p>Documento gerado em ${fmtDateTime(new Date())}</p>
+    <p>Por: ${req.user?.nome || 'Sistema ACERTIVE'}</p>
+  </div>
+  <div class="footer-empresa">
+    <p><strong>${esc(r.empresa_nome) || 'ACERTIVE'}</strong></p>
+    ${r.empresa_telefone ? `<p>Tel: ${esc(r.empresa_telefone)}</p>` : ''}
+    ${r.empresa_email ? `<p>${esc(r.empresa_email)}</p>` : ''}
+  </div>
+</div>
+
+</body></html>`;
+
+    browser = await chromium.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' } });
+    await browser.close();
+    browser = null;
+
+    await registrarLog(req, 'GERAR_PDF', 'cobrancas', id, { empresa_id: r.empresa_id });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="cobranca_${refCode}.pdf"`);
+    return res.status(200).send(pdfBuffer);
   } catch (err) {
-    console.error("[GET /api/clientes/:id] erro:", err.message);
-    return res.status(500).json({ success: false, message: "Erro ao buscar cliente.", error: err.message });
+    if (browser) try { await browser.close(); } catch {}
+    console.error("[COBRANCA PDF] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao gerar PDF.", error: err.message });
   }
 });
 
