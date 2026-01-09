@@ -3,263 +3,293 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consulta de Cliente - ACERTIVE</title>
+  <title>Consulta Cliente - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #0f0f12;
+      --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-sidebar: #0c0c0f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #F6C84C;
+      --gold-light: #FFD56A;
+      --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 260px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f9fa; min-height: 100vh; display: flex; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 
-    /* Sidebar */
-    .sidebar { width: 260px; background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); min-height: 100vh; padding: 20px 0; position: fixed; left: 0; top: 0; z-index: 100; }
-    .logo-section { padding: 0 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #1a1a1a; }
-    .logo-text { font-size: 22px; font-weight: 800; color: #fff; }
-    .logo-text span { color: #F6C84C; }
-    .nav-menu { list-style: none; padding: 0 12px; }
-    .nav-item { margin-bottom: 4px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #a1a1aa; text-decoration: none; border-radius: 12px; transition: all 0.2s; font-weight: 500; }
-    .nav-link:hover, .nav-link.active { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
-    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
-    .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 12px; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
+      display: flex; flex-direction: column; padding: 20px 0;
+    }
+    .sidebar-header { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: var(--bg-primary); }
+    .logo-text { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span { color: var(--gold); }
 
-    /* Main Content */
-    .main-content { flex: 1; margin-left: 260px; padding: 24px; }
+    .nav-menu { flex: 1; padding: 0 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md); font-weight: 500; font-size: 14px; transition: all 0.2s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
+    .nav-badge.green { background: var(--green); color: white; }
+    .nav-badge.blue { background: var(--blue); color: white; }
 
-    /* Header */
-    .page-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #F6C84C; }
-    .page-title h1 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .page-title p { color: #a1a1aa; font-size: 14px; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
+    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
 
-    /* Search Section */
-    .search-section { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .main-content { margin-left: var(--sidebar-width); padding: 32px; min-height: 100vh; }
+
+    .page-header { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .page-title { display: flex; align-items: center; gap: 16px; }
+    .page-title-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+    .page-title-icon i { font-size: 22px; color: var(--gold); }
+    .page-title h1 { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .page-title p { color: var(--text-muted); font-size: 14px; }
+
+    .search-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
     .search-box { display: flex; gap: 12px; }
     .search-input-wrapper { flex: 1; position: relative; }
-    .search-input { width: 100%; padding: 16px 20px 16px 50px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; transition: all 0.2s; }
-    .search-input:focus { outline: none; border-color: #F6C84C; box-shadow: 0 0 0 4px rgba(246, 200, 76, 0.15); }
-    .search-input::placeholder { color: #9ca3af; }
-    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 18px; }
-    .search-btn { padding: 16px 32px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-    .search-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(246, 200, 76, 0.35); }
+    .search-input-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+    .search-input { width: 100%; padding: 14px 16px 14px 48px; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 15px; transition: all 0.2s; }
+    .search-input:focus { outline: none; border-color: var(--gold); background: var(--gold-glow); }
+    .search-input::placeholder { color: var(--text-muted); }
+    .btn-search { padding: 14px 28px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border: none; border-radius: var(--radius-md); color: var(--bg-primary); font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
 
-    /* Results List */
-    .results-section { display: none; }
-    .results-section.active { display: block; }
     .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .results-header h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
-    .results-count { background: #F6C84C; color: #1a1a1a; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+    .results-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .results-title i { color: var(--gold); }
+    .results-count { padding: 6px 14px; background: var(--gold-glow); border: 1px solid var(--border-gold); border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--gold); }
+
     .results-list { display: flex; flex-direction: column; gap: 12px; }
-    .result-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
-    .result-card:hover { border-color: #F6C84C; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .result-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; cursor: pointer; transition: all 0.2s; }
+    .result-card:hover { border-color: var(--border-gold); transform: translateX(4px); }
     .result-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .result-name { font-size: 18px; font-weight: 700; color: #1a1a1a; }
-    .result-cpf { font-size: 13px; color: #6b7280; margin-top: 4px; }
-    .result-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-    .result-badge.devendo { background: #fee2e2; color: #dc2626; }
-    .result-badge.em-dia { background: #dcfce7; color: #16a34a; }
-    .result-stats { display: flex; gap: 20px; }
-    .result-stat { display: flex; flex-direction: column; }
-    .result-stat-label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
-    .result-stat-value { font-size: 16px; font-weight: 700; color: #1a1a1a; }
-    .result-stat-value.pendente { color: #dc2626; }
-    .result-stat-value.pago { color: #16a34a; }
+    .result-card-name { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .result-card-cpf { font-size: 13px; color: var(--text-muted); }
+    .result-card-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .result-card-badge.devendo { background: var(--red-bg); color: var(--red); }
+    .result-card-badge.em-dia { background: var(--green-bg); color: var(--green); }
+    .result-card-stats { display: flex; gap: 32px; }
+    .result-stat { }
+    .result-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .result-stat-value { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .result-stat-value.danger { color: var(--red); }
+    .result-stat-value.success { color: var(--green); }
 
-    /* Client Detail Section */
-    .client-detail { display: none; }
-    .client-detail.active { display: block; }
-    .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f3f4f6; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; color: #374151; cursor: pointer; margin-bottom: 20px; transition: all 0.2s; }
-    .back-btn:hover { background: #e5e7eb; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state p { font-size: 15px; }
 
-    /* Client Card */
-    .client-card { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 20px; padding: 28px; margin-bottom: 24px; color: #fff; }
-    .client-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-    .client-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #1a1a1a; }
-    .client-info { flex: 1; margin-left: 20px; }
-    .client-name { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
-    .client-contact { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: #a1a1aa; }
-    .client-contact span { display: flex; align-items: center; gap: 6px; }
-    .client-contact i { color: #F6C84C; }
-    .client-status-badge { padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-    .client-status-badge.inadimplente { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
-    .client-status-badge.regular { background: rgba(246, 200, 76, 0.2); color: #F6C84C; }
-    .client-status-badge.bom_pagador { background: rgba(34, 197, 94, 0.2); color: #86efac; }
-
-    /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .stat-card { background: rgba(255,255,255,0.1); border-radius: 14px; padding: 18px; text-align: center; }
-    .stat-card.destaque { background: linear-gradient(135deg, #F6C84C, #F9D77E); }
-    .stat-card.destaque .stat-label, .stat-card.destaque .stat-value { color: #1a1a1a; }
-    .stat-label { font-size: 11px; color: #a1a1aa; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-value { font-size: 24px; font-weight: 900; color: #fff; }
-
-    /* Tabs */
-    .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #fff; padding: 8px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .tab-btn { flex: 1; padding: 14px 20px; border: none; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .tab-btn:hover { background: #f3f4f6; }
-    .tab-btn.active { background: #1a1a1a; color: #F6C84C; }
-    .tab-btn .count { background: rgba(246,200,76,0.2); color: #F6C84C; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-    .tab-btn.active .count { background: #F6C84C; color: #1a1a1a; }
-
-    /* Cobranças Table */
-    .cobrancas-section { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    thead th { background: #f8f9fa; padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-    tbody td { padding: 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #374151; }
-    tbody tr:hover { background: #fefce8; }
-    .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .status-badge.pago { background: #dcfce7; color: #16a34a; }
-    .status-badge.pendente { background: #fef3c7; color: #d97706; }
-    .status-badge.vencido { background: #fee2e2; color: #dc2626; }
-    .status-badge.negociando { background: #dbeafe; color: #2563eb; }
-    .valor-cell { font-weight: 700; }
-    .valor-cell.pendente { color: #dc2626; }
-    .valor-cell.pago { color: #16a34a; }
-
-    /* Actions */
-    .action-btn { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .action-btn.primary { background: #F6C84C; color: #1a1a1a; }
-    .action-btn.secondary { background: #f3f4f6; color: #374151; }
-    .action-btn:hover { transform: translateY(-1px); }
-
-    /* Empty State */
-    .empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
-    .empty-state i { font-size: 48px; color: #d1d5db; margin-bottom: 16px; }
-    .empty-state h3 { font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 8px; }
-
-    /* Loading */
     .loading { display: none; text-align: center; padding: 40px; }
     .loading.active { display: block; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #F6C84C; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    .loading i { font-size: 32px; color: var(--gold); animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Quick Actions */
-    .quick-actions { display: flex; gap: 12px; margin-bottom: 24px; }
-    .quick-action-btn { padding: 12px 24px; border: 2px solid #e5e7eb; background: #fff; border-radius: 12px; font-size: 14px; font-weight: 600; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-    .quick-action-btn:hover { border-color: #F6C84C; background: #fefce8; }
-    .quick-action-btn i { color: #F6C84C; }
+    /* Modal Detalhes */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-secondary); z-index: 10; }
+    .modal-title { display: flex; align-items: center; gap: 16px; }
+    .modal-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: var(--bg-primary); }
+    .modal-client-name { font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .modal-client-cpf { font-size: 13px; color: var(--text-muted); }
+    .modal-close { width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .modal-close:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
 
-    /* Responsive */
+    .modal-body { padding: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center; }
+    .stat-card.highlight { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-color: var(--border-gold); }
+    .stat-card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+    .stat-card.highlight .stat-card-value { color: var(--gold); }
+    .stat-card-value.danger { color: var(--red); }
+
+    .actions-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .btn-action { padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); }
+    .btn-action:hover { border-color: var(--border-gold); background: var(--gold-glow); }
+    .btn-action.primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); border: none; }
+    .btn-action.primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+    .btn-action.whatsapp { background: var(--green); color: white; border: none; }
+    .btn-action.whatsapp:hover { background: #16a34a; }
+
+    .cobrancas-section h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .cobrancas-section h3 i { color: var(--gold); }
+    .cobrancas-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .cobranca-tab { padding: 8px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+    .cobranca-tab:hover { border-color: var(--border-gold); color: var(--gold); }
+    .cobranca-tab.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
+
+    .cobrancas-table { width: 100%; border-collapse: collapse; }
+    .cobrancas-table th { text-align: left; padding: 12px 16px; background: var(--bg-card); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .cobrancas-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-primary); }
+    .cobrancas-table tr:hover td { background: var(--gold-glow); }
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
+    .status-badge.vencido { background: var(--red-bg); color: var(--red); }
+    .status-badge.pago { background: var(--green-bg); color: var(--green); }
+    .status-badge.negociando { background: var(--blue-bg); color: var(--blue); }
+
     @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .main-content { margin-left: 0; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; }
+    @media (max-width: 640px) {
       .stats-grid { grid-template-columns: 1fr; }
       .search-box { flex-direction: column; }
+      .result-card-stats { flex-wrap: wrap; gap: 16px; }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <div class="logo-section">
+  <aside class="sidebar">
+    <div class="sidebar-header">
       <div class="logo-icon">A</div>
       <div class="logo-text">ACERT<span>IVE</span></div>
     </div>
-    <ul class="nav-menu">
-      <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-      <li class="nav-item"><a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></li>
-      <li class="nav-item"><a href="clientes-ativos.html" class="nav-link"><i class="fas fa-users"></i> Clientes</a></li>
-      <li class="nav-item"><a href="consulta-cliente.html" class="nav-link active"><i class="fas fa-search-dollar"></i> Consulta Cliente</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="nova-cobranca.html" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a></li>
-      <li class="nav-item"><a href="novo-cliente.html" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="agendamentos.html" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a></li>
-      <li class="nav-item"><a href="cobrancas-recorrentes.html" class="nav-link"><i class="fas fa-redo"></i> Recorrentes</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="historico.html" class="nav-link"><i class="fas fa-history"></i> Histórico</a></li>
-      <li class="nav-item"><a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a></li>
-    </ul>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="page-title">
-        <h1><i class="fas fa-search-dollar" style="color: #F6C84C; margin-right: 12px;"></i>Consulta de Cliente</h1>
-        <p>Busque por nome ou CPF/CNPJ para ver o histórico completo de dívidas</p>
+    <nav class="nav-menu">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças <span class="nav-badge gold" id="navBadgeCobrancas">0</span></a>
+        <a href="/clientes-ativos" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/consulta-cliente" class="nav-link active"><i class="fas fa-magnifying-glass-dollar"></i> Consulta Cliente</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-    </header>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar Cobranças</a>
+        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fas fa-repeat"></i> Recorrentes</a>
+        <a href="/historico" class="nav-link"><i class="fas fa-clock-rotate-left"></i> Histórico</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link" id="navUsuarios"><i class="fas fa-user-shield"></i> Usuários <span class="nav-badge blue">ADM</span></a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Administrador</div>
+          <div class="user-role" id="userRole">Admin</div>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
 
-    <!-- Search Section -->
-    <section class="search-section">
+  <main class="main-content">
+    <div class="page-header">
+      <div class="page-title">
+        <div class="page-title-icon"><i class="fas fa-magnifying-glass-dollar"></i></div>
+        <div>
+          <h1>Consulta Cliente</h1>
+          <p>Busque por nome ou CPF/CNPJ para ver o histórico completo de dívidas</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-section">
       <div class="search-box">
         <div class="search-input-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" id="searchInput" class="search-input" placeholder="Digite o nome ou CPF/CNPJ do cliente..." autofocus>
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Digite o nome ou CPF/CNPJ do cliente..." autocomplete="off">
         </div>
-        <button type="button" class="search-btn" onclick="buscarClientes()">
+        <button class="btn-search" onclick="buscarClientes()">
           <i class="fas fa-search"></i> Buscar
         </button>
       </div>
-    </section>
-
-    <!-- Loading -->
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Buscando clientes...</p>
     </div>
 
-    <!-- Results Section -->
-    <section class="results-section" id="resultsSection">
+    <div class="loading" id="loading">
+      <i class="fas fa-spinner"></i>
+      <p style="margin-top: 12px; color: var(--text-muted);">Buscando clientes...</p>
+    </div>
+
+    <div id="resultsContainer" style="display: none;">
       <div class="results-header">
-        <h3><i class="fas fa-users" style="color: #F6C84C; margin-right: 8px;"></i>Resultados da Busca</h3>
-        <span class="results-count" id="resultsCount">0 encontrados</span>
+        <div class="results-title"><i class="fas fa-users"></i> Resultados da Busca</div>
+        <div class="results-count" id="resultsCount">0 encontrados</div>
       </div>
       <div class="results-list" id="resultsList"></div>
-    </section>
+    </div>
 
-    <!-- Client Detail Section -->
-    <section class="client-detail" id="clientDetail">
-      <button class="back-btn" onclick="voltarBusca()">
-        <i class="fas fa-arrow-left"></i> Voltar para busca
-      </button>
+    <div class="empty-state" id="emptyState">
+      <i class="fas fa-search"></i>
+      <p>Digite um nome ou CPF/CNPJ para buscar clientes</p>
+    </div>
+  </main>
 
-      <!-- Client Card -->
-      <div class="client-card" id="clientCard">
-        <!-- Preenchido via JS -->
+  <!-- Modal Detalhes -->
+  <div class="modal-overlay" id="modalDetalhes">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <div class="modal-avatar" id="modalAvatar">A</div>
+          <div>
+            <div class="modal-client-name" id="modalClientName">Nome do Cliente</div>
+            <div class="modal-client-cpf" id="modalClientCpf">CPF/CNPJ</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="fecharModal()"><i class="fas fa-times"></i></button>
       </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button class="quick-action-btn" onclick="novaCobrancaCliente()">
-          <i class="fas fa-plus"></i> Nova Cobrança
-        </button>
-        <button class="quick-action-btn" onclick="novoAgendamento()">
-          <i class="fas fa-calendar-plus"></i> Agendar Contato
-        </button>
-        <button class="quick-action-btn" onclick="gerarPdfDividas()">
-          <i class="fas fa-file-pdf"></i> Gerar PDF
-        </button>
-        <button class="quick-action-btn" onclick="enviarWhatsApp()">
-          <i class="fab fa-whatsapp"></i> WhatsApp
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="todas" onclick="filtrarCobrancas('todas')">
-          <i class="fas fa-list"></i> Todas <span class="count" id="countTodas">0</span>
-        </button>
-        <button class="tab-btn" data-tab="pendentes" onclick="filtrarCobrancas('pendentes')">
-          <i class="fas fa-clock"></i> Pendentes <span class="count" id="countPendentes">0</span>
-        </button>
-        <button class="tab-btn" data-tab="vencidas" onclick="filtrarCobrancas('vencidas')">
-          <i class="fas fa-exclamation-triangle"></i> Vencidas <span class="count" id="countVencidas">0</span>
-        </button>
-        <button class="tab-btn" data-tab="pagas" onclick="filtrarCobrancas('pagas')">
-          <i class="fas fa-check-circle"></i> Pagas <span class="count" id="countPagas">0</span>
-        </button>
-      </div>
-
-      <!-- Cobranças Table -->
-      <div class="cobrancas-section">
-        <div class="table-container">
-          <table>
+      <div class="modal-body">
+        <div class="stats-grid" id="modalStats"></div>
+        <div class="actions-row">
+          <button class="btn-action primary" onclick="novaCobranca()"><i class="fas fa-plus"></i> Nova Cobrança</button>
+          <button class="btn-action" onclick="agendarContato()"><i class="fas fa-calendar-plus"></i> Agendar Contato</button>
+          <button class="btn-action whatsapp" onclick="enviarWhatsapp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button class="btn-action" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+        </div>
+        <div class="cobrancas-section">
+          <h3><i class="fas fa-file-invoice-dollar"></i> Cobranças do Cliente</h3>
+          <div class="cobrancas-tabs">
+            <button class="cobranca-tab active" data-filter="todas" onclick="filtrarCobrancas('todas')">Todas</button>
+            <button class="cobranca-tab" data-filter="pendente" onclick="filtrarCobrancas('pendente')">Pendentes</button>
+            <button class="cobranca-tab" data-filter="vencido" onclick="filtrarCobrancas('vencido')">Vencidas</button>
+            <button class="cobranca-tab" data-filter="pago" onclick="filtrarCobrancas('pago')">Pagas</button>
+          </div>
+          <table class="cobrancas-table">
             <thead>
               <tr>
                 <th>Vencimento</th>
@@ -267,22 +297,14 @@
                 <th>Valor Original</th>
                 <th>Valor Atual</th>
                 <th>Status</th>
-                <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="cobrancasTableBody">
-              <!-- Preenchido via JS -->
-            </tbody>
+            <tbody id="modalCobrancasBody"></tbody>
           </table>
         </div>
-        <div class="empty-state" id="emptyCobrancas" style="display: none;">
-          <i class="fas fa-inbox"></i>
-          <h3>Nenhuma cobrança encontrada</h3>
-          <p>Este cliente não possui cobranças registradas.</p>
-        </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <script>
     const API_BASE = '';
@@ -290,36 +312,41 @@
     let clienteAtual = null;
     let cobrancasCliente = [];
 
-    // Verificar autenticação
-    if (!token) {
-      window.location.href = 'login.html';
-    }
+    if (!token) window.location.href = '/login';
 
-    // Headers padrão
     function getHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     }
 
-    // Formatadores
-    function fmtMoney(valor) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+    function fmtMoney(v) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
     }
 
-    function fmtDate(dateStr) {
-      if (!dateStr) return '—';
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('pt-BR');
+    function fmtDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('pt-BR');
     }
 
-    // Buscar com Enter
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        buscarClientes();
-      }
-    });
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(`${API_BASE}/api/usuarios/me`, { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') {
+            document.getElementById('navUsuarios').style.display = 'none';
+          }
+        }
+      } catch (err) { console.error(err); }
+    }
 
     // Buscar clientes
     async function buscarClientes() {
@@ -330,271 +357,215 @@
       }
 
       document.getElementById('loading').classList.add('active');
-      document.getElementById('resultsSection').classList.remove('active');
-      document.getElementById('clientDetail').classList.remove('active');
+      document.getElementById('resultsContainer').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
 
       try {
-        const res = await fetch(`${API_BASE}/api/clientes/buscar?q=${encodeURIComponent(query)}`, {
-          headers: getHeaders()
-        });
+        const res = await fetch(`${API_BASE}/api/clientes/buscar?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
         const data = await res.json();
 
         document.getElementById('loading').classList.remove('active');
 
-        if (data.success && data.data.length > 0) {
+        if (data.success && data.data && data.data.length > 0) {
           renderizarResultados(data.data);
+          document.getElementById('resultsContainer').style.display = 'block';
         } else {
-          document.getElementById('resultsSection').classList.add('active');
-          document.getElementById('resultsList').innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-search"></i>
-              <h3>Nenhum cliente encontrado</h3>
-              <p>Tente buscar por outro nome ou CPF/CNPJ.</p>
-            </div>
+          document.getElementById('emptyState').innerHTML = `
+            <i class="fas fa-user-slash"></i>
+            <p>Nenhum cliente encontrado para "${query}"</p>
           `;
-          document.getElementById('resultsCount').textContent = '0 encontrados';
-        }
-      } catch (err) {
-        document.getElementById('loading').classList.remove('active');
-        console.error('Erro ao buscar:', err);
-        alert('Erro ao buscar clientes. Tente novamente.');
-      }
-    }
-
-    // Renderizar resultados
-    function renderizarResultados(clientes) {
-      const container = document.getElementById('resultsList');
-      document.getElementById('resultsCount').textContent = `${clientes.length} encontrado${clientes.length !== 1 ? 's' : ''}`;
-
-      container.innerHTML = clientes.map(c => {
-        const devendoBadge = c.divida_total > 0 ? 'devendo' : 'em-dia';
-        const devendoTexto = c.divida_total > 0 ? 'Devendo' : 'Em dia';
-        return `
-          <div class="result-card" onclick="carregarCliente('${c.id}')">
-            <div class="result-card-header">
-              <div>
-                <div class="result-name">${c.nome}</div>
-                <div class="result-cpf">${c.cpf_cnpj || 'CPF/CNPJ não informado'}</div>
-              </div>
-              <span class="result-badge ${devendoBadge}">${devendoTexto}</span>
-            </div>
-            <div class="result-stats">
-              <div class="result-stat">
-                <span class="result-stat-label">Cobranças</span>
-                <span class="result-stat-value">${c.total_cobrancas || 0}</span>
-              </div>
-              <div class="result-stat">
-                <span class="result-stat-label">Total Pendente</span>
-                <span class="result-stat-value pendente">${fmtMoney(c.divida_total)}</span>
-              </div>
-              <div class="result-stat">
-                <span class="result-stat-label">Total Pago</span>
-                <span class="result-stat-value pago">${fmtMoney(c.total_pago)}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('resultsSection').classList.add('active');
-    }
-
-    // Carregar detalhes do cliente
-    async function carregarCliente(clienteId) {
-      document.getElementById('loading').classList.add('active');
-      document.getElementById('resultsSection').classList.remove('active');
-
-      try {
-        const res = await fetch(`${API_BASE}/api/clientes/${clienteId}/completo`, {
-          headers: getHeaders()
-        });
-        const data = await res.json();
-
-        document.getElementById('loading').classList.remove('active');
-
-        if (data.success) {
-          clienteAtual = data.data.cliente;
-          cobrancasCliente = data.data.cobrancas;
-          const stats = data.data.estatisticas;
-
-          renderizarClienteCard(clienteAtual, stats);
-          renderizarCobrancas(cobrancasCliente);
-          atualizarContadores(stats);
-
-          document.getElementById('clientDetail').classList.add('active');
-        } else {
-          alert('Erro ao carregar cliente.');
-        }
-      } catch (err) {
-        document.getElementById('loading').classList.remove('active');
-        console.error('Erro:', err);
-        alert('Erro ao carregar cliente.');
-      }
-    }
-
-    // Renderizar card do cliente
-    function renderizarClienteCard(cliente, stats) {
-      const statusClass = cliente.status_cliente || 'regular';
-      const statusLabels = {
-        'regular': 'Regular',
-        'inadimplente': 'Inadimplente',
-        'negociando': 'Negociando',
-        'bom_pagador': 'Bom Pagador',
-        'novo': 'Novo',
-        'juridico': 'Jurídico'
-      };
-
-      document.getElementById('clientCard').innerHTML = `
-        <div class="client-card-header">
-          <div style="display: flex; align-items: center;">
-            <div class="client-avatar">${cliente.nome.charAt(0).toUpperCase()}</div>
-            <div class="client-info">
-              <div class="client-name">${cliente.nome}</div>
-              <div class="client-contact">
-                ${cliente.cpf_cnpj ? `<span><i class="fas fa-id-card"></i> ${cliente.cpf_cnpj}</span>` : ''}
-                ${cliente.telefone ? `<span><i class="fas fa-phone"></i> ${cliente.telefone}</span>` : ''}
-                ${cliente.email ? `<span><i class="fas fa-envelope"></i> ${cliente.email}</span>` : ''}
-              </div>
-            </div>
-          </div>
-          <span class="client-status-badge ${statusClass}">${statusLabels[statusClass] || statusClass}</span>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card destaque">
-            <div class="stat-label">Total Pendente</div>
-            <div class="stat-value">${fmtMoney(stats.valor_pendente)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Pago</div>
-            <div class="stat-value">${fmtMoney(stats.valor_pago)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Cobranças</div>
-            <div class="stat-value">${stats.total_cobrancas}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Vencidas</div>
-            <div class="stat-value">${stats.total_vencidas}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Atualizar contadores das tabs
-    function atualizarContadores(stats) {
-      document.getElementById('countTodas').textContent = stats.total_cobrancas;
-      document.getElementById('countPendentes').textContent = stats.total_pendentes;
-      document.getElementById('countVencidas').textContent = stats.total_vencidas;
-      document.getElementById('countPagas').textContent = stats.total_pagas;
-    }
-
-    // Renderizar cobranças
-    function renderizarCobrancas(cobrancas, filtro = 'todas') {
-      const tbody = document.getElementById('cobrancasTableBody');
-      const empty = document.getElementById('emptyCobrancas');
-
-      let filtradas = cobrancas;
-      if (filtro === 'pendentes') filtradas = cobrancas.filter(c => c.status === 'pendente');
-      else if (filtro === 'vencidas') filtradas = cobrancas.filter(c => c.status === 'vencido');
-      else if (filtro === 'pagas') filtradas = cobrancas.filter(c => c.status === 'pago');
-
-      if (filtradas.length === 0) {
-        tbody.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-
-      empty.style.display = 'none';
-      tbody.innerHTML = filtradas.map(c => {
-        const valorClass = c.status === 'pago' ? 'pago' : 'pendente';
-        return `
-          <tr>
-            <td>${fmtDate(c.vencimento)}</td>
-            <td>${c.descricao || '—'}</td>
-            <td>${fmtMoney(c.valor_original)}</td>
-            <td class="valor-cell ${valorClass}">${fmtMoney(c.valor_atualizado)}</td>
-            <td><span class="status-badge ${c.status}">${c.status.toUpperCase()}</span></td>
-            <td>
-              <button class="action-btn secondary" onclick="verCobranca('${c.id}')" title="Ver detalhes">
-                <i class="fas fa-eye"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // Filtrar cobranças por tab
-    function filtrarCobrancas(filtro) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === filtro);
-      });
-      renderizarCobrancas(cobrancasCliente, filtro);
-    }
-
-    // Voltar para busca
-    function voltarBusca() {
-      document.getElementById('clientDetail').classList.remove('active');
-      document.getElementById('resultsSection').classList.add('active');
-    }
-
-    // Ações rápidas
-    function novaCobrancaCliente() {
-      if (clienteAtual) {
-        window.location.href = `nova-cobranca.html?cliente_id=${clienteAtual.id}&cliente_nome=${encodeURIComponent(clienteAtual.nome)}`;
-      }
-    }
-
-    function novoAgendamento() {
-      if (clienteAtual) {
-        window.location.href = `novo-agendamento.html?cliente_id=${clienteAtual.id}`;
-      }
-    }
-
-    async function gerarPdfDividas() {
-      if (!clienteAtual) return;
-      try {
-        const res = await fetch(`${API_BASE}/api/clientes/${clienteAtual.id}/pdf-dividas`, {
-          headers: getHeaders()
-        });
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
-        } else {
-          alert('Erro ao gerar PDF.');
+          document.getElementById('emptyState').style.display = 'block';
         }
       } catch (err) {
         console.error(err);
-        alert('Erro ao gerar PDF.');
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('emptyState').innerHTML = `
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Erro ao buscar clientes. Tente novamente.</p>
+        `;
+        document.getElementById('emptyState').style.display = 'block';
       }
     }
 
-    function enviarWhatsApp() {
-      if (!clienteAtual || !clienteAtual.telefone) {
-        alert('Cliente não possui telefone cadastrado.');
+    function renderizarResultados(clientes) {
+      document.getElementById('resultsCount').textContent = `${clientes.length} encontrado${clientes.length > 1 ? 's' : ''}`;
+      
+      const html = clientes.map(c => {
+        const devendo = (c.divida_total || 0) > 0;
+        return `
+          <div class="result-card" onclick="abrirDetalhes('${c.id}')">
+            <div class="result-card-header">
+              <div>
+                <div class="result-card-name">${c.nome}</div>
+                <div class="result-card-cpf">${c.cpf_cnpj || 'CPF/CNPJ não informado'}</div>
+              </div>
+              <span class="result-card-badge ${devendo ? 'devendo' : 'em-dia'}">${devendo ? 'Devendo' : 'Em dia'}</span>
+            </div>
+            <div class="result-card-stats">
+              <div class="result-stat">
+                <div class="result-stat-label">Cobranças</div>
+                <div class="result-stat-value">${c.total_cobrancas || 0}</div>
+              </div>
+              <div class="result-stat">
+                <div class="result-stat-label">Total Pendente</div>
+                <div class="result-stat-value danger">${fmtMoney(c.divida_total)}</div>
+              </div>
+              <div class="result-stat">
+                <div class="result-stat-label">Total Pago</div>
+                <div class="result-stat-value success">${fmtMoney(c.total_pago)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('resultsList').innerHTML = html;
+    }
+
+    // Abrir detalhes do cliente
+    async function abrirDetalhes(clienteId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/clientes/${clienteId}/completo`, { headers: getHeaders() });
+        const data = await res.json();
+
+        if (data.success) {
+          clienteAtual = data.data.cliente;
+          cobrancasCliente = data.data.cobrancas || [];
+          const stats = data.data.estatisticas;
+
+          document.getElementById('modalAvatar').textContent = (clienteAtual.nome || 'C').charAt(0).toUpperCase();
+          document.getElementById('modalClientName').textContent = clienteAtual.nome;
+          document.getElementById('modalClientCpf').textContent = clienteAtual.cpf_cnpj || 'CPF/CNPJ não informado';
+
+          document.getElementById('modalStats').innerHTML = `
+            <div class="stat-card highlight">
+              <div class="stat-card-label">Total Pendente</div>
+              <div class="stat-card-value">${fmtMoney(stats.valor_pendente)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Total Pago</div>
+              <div class="stat-card-value" style="color: var(--green);">${fmtMoney(stats.valor_pago)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Cobranças</div>
+              <div class="stat-card-value">${stats.total_cobrancas || 0}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Vencidas</div>
+              <div class="stat-card-value danger">${stats.total_vencidas || 0}</div>
+            </div>
+          `;
+
+          renderizarCobrancasModal(cobrancasCliente);
+          document.getElementById('modalDetalhes').classList.add('active');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao carregar detalhes do cliente.');
+      }
+    }
+
+    function renderizarCobrancasModal(cobrancas) {
+      if (!cobrancas || cobrancas.length === 0) {
+        document.getElementById('modalCobrancasBody').innerHTML = `
+          <tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            Nenhuma cobrança encontrada
+          </td></tr>
+        `;
         return;
       }
-      let tel = clienteAtual.telefone.replace(/\D/g, '');
-      if (tel.length === 10 || tel.length === 11) tel = '55' + tel;
-      
-      const totalPendente = cobrancasCliente
-        .filter(c => ['pendente', 'vencido'].includes(c.status))
-        .reduce((acc, c) => acc + Number(c.valor_atualizado || 0), 0);
 
-      const msg = `Olá, *${clienteAtual.nome}*! 👋\n\n` +
-        `📊 *Resumo de Pendências*\n` +
-        `━━━━━━━━━━━━━━━━━\n\n` +
-        `💰 *Total Pendente:* ${fmtMoney(totalPendente)}\n\n` +
-        `Entre em contato para regularizar sua situação.\n\n` +
-        `_ACERTIVE - Sistema de Cobranças_`;
+      const html = cobrancas.map(c => `
+        <tr>
+          <td>${fmtDate(c.vencimento)}</td>
+          <td>${c.descricao || '—'}</td>
+          <td>${fmtMoney(c.valor_original)}</td>
+          <td><strong>${fmtMoney(c.valor_atualizado)}</strong></td>
+          <td><span class="status-badge ${c.status}">${c.status.toUpperCase()}</span></td>
+        </tr>
+      `).join('');
 
-      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+      document.getElementById('modalCobrancasBody').innerHTML = html;
     }
 
-    function verCobranca(id) {
-      window.location.href = `cobrancas.html?id=${id}`;
+    function filtrarCobrancas(filtro) {
+      document.querySelectorAll('.cobranca-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.cobranca-tab[data-filter="${filtro}"]`).classList.add('active');
+
+      let filtradas = cobrancasCliente;
+      if (filtro !== 'todas') {
+        filtradas = cobrancasCliente.filter(c => c.status === filtro);
+      }
+      renderizarCobrancasModal(filtradas);
     }
+
+    function fecharModal() {
+      document.getElementById('modalDetalhes').classList.remove('active');
+    }
+
+    function novaCobranca() {
+      if (clienteAtual) {
+        window.location.href = `/nova-cobranca?cliente_id=${clienteAtual.id}`;
+      }
+    }
+
+    function agendarContato() {
+      if (clienteAtual) {
+        window.location.href = `/novo-agendamento?cliente_id=${clienteAtual.id}`;
+      }
+    }
+
+    function enviarWhatsapp() {
+      if (clienteAtual && clienteAtual.telefone) {
+        let tel = clienteAtual.telefone.replace(/\D/g, '');
+        if (tel.length === 10 || tel.length === 11) tel = '55' + tel;
+        const msg = `Olá ${clienteAtual.nome}! Entrando em contato sobre suas pendências financeiras.`;
+        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+      } else {
+        alert('Cliente não possui telefone cadastrado.');
+      }
+    }
+
+    async function gerarPDF() {
+      if (clienteAtual) {
+        try {
+          const res = await fetch(`${API_BASE}/api/clientes/${clienteAtual.id}/pdf-dividas`, { headers: getHeaders() });
+          if (res.ok) {
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dividas_${clienteAtual.nome.replace(/\s+/g, '_')}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao gerar PDF.');
+        }
+      }
+    }
+
+    // Enter para buscar
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') buscarClientes();
+    });
+
+    // Fechar modal clicando fora
+    document.getElementById('modalDetalhes').addEventListener('click', (e) => {
+      if (e.target.id === 'modalDetalhes') fecharModal();
+    });
+
+    // Verificar parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('q');
+    if (queryParam) {
+      document.getElementById('searchInput').value = queryParam;
+      buscarClientes();
+    }
+
+    // Init
+    carregarUsuario();
   </script>
 </body>
 </html>

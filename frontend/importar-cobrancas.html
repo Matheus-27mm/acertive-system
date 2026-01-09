@@ -5,270 +5,322 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Importar Cobranças - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f9fa; min-height: 100vh; display: flex; }
-
-    /* Sidebar */
-    .sidebar { width: 260px; background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); min-height: 100vh; padding: 20px 0; position: fixed; left: 0; top: 0; z-index: 100; }
-    .logo-section { padding: 0 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #1a1a1a; }
-    .logo-text { font-size: 22px; font-weight: 800; color: #fff; }
-    .logo-text span { color: #F6C84C; }
-    .nav-menu { list-style: none; padding: 0 12px; }
-    .nav-item { margin-bottom: 4px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #a1a1aa; text-decoration: none; border-radius: 12px; transition: all 0.2s; font-weight: 500; }
-    .nav-link:hover, .nav-link.active { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
-    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
-    .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 12px; }
-
-    /* Main Content */
-    .main-content { flex: 1; margin-left: 260px; padding: 24px; }
-
-    /* Header */
-    .page-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #F6C84C; }
-    .page-title h1 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .page-title p { color: #a1a1aa; font-size: 14px; }
-
-    /* Upload Section */
-    .upload-section { background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 24px; }
-    .upload-area { border: 3px dashed #e5e7eb; border-radius: 16px; padding: 60px 40px; text-align: center; transition: all 0.3s; cursor: pointer; }
-    .upload-area:hover, .upload-area.dragover { border-color: #F6C84C; background: #fefce8; }
-    .upload-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-    .upload-icon i { font-size: 36px; color: #1a1a1a; }
-    .upload-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
-    .upload-subtitle { color: #6b7280; font-size: 15px; margin-bottom: 24px; }
-    .upload-btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; background: linear-gradient(135deg, #F6C84C, #F9D77E); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #1a1a1a; cursor: pointer; transition: all 0.2s; }
-    .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(246, 200, 76, 0.4); }
-    .upload-formats { margin-top: 20px; font-size: 13px; color: #9ca3af; }
-    .upload-formats span { background: #f3f4f6; padding: 4px 10px; border-radius: 6px; margin: 0 4px; font-weight: 600; }
-    input[type="file"] { display: none; }
-
-    /* File Selected */
-    .file-selected { display: none; background: #f8f9fa; border-radius: 12px; padding: 20px; margin-top: 24px; }
-    .file-selected.active { display: flex; align-items: center; justify-content: space-between; }
-    .file-info { display: flex; align-items: center; gap: 16px; }
-    .file-icon { width: 50px; height: 50px; background: #dcfce7; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-    .file-icon i { font-size: 24px; color: #16a34a; }
-    .file-name { font-weight: 700; color: #1a1a1a; font-size: 16px; }
-    .file-size { font-size: 13px; color: #6b7280; }
-    .file-remove { padding: 10px 20px; background: #fee2e2; border: none; border-radius: 10px; color: #dc2626; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .file-remove:hover { background: #fecaca; }
-
-    /* Import Button */
-    .import-actions { display: none; margin-top: 24px; }
-    .import-actions.active { display: flex; gap: 16px; justify-content: center; }
-    .import-btn { padding: 18px 48px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 14px; font-size: 18px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .import-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4); }
-    .import-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    /* Progress Section */
-    .progress-section { display: none; background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 24px; text-align: center; }
-    .progress-section.active { display: block; }
-    .progress-spinner { width: 60px; height: 60px; border: 5px solid #e5e7eb; border-top-color: #F6C84C; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 24px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .progress-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .progress-subtitle { color: #6b7280; font-size: 15px; }
-
-    /* Results Section */
-    .results-section { display: none; background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-    .results-section.active { display: block; }
-    .results-header { text-align: center; margin-bottom: 32px; }
-    .results-icon { width: 80px; height: 80px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-    .results-icon i { font-size: 40px; color: #16a34a; }
-    .results-icon.error { background: #fee2e2; }
-    .results-icon.error i { color: #dc2626; }
-    .results-title { font-size: 24px; font-weight: 800; color: #1a1a1a; margin-bottom: 8px; }
-    .results-subtitle { color: #6b7280; font-size: 16px; }
-
-    /* Stats Cards */
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-    .stat-card { background: #f8f9fa; border-radius: 14px; padding: 24px; text-align: center; }
-    .stat-card.success { background: #dcfce7; }
-    .stat-card.warning { background: #fef3c7; }
-    .stat-card.info { background: #dbeafe; }
-    .stat-value { font-size: 32px; font-weight: 900; color: #1a1a1a; margin-bottom: 8px; }
-    .stat-card.success .stat-value { color: #16a34a; }
-    .stat-card.warning .stat-value { color: #d97706; }
-    .stat-card.info .stat-value { color: #2563eb; }
-    .stat-label { font-size: 13px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
-
-    /* Action Buttons */
-    .results-actions { display: flex; gap: 16px; justify-content: center; }
-    .action-btn { padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-decoration: none; }
-    .action-btn.primary { background: linear-gradient(135deg, #F6C84C, #F9D77E); border: none; color: #1a1a1a; }
-    .action-btn.secondary { background: #fff; border: 2px solid #e5e7eb; color: #374151; }
-    .action-btn:hover { transform: translateY(-2px); }
-
-    /* Info Box */
-    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .info-box h4 { color: #1e40af; font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
-    .info-box ul { list-style: none; color: #3b82f6; font-size: 14px; }
-    .info-box li { padding: 6px 0; padding-left: 20px; position: relative; }
-    .info-box li::before { content: "✓"; position: absolute; left: 0; color: #22c55e; font-weight: 700; }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #0f0f12;
+      --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-sidebar: #0c0c0f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #F6C84C;
+      --gold-light: #FFD56A;
+      --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 260px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
     }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
+      display: flex; flex-direction: column; padding: 20px 0;
+    }
+    .sidebar-header { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: var(--bg-primary); }
+    .logo-text { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span { color: var(--gold); }
+
+    .nav-menu { flex: 1; padding: 0 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md); font-weight: 500; font-size: 14px; transition: all 0.2s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
+    .nav-badge.blue { background: var(--blue); color: white; }
+
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
+    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
+
+    .main-content { margin-left: var(--sidebar-width); padding: 32px; min-height: 100vh; }
+
+    .page-header { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 24px; }
+    .page-title { display: flex; align-items: center; gap: 16px; }
+    .page-title-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+    .page-title-icon i { font-size: 22px; color: var(--gold); }
+    .page-title h1 { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .page-title p { color: var(--text-muted); font-size: 14px; }
+
+    .info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
+    .info-card h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .info-card h3 i { color: var(--gold); }
+    .info-list { display: flex; flex-direction: column; gap: 12px; }
+    .info-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--text-secondary); }
+    .info-item i { color: var(--green); margin-top: 2px; }
+
+    .upload-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
+    .upload-area { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 48px 24px; text-align: center; transition: all 0.2s; cursor: pointer; }
+    .upload-area:hover, .upload-area.dragover { border-color: var(--gold); background: var(--gold-glow); }
+    .upload-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .upload-icon i { font-size: 32px; color: var(--gold); }
+    .upload-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .upload-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+    .upload-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border: none; border-radius: var(--radius-md); color: var(--bg-primary); font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .upload-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+    .upload-formats { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+    .format-badge { padding: 4px 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; color: var(--text-muted); }
+    #fileInput { display: none; }
+
+    .file-selected { display: none; padding: 20px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); margin-top: 16px; }
+    .file-selected.active { display: flex; align-items: center; gap: 16px; }
+    .file-icon { width: 48px; height: 48px; background: var(--green-bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .file-icon i { font-size: 20px; color: var(--green); }
+    .file-info { flex: 1; }
+    .file-name { font-weight: 600; font-size: 14px; color: var(--text-primary); margin-bottom: 4px; }
+    .file-size { font-size: 12px; color: var(--text-muted); }
+    .btn-remove { padding: 8px 16px; background: var(--red-bg); border: 1px solid var(--red); border-radius: 8px; color: var(--red); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-remove:hover { background: var(--red); color: white; }
+
+    .btn-import { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--green), #16a34a); border: none; border-radius: var(--radius-md); color: white; font-weight: 700; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; transition: all 0.2s; }
+    .btn-import.active { display: flex; }
+    .btn-import:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3); }
+    .btn-import:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .progress-section { display: none; text-align: center; padding: 40px; }
+    .progress-section.active { display: block; }
+    .progress-spinner { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: var(--gold); border-radius: 50%; margin: 0 auto 20px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-text { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+    .progress-subtext { font-size: 14px; color: var(--text-muted); }
+
+    .results-section { display: none; }
+    .results-section.active { display: block; }
+    .results-header { text-align: center; margin-bottom: 24px; }
+    .results-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .results-icon.success { background: var(--green-bg); }
+    .results-icon.success i { font-size: 36px; color: var(--green); }
+    .results-icon.error { background: var(--red-bg); }
+    .results-icon.error i { font-size: 36px; color: var(--red); }
+    .results-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+    .results-subtitle { font-size: 14px; color: var(--text-muted); }
+
+    .results-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .result-stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center; }
+    .result-stat-card.highlight { background: var(--green-bg); border-color: var(--green); }
+    .result-stat-value { font-size: 32px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .result-stat-card.highlight .result-stat-value { color: var(--green); }
+    .result-stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-result { padding: 14px 24px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-result.primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); border: none; color: var(--bg-primary); }
+    .btn-result.primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+    .btn-result.secondary { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-result.secondary:hover { border-color: var(--border-gold); background: var(--gold-glow); }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
       .main-content { margin-left: 0; }
-      .stats-grid { grid-template-columns: 1fr; }
+      .results-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .results-stats { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <div class="logo-section">
+  <aside class="sidebar">
+    <div class="sidebar-header">
       <div class="logo-icon">A</div>
       <div class="logo-text">ACERT<span>IVE</span></div>
     </div>
-    <ul class="nav-menu">
-      <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-      <li class="nav-item"><a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></li>
-      <li class="nav-item"><a href="clientes-ativos.html" class="nav-link"><i class="fas fa-users"></i> Clientes</a></li>
-      <li class="nav-item"><a href="consulta-cliente.html" class="nav-link"><i class="fas fa-search-dollar"></i> Consulta Cliente</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="nova-cobranca.html" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a></li>
-      <li class="nav-item"><a href="novo-cliente.html" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a></li>
-      <li class="nav-item"><a href="importar-cobrancas.html" class="nav-link active"><i class="fas fa-file-import"></i> Importar Cobranças</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="agendamentos.html" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a></li>
-      <li class="nav-item"><a href="cobrancas-recorrentes.html" class="nav-link"><i class="fas fa-redo"></i> Recorrentes</a></li>
-      <div class="nav-divider"></div>
-      <li class="nav-item"><a href="historico.html" class="nav-link"><i class="fas fa-history"></i> Histórico</a></li>
-      <li class="nav-item"><a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a></li>
-    </ul>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="page-title">
-        <h1><i class="fas fa-file-import" style="color: #F6C84C; margin-right: 12px;"></i>Importar Cobranças</h1>
-        <p>Importe sua planilha de cobranças e associe automaticamente aos clientes</p>
+    <nav class="nav-menu">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes-ativos" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/consulta-cliente" class="nav-link"><i class="fas fa-magnifying-glass-dollar"></i> Consulta Cliente</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-    </header>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link active"><i class="fas fa-file-import"></i> Importar Cobranças</a>
+        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fas fa-repeat"></i> Recorrentes</a>
+        <a href="/historico" class="nav-link"><i class="fas fa-clock-rotate-left"></i> Histórico</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link" id="navUsuarios"><i class="fas fa-user-shield"></i> Usuários <span class="nav-badge blue">ADM</span></a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Administrador</div>
+          <div class="user-role" id="userRole">Admin</div>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
 
-    <!-- Info Box -->
-    <div class="info-box">
-      <h4><i class="fas fa-info-circle"></i> Como funciona a importação</h4>
-      <ul>
-        <li>O sistema lê cada linha da planilha como uma cobrança</li>
-        <li>Se o cliente (por CPF/CNPJ ou nome) já existir, a cobrança é vinculada a ele</li>
-        <li>Se o cliente não existir, ele é criado automaticamente</li>
-        <li>Cobranças com valor pago são marcadas como "Pago"</li>
-        <li>Cobranças vencidas são marcadas automaticamente</li>
-      </ul>
+  <main class="main-content">
+    <div class="page-header">
+      <div class="page-title">
+        <div class="page-title-icon"><i class="fas fa-file-import"></i></div>
+        <div>
+          <h1>Importar Cobranças</h1>
+          <p>Importe sua planilha de cobranças e associe automaticamente aos clientes</p>
+        </div>
+      </div>
     </div>
 
-    <!-- Upload Section -->
-    <section class="upload-section" id="uploadSection">
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">
-          <i class="fas fa-cloud-upload-alt"></i>
+    <div id="uploadSection">
+      <div class="info-card">
+        <h3><i class="fas fa-info-circle"></i> Como funciona a importação</h3>
+        <div class="info-list">
+          <div class="info-item"><i class="fas fa-check"></i> O sistema lê cada linha da planilha como uma cobrança</div>
+          <div class="info-item"><i class="fas fa-check"></i> Se o cliente (por CPF/CNPJ) já existir, a cobrança é vinculada a ele</div>
+          <div class="info-item"><i class="fas fa-check"></i> Se o cliente não existir, ele é criado automaticamente</div>
+          <div class="info-item"><i class="fas fa-check"></i> Cobranças com valor pago são marcadas como "Pago"</div>
+          <div class="info-item"><i class="fas fa-check"></i> Cobranças vencidas são marcadas automaticamente</div>
         </div>
-        <div class="upload-title">Arraste sua planilha aqui</div>
-        <div class="upload-subtitle">ou clique no botão abaixo para selecionar</div>
-        <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
-          <i class="fas fa-folder-open"></i> Selecionar Arquivo
-        </button>
-        <div class="upload-formats">
-          Formatos aceitos: <span>.xlsx</span> <span>.xls</span> <span>.csv</span>
-        </div>
-        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)">
       </div>
 
-      <!-- File Selected -->
-      <div class="file-selected" id="fileSelected">
-        <div class="file-info">
-          <div class="file-icon">
-            <i class="fas fa-file-excel"></i>
+      <div class="upload-card">
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+          <div class="upload-title">Arraste sua planilha aqui</div>
+          <div class="upload-subtitle">ou clique no botão abaixo para selecionar</div>
+          <button class="upload-btn" type="button"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+          <div class="upload-formats">
+            <span class="format-badge">.xlsx</span>
+            <span class="format-badge">.xls</span>
+            <span class="format-badge">.csv</span>
           </div>
-          <div>
+        </div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+
+        <div class="file-selected" id="fileSelected">
+          <div class="file-icon"><i class="fas fa-file-excel"></i></div>
+          <div class="file-info">
             <div class="file-name" id="fileName">arquivo.xlsx</div>
-            <div class="file-size" id="fileSize">2.5 MB</div>
+            <div class="file-size" id="fileSize">0 KB</div>
           </div>
+          <button class="btn-remove" onclick="removerArquivo()"><i class="fas fa-times"></i> Remover</button>
         </div>
-        <button type="button" class="file-remove" onclick="removeFile()">
-          <i class="fas fa-times"></i> Remover
-        </button>
-      </div>
 
-      <!-- Import Actions -->
-      <div class="import-actions" id="importActions">
-        <button type="button" class="import-btn" id="importBtn" onclick="iniciarImportacao()">
+        <button class="btn-import" id="btnImport" onclick="iniciarImportacao()">
           <i class="fas fa-rocket"></i> Iniciar Importação
         </button>
       </div>
-    </section>
+    </div>
 
-    <!-- Progress Section -->
-    <section class="progress-section" id="progressSection">
+    <div class="progress-section" id="progressSection">
       <div class="progress-spinner"></div>
-      <div class="progress-title">Importando cobranças...</div>
-      <div class="progress-subtitle">Aguarde, isso pode levar alguns minutos dependendo do tamanho do arquivo.</div>
-    </section>
+      <div class="progress-text">Importando cobranças...</div>
+      <div class="progress-subtext">Aguarde, isso pode levar alguns minutos dependendo do tamanho da planilha</div>
+    </div>
 
-    <!-- Results Section -->
-    <section class="results-section" id="resultsSection">
+    <div class="results-section" id="resultsSection">
       <div class="results-header">
-        <div class="results-icon" id="resultsIcon">
-          <i class="fas fa-check"></i>
-        </div>
+        <div class="results-icon success" id="resultsIcon"><i class="fas fa-check"></i></div>
         <div class="results-title" id="resultsTitle">Importação Concluída!</div>
-        <div class="results-subtitle" id="resultsSubtitle">Todas as cobranças foram processadas com sucesso.</div>
+        <div class="results-subtitle" id="resultsSubtitle">Sua planilha foi processada com sucesso</div>
       </div>
-
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat-card success">
-          <div class="stat-value" id="statCobrancas">0</div>
-          <div class="stat-label">Cobranças Criadas</div>
+      <div class="results-stats">
+        <div class="result-stat-card highlight">
+          <div class="result-stat-value" id="statCobrancasCriadas">0</div>
+          <div class="result-stat-label">Cobranças Criadas</div>
         </div>
-        <div class="stat-card info">
-          <div class="stat-value" id="statClientesCriados">0</div>
-          <div class="stat-label">Clientes Criados</div>
+        <div class="result-stat-card">
+          <div class="result-stat-value" id="statClientesCriados">0</div>
+          <div class="result-stat-label">Clientes Criados</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statClientesExistentes">0</div>
-          <div class="stat-label">Clientes Existentes</div>
+        <div class="result-stat-card">
+          <div class="result-stat-value" id="statClientesExistentes">0</div>
+          <div class="result-stat-label">Clientes Existentes</div>
         </div>
-        <div class="stat-card warning">
-          <div class="stat-value" id="statIgnoradas">0</div>
-          <div class="stat-label">Linhas Ignoradas</div>
+        <div class="result-stat-card">
+          <div class="result-stat-value" id="statLinhasIgnoradas">0</div>
+          <div class="result-stat-label">Linhas Ignoradas</div>
         </div>
       </div>
-
       <div class="results-actions">
-        <a href="consulta-cliente.html" class="action-btn primary">
-          <i class="fas fa-search"></i> Consultar Clientes
-        </a>
-        <a href="cobrancas.html" class="action-btn secondary">
-          <i class="fas fa-list"></i> Ver Cobranças
-        </a>
-        <button type="button" class="action-btn secondary" onclick="novaImportacao()">
-          <i class="fas fa-redo"></i> Nova Importação
-        </button>
+        <button class="btn-result primary" onclick="window.location.href='/consulta-cliente'"><i class="fas fa-search"></i> Consultar Clientes</button>
+        <button class="btn-result secondary" onclick="window.location.href='/cobrancas'"><i class="fas fa-file-invoice-dollar"></i> Ver Cobranças</button>
+        <button class="btn-result secondary" onclick="novaImportacao()"><i class="fas fa-redo"></i> Nova Importação</button>
       </div>
-    </section>
+    </div>
   </main>
 
   <script>
     const API_BASE = '';
     let token = localStorage.getItem('token');
-    let selectedFile = null;
+    let arquivoSelecionado = null;
 
-    // Verificar autenticação
-    if (!token) {
-      window.location.href = 'login.html';
+    if (!token) window.location.href = '/login';
+
+    function getHeaders() {
+      return { 'Authorization': `Bearer ${token}` };
     }
 
-    // Drag and drop
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(`${API_BASE}/api/usuarios/me`, { headers: { ...getHeaders(), 'Content-Type': 'application/json' } });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') {
+            document.getElementById('navUsuarios').style.display = 'none';
+          }
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // Upload área
     const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
 
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -282,124 +334,102 @@
     uploadArea.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadArea.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        processFile(files[0]);
-      }
+      const file = e.dataTransfer.files[0];
+      if (file) selecionarArquivo(file);
     });
 
-    // File select
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        processFile(file);
-      }
-    }
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) selecionarArquivo(fileInput.files[0]);
+    });
 
-    // Process file
-    function processFile(file) {
-      const validExtensions = ['.xlsx', '.xls', '.csv'];
-      const fileName = file.name.toLowerCase();
-      const isValid = validExtensions.some(ext => fileName.endsWith(ext));
-
-      if (!isValid) {
-        alert('Formato de arquivo inválido. Use .xlsx, .xls ou .csv');
+    function selecionarArquivo(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+        alert('Formato não suportado. Use arquivos .xlsx, .xls ou .csv');
         return;
       }
 
-      selectedFile = file;
-      
+      arquivoSelecionado = file;
       document.getElementById('fileName').textContent = file.name;
       document.getElementById('fileSize').textContent = formatFileSize(file.size);
       document.getElementById('fileSelected').classList.add('active');
-      document.getElementById('importActions').classList.add('active');
+      document.getElementById('btnImport').classList.add('active');
+      document.getElementById('uploadArea').style.display = 'none';
     }
 
-    // Format file size
-    function formatFileSize(bytes) {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    // Remove file
-    function removeFile() {
-      selectedFile = null;
-      document.getElementById('fileInput').value = '';
+    function removerArquivo() {
+      arquivoSelecionado = null;
+      fileInput.value = '';
       document.getElementById('fileSelected').classList.remove('active');
-      document.getElementById('importActions').classList.remove('active');
+      document.getElementById('btnImport').classList.remove('active');
+      document.getElementById('uploadArea').style.display = 'block';
     }
 
-    // Iniciar importação
-    async function iniciarImportacao() {
-      if (!selectedFile) {
-        alert('Selecione um arquivo primeiro.');
-        return;
-      }
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
 
-      const btn = document.getElementById('importBtn');
-      btn.disabled = true;
+    async function iniciarImportacao() {
+      if (!arquivoSelecionado) return;
 
       document.getElementById('uploadSection').style.display = 'none';
       document.getElementById('progressSection').classList.add('active');
 
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', arquivoSelecionado);
 
       try {
         const res = await fetch(`${API_BASE}/api/cobrancas/import`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: getHeaders(),
           body: formData
         });
 
         const data = await res.json();
-
         document.getElementById('progressSection').classList.remove('active');
-        document.getElementById('resultsSection').classList.add('active');
 
         if (data.success) {
-          const r = data.resultado;
-          document.getElementById('resultsIcon').innerHTML = '<i class="fas fa-check"></i>';
-          document.getElementById('resultsIcon').classList.remove('error');
-          document.getElementById('resultsTitle').textContent = 'Importação Concluída!';
-          document.getElementById('resultsSubtitle').textContent = `${r.totalLinhas} linhas processadas com sucesso.`;
+          document.getElementById('statCobrancasCriadas').textContent = data.cobrancasCriadas || 0;
+          document.getElementById('statClientesCriados').textContent = data.clientesCriados || 0;
+          document.getElementById('statClientesExistentes').textContent = data.clientesExistentes || 0;
+          document.getElementById('statLinhasIgnoradas').textContent = data.cobrancasIgnoradas || 0;
           
-          document.getElementById('statCobrancas').textContent = r.cobrancasCriadas;
-          document.getElementById('statClientesCriados').textContent = r.clientesCriados;
-          document.getElementById('statClientesExistentes').textContent = r.clientesExistentes;
-          document.getElementById('statIgnoradas').textContent = r.cobrancasIgnoradas;
+          document.getElementById('resultsIcon').className = 'results-icon success';
+          document.getElementById('resultsIcon').innerHTML = '<i class="fas fa-check"></i>';
+          document.getElementById('resultsTitle').textContent = 'Importação Concluída!';
+          document.getElementById('resultsSubtitle').textContent = 'Sua planilha foi processada com sucesso';
         } else {
+          document.getElementById('resultsIcon').className = 'results-icon error';
           document.getElementById('resultsIcon').innerHTML = '<i class="fas fa-times"></i>';
-          document.getElementById('resultsIcon').classList.add('error');
           document.getElementById('resultsTitle').textContent = 'Erro na Importação';
-          document.getElementById('resultsSubtitle').textContent = data.message || 'Ocorreu um erro ao processar o arquivo.';
+          document.getElementById('resultsSubtitle').textContent = data.message || 'Ocorreu um erro ao processar a planilha';
         }
-      } catch (err) {
-        console.error('Erro:', err);
-        document.getElementById('progressSection').classList.remove('active');
+
         document.getElementById('resultsSection').classList.add('active');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('progressSection').classList.remove('active');
+        document.getElementById('resultsIcon').className = 'results-icon error';
         document.getElementById('resultsIcon').innerHTML = '<i class="fas fa-times"></i>';
-        document.getElementById('resultsIcon').classList.add('error');
         document.getElementById('resultsTitle').textContent = 'Erro na Importação';
         document.getElementById('resultsSubtitle').textContent = 'Erro de conexão. Tente novamente.';
+        document.getElementById('resultsSection').classList.add('active');
       }
     }
 
-    // Nova importação
     function novaImportacao() {
-      selectedFile = null;
-      document.getElementById('fileInput').value = '';
+      arquivoSelecionado = null;
+      fileInput.value = '';
       document.getElementById('fileSelected').classList.remove('active');
-      document.getElementById('importActions').classList.remove('active');
-      document.getElementById('importBtn').disabled = false;
+      document.getElementById('btnImport').classList.remove('active');
+      document.getElementById('uploadArea').style.display = 'block';
       document.getElementById('uploadSection').style.display = 'block';
       document.getElementById('resultsSection').classList.remove('active');
     }
+
+    carregarUsuario();
   </script>
 </body>
 </html>
