@@ -384,7 +384,26 @@ function authAdmin(req, res, next) {
 app.get("/api/health", (req, res) => {
   return res.json({ ok: true, service: "acertive-enterprise-v2.1", time: new Date().toISOString(), emailConfigured: !!emailTransporter, iaConfigured: !!process.env.OPENAI_API_KEY });
 });
-
+// Alias para compatibilidade com frontend
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, senha } = req.body || {};
+    const emailStr = String(email || "").trim();
+    const senhaStr = String(senha || "");
+    if (!emailStr || !senhaStr) return res.status(400).json({ success: false, message: "Email e senha são obrigatórios." });
+    const r = await pool.query("SELECT id, email, senha_hash, nome, nivel, ativo FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1", [emailStr]);
+    if (r.rowCount === 0) return res.status(401).json({ success: false, message: "Credenciais inválidas." });
+    const user = r.rows[0];
+    if (user.ativo === false) return res.status(401).json({ success: false, message: "Usuário desativado." });
+    const ok = await bcrypt.compare(senhaStr, user.senha_hash);
+    if (!ok) return res.status(401).json({ success: false, message: "Credenciais inválidas." });
+    const token = jwt.sign({ userId: user.id, email: user.email, nome: user.nome, nivel: user.nivel || 'operador' }, process.env.JWT_SECRET, { expiresIn: "12h" });
+    return res.json({ success: true, token, user: { id: user.id, email: user.email, nome: user.nome, nivel: user.nivel || 'operador' } });
+  } catch (err) {
+    console.error("[LOGIN] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao autenticar." });
+  }
+});
 // =====================================================
 // LOGIN
 // =====================================================
