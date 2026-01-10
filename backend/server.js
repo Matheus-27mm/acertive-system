@@ -2064,6 +2064,178 @@ app.get("/api/admin/arquivar-antigas", async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao arquivar.", error: err.message });
   }
 });
+// =====================================================
+// SISTEMA DE ALERTAS E LEMBRETES
+// Cole este código no seu server.js (antes do app.listen)
+// =====================================================
+
+// GET /api/alertas - Retorna todos os alertas do sistema
+app.get("/api/alertas", auth, async (req, res) => {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    const em3dias = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const ha7dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const ha30dias = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // 1. Cobranças vencendo HOJE
+    const vencendoHoje = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento, 
+             COALESCE(cl.nome, 'Cliente não identificado') as cliente,
+             COALESCE(cl.telefone, '') as telefone
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status = 'pendente' 
+        AND DATE(c.vencimento) = $1
+      ORDER BY c.valor_atualizado DESC
+      LIMIT 20
+    `, [hoje]);
+
+    // 2. Cobranças vencendo em 3 dias
+    const vencendoEm3Dias = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento,
+             COALESCE(cl.nome, 'Cliente não identificado') as cliente,
+             COALESCE(cl.telefone, '') as telefone
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status = 'pendente'
+        AND DATE(c.vencimento) > $1
+        AND DATE(c.vencimento) <= $2
+      ORDER BY c.vencimento ASC
+      LIMIT 20
+    `, [hoje, em3dias]);
+
+    // 3. Cobranças VENCIDAS (em atraso)
+    const vencidas = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento,
+             COALESCE(cl.nome, 'Cliente não identificado') as cliente,
+             COALESCE(cl.telefone, '') as telefone,
+             CURRENT_DATE - DATE(c.vencimento) as dias_atraso
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status IN ('pendente', 'vencido')
+        AND DATE(c.vencimento) < $1
+      ORDER BY c.vencimento ASC
+      LIMIT 30
+    `, [hoje]);
+
+    // 4. Agendamentos do dia
+    const agendamentosHoje = await pool.query(`
+      SELECT a.id, a.tipo, a.descricao, a.data_agendamento, a.prioridade,
+             COALESCE(cl.nome, 'Cliente não identificado') as cliente,
+             COALESCE(cl.telefone, '') as telefone
+      FROM agendamentos a
+      LEFT JOIN clientes cl ON cl.id = a.cliente_id
+      WHERE a.status = 'pendente'
+        AND DATE(a.data_agendamento) = $1
+      ORDER BY a.data_agendamento ASC
+    `, [hoje]);
+
+    // 5. Clientes sem contato há mais de 7 dias (com dívidas pendentes)
+    const clientesSemContato = await pool.query(`
+      SELECT 
+        cl.id, cl.nome, cl.telefone, cl.email,
+        COALESCE(cl.data_ultimo_contato, cl.created_at) as ultimo_contato,
+        CURRENT_DATE - DATE(COALESCE(cl.data_ultimo_contato, cl.created_at)) as dias_sem_contato,
+        COUNT(c.id)::int as total_cobrancas,
+        COALESCE(SUM(c.valor_atualizado), 0)::numeric as divida_total
+      FROM clientes cl
+      INNER JOIN cobrancas c ON c.cliente_id = cl.id
+      WHERE cl.status = 'ativo'
+        AND c.status IN ('pendente', 'vencido')
+        AND DATE(COALESCE(cl.data_ultimo_contato, cl.created_at)) < $1
+      GROUP BY cl.id
+      HAVING SUM(c.valor_atualizado) > 0
+      ORDER BY divida_total DESC
+      LIMIT 20
+    `, [ha7dias]);
+
+    // 6. Cobranças com alto valor vencidas (prioridade)
+    const altosValores = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento,
+             COALESCE(cl.nome, 'Cliente não identificado') as cliente,
+             CURRENT_DATE - DATE(c.vencimento) as dias_atraso
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status IN ('pendente', 'vencido')
+        AND DATE(c.vencimento) < $1
+        AND c.valor_atualizado >= 1000
+      ORDER BY c.valor_atualizado DESC
+      LIMIT 10
+    `, [hoje]);
+
+    // 7. Resumo geral
+    const resumo = await pool.query(`
+      SELECT
+        COUNT(CASE WHEN status IN ('pendente', 'vencido') AND DATE(vencimento) < CURRENT_DATE THEN 1 END)::int as total_vencidas,
+        COUNT(CASE WHEN status = 'pendente' AND DATE(vencimento) = CURRENT_DATE THEN 1 END)::int as vencendo_hoje,
+        COUNT(CASE WHEN status = 'pendente' AND DATE(vencimento) > CURRENT_DATE AND DATE(vencimento) <= CURRENT_DATE + 3 THEN 1 END)::int as vencendo_3dias,
+        COALESCE(SUM(CASE WHEN status IN ('pendente', 'vencido') AND DATE(vencimento) < CURRENT_DATE THEN valor_atualizado END), 0)::numeric as valor_vencido,
+        COALESCE(SUM(CASE WHEN status = 'pendente' AND DATE(vencimento) = CURRENT_DATE THEN valor_atualizado END), 0)::numeric as valor_hoje
+      FROM cobrancas
+      WHERE status != 'arquivado'
+    `);
+
+    const totalAlertas = 
+      (vencendoHoje.rowCount || 0) + 
+      (vencidas.rowCount || 0) + 
+      (agendamentosHoje.rowCount || 0) +
+      (clientesSemContato.rowCount || 0);
+
+    return res.json({
+      success: true,
+      totalAlertas,
+      resumo: resumo.rows[0] || {},
+      alertas: {
+        vencendoHoje: vencendoHoje.rows,
+        vencendoEm3Dias: vencendoEm3Dias.rows,
+        vencidas: vencidas.rows,
+        agendamentosHoje: agendamentosHoje.rows,
+        clientesSemContato: clientesSemContato.rows,
+        altosValores: altosValores.rows
+      }
+    });
+
+  } catch (err) {
+    console.error("[ALERTAS] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar alertas.", error: err.message });
+  }
+});
+
+// GET /api/alertas/contador - Retorna apenas o contador para o badge
+app.get("/api/alertas/contador", auth, async (req, res) => {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    
+    const resultado = await pool.query(`
+      SELECT
+        COUNT(CASE WHEN status IN ('pendente', 'vencido') AND DATE(vencimento) < CURRENT_DATE THEN 1 END)::int as vencidas,
+        COUNT(CASE WHEN status = 'pendente' AND DATE(vencimento) = CURRENT_DATE THEN 1 END)::int as vencendo_hoje
+      FROM cobrancas
+      WHERE status != 'arquivado'
+    `);
+
+    const agendamentos = await pool.query(`
+      SELECT COUNT(*)::int as total
+      FROM agendamentos
+      WHERE status = 'pendente' AND DATE(data_agendamento) = $1
+    `, [hoje]);
+
+    const r = resultado.rows[0] || {};
+    const total = (r.vencidas || 0) + (r.vencendo_hoje || 0) + (agendamentos.rows[0]?.total || 0);
+
+    return res.json({
+      success: true,
+      total,
+      vencidas: r.vencidas || 0,
+      vencendoHoje: r.vencendo_hoje || 0,
+      agendamentosHoje: agendamentos.rows[0]?.total || 0
+    });
+
+  } catch (err) {
+    console.error("[ALERTAS CONTADOR] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao contar alertas." });
+  }
+});
 
 // =====================
 // 404
