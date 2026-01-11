@@ -2854,7 +2854,7 @@ app.post("/api/lembretes/teste", auth, async (req, res) => {
       corpo = corpo.replace(new RegExp(chave, 'g'), valor);
     }
     
-    await transporter.sendMail({
+    await emailTransporter.sendMail({
       from: `"ACERTIVE" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: `[TESTE] ${assunto}`,
