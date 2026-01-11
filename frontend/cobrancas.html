@@ -51,7 +51,7 @@
       min-height: 100vh;
     }
 
-    /* Sidebar igual ao dashboard */
+    /* Sidebar */
     .sidebar {
       position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
       background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
@@ -87,7 +87,6 @@
     .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
     .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
     .nav-badge.green { background: var(--green); color: white; }
-    .nav-badge.blue { background: var(--blue); color: white; }
 
     .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
     .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
@@ -128,7 +127,6 @@
     .tab:hover { border-color: var(--border-gold); color: var(--gold); }
     .tab.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
     .tab .count { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: rgba(0,0,0,0.2); }
-    .tab.active .count { background: rgba(0,0,0,0.3); }
 
     /* Stats Cards */
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
@@ -141,7 +139,6 @@
     .stat-icon.green { background: var(--green-bg); color: var(--green); }
     .stat-icon.red { background: var(--red-bg); color: var(--red); }
     .stat-icon.purple { background: var(--purple-bg); color: var(--purple); }
-    .stat-info {}
     .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
     .stat-value { font-size: 20px; font-weight: 800; color: var(--text-primary); }
 
@@ -172,7 +169,6 @@
     .btn-danger:hover { background: var(--red); color: white; }
     .btn-success { background: var(--green-bg); color: var(--green); border: 1px solid transparent; }
     .btn-success:hover { background: var(--green); color: white; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Selection Bar */
     .selection-bar {
@@ -186,41 +182,58 @@
     .selection-count { font-weight: 700; color: var(--gold); font-size: 15px; }
     .selection-actions { display: flex; gap: 8px; }
 
-    /* Table */
-    .table-container {
+    /* Accordion Container */
+    .accordion-container {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
       overflow: hidden;
     }
-    .table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    td { font-size: 13px; color: var(--text-secondary); }
-    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* Client Group (Accordion Item) */
+    .client-group { border-bottom: 1px solid var(--border); }
+    .client-group:last-child { border-bottom: none; }
+
+    .client-header {
+      display: flex; align-items: center; padding: 16px 20px;
+      cursor: pointer; transition: all var(--transition-fast);
+      gap: 16px;
+    }
+    .client-header:hover { background: rgba(255,255,255,0.02); }
     
-    .checkbox-cell { width: 40px; }
-    .checkbox {
+    .client-checkbox {
       width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
       background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast);
+      transition: all var(--transition-fast); flex-shrink: 0;
     }
-    .checkbox:hover { border-color: var(--gold); }
-    .checkbox.checked { background: var(--gold); border-color: var(--gold); }
-    .checkbox.checked::after { content: '✓'; color: var(--bg-primary); font-size: 12px; font-weight: 700; }
-    
-    .cliente-cell { font-weight: 600; color: var(--text-primary); }
-    .valor-cell { font-weight: 700; color: var(--gold); }
-    
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
-      border-radius: 20px; font-size: 11px; font-weight: 600;
-    }
-    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
-    .status-badge.pago { background: var(--green-bg); color: var(--green); }
-    .status-badge.vencido { background: var(--red-bg); color: var(--red); }
-    .status-badge.arquivado { background: var(--purple-bg); color: var(--purple); }
+    .client-checkbox:hover { border-color: var(--gold); }
+    .client-checkbox.checked { background: var(--gold); border-color: var(--gold); }
+    .client-checkbox.checked::after { content: '✓'; color: var(--bg-primary); font-size: 12px; font-weight: 700; }
+    .client-checkbox.partial { background: var(--gold-glow); border-color: var(--gold); }
+    .client-checkbox.partial::after { content: '−'; color: var(--gold); font-size: 14px; font-weight: 700; }
 
-    .actions-cell { display: flex; gap: 6px; }
+    .client-toggle {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: rgba(255,255,255,0.05); border: none;
+      color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast); flex-shrink: 0;
+    }
+    .client-toggle:hover { background: var(--gold-glow); color: var(--gold); }
+    .client-toggle i { transition: transform 0.3s ease; }
+    .client-group.expanded .client-toggle i { transform: rotate(90deg); }
+
+    .client-info { flex: 1; min-width: 0; }
+    .client-name { font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 2px; }
+    .client-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 16px; }
+    .client-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .client-stats { display: flex; gap: 24px; align-items: center; }
+    .client-stat { text-align: right; }
+    .client-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .client-stat-value { font-size: 16px; font-weight: 700; }
+    .client-stat-value.gold { color: var(--gold); }
+    .client-stat-value.count { color: var(--text-primary); }
+
+    .client-actions { display: flex; gap: 8px; }
     .action-btn {
       width: 32px; height: 32px; border: none; border-radius: 6px;
       background: rgba(255,255,255,0.05); color: var(--text-muted);
@@ -230,10 +243,54 @@
     .action-btn:hover { background: var(--gold-glow); color: var(--gold); }
     .action-btn.danger:hover { background: var(--red-bg); color: var(--red); }
 
+    /* Cobranças List (Accordion Content) */
+    .cobrancas-list {
+      display: none; background: rgba(0,0,0,0.2);
+      border-top: 1px solid var(--border);
+    }
+    .client-group.expanded .cobrancas-list { display: block; }
+
+    .cobranca-item {
+      display: flex; align-items: center; padding: 12px 20px 12px 64px;
+      border-bottom: 1px solid var(--border); gap: 16px;
+      transition: background var(--transition-fast);
+    }
+    .cobranca-item:last-child { border-bottom: none; }
+    .cobranca-item:hover { background: rgba(255,255,255,0.02); }
+
+    .cobranca-checkbox {
+      width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 3px;
+      background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast); flex-shrink: 0;
+    }
+    .cobranca-checkbox:hover { border-color: var(--gold); }
+    .cobranca-checkbox.checked { background: var(--gold); border-color: var(--gold); }
+    .cobranca-checkbox.checked::after { content: '✓'; color: var(--bg-primary); font-size: 10px; font-weight: 700; }
+
+    .cobranca-info { flex: 1; min-width: 0; }
+    .cobranca-desc { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .cobranca-valor { font-weight: 700; font-size: 14px; color: var(--gold); min-width: 100px; text-align: right; }
+    
+    .cobranca-venc { font-size: 12px; color: var(--text-muted); min-width: 90px; text-align: center; }
+    
+    .status-badge {
+      display: inline-flex; align-items: center; padding: 4px 10px;
+      border-radius: 20px; font-size: 10px; font-weight: 600; min-width: 80px; justify-content: center;
+    }
+    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
+    .status-badge.pago { background: var(--green-bg); color: var(--green); }
+    .status-badge.vencido { background: var(--red-bg); color: var(--red); }
+    .status-badge.arquivado { background: var(--purple-bg); color: var(--purple); }
+
+    .cobranca-actions { display: flex; gap: 4px; }
+    .cobranca-actions .action-btn { width: 28px; height: 28px; }
+
     /* Pagination */
     .pagination {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 20px; border-top: 1px solid var(--border);
+      padding: 16px 20px; border-top: 1px solid var(--border); background: var(--bg-card);
+      margin-top: -1px; border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     }
     .pagination-info { font-size: 13px; color: var(--text-muted); }
     .pagination-controls { display: flex; gap: 8px; }
@@ -248,9 +305,7 @@
     .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
     /* Empty State */
-    .empty-state {
-      padding: 60px 20px; text-align: center; color: var(--text-muted);
-    }
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--text-muted); }
     .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
     .empty-state h3 { font-size: 18px; color: var(--text-primary); margin-bottom: 8px; }
 
@@ -280,7 +335,8 @@
     }
     @media (max-width: 640px) {
       .stats-row { grid-template-columns: 1fr; }
-      .tabs { flex-wrap: wrap; }
+      .client-stats { display: none; }
+      .cobranca-item { padding-left: 20px; }
     }
   </style>
 </head>
@@ -399,8 +455,11 @@
           </div>
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-secondary" onclick="selectAll()">
-            <i class="fa-solid fa-check-double"></i> Selecionar Tudo
+          <button class="btn btn-secondary" onclick="expandirTodos()">
+            <i class="fa-solid fa-expand"></i> Expandir Todos
+          </button>
+          <button class="btn btn-secondary" onclick="recolherTodos()">
+            <i class="fa-solid fa-compress"></i> Recolher Todos
           </button>
           <button class="btn btn-secondary" id="btnArquivarTodas" onclick="confirmarArquivarTodas()">
             <i class="fa-solid fa-archive"></i> Arquivar Todas
@@ -427,32 +486,15 @@
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="table-container">
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th class="checkbox-cell">
-                  <div class="checkbox" id="checkAll" onclick="toggleSelectAll()"></div>
-                </th>
-                <th>Cliente</th>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="pagination">
-          <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
-          <div class="pagination-controls" id="paginationControls"></div>
-        </div>
+      <!-- Accordion Container -->
+      <div class="accordion-container" id="accordionContainer">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="paginationContainer" style="display:none;">
+        <div class="pagination-info" id="paginationInfo">Mostrando 0 clientes</div>
+        <div class="pagination-controls" id="paginationControls"></div>
       </div>
     </main>
   </div>
@@ -478,7 +520,7 @@
     let currentTab = 'ativas';
     let currentPage = 1;
     let selectedIds = new Set();
-    let cobrancasData = [];
+    let clientesAgrupados = [];
     let acaoConfirmada = null;
     let searchTimeout = null;
 
@@ -508,9 +550,9 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
       
-      // Atualizar botões
       document.getElementById('btnArquivarSelecionadas').style.display = tab === 'ativas' ? 'inline-flex' : 'none';
       document.getElementById('btnDesarquivarSelecionadas').style.display = tab === 'arquivadas' ? 'inline-flex' : 'none';
+      document.getElementById('btnArquivarTodas').style.display = tab === 'ativas' ? 'inline-flex' : 'none';
       
       carregarCobrancas();
     }
@@ -531,81 +573,156 @@
       } catch (err) { console.error('Erro ao carregar estatísticas:', err); }
     }
 
-    // Carregar cobranças
+    // Carregar cobranças e agrupar por cliente
     async function carregarCobrancas() {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>';
+      const container = document.getElementById('accordionContainer');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
       
       try {
         const busca = document.getElementById('searchInput').value;
         const endpoint = currentTab === 'ativas' ? '/api/cobrancas' : '/api/cobrancas/arquivadas';
-        const url = `${API_URL}${endpoint}?page=${currentPage}&limit=50${busca ? '&busca=' + encodeURIComponent(busca) : ''}`;
+        const url = `${API_URL}${endpoint}?page=${currentPage}&limit=500${busca ? '&busca=' + encodeURIComponent(busca) : ''}`;
         
         const res = await fetch(url, { headers: getHeaders() });
         const data = await res.json();
         
         if (data.success) {
-          cobrancasData = data.data;
-          renderTable(data.data);
-          renderPagination(data.pagination);
+          // Agrupar por cliente
+          clientesAgrupados = agruparPorCliente(data.data);
+          renderAccordion(clientesAgrupados);
+          
+          document.getElementById('paginationContainer').style.display = 'flex';
+          document.getElementById('paginationInfo').textContent = `${clientesAgrupados.length} cliente(s) com ${data.data.length} cobrança(s)`;
         }
       } catch (err) {
         console.error('Erro ao carregar cobranças:', err);
-        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-exclamation-circle"></i><h3>Erro ao carregar dados</h3></div></td></tr>';
+        container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-exclamation-circle"></i><h3>Erro ao carregar dados</h3></div>';
       }
     }
 
-    function renderTable(cobrancas) {
-      const tbody = document.getElementById('tableBody');
+    function agruparPorCliente(cobrancas) {
+      const grupos = {};
       
-      if (!cobrancas || cobrancas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-inbox"></i><h3>Nenhuma cobrança encontrada</h3><p>Não há cobranças ${currentTab === 'arquivadas' ? 'arquivadas' : 'ativas'} no momento.</p></div></td></tr>`;
+      cobrancas.forEach(c => {
+        const clienteNome = c.cliente || 'Sem cliente';
+        const clienteId = c.cliente_id || c.clienteId || 'sem-id';
+        const key = `${clienteId}-${clienteNome}`;
+        
+        if (!grupos[key]) {
+          grupos[key] = {
+            clienteId: clienteId,
+            clienteNome: clienteNome,
+            cobrancas: [],
+            totalValor: 0
+          };
+        }
+        
+        grupos[key].cobrancas.push(c);
+        grupos[key].totalValor += parseFloat(c.valor_atualizado || c.valorAtualizado || 0);
+      });
+      
+      // Converter para array e ordenar por valor total (maiores primeiro)
+      return Object.values(grupos).sort((a, b) => b.totalValor - a.totalValor);
+    }
+
+    function renderAccordion(clientes) {
+      const container = document.getElementById('accordionContainer');
+      
+      if (!clientes || clientes.length === 0) {
+        container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-inbox"></i><h3>Nenhuma cobrança encontrada</h3><p>Não há cobranças ${currentTab === 'arquivadas' ? 'arquivadas' : 'ativas'} no momento.</p></div>`;
         return;
       }
 
-      tbody.innerHTML = cobrancas.map(c => `
-        <tr data-id="${c.id}">
-          <td class="checkbox-cell">
-            <div class="checkbox ${selectedIds.has(c.id) ? 'checked' : ''}" onclick="toggleSelect('${c.id}')"></div>
-          </td>
-          <td class="cliente-cell">${c.cliente || 'Sem cliente'}</td>
-          <td>${c.descricao || '-'}</td>
-          <td class="valor-cell">${formatMoney(c.valor_atualizado || c.valorAtualizado)}</td>
-          <td>${formatDate(c.vencimento)}</td>
-          <td><span class="status-badge ${c.status}">${c.status}</span></td>
-          <td class="actions-cell">
-            <button class="action-btn" title="Ver detalhes" onclick="verDetalhes('${c.id}')"><i class="fa-solid fa-eye"></i></button>
-            ${currentTab === 'ativas' 
-              ? `<button class="action-btn danger" title="Arquivar" onclick="arquivarUma('${c.id}')"><i class="fa-solid fa-archive"></i></button>`
-              : `<button class="action-btn" title="Desarquivar" onclick="desarquivarUma('${c.id}')"><i class="fa-solid fa-box-open"></i></button>`
-            }
-          </td>
-        </tr>
+      container.innerHTML = clientes.map((cliente, index) => `
+        <div class="client-group" data-client-index="${index}">
+          <div class="client-header" onclick="toggleGroup(${index}, event)">
+            <div class="client-checkbox ${getClientCheckboxState(cliente)}" onclick="toggleClientSelection(${index}, event)"></div>
+            <button class="client-toggle">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <div class="client-info">
+              <div class="client-name">${cliente.clienteNome}</div>
+              <div class="client-meta">
+                <span><i class="fa-solid fa-file-invoice"></i> ${cliente.cobrancas.length} cobrança(s)</span>
+              </div>
+            </div>
+            <div class="client-stats">
+              <div class="client-stat">
+                <div class="client-stat-label">Quantidade</div>
+                <div class="client-stat-value count">${cliente.cobrancas.length}</div>
+              </div>
+              <div class="client-stat">
+                <div class="client-stat-label">Total</div>
+                <div class="client-stat-value gold">${formatMoney(cliente.totalValor)}</div>
+              </div>
+            </div>
+            <div class="client-actions">
+              ${currentTab === 'ativas' 
+                ? `<button class="action-btn danger" title="Arquivar todas do cliente" onclick="arquivarCliente(${index}, event)"><i class="fa-solid fa-archive"></i></button>`
+                : `<button class="action-btn" title="Desarquivar todas do cliente" onclick="desarquivarCliente(${index}, event)"><i class="fa-solid fa-box-open"></i></button>`
+              }
+            </div>
+          </div>
+          <div class="cobrancas-list">
+            ${cliente.cobrancas.map(c => `
+              <div class="cobranca-item" data-id="${c.id}">
+                <div class="cobranca-checkbox ${selectedIds.has(c.id) ? 'checked' : ''}" onclick="toggleCobrancaSelection('${c.id}', event)"></div>
+                <div class="cobranca-info">
+                  <div class="cobranca-desc">${c.descricao || '-'}</div>
+                </div>
+                <div class="cobranca-valor">${formatMoney(c.valor_atualizado || c.valorAtualizado)}</div>
+                <div class="cobranca-venc">${formatDate(c.vencimento)}</div>
+                <span class="status-badge ${c.status}">${c.status}</span>
+                <div class="cobranca-actions">
+                  <button class="action-btn" title="Ver detalhes" onclick="verDetalhes('${c.id}')"><i class="fa-solid fa-eye"></i></button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
       `).join('');
     }
 
-    function renderPagination(pag) {
-      if (!pag) return;
-      document.getElementById('paginationInfo').textContent = `Página ${pag.page} de ${pag.totalPages} (${pag.total} registros)`;
-      
-      let html = '';
-      html += `<button class="page-btn" onclick="goToPage(${pag.page - 1})" ${!pag.hasPrev ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
-      
-      for (let i = Math.max(1, pag.page - 2); i <= Math.min(pag.totalPages, pag.page + 2); i++) {
-        html += `<button class="page-btn ${i === pag.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-      }
-      
-      html += `<button class="page-btn" onclick="goToPage(${pag.page + 1})" ${!pag.hasNext ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
-      document.getElementById('paginationControls').innerHTML = html;
+    function getClientCheckboxState(cliente) {
+      const selectedCount = cliente.cobrancas.filter(c => selectedIds.has(c.id)).length;
+      if (selectedCount === 0) return '';
+      if (selectedCount === cliente.cobrancas.length) return 'checked';
+      return 'partial';
     }
 
-    function goToPage(page) {
-      currentPage = page;
-      carregarCobrancas();
+    function toggleGroup(index, event) {
+      if (event.target.closest('.client-checkbox') || event.target.closest('.action-btn')) return;
+      
+      const group = document.querySelector(`.client-group[data-client-index="${index}"]`);
+      group.classList.toggle('expanded');
+    }
+
+    function expandirTodos() {
+      document.querySelectorAll('.client-group').forEach(g => g.classList.add('expanded'));
+    }
+
+    function recolherTodos() {
+      document.querySelectorAll('.client-group').forEach(g => g.classList.remove('expanded'));
     }
 
     // Seleção
-    function toggleSelect(id) {
+    function toggleClientSelection(index, event) {
+      event.stopPropagation();
+      const cliente = clientesAgrupados[index];
+      const allSelected = cliente.cobrancas.every(c => selectedIds.has(c.id));
+      
+      if (allSelected) {
+        cliente.cobrancas.forEach(c => selectedIds.delete(c.id));
+      } else {
+        cliente.cobrancas.forEach(c => selectedIds.add(c.id));
+      }
+      
+      updateCheckboxes();
+      updateSelectionBar();
+    }
+
+    function toggleCobrancaSelection(id, event) {
+      event.stopPropagation();
       if (selectedIds.has(id)) {
         selectedIds.delete(id);
       } else {
@@ -615,24 +732,6 @@
       updateSelectionBar();
     }
 
-    function toggleSelectAll() {
-      const checkAll = document.getElementById('checkAll');
-      if (selectedIds.size === cobrancasData.length && cobrancasData.length > 0) {
-        selectedIds.clear();
-      } else {
-        cobrancasData.forEach(c => selectedIds.add(c.id));
-      }
-      updateCheckboxes();
-      updateSelectionBar();
-    }
-
-    function selectAll() {
-      cobrancasData.forEach(c => selectedIds.add(c.id));
-      updateCheckboxes();
-      updateSelectionBar();
-      showToast(`${selectedIds.size} cobranças selecionadas`, 'info');
-    }
-
     function clearSelection() {
       selectedIds.clear();
       updateCheckboxes();
@@ -640,13 +739,23 @@
     }
 
     function updateCheckboxes() {
-      document.querySelectorAll('tbody .checkbox').forEach(cb => {
-        const id = cb.closest('tr').dataset.id;
+      // Atualizar checkboxes das cobranças
+      document.querySelectorAll('.cobranca-checkbox').forEach(cb => {
+        const id = cb.closest('.cobranca-item').dataset.id;
         cb.classList.toggle('checked', selectedIds.has(id));
       });
       
-      const checkAll = document.getElementById('checkAll');
-      checkAll.classList.toggle('checked', selectedIds.size === cobrancasData.length && cobrancasData.length > 0);
+      // Atualizar checkboxes dos clientes
+      clientesAgrupados.forEach((cliente, index) => {
+        const group = document.querySelector(`.client-group[data-client-index="${index}"]`);
+        if (!group) return;
+        
+        const cb = group.querySelector('.client-checkbox');
+        const state = getClientCheckboxState(cliente);
+        
+        cb.classList.remove('checked', 'partial');
+        if (state) cb.classList.add(state);
+      });
     }
 
     function updateSelectionBar() {
@@ -694,7 +803,7 @@
     }
 
     function confirmarArquivarTodas() {
-      abrirModal('Arquivar Todas', 'Tem certeza que deseja arquivar TODAS as cobranças ativas? Esta ação pode demorar.', arquivarTodas);
+      abrirModal('Arquivar Todas', 'Tem certeza que deseja arquivar TODAS as cobranças ativas?', arquivarTodas);
     }
 
     async function arquivarSelecionadas() {
@@ -764,16 +873,21 @@
       }
     }
 
-    async function arquivarUma(id) {
+    async function arquivarCliente(index, event) {
+      event.stopPropagation();
+      const cliente = clientesAgrupados[index];
+      const ids = cliente.cobrancas.map(c => c.id);
+      
       try {
+        showToast('Arquivando cobranças do cliente...', 'info');
         const res = await fetch(`${API_URL}/api/cobrancas/arquivar-massa`, {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ ids: [id] })
+          body: JSON.stringify({ ids })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('Cobrança arquivada', 'success');
+          showToast(`${data.arquivadas} cobrança(s) de ${cliente.clienteNome} arquivada(s)`, 'success');
           carregarCobrancas();
           carregarEstatisticas();
         }
@@ -782,16 +896,21 @@
       }
     }
 
-    async function desarquivarUma(id) {
+    async function desarquivarCliente(index, event) {
+      event.stopPropagation();
+      const cliente = clientesAgrupados[index];
+      const ids = cliente.cobrancas.map(c => c.id);
+      
       try {
+        showToast('Desarquivando cobranças do cliente...', 'info');
         const res = await fetch(`${API_URL}/api/cobrancas/desarquivar-massa`, {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ ids: [id] })
+          body: JSON.stringify({ ids })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('Cobrança desarquivada', 'success');
+          showToast(`${data.desarquivadas} cobrança(s) de ${cliente.clienteNome} desarquivada(s)`, 'success');
           carregarCobrancas();
           carregarEstatisticas();
         }
