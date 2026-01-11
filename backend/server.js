@@ -494,6 +494,7 @@ app.get("/novo-agendamento", sendFront("novo-agendamento.html"));
 app.get("/configuracoes", sendFront("configuracoes.html"));
 app.get("/consulta-cliente", sendFront("consulta-cliente.html"));
 app.get("/importar-cobrancas", sendFront("importar-cobrancas.html"));
+app.get("/lembretes", sendFront("lembretes.html"));
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
@@ -2455,6 +2456,532 @@ app.get("/api/cobrancas/estatisticas-arquivamento", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao carregar estatísticas." });
   }
 });
+// =====================================================
+// SISTEMA DE LEMBRETES AUTOMÁTICOS - ACERTIVE
+// Cole este código no seu server.js (antes do app.listen)
+// =====================================================
+
+// ============ CONFIGURAÇÕES DE LEMBRETES ============
+const LEMBRETES_CONFIG = {
+  ativo: false, // DESATIVADO POR PADRÃO - ative na tela de configurações
+  diasAntes: [7, 3, 1, 0], // 7 dias, 3 dias, 1 dia, no dia
+  diasApos: [1, 3, 7, 15, 30], // 1, 3, 7, 15, 30 dias após vencimento
+  horarioEnvio: { inicio: 8, fim: 18 }, // Só envia entre 8h e 18h
+  limiteDiario: 100, // Máximo de e-mails por dia
+  emailTeste: null // Se preenchido, envia tudo para este e-mail (modo teste)
+};
+
+// ============ TEMPLATES DE E-MAIL ============
+const EMAIL_TEMPLATES = {
+  novaCobranca: {
+    assunto: 'Nova cobrança registrada - {empresa}',
+    corpo: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #F6C84C, #FFD56A); padding: 20px; border-radius: 10px 10px 0 0;">
+          <h1 style="color: #09090b; margin: 0; font-size: 24px;">{empresa}</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333;">Olá <strong>{cliente_nome}</strong>,</p>
+          <p style="font-size: 16px; color: #333;">Uma nova cobrança foi registrada em seu nome:</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F6C84C;">
+            <p style="margin: 5px 0;"><strong>Descrição:</strong> {descricao}</p>
+            <p style="margin: 5px 0;"><strong>Valor:</strong> <span style="color: #F6C84C; font-size: 20px; font-weight: bold;">{valor}</span></p>
+            <p style="margin: 5px 0;"><strong>Vencimento:</strong> {vencimento}</p>
+          </div>
+          <p style="font-size: 14px; color: #666;">Em caso de dúvidas, entre em contato conosco.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="font-size: 12px; color: #999; text-align: center;">Este é um e-mail automático. Por favor, não responda.</p>
+        </div>
+      </div>
+    `
+  },
+  
+  lembrete7dias: {
+    assunto: 'Lembrete: Sua fatura vence em 7 dias - {empresa}',
+    corpo: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 20px; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">📅 Lembrete de Vencimento</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333;">Olá <strong>{cliente_nome}</strong>,</p>
+          <p style="font-size: 16px; color: #333;">Este é um lembrete amigável de que sua fatura vence em <strong>7 dias</strong>:</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+            <p style="margin: 5px 0;"><strong>Descrição:</strong> {descricao}</p>
+            <p style="margin: 5px 0;"><strong>Valor:</strong> <span style="color: #3b82f6; font-size: 20px; font-weight: bold;">{valor}</span></p>
+            <p style="margin: 5px 0;"><strong>Vencimento:</strong> {vencimento}</p>
+          </div>
+          <p style="font-size: 14px; color: #666;">Evite juros e multas, efetue o pagamento até a data de vencimento.</p>
+        </div>
+      </div>
+    `
+  },
+  
+  lembrete3dias: {
+    assunto: 'Atenção: Sua fatura vence em 3 dias - {empresa}',
+    corpo: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #f59e0b, #fbbf24); padding: 20px; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">⚠️ Vencimento Próximo</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333;">Olá <strong>{cliente_nome}</strong>,</p>
+          <p style="font-size: 16px; color: #333;">Sua fatura vence em <strong>3 dias</strong>. Não deixe para a última hora!</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 5px 0;"><strong>Descrição:</strong> {descricao}</p>
+            <p style="margin: 5px 0;"><strong>Valor:</strong> <span style="color: #f59e0b; font-size: 20px; font-weight: bold;">{valor}</span></p>
+            <p style="margin: 5px 0;"><strong>Vencimento:</strong> {vencimento}</p>
+          </div>
+          <p style="font-size: 14px; color: #666;">Efetue o pagamento para evitar cobranças adicionais.</p>
+        </div>
+      </div>
+    `
+  },
+  
+  lembreteHoje: {
+    assunto: 'URGENTE: Sua fatura vence HOJE - {empresa}',
+    corpo: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #ef4444, #f87171); padding: 20px; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">🚨 Vencimento HOJE</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333;">Olá <strong>{cliente_nome}</strong>,</p>
+          <p style="font-size: 16px; color: #333;">Sua fatura vence <strong>HOJE</strong>! Evite juros e multas.</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+            <p style="margin: 5px 0;"><strong>Descrição:</strong> {descricao}</p>
+            <p style="margin: 5px 0;"><strong>Valor:</strong> <span style="color: #ef4444; font-size: 20px; font-weight: bold;">{valor}</span></p>
+            <p style="margin: 5px 0;"><strong>Vencimento:</strong> {vencimento}</p>
+          </div>
+          <p style="font-size: 14px; color: #666;">Entre em contato caso já tenha efetuado o pagamento.</p>
+        </div>
+      </div>
+    `
+  },
+  
+  cobrancaAtraso: {
+    assunto: 'AVISO: Sua fatura está em atraso - {empresa}',
+    corpo: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #dc2626, #ef4444); padding: 20px; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">❌ Fatura em Atraso</h1>
+        </div>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; color: #333;">Olá <strong>{cliente_nome}</strong>,</p>
+          <p style="font-size: 16px; color: #333;">Identificamos que sua fatura está em <strong>atraso há {dias_atraso} dia(s)</strong>:</p>
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+            <p style="margin: 5px 0;"><strong>Descrição:</strong> {descricao}</p>
+            <p style="margin: 5px 0;"><strong>Valor Original:</strong> {valor}</p>
+            <p style="margin: 5px 0;"><strong>Vencimento:</strong> {vencimento}</p>
+            <p style="margin: 5px 0;"><strong>Dias em atraso:</strong> <span style="color: #dc2626; font-weight: bold;">{dias_atraso} dias</span></p>
+          </div>
+          <p style="font-size: 14px; color: #666;">Entre em contato conosco para regularizar sua situação e evitar medidas adicionais.</p>
+        </div>
+      </div>
+    `
+  }
+};
+
+// ============ FUNÇÃO PARA ENVIAR E-MAIL ============
+async function enviarEmailLembrete(cliente, cobranca, tipo, empresaNome = 'ACERTIVE') {
+  try {
+    // Verificar se já enviou este tipo para esta cobrança hoje
+    const jaEnviou = await pool.query(`
+      SELECT id FROM historico_lembretes 
+      WHERE cobranca_id = $1 AND tipo = $2 AND DATE(created_at) = CURRENT_DATE
+    `, [cobranca.id, tipo]);
+    
+    if (jaEnviou.rows.length > 0) {
+      console.log(`[LEMBRETE] Já enviado ${tipo} para cobrança ${cobranca.id} hoje`);
+      return { success: false, reason: 'ja_enviado' };
+    }
+    
+    // Pegar template
+    const template = EMAIL_TEMPLATES[tipo];
+    if (!template) {
+      console.error(`[LEMBRETE] Template não encontrado: ${tipo}`);
+      return { success: false, reason: 'template_not_found' };
+    }
+    
+    // Calcular dias de atraso se necessário
+    const hoje = new Date();
+    const vencimento = new Date(cobranca.vencimento);
+    const diasAtraso = Math.floor((hoje - vencimento) / (1000 * 60 * 60 * 24));
+    
+    // Substituir variáveis no template
+    const variaveis = {
+      '{empresa}': empresaNome,
+      '{cliente_nome}': cliente.nome || 'Cliente',
+      '{descricao}': cobranca.descricao || 'Cobrança',
+      '{valor}': new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cobranca.valor_atualizado || cobranca.valor_original),
+      '{vencimento}': new Date(cobranca.vencimento).toLocaleDateString('pt-BR'),
+      '{dias_atraso}': diasAtraso > 0 ? diasAtraso : 0
+    };
+    
+    let assunto = template.assunto;
+    let corpo = template.corpo;
+    
+    for (const [chave, valor] of Object.entries(variaveis)) {
+      assunto = assunto.replace(new RegExp(chave, 'g'), valor);
+      corpo = corpo.replace(new RegExp(chave, 'g'), valor);
+    }
+    
+    // Destinatário (modo teste ou real)
+    const destinatario = LEMBRETES_CONFIG.emailTeste || cliente.email;
+    
+    // Verificar se tem e-mail
+    if (!destinatario) {
+      console.log(`[LEMBRETE] Cliente ${cliente.id} sem e-mail`);
+      return { success: false, reason: 'sem_email' };
+    }
+    
+    // Enviar e-mail
+    const mailOptions = {
+      from: `"${empresaNome}" <${process.env.EMAIL_USER}>`,
+      to: destinatario,
+      subject: assunto,
+      html: corpo
+    };
+    
+    await emailTransporter.sendMail(mailOptions);
+    
+    // Registrar no histórico
+    await pool.query(`
+      INSERT INTO historico_lembretes (cobranca_id, cliente_id, tipo, canal, destinatario, assunto, status)
+      VALUES ($1, $2, $3, 'email', $4, $5, 'enviado')
+    `, [cobranca.id, cliente.id, tipo, destinatario, assunto]);
+    
+    console.log(`[LEMBRETE] ✅ E-mail ${tipo} enviado para ${destinatario}`);
+    return { success: true };
+    
+  } catch (err) {
+    console.error(`[LEMBRETE] ❌ Erro ao enviar e-mail:`, err.message);
+    
+    // Registrar erro no histórico
+    try {
+      await pool.query(`
+        INSERT INTO historico_lembretes (cobranca_id, cliente_id, tipo, canal, destinatario, status, erro)
+        VALUES ($1, $2, $3, 'email', $4, 'erro', $5)
+      `, [cobranca.id, cliente.id, tipo, cliente.email, err.message]);
+    } catch (e) {}
+    
+    return { success: false, reason: 'erro_envio', error: err.message };
+  }
+}
+
+// ============ JOB DE LEMBRETES AUTOMÁTICOS ============
+async function processarLembretesAutomaticos() {
+  // Verificar se está ativo
+  if (!LEMBRETES_CONFIG.ativo) {
+    console.log('[LEMBRETES] Sistema desativado');
+    return;
+  }
+  
+  // Verificar horário comercial
+  const hora = new Date().getHours();
+  if (hora < LEMBRETES_CONFIG.horarioEnvio.inicio || hora >= LEMBRETES_CONFIG.horarioEnvio.fim) {
+    console.log('[LEMBRETES] Fora do horário de envio');
+    return;
+  }
+  
+  console.log('[LEMBRETES] Iniciando processamento...');
+  
+  let enviados = 0;
+  const limite = LEMBRETES_CONFIG.limiteDiario;
+  
+  try {
+    // Verificar quantos já enviou hoje
+    const enviadosHoje = await pool.query(`
+      SELECT COUNT(*) as total FROM historico_lembretes 
+      WHERE DATE(created_at) = CURRENT_DATE AND status = 'enviado'
+    `);
+    
+    const jaEnviados = parseInt(enviadosHoje.rows[0]?.total || 0);
+    if (jaEnviados >= limite) {
+      console.log(`[LEMBRETES] Limite diário atingido (${jaEnviados}/${limite})`);
+      return;
+    }
+    
+    const restante = limite - jaEnviados;
+    
+    // 1. Lembretes ANTES do vencimento (7, 3, 1 dias)
+    for (const dias of LEMBRETES_CONFIG.diasAntes) {
+      if (enviados >= restante) break;
+      
+      const tipoLembrete = dias === 7 ? 'lembrete7dias' : dias === 3 ? 'lembrete3dias' : dias === 1 ? 'lembrete1dia' : 'lembreteHoje';
+      
+      const cobrancas = await pool.query(`
+        SELECT c.*, cl.nome as cliente_nome, cl.email as cliente_email, cl.id as cliente_id_real
+        FROM cobrancas c
+        JOIN clientes cl ON cl.id = c.cliente_id
+        WHERE c.status IN ('pendente')
+          AND DATE(c.vencimento) = CURRENT_DATE + INTERVAL '${dias} days'
+          AND cl.email IS NOT NULL AND cl.email != ''
+          AND c.id NOT IN (
+            SELECT cobranca_id FROM historico_lembretes 
+            WHERE tipo = $1 AND DATE(created_at) = CURRENT_DATE
+          )
+        LIMIT $2
+      `, [tipoLembrete, restante - enviados]);
+      
+      for (const cob of cobrancas.rows) {
+        const cliente = { id: cob.cliente_id_real, nome: cob.cliente_nome, email: cob.cliente_email };
+        const result = await enviarEmailLembrete(cliente, cob, tipoLembrete);
+        if (result.success) enviados++;
+      }
+    }
+    
+    // 2. Cobranças em ATRASO
+    for (const dias of LEMBRETES_CONFIG.diasApos) {
+      if (enviados >= restante) break;
+      
+      const tipoLembrete = 'cobrancaAtraso';
+      
+      const cobrancas = await pool.query(`
+        SELECT c.*, cl.nome as cliente_nome, cl.email as cliente_email, cl.id as cliente_id_real
+        FROM cobrancas c
+        JOIN clientes cl ON cl.id = c.cliente_id
+        WHERE c.status IN ('pendente', 'vencido')
+          AND DATE(c.vencimento) = CURRENT_DATE - INTERVAL '${dias} days'
+          AND cl.email IS NOT NULL AND cl.email != ''
+          AND c.id NOT IN (
+            SELECT cobranca_id FROM historico_lembretes 
+            WHERE tipo = $1 AND dias_atraso = $2 AND DATE(created_at) = CURRENT_DATE
+          )
+        LIMIT $3
+      `, [tipoLembrete, dias, restante - enviados]);
+      
+      for (const cob of cobrancas.rows) {
+        const cliente = { id: cob.cliente_id_real, nome: cob.cliente_nome, email: cob.cliente_email };
+        const result = await enviarEmailLembrete(cliente, cob, tipoLembrete);
+        if (result.success) enviados++;
+      }
+    }
+    
+    console.log(`[LEMBRETES] ✅ Processamento concluído. ${enviados} e-mail(s) enviado(s).`);
+    
+  } catch (err) {
+    console.error('[LEMBRETES] ❌ Erro no processamento:', err.message);
+  }
+}
+
+// ============ AGENDAR JOB (RODA A CADA HORA) ============
+setInterval(processarLembretesAutomaticos, 60 * 60 * 1000); // 1 hora
+
+// Rodar uma vez ao iniciar (após 30 segundos)
+setTimeout(processarLembretesAutomaticos, 30000);
+
+
+// ============ ROTAS DA API ============
+
+// GET /api/lembretes/config - Obter configurações
+app.get("/api/lembretes/config", auth, async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      config: LEMBRETES_CONFIG,
+      templates: Object.keys(EMAIL_TEMPLATES)
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/lembretes/config - Atualizar configurações
+app.post("/api/lembretes/config", auth, async (req, res) => {
+  try {
+    const { ativo, emailTeste, limiteDiario } = req.body;
+    
+    if (typeof ativo === 'boolean') LEMBRETES_CONFIG.ativo = ativo;
+    if (emailTeste !== undefined) LEMBRETES_CONFIG.emailTeste = emailTeste || null;
+    if (limiteDiario) LEMBRETES_CONFIG.limiteDiario = parseInt(limiteDiario);
+    
+    res.json({
+      success: true,
+      message: 'Configurações atualizadas',
+      config: LEMBRETES_CONFIG
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/lembretes/ativar - Ativar/desativar sistema
+app.post("/api/lembretes/ativar", auth, async (req, res) => {
+  try {
+    const { ativo } = req.body;
+    LEMBRETES_CONFIG.ativo = ativo === true;
+    
+    res.json({
+      success: true,
+      message: LEMBRETES_CONFIG.ativo ? 'Sistema de lembretes ATIVADO' : 'Sistema de lembretes DESATIVADO',
+      ativo: LEMBRETES_CONFIG.ativo
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/lembretes/teste - Enviar e-mail de teste
+app.post("/api/lembretes/teste", auth, async (req, res) => {
+  try {
+    const { email, tipo } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'E-mail é obrigatório' });
+    }
+    
+    const template = EMAIL_TEMPLATES[tipo || 'novaCobranca'];
+    if (!template) {
+      return res.status(400).json({ success: false, message: 'Tipo de template inválido' });
+    }
+    
+    // Dados de exemplo
+    const variaveis = {
+      '{empresa}': 'ACERTIVE',
+      '{cliente_nome}': 'Cliente Teste',
+      '{descricao}': 'Cobrança de Teste',
+      '{valor}': 'R$ 150,00',
+      '{vencimento}': new Date().toLocaleDateString('pt-BR'),
+      '{dias_atraso}': '5'
+    };
+    
+    let assunto = template.assunto;
+    let corpo = template.corpo;
+    
+    for (const [chave, valor] of Object.entries(variaveis)) {
+      assunto = assunto.replace(new RegExp(chave, 'g'), valor);
+      corpo = corpo.replace(new RegExp(chave, 'g'), valor);
+    }
+    
+    await transporter.sendMail({
+      from: `"ACERTIVE" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `[TESTE] ${assunto}`,
+      html: corpo
+    });
+    
+    res.json({ success: true, message: `E-mail de teste enviado para ${email}` });
+    
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Erro ao enviar: ' + err.message });
+  }
+});
+
+// GET /api/lembretes/historico - Histórico de envios
+app.get("/api/lembretes/historico", auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+    
+    const result = await pool.query(`
+      SELECT h.*, cl.nome as cliente_nome, c.descricao as cobranca_descricao
+      FROM historico_lembretes h
+      LEFT JOIN clientes cl ON cl.id = h.cliente_id
+      LEFT JOIN cobrancas c ON c.id = h.cobranca_id
+      ORDER BY h.created_at DESC
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+    
+    const countResult = await pool.query(`SELECT COUNT(*) as total FROM historico_lembretes`);
+    
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        page,
+        limit,
+        total: parseInt(countResult.rows[0].total),
+        totalPages: Math.ceil(countResult.rows[0].total / limit)
+      }
+    });
+    
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/lembretes/estatisticas - Estatísticas de envio
+app.get("/api/lembretes/estatisticas", auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'enviado') as total_enviados,
+        COUNT(*) FILTER (WHERE status = 'erro') as total_erros,
+        COUNT(*) FILTER (WHERE DATE(created_at) = CURRENT_DATE) as enviados_hoje,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as enviados_semana
+      FROM historico_lembretes
+    `);
+    
+    res.json({
+      success: true,
+      estatisticas: result.rows[0]
+    });
+    
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/lembretes/enviar-agora - Forçar processamento manual
+app.post("/api/lembretes/enviar-agora", auth, async (req, res) => {
+  try {
+    // Temporariamente ativa e processa
+    const estavativo = LEMBRETES_CONFIG.ativo;
+    LEMBRETES_CONFIG.ativo = true;
+    
+    await processarLembretesAutomaticos();
+    
+    LEMBRETES_CONFIG.ativo = estavativo;
+    
+    res.json({ success: true, message: 'Processamento executado' });
+    
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/cobrancas/:id/notificar - Enviar notificação manual para uma cobrança
+app.post("/api/cobrancas/:id/notificar", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tipo } = req.body;
+    
+    // Buscar cobrança e cliente
+    const result = await pool.query(`
+      SELECT c.*, cl.nome as cliente_nome, cl.email as cliente_email, cl.id as cliente_id_real
+      FROM cobrancas c
+      JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.id = $1
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Cobrança não encontrada' });
+    }
+    
+    const cob = result.rows[0];
+    
+    if (!cob.cliente_email) {
+      return res.status(400).json({ success: false, message: 'Cliente não possui e-mail cadastrado' });
+    }
+    
+    const cliente = { id: cob.cliente_id_real, nome: cob.cliente_nome, email: cob.cliente_email };
+    const envioResult = await enviarEmailLembrete(cliente, cob, tipo || 'novaCobranca');
+    
+    if (envioResult.success) {
+      res.json({ success: true, message: `E-mail enviado para ${cob.cliente_email}` });
+    } else {
+      res.status(400).json({ success: false, message: 'Falha ao enviar: ' + envioResult.reason });
+    }
+    
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+
+console.log('[LEMBRETES] ✅ Sistema de lembretes automáticos carregado (DESATIVADO por padrão)');
 
 // =====================
 // 404
