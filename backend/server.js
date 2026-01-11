@@ -2239,6 +2239,222 @@ app.get("/api/alertas/contador", auth, async (req, res) => {
     return res.status(500).json({ success: false, message: "Erro ao contar alertas." });
   }
 });
+// =====================================================
+// ROTAS DE ARQUIVAMENTO EM MASSA - ACERTIVE
+// Cole este código no seu server.js (antes do app.listen)
+// =====================================================
+
+// POST /api/cobrancas/arquivar-massa - Arquivar múltiplas cobranças
+app.post("/api/cobrancas/arquivar-massa", auth, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Nenhuma cobrança selecionada." });
+    }
+
+    // Limitar a 1000 por vez para evitar timeout
+    if (ids.length > 1000) {
+      return res.status(400).json({ success: false, message: "Máximo de 1000 cobranças por vez." });
+    }
+
+    const result = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'arquivado', updated_at = NOW() 
+      WHERE id = ANY($1) AND status != 'arquivado'
+      RETURNING id
+    `, [ids]);
+
+    const arquivadas = result.rowCount;
+
+    return res.json({ 
+      success: true, 
+      message: `${arquivadas} cobrança(s) arquivada(s) com sucesso.`,
+      arquivadas
+    });
+
+  } catch (err) {
+    console.error("[ARQUIVAR MASSA] Erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao arquivar cobranças." });
+  }
+});
+
+
+// POST /api/cobrancas/desarquivar-massa - Desarquivar múltiplas cobranças
+app.post("/api/cobrancas/desarquivar-massa", auth, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Nenhuma cobrança selecionada." });
+    }
+
+    if (ids.length > 1000) {
+      return res.status(400).json({ success: false, message: "Máximo de 1000 cobranças por vez." });
+    }
+
+    const result = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'pendente', updated_at = NOW() 
+      WHERE id = ANY($1) AND status = 'arquivado'
+      RETURNING id
+    `, [ids]);
+
+    const desarquivadas = result.rowCount;
+
+    return res.json({ 
+      success: true, 
+      message: `${desarquivadas} cobrança(s) desarquivada(s) com sucesso.`,
+      desarquivadas
+    });
+
+  } catch (err) {
+    console.error("[DESARQUIVAR MASSA] Erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao desarquivar cobranças." });
+  }
+});
+
+
+// POST /api/cobrancas/arquivar-todas - Arquivar TODAS as cobranças filtradas
+app.post("/api/cobrancas/arquivar-todas", auth, async (req, res) => {
+  try {
+    const { filtros } = req.body;
+    
+    let whereClause = "WHERE status != 'arquivado'";
+    const params = [];
+    let paramIndex = 1;
+
+    // Aplicar filtros opcionais
+    if (filtros?.status) {
+      whereClause += ` AND status = $${paramIndex}`;
+      params.push(filtros.status);
+      paramIndex++;
+    }
+
+    if (filtros?.vencimentoAte) {
+      whereClause += ` AND vencimento <= $${paramIndex}`;
+      params.push(filtros.vencimentoAte);
+      paramIndex++;
+    }
+
+    if (filtros?.clienteId) {
+      whereClause += ` AND cliente_id = $${paramIndex}`;
+      params.push(filtros.clienteId);
+      paramIndex++;
+    }
+
+    const result = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'arquivado', updated_at = NOW() 
+      ${whereClause}
+      RETURNING id
+    `, params);
+
+    const arquivadas = result.rowCount;
+
+    return res.json({ 
+      success: true, 
+      message: `${arquivadas} cobrança(s) arquivada(s) com sucesso.`,
+      arquivadas
+    });
+
+  } catch (err) {
+    console.error("[ARQUIVAR TODAS] Erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao arquivar cobranças." });
+  }
+});
+
+
+// GET /api/cobrancas/arquivadas - Listar cobranças arquivadas com paginação
+app.get("/api/cobrancas/arquivadas", auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+    const busca = req.query.busca || null;
+
+    let whereClause = "WHERE c.status = 'arquivado'";
+    const params = [];
+    let paramIndex = 1;
+
+    if (busca) {
+      whereClause += ` AND (cl.nome ILIKE $${paramIndex} OR c.descricao ILIKE $${paramIndex})`;
+      params.push(`%${busca}%`);
+      paramIndex++;
+    }
+
+    // Query principal
+    const cobrancas = await pool.query(`
+      SELECT 
+        c.id, c.descricao, c.valor_original, c.valor_atualizado, 
+        c.vencimento, c.status, c.created_at, c.updated_at,
+        COALESCE(cl.nome, 'Sem cliente') as cliente,
+        cl.id as cliente_id
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      ${whereClause}
+      ORDER BY c.updated_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `, [...params, limit, offset]);
+
+    // Contagem total
+    const countResult = await pool.query(`
+      SELECT COUNT(*)::int as total
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      ${whereClause}
+    `, params);
+
+    const total = countResult.rows[0]?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return res.json({
+      success: true,
+      data: cobrancas.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+
+  } catch (err) {
+    console.error("[COBRANCAS ARQUIVADAS] Erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao carregar cobranças arquivadas." });
+  }
+});
+
+
+// GET /api/cobrancas/estatisticas-arquivamento - Estatísticas para exibir
+app.get("/api/cobrancas/estatisticas-arquivamento", auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*) FILTER (WHERE status != 'arquivado')::int as ativas,
+        COUNT(*) FILTER (WHERE status = 'arquivado')::int as arquivadas,
+        COALESCE(SUM(valor_atualizado) FILTER (WHERE status != 'arquivado'), 0)::numeric as valor_ativas,
+        COALESCE(SUM(valor_atualizado) FILTER (WHERE status = 'arquivado'), 0)::numeric as valor_arquivadas
+      FROM cobrancas
+    `);
+
+    const stats = result.rows[0];
+
+    return res.json({
+      success: true,
+      ativas: stats.ativas || 0,
+      arquivadas: stats.arquivadas || 0,
+      valorAtivas: parseFloat(stats.valor_ativas) || 0,
+      valorArquivadas: parseFloat(stats.valor_arquivadas) || 0
+    });
+
+  } catch (err) {
+    console.error("[ESTATISTICAS ARQUIVAMENTO] Erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao carregar estatísticas." });
+  }
+});
 
 // =====================
 // 404
