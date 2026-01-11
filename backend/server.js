@@ -16,9 +16,12 @@ const multer = require("multer");
 const XLSX = require("xlsx");
 const { chromium } = require("playwright");
 const nodemailer = require("nodemailer");
+const compression = require('compression');
+
 
 const app = express();
 app.set("trust proxy", 1);
+app.use(compression());
 
 const PORT = process.env.PORT || 3000;
 
