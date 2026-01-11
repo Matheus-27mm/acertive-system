@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cobranças - ACERTIVE Enterprise</title>
+  <title>ACERTIVE • Cobranças</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -12,14 +12,12 @@
       --bg-primary: #09090b;
       --bg-secondary: #0f0f12;
       --bg-card: rgba(17, 17, 21, 0.95);
-      --bg-card-hover: rgba(24, 24, 30, 0.98);
       --bg-sidebar: #0c0c0f;
       --text-primary: #fafafa;
       --text-secondary: #a1a1aa;
       --text-muted: #71717a;
       --gold: #F6C84C;
       --gold-light: #FFD56A;
-      --gold-dark: #d4a833;
       --gold-glow: rgba(246, 200, 76, 0.15);
       --gold-glow-strong: rgba(246, 200, 76, 0.3);
       --border: rgba(255, 255, 255, 0.08);
@@ -35,64 +33,36 @@
       --purple: #a855f7;
       --purple-bg: rgba(168, 85, 247, 0.15);
       --sidebar-width: 280px;
-      --sidebar-collapsed: 80px;
       --header-height: 70px;
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
-      --radius-xl: 20px;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
       --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
       --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
       --transition-fast: 0.15s ease;
       --transition-normal: 0.25s ease;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--gold-glow); }
-
+    /* Sidebar igual ao dashboard */
     .sidebar {
-      position: fixed; left: 0; top: 0;
-      width: var(--sidebar-width); height: 100vh;
-      background: var(--bg-sidebar);
-      border-right: 1px solid var(--border);
-      z-index: 1000;
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
       display: flex; flex-direction: column;
-      transition: width var(--transition-normal);
     }
-    .sidebar.collapsed { width: var(--sidebar-collapsed); }
-    .sidebar.collapsed .nav-text,
-    .sidebar.collapsed .logo-text,
-    .sidebar.collapsed .user-info,
-    .sidebar.collapsed .nav-section-title { display: none; }
-    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
-    .sidebar.collapsed .user-avatar { margin: 0 auto; }
-
-    .sidebar-header {
-      padding: 24px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 14px;
-    }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
     .logo-icon {
       min-width: 46px; height: 46px;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 22px; color: var(--bg-primary);
-      box-shadow: var(--shadow-gold);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold);
     }
     .logo-text { display: flex; flex-direction: column; }
     .logo-text span:first-child { font-size: 20px; font-weight: 800; color: var(--text-primary); }
@@ -100,520 +70,223 @@
 
     .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
     .nav-section { margin-bottom: 28px; }
-    .nav-section-title {
-      font-size: 10px; font-weight: 700; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1.5px;
-      padding: 0 12px; margin-bottom: 10px;
-    }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
     .nav-links { display: flex; flex-direction: column; gap: 4px; }
     .nav-link {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px; border-radius: var(--radius-md);
-      color: var(--text-secondary); text-decoration: none;
-      font-weight: 500; font-size: 14px;
-      transition: all var(--transition-fast);
-      position: relative;
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none;
+      font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative;
     }
     .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
-    .nav-link.active {
-      background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
-      color: var(--gold);
-    }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
     .nav-link.active::before {
-      content: ''; position: absolute; left: 0; top: 50%;
-      transform: translateY(-50%); width: 3px; height: 24px;
-      background: var(--gold); border-radius: 0 3px 3px 0;
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0;
     }
     .nav-link i { width: 20px; text-align: center; font-size: 16px; }
-    .nav-badge {
-      margin-left: auto; padding: 2px 8px; border-radius: 10px;
-      font-size: 10px; font-weight: 700;
-    }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
     .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
-    .nav-badge.red { background: var(--red); color: white; }
+    .nav-badge.green { background: var(--green); color: white; }
     .nav-badge.blue { background: var(--blue); color: white; }
 
     .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .user-card {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px; background: rgba(255,255,255,0.03);
-      border-radius: var(--radius-md); cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-    .user-card:hover { background: rgba(255,255,255,0.06); }
-    .user-avatar {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 16px; color: var(--bg-primary);
-    }
-    .user-info { flex: 1; min-width: 0; }
-    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
     .user-role { font-size: 11px; color: var(--text-muted); }
-    .user-menu-btn {
-      width: 28px; height: 28px; background: transparent; border: none;
-      color: var(--text-muted); cursor: pointer; border-radius: 6px;
-      transition: all var(--transition-fast);
-    }
+    .user-menu-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
     .user-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 
-    .main-wrapper {
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      transition: margin-left var(--transition-normal);
-    }
-    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
-
+    /* Main Content */
+    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
+    
     .header {
-      height: var(--header-height);
-      background: rgba(9, 9, 11, 0.8);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
+      height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
     }
     .header-left { display: flex; align-items: center; gap: 20px; }
-    .sidebar-toggle {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text-secondary); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast);
-    }
-    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-    
     .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
     .breadcrumb-item { color: var(--text-muted); }
     .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
-    .breadcrumb-separator { color: var(--text-muted); }
-
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .header-btn {
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text-secondary); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast);
-    }
-    .header-btn:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-    
-    .header-search {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      min-width: 280px;
-      transition: all var(--transition-fast);
-    }
-    .header-search:focus-within { border-color: var(--border-gold); background: var(--gold-glow); }
-    .header-search i { color: var(--text-muted); font-size: 14px; }
-    .header-search input {
-      flex: 1; background: none; border: none; outline: none;
-      color: var(--text-primary); font-size: 13px;
-    }
-    .header-search input::placeholder { color: var(--text-muted); }
 
     .page-content { padding: 32px; }
     
-    .page-header {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 32px; gap: 24px; flex-wrap: wrap;
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; }
+    .page-title-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab {
+      padding: 12px 24px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); color: var(--text-secondary); font-weight: 600;
+      font-size: 14px; cursor: pointer; transition: all var(--transition-fast);
+      display: flex; align-items: center; gap: 8px;
     }
-    .page-title {
-      font-size: 28px; font-weight: 800; color: var(--text-primary);
-      display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+    .tab:hover { border-color: var(--border-gold); color: var(--gold); }
+    .tab.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
+    .tab .count { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: rgba(0,0,0,0.2); }
+    .tab.active .count { background: rgba(0,0,0,0.3); }
+
+    /* Stats Cards */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 16px; display: flex; align-items: center; gap: 12px;
     }
-    .page-title-icon {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
-      border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--gold);
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .stat-icon.gold { background: var(--gold-glow); color: var(--gold); }
+    .stat-icon.green { background: var(--green-bg); color: var(--green); }
+    .stat-icon.red { background: var(--red-bg); color: var(--red); }
+    .stat-icon.purple { background: var(--purple-bg); color: var(--purple); }
+    .stat-info {}
+    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .stat-value { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+
+    /* Toolbar */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .toolbar-left { display: flex; align-items: center; gap: 12px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      min-width: 300px;
     }
-    .page-subtitle { color: var(--text-muted); font-size: 14px; }
-    .page-header-right { display: flex; gap: 12px; flex-wrap: wrap; }
+    .search-box:focus-within { border-color: var(--border-gold); }
+    .search-box i { color: var(--text-muted); }
+    .search-box input { flex: 1; background: none; border: none; outline: none; color: var(--text-primary); font-size: 13px; }
 
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 12px 20px; border-radius: var(--radius-md);
-      font-weight: 600; font-size: 14px; cursor: pointer;
-      transition: all var(--transition-fast);
-      border: none; text-decoration: none; white-space: nowrap;
+      padding: 10px 16px; border-radius: var(--radius-md); font-weight: 600; font-size: 13px;
+      cursor: pointer; transition: all var(--transition-fast); border: none; text-decoration: none;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      color: var(--bg-primary); box-shadow: var(--shadow-gold);
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(246, 200, 76, 0.3); }
-    .btn-secondary {
-      background: rgba(255,255,255,0.05); color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
-    .btn-sm { padding: 8px 14px; font-size: 13px; }
-    .btn-archive {
-      background: var(--purple-bg); color: var(--purple);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-    }
-    .btn-archive:hover { background: rgba(168, 85, 247, 0.25); }
-    .btn-archive.active {
-      background: var(--purple); color: white;
-    }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { box-shadow: var(--shadow-gold); transform: translateY(-2px); }
+    .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--border-gold); color: var(--gold); }
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid transparent; }
+    .btn-danger:hover { background: var(--red); color: white; }
+    .btn-success { background: var(--green-bg); color: var(--green); border: 1px solid transparent; }
+    .btn-success:hover { background: var(--green); color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .filters-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 16px 20px;
-      margin-bottom: 24px;
+    /* Selection Bar */
+    .selection-bar {
+      display: none; align-items: center; justify-content: space-between;
+      padding: 12px 20px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
+      border: 1px solid var(--border-gold); border-radius: var(--radius-md); margin-bottom: 16px;
     }
-    .filters-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-tab {
-      padding: 10px 18px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-    .filter-tab:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-    .filter-tab.active {
-      background: var(--gold);
-      color: var(--bg-primary);
-      border-color: var(--gold);
-    }
-    .filters-actions { display: flex; gap: 8px; align-items: center; }
+    .selection-bar.active { display: flex; animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .selection-info { display: flex; align-items: center; gap: 12px; }
+    .selection-count { font-weight: 700; color: var(--gold); font-size: 15px; }
+    .selection-actions { display: flex; gap: 8px; }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all var(--transition-fast);
-    }
-    .stat-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
-    .stat-icon {
-      width: 48px; height: 48px;
-      border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-    }
-    .stat-info { display: flex; flex-direction: column; }
-    .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
-    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
-
-    /* Banner Arquivadas */
-    .archive-banner {
-      display: none;
-      background: linear-gradient(135deg, var(--purple-bg), rgba(168, 85, 247, 0.05));
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .archive-banner.active { display: flex; }
-    .archive-banner-info { display: flex; align-items: center; gap: 16px; }
-    .archive-banner-icon {
-      width: 48px; height: 48px;
-      background: var(--purple);
-      border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 20px;
-    }
-    .archive-banner-text h3 { color: var(--purple); font-size: 16px; margin-bottom: 4px; }
-    .archive-banner-text p { color: var(--text-muted); font-size: 13px; }
-    .archive-banner-stats { display: flex; gap: 24px; }
-    .archive-stat { text-align: center; }
-    .archive-stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
-    .archive-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
-
-    .table-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+    /* Table */
+    .table-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
       overflow: hidden;
     }
     .table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 900px; }
-    thead th {
-      background: rgba(0,0,0,0.3);
-      padding: 16px 20px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid var(--border);
-    }
-    tbody td {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-    tbody tr { transition: all var(--transition-fast); }
-    tbody tr:hover { background: var(--gold-glow); }
-    tbody tr:last-child td { border-bottom: none; }
-
-    .client-cell { display: flex; flex-direction: column; gap: 2px; }
-    .client-name { font-weight: 700; color: var(--text-primary); }
-    .client-phone { font-size: 12px; color: var(--text-muted); }
-    .valor-cell { font-weight: 800; color: var(--gold); font-size: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    td { font-size: 13px; color: var(--text-secondary); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
     
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
+    .checkbox-cell { width: 40px; }
+    .checkbox {
+      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
+      background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
     }
-    .badge-pago { background: var(--green-bg); color: var(--green); }
-    .badge-pendente { background: var(--orange-bg); color: var(--orange); }
-    .badge-vencido { background: var(--red-bg); color: var(--red); }
-    .badge-negociando { background: var(--purple-bg); color: var(--purple); }
-    .badge-cancelado { background: rgba(100,100,100,0.2); color: #888; }
-    .badge-arquivado { background: rgba(100,100,100,0.2); color: #888; }
+    .checkbox:hover { border-color: var(--gold); }
+    .checkbox.checked { background: var(--gold); border-color: var(--gold); }
+    .checkbox.checked::after { content: '✓'; color: var(--bg-primary); font-size: 12px; font-weight: 700; }
+    
+    .cliente-cell { font-weight: 600; color: var(--text-primary); }
+    .valor-cell { font-weight: 700; color: var(--gold); }
+    
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
+    .status-badge.pago { background: var(--green-bg); color: var(--green); }
+    .status-badge.vencido { background: var(--red-bg); color: var(--red); }
+    .status-badge.arquivado { background: var(--purple-bg); color: var(--purple); }
 
     .actions-cell { display: flex; gap: 6px; }
     .action-btn {
-      width: 36px; height: 36px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
+      width: 32px; height: 32px; border: none; border-radius: 6px;
+      background: rgba(255,255,255,0.05); color: var(--text-muted);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all var(--transition-fast);
     }
-    .action-btn:hover { transform: scale(1.1); }
-    .action-btn.ia { color: var(--purple); border-color: var(--purple-bg); }
-    .action-btn.ia:hover { background: var(--purple-bg); }
-    .action-btn.pdf { color: var(--gold); border-color: var(--gold-glow); }
-    .action-btn.pdf:hover { background: var(--gold-glow); }
-    .action-btn.whatsapp { color: var(--green); border-color: var(--green-bg); }
-    .action-btn.whatsapp:hover { background: var(--green-bg); }
-    .action-btn.email { color: var(--blue); border-color: var(--blue-bg); }
-    .action-btn.email:hover { background: var(--blue-bg); }
-    .action-btn.status { color: var(--orange); border-color: var(--orange-bg); }
-    .action-btn.status:hover { background: var(--orange-bg); }
-    .action-btn.delete { color: var(--red); border-color: var(--red-bg); }
-    .action-btn.delete:hover { background: var(--red-bg); }
+    .action-btn:hover { background: var(--gold-glow); color: var(--gold); }
+    .action-btn.danger:hover { background: var(--red-bg); color: var(--red); }
 
-    .table-footer {
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      font-size: 13px;
-      color: var(--text-muted);
+    /* Pagination */
+    .pagination {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; border-top: 1px solid var(--border);
     }
-
-    .loading-cell {
-      text-align: center;
-      padding: 60px 20px !important;
-      color: var(--text-muted);
+    .pagination-info { font-size: 13px; color: var(--text-muted); }
+    .pagination-controls { display: flex; gap: 8px; }
+    .page-btn {
+      width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px;
+      background: transparent; color: var(--text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
     }
-    .loading-spinner { font-size: 32px; color: var(--gold); margin-bottom: 16px; }
+    .page-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .page-btn.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+    /* Empty State */
     .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
+      padding: 60px 20px; text-align: center; color: var(--text-muted);
     }
     .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-secondary); }
+    .empty-state h3 { font-size: 18px; color: var(--text-primary); margin-bottom: 8px; }
 
+    /* Loading */
+    .loading { display: flex; justify-content: center; padding: 40px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
     .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000;
+      display: none; align-items: center; justify-content: center;
     }
     .modal-overlay.active { display: flex; }
     .modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border-gold);
-      border-radius: var(--radius-xl);
-      padding: 28px;
-      width: 90%;
-      max-width: 520px;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; max-width: 400px; width: 90%;
     }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--gold);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .modal-close {
-      width: 36px; height: 36px;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: rgba(255,255,255,0.05);
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast);
-    }
-    .modal-close:hover { background: var(--red-bg); color: var(--red); }
-    
-    .modal-info-box {
-      background: var(--purple-bg);
-      border: 1px solid rgba(168, 85, 247, 0.2);
-      border-radius: var(--radius-md);
-      padding: 14px;
-      margin-bottom: 20px;
-    }
-    .modal-info-box p { color: var(--purple); font-size: 13px; }
-    
-    .modal-client-info {
-      background: rgba(255,255,255,0.03);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-    }
-    .info-label { color: var(--text-muted); font-size: 13px; }
-    .info-value { color: var(--text-primary); font-weight: 600; font-size: 13px; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .modal-text { color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
 
-    .form-group { margin-bottom: 16px; }
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-    .form-select {
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-    .form-select:focus { outline: none; border-color: var(--gold); }
-    .form-select option { background: var(--bg-primary); }
-
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-    .btn-lg { padding: 14px 24px; font-size: 15px; }
-
-    .mensagem-container {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      margin-top: 20px;
-    }
-    .mensagem-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .mensagem-label {
-      color: var(--gold);
-      font-weight: 700;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .mensagem-texto {
-      color: var(--text-secondary);
-      font-size: 14px;
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      padding: 16px 24px;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      z-index: 3000;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.success { background: var(--green); color: white; }
-    .toast.error { background: var(--red); color: white; }
-
-    @media (max-width: 1200px) {
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-    }
     @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
       .main-wrapper { margin-left: 0; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
       .stats-row { grid-template-columns: 1fr; }
-      .page-header { flex-direction: column; }
-      .header-search { display: none; }
-      .archive-banner { flex-direction: column; text-align: center; }
+      .tabs { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
-  <aside class="sidebar" id="sidebar">
+  <!-- Sidebar -->
+  <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo-icon">A</div>
       <div class="logo-text">
@@ -621,166 +294,148 @@
         <span>Enterprise</span>
       </div>
     </div>
-
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-title">Principal</div>
         <div class="nav-links">
-          <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a>
-          <a href="/cobrancas" class="nav-link active"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a>
-          <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a>
-          <a href="/consulta-cliente" class="nav-link"><i class="fa-solid fa-magnifying-glass-dollar"></i><span class="nav-text">Consulta Cliente</span></a>
-          <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a>
+          <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+          <a href="/cobrancas" class="nav-link active"><i class="fa-solid fa-file-invoice-dollar"></i><span>Cobranças</span></a>
+          <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span>Clientes</span></a>
+          <a href="/consulta-cliente" class="nav-link"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Consulta Cliente</span><span class="nav-badge green">NOVO</span></a>
+          <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span>Agendamentos</span></a>
         </div>
       </div>
-
       <div class="nav-section">
         <div class="nav-section-title">Financeiro</div>
         <div class="nav-links">
-          <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a>
-          <a href="/importar-cobrancas" class="nav-link"><i class="fa-solid fa-file-import"></i><span class="nav-text">Importar Cobranças</span></a>
-          <a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a>
-          <a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-title">Administração</div>
-        <div class="nav-links">
-          <a href="/usuarios" class="nav-link" id="navUsuarios"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge blue">ADM</span></a>
-          <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a>
+          <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span>Nova Cobrança</span></a>
+          <a href="/importar-cobrancas" class="nav-link"><i class="fa-solid fa-file-import"></i><span>Importar Cobranças</span><span class="nav-badge green">NOVO</span></a>
         </div>
       </div>
     </nav>
-
     <div class="sidebar-footer">
-      <div class="user-card" id="userCard">
+      <div class="user-card">
         <div class="user-avatar" id="userAvatar">U</div>
         <div class="user-info">
           <div class="user-name" id="userName">Usuário</div>
           <div class="user-role" id="userRole">Operador</div>
         </div>
-        <button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <button class="user-menu-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </div>
   </aside>
 
+  <!-- Main Content -->
   <div class="main-wrapper">
     <header class="header">
       <div class="header-left">
-        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
         <div class="breadcrumb">
           <span class="breadcrumb-item">ACERTIVE</span>
           <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-item active" id="breadcrumbTitle">Cobranças</span>
+          <span class="breadcrumb-item active">Cobranças</span>
         </div>
-      </div>
-      <div class="header-right">
-        <div class="header-search">
-          <i class="fa-solid fa-search"></i>
-          <input type="text" placeholder="Buscar cobrança..." id="searchInput">
-        </div>
-        <button class="header-btn" id="btnRefresh" title="Atualizar"><i class="fa-solid fa-rotate"></i></button>
       </div>
     </header>
 
     <main class="page-content">
       <div class="page-header">
-        <div class="page-header-left">
-          <h1 class="page-title">
-            <div class="page-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <span id="pageTitle">Cobranças</span>
-          </h1>
-          <p class="page-subtitle" id="pageSubtitle">Gerencie todas as cobranças do sistema</p>
+        <h1 class="page-title">
+          <div class="page-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          Cobranças
+        </h1>
+        <a href="/nova-cobranca" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova Cobrança</a>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="ativas" onclick="switchTab('ativas')">
+          <i class="fa-solid fa-file-invoice"></i> Cobranças Ativas
+          <span class="count" id="countAtivas">0</span>
+        </button>
+        <button class="tab" data-tab="arquivadas" onclick="switchTab('arquivadas')">
+          <i class="fa-solid fa-archive"></i> Arquivadas
+          <span class="count" id="countArquivadas">0</span>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon gold"><i class="fa-solid fa-file-invoice"></i></div>
+          <div class="stat-info">
+            <div class="stat-label">Total Ativas</div>
+            <div class="stat-value" id="statAtivas">0</div>
+          </div>
         </div>
-        <div class="page-header-right">
-          <button class="btn btn-archive btn-sm" id="btnVerArquivadas" onclick="toggleArquivadas()">
-            <i class="fa-solid fa-archive"></i>
-            <span id="btnArquivadasTexto">Ver Arquivadas</span>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="stat-info">
+            <div class="stat-label">Valor Ativas</div>
+            <div class="stat-value" id="statValorAtivas">R$ 0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-archive"></i></div>
+          <div class="stat-info">
+            <div class="stat-label">Arquivadas</div>
+            <div class="stat-value" id="statArquivadas">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-box-archive"></i></div>
+          <div class="stat-info">
+            <div class="stat-label">Valor Arquivadas</div>
+            <div class="stat-value" id="statValorArquivadas">R$ 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por cliente ou descrição..." onkeyup="debounceSearch()">
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-secondary" onclick="selectAll()">
+            <i class="fa-solid fa-check-double"></i> Selecionar Tudo
           </button>
-          <a href="/nova-cobranca" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Nova Cobrança
-          </a>
+          <button class="btn btn-secondary" id="btnArquivarTodasAntiga" onclick="confirmarArquivarTodas()" style="display:none;">
+            <i class="fa-solid fa-archive"></i> Arquivar Todas
+          </button>
         </div>
       </div>
 
-      <!-- Banner Arquivadas -->
-      <div class="archive-banner" id="archiveBanner">
-        <div class="archive-banner-info">
-          <div class="archive-banner-icon"><i class="fa-solid fa-archive"></i></div>
-          <div class="archive-banner-text">
-            <h3>📁 Modo Histórico - Cobranças Arquivadas</h3>
-            <p>Visualizando cobranças antigas (2024 e anteriores). Estes valores não afetam o Dashboard.</p>
-          </div>
+      <!-- Selection Bar -->
+      <div class="selection-bar" id="selectionBar">
+        <div class="selection-info">
+          <i class="fa-solid fa-check-circle" style="color: var(--gold);"></i>
+          <span class="selection-count"><span id="selectedCount">0</span> cobrança(s) selecionada(s)</span>
         </div>
-        <div class="archive-banner-stats">
-          <div class="archive-stat">
-            <div class="archive-stat-value" id="archiveQtd">0</div>
-            <div class="archive-stat-label">Cobranças</div>
-          </div>
-          <div class="archive-stat">
-            <div class="archive-stat-value" id="archiveTotal">R$ 0</div>
-            <div class="archive-stat-label">Total Movimentado</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="filters-card" id="filtersCard">
-        <div class="filters-row">
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-status="">Todas</button>
-            <button class="filter-tab" data-status="pendente">Pendentes</button>
-            <button class="filter-tab" data-status="vencido">Vencidas</button>
-            <button class="filter-tab" data-status="pago">Pagas</button>
-            <button class="filter-tab" data-status="negociando">Negociando</button>
-          </div>
-          <div class="filters-actions">
-            <button class="btn btn-secondary btn-sm" id="btnExportCsv">
-              <i class="fa-solid fa-download"></i> Exportar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="stats-row" id="statsRow">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--green-bg); color: var(--green);"><i class="fa-solid fa-check-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPagas">0</span>
-            <span class="stat-label">Pagas</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--orange-bg); color: var(--orange);"><i class="fa-solid fa-clock"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statPendentes">0</span>
-            <span class="stat-label">Pendentes</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--red-bg); color: var(--red);"><i class="fa-solid fa-exclamation-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statVencidas">0</span>
-            <span class="stat-label">Vencidas</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i class="fa-solid fa-coins"></i></div>
-          <div class="stat-info">
-            <span class="stat-value" id="statTotal">R$ 0</span>
-            <span class="stat-label">Total Pendente</span>
-          </div>
+        <div class="selection-actions">
+          <button class="btn btn-secondary" onclick="clearSelection()">
+            <i class="fa-solid fa-times"></i> Limpar
+          </button>
+          <button class="btn btn-danger" id="btnArquivarSelecionadas" onclick="confirmarArquivarSelecionadas()">
+            <i class="fa-solid fa-archive"></i> Arquivar Selecionadas
+          </button>
+          <button class="btn btn-success" id="btnDesarquivarSelecionadas" onclick="confirmarDesarquivarSelecionadas()" style="display:none;">
+            <i class="fa-solid fa-box-open"></i> Desarquivar Selecionadas
+          </button>
         </div>
       </div>
 
       <!-- Table -->
-      <div class="table-card">
+      <div class="table-container">
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
+                <th class="checkbox-cell">
+                  <div class="checkbox" id="checkAll" onclick="toggleSelectAll()"></div>
+                </th>
                 <th>Cliente</th>
                 <th>Descrição</th>
                 <th>Valor</th>
@@ -789,474 +444,385 @@
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="cobrancas-tbody">
-              <tr>
-                <td colspan="6" class="loading-cell">
-                  <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>
-                  <span>Carregando cobranças...</span>
-                </td>
-              </tr>
+            <tbody id="tableBody">
+              <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="table-footer">
-          <span id="tableInfo">0 cobranças</span>
+        <div class="pagination">
+          <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
+          <div class="pagination-controls" id="paginationControls"></div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Modal IA -->
-  <div class="modal-overlay" id="modal-ia">
+  <!-- Modal de Confirmação -->
+  <div class="modal-overlay" id="modalConfirm">
     <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Mensagem com IA</h2>
-        <button class="modal-close" onclick="fecharModalIA()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-info-box"><p>A IA vai gerar uma mensagem personalizada baseada nos dados da cobrança.</p></div>
-      <div class="modal-client-info">
-        <div class="info-row"><span class="info-label">Cliente:</span><span class="info-value" id="ia-cliente">-</span></div>
-        <div class="info-row"><span class="info-label">Valor:</span><span class="info-value" id="ia-valor">-</span></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tipo de Mensagem</label>
-        <select class="form-select" id="ia-tipo">
-          <option value="whatsapp">📱 WhatsApp (curta)</option>
-          <option value="email">📧 E-mail (detalhada)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tom da Mensagem</label>
-        <select class="form-select" id="ia-tom">
-          <option value="profissional">💼 Profissional</option>
-          <option value="amigavel">😊 Amigável</option>
-          <option value="firme">⚠️ Firme</option>
-        </select>
-      </div>
+      <h3 class="modal-title" id="modalTitle">Confirmar Ação</h3>
+      <p class="modal-text" id="modalText">Tem certeza que deseja realizar esta ação?</p>
       <div class="modal-actions">
-        <button class="btn btn-primary btn-lg" id="btn-gerar-ia" onclick="gerarMensagemIA()">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span id="btn-gerar-texto">Gerar Mensagem</span>
-        </button>
-      </div>
-      <div class="mensagem-container" id="mensagem-container" style="display: none;">
-        <div class="mensagem-header">
-          <span class="mensagem-label"><i class="fa-solid fa-message"></i> Mensagem Gerada</span>
-          <button class="btn btn-sm btn-secondary" onclick="copiarMensagem()"><i class="fa-solid fa-copy"></i> Copiar</button>
-        </div>
-        <div class="mensagem-texto" id="mensagem-texto"></div>
-      </div>
-      <div id="ia-acoes" style="display: none; margin-top: 20px;">
-        <button class="btn btn-lg" style="width: 100%; background: var(--green); color: white;" onclick="enviarWhatsAppIA()">
-          <i class="fa-brands fa-whatsapp"></i> Enviar via WhatsApp
-        </button>
+        <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-danger" id="modalConfirmBtn" onclick="executarAcao()">Confirmar</button>
       </div>
     </div>
   </div>
-
-  <!-- Modal Status -->
-  <div class="modal-overlay" id="modal-status">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title"><i class="fa-solid fa-rotate"></i> Alterar Status</h2>
-        <button class="modal-close" onclick="fecharModalStatus()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-client-info">
-        <div class="info-row"><span class="info-label">Cliente:</span><span class="info-value" id="status-cliente">-</span></div>
-        <div class="info-row"><span class="info-label">Status Atual:</span><span class="info-value" id="status-atual">-</span></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Novo Status</label>
-        <select class="form-select" id="status-novo">
-          <option value="pendente">⏳ Pendente</option>
-          <option value="pago">✅ Pago</option>
-          <option value="vencido">❌ Vencido</option>
-          <option value="negociando">🤝 Negociando</option>
-          <option value="cancelado">🚫 Cancelado</option>
-        </select>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="fecharModalStatus()">Cancelar</button>
-        <button class="btn btn-primary" onclick="confirmarStatus()"><i class="fa-solid fa-check"></i> Confirmar</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-    const API_BASE = '';
+    const API_URL = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    let currentTab = 'ativas';
+    let currentPage = 1;
+    let selectedIds = new Set();
     let cobrancasData = [];
-    let filtroAtual = '';
-    let cobrancaAtualIA = null;
-    let cobrancaAtualStatus = null;
-    let mensagemGeradaIA = '';
-    let modoArquivadas = false;
+    let acaoConfirmada = null;
+    let searchTimeout = null;
 
-    function getToken() { return localStorage.getItem('token'); }
-    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
-    if (!getToken()) window.location.href = '/login';
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+    function formatMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
 
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    sidebarToggle.addEventListener('click', () => {
-      if (window.innerWidth <= 1024) sidebar.classList.toggle('open');
-      else sidebar.classList.toggle('collapsed');
-    });
-    document.getElementById('btnLogout').addEventListener('click', logout);
-
-    function showToast(msg, isError = false) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.className = 'toast ' + (isError ? 'error' : 'success') + ' show';
-      setTimeout(() => toast.classList.remove('show'), 3000);
+    function showToast(msg, type = 'success') {
+      Toastify({
+        text: msg, duration: 3000, gravity: "top", position: "right",
+        style: { background: type === 'success' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #F6C84C, #d4a833)', borderRadius: '12px', fontWeight: '600' }
+      }).showToast();
     }
 
-    function fmtMoney(n) { return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-    function fmtDate(d) {
-      if (!d) return '—';
-      const dt = new Date(d);
-      return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('pt-BR');
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
 
-    // ========== TOGGLE ARQUIVADAS ==========
-    async function toggleArquivadas() {
-      modoArquivadas = !modoArquivadas;
-      const btn = document.getElementById('btnVerArquivadas');
-      const btnTexto = document.getElementById('btnArquivadasTexto');
-      const banner = document.getElementById('archiveBanner');
-      const statsRow = document.getElementById('statsRow');
-      const filtersCard = document.getElementById('filtersCard');
-
-      if (modoArquivadas) {
-        btn.classList.add('active');
-        btnTexto.textContent = 'Voltar às Ativas';
-        banner.classList.add('active');
-        statsRow.style.display = 'none';
-        filtersCard.style.display = 'none';
-        document.getElementById('pageTitle').textContent = 'Cobranças Arquivadas';
-        document.getElementById('pageSubtitle').textContent = 'Histórico de cobranças antigas (2024 e anteriores)';
-        document.getElementById('breadcrumbTitle').textContent = 'Arquivadas';
-        await carregarArquivadas();
-      } else {
-        btn.classList.remove('active');
-        btnTexto.textContent = 'Ver Arquivadas';
-        banner.classList.remove('active');
-        statsRow.style.display = 'grid';
-        filtersCard.style.display = 'block';
-        document.getElementById('pageTitle').textContent = 'Cobranças';
-        document.getElementById('pageSubtitle').textContent = 'Gerencie todas as cobranças do sistema';
-        document.getElementById('breadcrumbTitle').textContent = 'Cobranças';
-        await carregarCobrancas();
-      }
-    }
-
-    async function carregarArquivadas() {
-      try {
-        const tbody = document.getElementById('cobrancas-tbody');
-        tbody.innerHTML = '<tr><td colspan="6" class="loading-cell"><div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div><span>Carregando arquivadas...</span></td></tr>';
-
-        const resp = await fetch(`${API_BASE}/api/cobrancas/arquivadas`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-
-        if (!resp.ok) throw new Error('Erro ao carregar');
-
-        const json = await resp.json();
-        cobrancasData = json.data || [];
-        
-        // Atualizar banner
-        document.getElementById('archiveQtd').textContent = json.total || cobrancasData.length;
-        document.getElementById('archiveTotal').textContent = fmtMoney(json.valorTotal || 0);
-        
-        renderizarTabelaArquivadas();
-        document.getElementById('tableInfo').textContent = `${cobrancasData.length} cobrança(s) arquivada(s)`;
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao carregar arquivadas', true);
-      }
-    }
-
-    function renderizarTabelaArquivadas() {
-      const tbody = document.getElementById('cobrancas-tbody');
+    // Tabs
+    function switchTab(tab) {
+      currentTab = tab;
+      currentPage = 1;
+      selectedIds.clear();
+      updateSelectionBar();
       
-      if (!cobrancasData.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-archive"></i><h3>Nenhuma cobrança arquivada</h3><p>As cobranças antigas aparecerão aqui</p></div></td></tr>`;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+      
+      // Atualizar botões
+      document.getElementById('btnArquivarSelecionadas').style.display = tab === 'ativas' ? 'inline-flex' : 'none';
+      document.getElementById('btnDesarquivarSelecionadas').style.display = tab === 'arquivadas' ? 'inline-flex' : 'none';
+      
+      carregarCobrancas();
+    }
+
+    // Carregar estatísticas
+    async function carregarEstatisticas() {
+      try {
+        const res = await fetch(`${API_URL}/api/cobrancas/estatisticas-arquivamento`, { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('countAtivas').textContent = data.ativas;
+          document.getElementById('countArquivadas').textContent = data.arquivadas;
+          document.getElementById('statAtivas').textContent = data.ativas.toLocaleString('pt-BR');
+          document.getElementById('statArquivadas').textContent = data.arquivadas.toLocaleString('pt-BR');
+          document.getElementById('statValorAtivas').textContent = formatMoney(data.valorAtivas);
+          document.getElementById('statValorArquivadas').textContent = formatMoney(data.valorArquivadas);
+        }
+      } catch (err) { console.error('Erro ao carregar estatísticas:', err); }
+    }
+
+    // Carregar cobranças
+    async function carregarCobrancas() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>';
+      
+      try {
+        const busca = document.getElementById('searchInput').value;
+        const endpoint = currentTab === 'ativas' ? '/api/cobrancas' : '/api/cobrancas/arquivadas';
+        const url = `${API_URL}${endpoint}?page=${currentPage}&limit=50${busca ? '&busca=' + encodeURIComponent(busca) : ''}`;
+        
+        const res = await fetch(url, { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success) {
+          cobrancasData = data.data;
+          renderTable(data.data);
+          renderPagination(data.pagination);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar cobranças:', err);
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-exclamation-circle"></i><h3>Erro ao carregar dados</h3></div></td></tr>';
+      }
+    }
+
+    function renderTable(cobrancas) {
+      const tbody = document.getElementById('tableBody');
+      
+      if (!cobrancas || cobrancas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-inbox"></i><h3>Nenhuma cobrança encontrada</h3><p>Não há cobranças ${currentTab === 'arquivadas' ? 'arquivadas' : 'ativas'} no momento.</p></div></td></tr>`;
         return;
       }
 
-      tbody.innerHTML = cobrancasData.map(c => `
-        <tr style="opacity: 0.8;">
-          <td><div class="client-cell"><span class="client-name">${c.cliente || '—'}</span><span class="client-phone">${c.cliente_telefone || ''}</span></div></td>
-          <td>${c.descricao || '—'}</td>
-          <td><span class="valor-cell" style="color: var(--text-muted);">${fmtMoney(c.valorAtualizado || c.valor_atualizado)}</span></td>
-          <td>${fmtDate(c.vencimento)}</td>
-          <td><span class="badge badge-arquivado">📁 Arquivado</span></td>
-          <td><span style="color: var(--text-muted); font-size: 12px;">Somente leitura</span></td>
+      tbody.innerHTML = cobrancas.map(c => `
+        <tr data-id="${c.id}">
+          <td class="checkbox-cell">
+            <div class="checkbox ${selectedIds.has(c.id) ? 'checked' : ''}" onclick="toggleSelect('${c.id}')"></div>
+          </td>
+          <td class="cliente-cell">${c.cliente || 'Sem cliente'}</td>
+          <td>${c.descricao || '-'}</td>
+          <td class="valor-cell">${formatMoney(c.valor_atualizado || c.valorAtualizado)}</td>
+          <td>${formatDate(c.vencimento)}</td>
+          <td><span class="status-badge ${c.status}">${c.status}</span></td>
+          <td class="actions-cell">
+            <button class="action-btn" title="Ver detalhes" onclick="verDetalhes('${c.id}')"><i class="fa-solid fa-eye"></i></button>
+            ${currentTab === 'ativas' 
+              ? `<button class="action-btn danger" title="Arquivar" onclick="arquivarUma('${c.id}')"><i class="fa-solid fa-archive"></i></button>`
+              : `<button class="action-btn" title="Desarquivar" onclick="desarquivarUma('${c.id}')"><i class="fa-solid fa-box-open"></i></button>`
+            }
+          </td>
         </tr>
       `).join('');
     }
 
-    // ========== CARREGAR COBRANÇAS ATIVAS ==========
-    async function carregarCobrancas() {
-      try {
-        const params = new URLSearchParams();
-        if (filtroAtual) params.append('status', filtroAtual);
-        const searchTerm = document.getElementById('searchInput').value.trim();
-        if (searchTerm) params.append('q', searchTerm);
-
-        const resp = await fetch(`${API_BASE}/api/cobrancas?${params}`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-
-        if (!resp.ok) throw new Error('Erro ao carregar');
-
-        const json = await resp.json();
-        cobrancasData = json.data || [];
-        renderizarTabela();
-        atualizarStats();
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao carregar cobranças', true);
-      }
-    }
-
-    function atualizarStats() {
-      const pagas = cobrancasData.filter(c => c.status === 'pago').length;
-      const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
-      const vencidas = cobrancasData.filter(c => c.status === 'vencido').length;
-      const totalPendente = cobrancasData
-        .filter(c => c.status !== 'pago')
-        .reduce((sum, c) => sum + Number(c.valorAtualizado || 0), 0);
-
-      document.getElementById('statPagas').textContent = pagas;
-      document.getElementById('statPendentes').textContent = pendentes;
-      document.getElementById('statVencidas').textContent = vencidas;
-      document.getElementById('statTotal').textContent = fmtMoney(totalPendente);
-      document.getElementById('tableInfo').textContent = `${cobrancasData.length} cobrança(s)`;
-    }
-
-    function renderizarTabela() {
-      const tbody = document.getElementById('cobrancas-tbody');
+    function renderPagination(pag) {
+      if (!pag) return;
+      document.getElementById('paginationInfo').textContent = `Página ${pag.page} de ${pag.totalPages} (${pag.total} registros)`;
       
-      if (!cobrancasData.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-file-invoice"></i><h3>Nenhuma cobrança encontrada</h3><p>Crie uma nova cobrança para começar</p></div></td></tr>`;
-        return;
+      let html = '';
+      html += `<button class="page-btn" onclick="goToPage(${pag.page - 1})" ${!pag.hasPrev ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+      
+      for (let i = Math.max(1, pag.page - 2); i <= Math.min(pag.totalPages, pag.page + 2); i++) {
+        html += `<button class="page-btn ${i === pag.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
       }
-
-      tbody.innerHTML = cobrancasData.map(c => {
-        const badgeClass = { 'pago': 'badge-pago', 'vencido': 'badge-vencido', 'pendente': 'badge-pendente', 'negociando': 'badge-negociando', 'cancelado': 'badge-cancelado' }[c.status] || 'badge-pendente';
-        const statusLabel = { 'pago': '✓ Pago', 'vencido': '✗ Vencido', 'pendente': '⏳ Pendente', 'negociando': '🤝 Negociando', 'cancelado': '🚫 Cancelado' }[c.status] || c.status;
-        
-        return `
-          <tr>
-            <td><div class="client-cell"><span class="client-name">${c.cliente || '—'}</span><span class="client-phone">${c.cliente_telefone || ''}</span></div></td>
-            <td>${c.descricao || '—'}</td>
-            <td><span class="valor-cell">${fmtMoney(c.valorAtualizado)}</span></td>
-            <td>${fmtDate(c.vencimento)}</td>
-            <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
-            <td>
-              <div class="actions-cell">
-                <button class="action-btn ia" onclick="abrirModalIA('${c.id}')" title="IA"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                <button class="action-btn pdf" onclick="baixarPDF('${c.id}')" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
-                <button class="action-btn whatsapp" onclick="enviarWhatsApp('${c.id}')" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
-                <button class="action-btn email" onclick="enviarEmail('${c.id}')" title="E-mail"><i class="fa-solid fa-envelope"></i></button>
-                <button class="action-btn status" onclick="abrirModalStatus('${c.id}')" title="Status"><i class="fa-solid fa-rotate"></i></button>
-                <button class="action-btn delete" onclick="excluirCobranca('${c.id}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      
+      html += `<button class="page-btn" onclick="goToPage(${pag.page + 1})" ${!pag.hasNext ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+      document.getElementById('paginationControls').innerHTML = html;
     }
 
-    // Filtros
-    document.querySelectorAll('.filter-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtroAtual = btn.dataset.status;
-        carregarCobrancas();
+    function goToPage(page) {
+      currentPage = page;
+      carregarCobrancas();
+    }
+
+    // Seleção
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else {
+        selectedIds.add(id);
+      }
+      updateCheckboxes();
+      updateSelectionBar();
+    }
+
+    function toggleSelectAll() {
+      const checkAll = document.getElementById('checkAll');
+      if (selectedIds.size === cobrancasData.length && cobrancasData.length > 0) {
+        selectedIds.clear();
+      } else {
+        cobrancasData.forEach(c => selectedIds.add(c.id));
+      }
+      updateCheckboxes();
+      updateSelectionBar();
+    }
+
+    function selectAll() {
+      cobrancasData.forEach(c => selectedIds.add(c.id));
+      updateCheckboxes();
+      updateSelectionBar();
+      showToast(`${selectedIds.size} cobranças selecionadas`, 'info');
+    }
+
+    function clearSelection() {
+      selectedIds.clear();
+      updateCheckboxes();
+      updateSelectionBar();
+    }
+
+    function updateCheckboxes() {
+      document.querySelectorAll('tbody .checkbox').forEach(cb => {
+        const id = cb.closest('tr').dataset.id;
+        cb.classList.toggle('checked', selectedIds.has(id));
       });
-    });
+      
+      const checkAll = document.getElementById('checkAll');
+      checkAll.classList.toggle('checked', selectedIds.size === cobrancasData.length && cobrancasData.length > 0);
+    }
+
+    function updateSelectionBar() {
+      const bar = document.getElementById('selectionBar');
+      document.getElementById('selectedCount').textContent = selectedIds.size;
+      bar.classList.toggle('active', selectedIds.size > 0);
+    }
 
     // Busca
-    let searchTimeout;
-    document.getElementById('searchInput').addEventListener('input', () => {
+    function debounceSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
-        if (modoArquivadas) carregarArquivadas();
-        else carregarCobrancas();
+        currentPage = 1;
+        carregarCobrancas();
       }, 300);
-    });
+    }
 
-    // Refresh
-    document.getElementById('btnRefresh').addEventListener('click', () => {
-      const btn = document.getElementById('btnRefresh');
-      btn.querySelector('i').classList.add('fa-spin');
-      const promise = modoArquivadas ? carregarArquivadas() : carregarCobrancas();
-      promise.then(() => {
-        btn.querySelector('i').classList.remove('fa-spin');
-        showToast('Dados atualizados!');
-      });
-    });
+    // Modal
+    function abrirModal(titulo, texto, acao) {
+      document.getElementById('modalTitle').textContent = titulo;
+      document.getElementById('modalText').textContent = texto;
+      acaoConfirmada = acao;
+      document.getElementById('modalConfirm').classList.add('active');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalConfirm').classList.remove('active');
+      acaoConfirmada = null;
+    }
+
+    function executarAcao() {
+      if (acaoConfirmada) acaoConfirmada();
+      fecharModal();
+    }
 
     // Ações
-    async function baixarPDF(id) {
-      try {
-        showToast('Gerando PDF...');
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/pdf`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
-        if (!resp.ok) throw new Error('Erro');
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `cobranca_${id.slice(0,8)}.pdf`; a.click();
-        URL.revokeObjectURL(url);
-        showToast('PDF baixado!');
-      } catch (err) { showToast('Erro ao gerar PDF', true); }
+    function confirmarArquivarSelecionadas() {
+      if (selectedIds.size === 0) return showToast('Selecione pelo menos uma cobrança', 'error');
+      abrirModal('Arquivar Cobranças', `Tem certeza que deseja arquivar ${selectedIds.size} cobrança(s)?`, arquivarSelecionadas);
     }
 
-    async function enviarEmail(id) {
-      try {
-        showToast('Enviando e-mail...');
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/enviar-email`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
-        const json = await resp.json();
-        if (json.success) showToast(`E-mail enviado para ${json.destinatario}!`);
-        else showToast(json.message || 'Erro', true);
-      } catch (err) { showToast('Erro ao enviar', true); }
+    function confirmarDesarquivarSelecionadas() {
+      if (selectedIds.size === 0) return showToast('Selecione pelo menos uma cobrança', 'error');
+      abrirModal('Desarquivar Cobranças', `Tem certeza que deseja desarquivar ${selectedIds.size} cobrança(s)?`, desarquivarSelecionadas);
     }
 
-    async function enviarWhatsApp(id) {
-      try {
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}/whatsapp`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
-        const json = await resp.json();
-        if (json.success && json.link) window.open(json.link, '_blank');
-        else showToast(json.message || 'Erro', true);
-      } catch (err) { showToast('Erro', true); }
+    function confirmarArquivarTodas() {
+      abrirModal('Arquivar Todas', 'Tem certeza que deseja arquivar TODAS as cobranças ativas? Esta ação pode demorar.', arquivarTodas);
     }
 
-    async function excluirCobranca(id) {
-      if (!confirm('Excluir esta cobrança?')) return;
+    async function arquivarSelecionadas() {
       try {
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
-        const json = await resp.json();
-        if (json.success) { showToast('Excluída!'); carregarCobrancas(); }
-        else showToast(json.message || 'Erro', true);
-      } catch (err) { showToast('Erro', true); }
-    }
-
-    // Modal Status
-    function abrirModalStatus(id) {
-      const c = cobrancasData.find(x => x.id === id);
-      if (!c) return;
-      cobrancaAtualStatus = c;
-      document.getElementById('status-cliente').textContent = c.cliente || '—';
-      document.getElementById('status-atual').textContent = c.status?.toUpperCase() || '—';
-      document.getElementById('status-novo').value = c.status || 'pendente';
-      document.getElementById('modal-status').classList.add('active');
-    }
-    function fecharModalStatus() { document.getElementById('modal-status').classList.remove('active'); cobrancaAtualStatus = null; }
-    async function confirmarStatus() {
-      if (!cobrancaAtualStatus) return;
-      const novoStatus = document.getElementById('status-novo').value;
-      try {
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualStatus.id}/status`, {
-          method: 'PUT', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: novoStatus })
+        showToast('Arquivando cobranças...', 'info');
+        const res = await fetch(`${API_URL}/api/cobrancas/arquivar-massa`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ ids: Array.from(selectedIds) })
         });
-        const json = await resp.json();
-        if (json.success) { showToast('Status atualizado!'); fecharModalStatus(); carregarCobrancas(); }
-        else showToast(json.message || 'Erro', true);
-      } catch (err) { showToast('Erro', true); }
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          selectedIds.clear();
+          updateSelectionBar();
+          carregarCobrancas();
+          carregarEstatisticas();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao arquivar cobranças', 'error');
+      }
     }
 
-    // Modal IA
-    function abrirModalIA(id) {
-      const c = cobrancasData.find(x => x.id === id);
-      if (!c) return;
-      cobrancaAtualIA = c;
-      mensagemGeradaIA = '';
-      document.getElementById('ia-cliente').textContent = c.cliente || '—';
-      document.getElementById('ia-valor').textContent = fmtMoney(c.valorAtualizado);
-      document.getElementById('mensagem-container').style.display = 'none';
-      document.getElementById('ia-acoes').style.display = 'none';
-      document.getElementById('btn-gerar-texto').textContent = 'Gerar Mensagem';
-      document.getElementById('btn-gerar-ia').disabled = false;
-      document.getElementById('modal-ia').classList.add('active');
-    }
-    function fecharModalIA() { document.getElementById('modal-ia').classList.remove('active'); cobrancaAtualIA = null; mensagemGeradaIA = ''; }
-
-    async function gerarMensagemIA() {
-      if (!cobrancaAtualIA) return;
-      const btn = document.getElementById('btn-gerar-ia');
-      const btnTexto = document.getElementById('btn-gerar-texto');
-      btn.disabled = true;
-      btnTexto.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+    async function desarquivarSelecionadas() {
       try {
-        const tipo = document.getElementById('ia-tipo').value;
-        const tom = document.getElementById('ia-tom').value;
-        const resp = await fetch(`${API_BASE}/api/cobrancas/${cobrancaAtualIA.id}/gerar-mensagem-ia`, {
-          method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tipo, tom })
+        showToast('Desarquivando cobranças...', 'info');
+        const res = await fetch(`${API_URL}/api/cobrancas/desarquivar-massa`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ ids: Array.from(selectedIds) })
         });
-        const json = await resp.json();
-        if (json.success && json.mensagem) {
-          mensagemGeradaIA = json.mensagem;
-          document.getElementById('mensagem-texto').textContent = json.mensagem;
-          document.getElementById('mensagem-container').style.display = 'block';
-          document.getElementById('ia-acoes').style.display = tipo === 'whatsapp' ? 'block' : 'none';
-          showToast('Mensagem gerada!');
-        } else showToast(json.message || 'Erro', true);
-      } catch (err) { showToast('Erro', true); }
-      finally { btn.disabled = false; btnTexto.innerHTML = '<i class="fa-solid fa-rotate"></i> Gerar Nova'; }
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          selectedIds.clear();
+          updateSelectionBar();
+          carregarCobrancas();
+          carregarEstatisticas();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao desarquivar cobranças', 'error');
+      }
     }
 
-    function copiarMensagem() {
-      if (!mensagemGeradaIA) return;
-      navigator.clipboard.writeText(mensagemGeradaIA).then(() => showToast('Copiado!')).catch(() => showToast('Erro', true));
-    }
-
-    function enviarWhatsAppIA() {
-      if (!cobrancaAtualIA || !mensagemGeradaIA) return;
-      let tel = (cobrancaAtualIA.cliente_telefone || '').replace(/\D/g, '');
-      if (tel.length === 10 || tel.length === 11) tel = '55' + tel;
-      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensagemGeradaIA)}`, '_blank');
-      fecharModalIA();
-    }
-
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
-    });
-
-    document.getElementById('btnExportCsv').addEventListener('click', async () => {
+    async function arquivarTodas() {
       try {
-        showToast('Exportando...');
-        const resp = await fetch(`${API_BASE}/api/relatorios/export-csv`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
-        if (!resp.ok) throw new Error('Erro');
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'relatorio_cobrancas.csv'; a.click();
-        URL.revokeObjectURL(url);
-        showToast('Exportado!');
-      } catch (err) { showToast('Erro', true); }
-    });
+        showToast('Arquivando todas as cobranças...', 'info');
+        const res = await fetch(`${API_URL}/api/cobrancas/arquivar-todas`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ filtros: {} })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          carregarCobrancas();
+          carregarEstatisticas();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao arquivar cobranças', 'error');
+      }
+    }
 
+    async function arquivarUma(id) {
+      try {
+        const res = await fetch(`${API_URL}/api/cobrancas/arquivar-massa`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ ids: [id] })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Cobrança arquivada', 'success');
+          carregarCobrancas();
+          carregarEstatisticas();
+        }
+      } catch (err) {
+        showToast('Erro ao arquivar', 'error');
+      }
+    }
+
+    async function desarquivarUma(id) {
+      try {
+        const res = await fetch(`${API_URL}/api/cobrancas/desarquivar-massa`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ ids: [id] })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Cobrança desarquivada', 'success');
+          carregarCobrancas();
+          carregarEstatisticas();
+        }
+      } catch (err) {
+        showToast('Erro ao desarquivar', 'error');
+      }
+    }
+
+    function verDetalhes(id) {
+      window.location.href = `/cobranca/${id}`;
+    }
+
+    // Carregar usuário
     async function carregarUsuario() {
       try {
-        const resp = await fetch(`${API_BASE}/api/usuarios/me`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
-        const result = await resp.json();
-        if (result.success && result.data) {
-          document.getElementById('userName').textContent = result.data.nome || 'Usuário';
-          document.getElementById('userRole').textContent = result.data.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (result.data.nome || 'U').charAt(0).toUpperCase();
+        const res = await fetch(`${API_URL}/api/usuarios/me`, { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || data.data.email || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || data.data.email || 'U').charAt(0).toUpperCase();
         }
-      } catch (err) {}
+      } catch (err) { console.error('Erro ao carregar usuário:', err); }
     }
 
-    carregarUsuario();
-    carregarCobrancas();
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarUsuario();
+      carregarEstatisticas();
+      carregarCobrancas();
+    });
   </script>
 </body>
 </html>
