@@ -2254,8 +2254,8 @@ app.post("/api/cobrancas/arquivar-massa", auth, async (req, res) => {
     }
 
     // Limitar a 1000 por vez para evitar timeout
-    if (ids.length > 1000) {
-      return res.status(400).json({ success: false, message: "Máximo de 1000 cobranças por vez." });
+    if (ids.length > 5000) {
+      return res.status(400).json({ success: false, message: "Máximo de 5000 cobranças por vez." });
     }
 
     const result = await pool.query(`
