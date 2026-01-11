@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Lembretes Automáticos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #0f0f12;
+      --bg-card: rgba(17, 17, 21, 0.95);
+      --bg-sidebar: #0c0c0f;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #F6C84C;
+      --gold-light: #FFD56A;
+      --gold-glow: rgba(246, 200, 76, 0.15);
+      --gold-glow-strong: rgba(246, 200, 76, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(246, 200, 76, 0.2);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --sidebar-width: 280px;
+      --header-height: 70px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Sidebar simplificado */
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
+      display: flex; flex-direction: column;
+    }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+    .logo-icon {
+      min-width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold);
+    }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text span:first-child { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
+    .nav-links { display: flex; flex-direction: column; gap: 4px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none;
+      font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative;
+    }
+    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
+    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
+    .nav-link.active::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0;
+    }
+    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .nav-badge.green { background: var(--green); color: white; }
+    .nav-badge.red { background: var(--red); color: white; }
+
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .user-menu-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
+
+    /* Main Content */
+    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
+    
+    .header {
+      height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
+    }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-item { color: var(--text-muted); }
+    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
+
+    .page-content { padding: 32px; max-width: 1200px; }
+    
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+    .page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; }
+    .page-title-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+    .page-subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    /* Status Card */
+    .status-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .status-info { display: flex; align-items: center; gap: 16px; }
+    .status-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .status-icon.ativo { background: var(--green-bg); color: var(--green); }
+    .status-icon.inativo { background: var(--red-bg); color: var(--red); }
+    .status-text h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .status-text p { font-size: 13px; color: var(--text-muted); }
+    
+    .toggle-container { display: flex; align-items: center; gap: 12px; }
+    .toggle-label { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+    .toggle {
+      width: 56px; height: 30px; background: var(--border); border-radius: 15px;
+      position: relative; cursor: pointer; transition: background 0.3s ease;
+    }
+    .toggle.active { background: var(--green); }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 24px; height: 24px; background: white; border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .toggle.active::after { transform: translateX(26px); }
+
+    /* Stats Row */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .stat-icon.green { background: var(--green-bg); color: var(--green); }
+    .stat-icon.red { background: var(--red-bg); color: var(--red); }
+    .stat-icon.blue { background: var(--blue-bg); color: var(--blue); }
+    .stat-icon.gold { background: var(--gold-glow); color: var(--gold); }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Cards Grid */
+    .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
+    
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .card-header i { color: var(--gold); font-size: 20px; }
+    .card-header h3 { font-size: 16px; font-weight: 700; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .form-input {
+      width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-primary); font-size: 14px; transition: all var(--transition-fast);
+    }
+    .form-input:focus { outline: none; border-color: var(--gold); background: var(--gold-glow); }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all var(--transition-fast); border: none;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { box-shadow: var(--shadow-gold); transform: translateY(-2px); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--border-gold); color: var(--gold); }
+    .btn-success { background: var(--green); color: white; }
+    .btn-success:hover { background: #16a34a; }
+
+    /* Templates List */
+    .templates-list { display: flex; flex-direction: column; gap: 12px; }
+    .template-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .template-info { display: flex; align-items: center; gap: 12px; }
+    .template-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .template-icon.blue { background: var(--blue-bg); color: var(--blue); }
+    .template-icon.orange { background: var(--orange-bg); color: var(--orange); }
+    .template-icon.red { background: var(--red-bg); color: var(--red); }
+    .template-name { font-weight: 600; font-size: 14px; }
+    .template-desc { font-size: 12px; color: var(--text-muted); }
+
+    /* Histórico Table */
+    .table-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .table-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .table-header h3 i { color: var(--gold); }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    td { font-size: 13px; color: var(--text-secondary); }
+    
+    .status-badge { display: inline-flex; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .status-badge.enviado { background: var(--green-bg); color: var(--green); }
+    .status-badge.erro { background: var(--red-bg); color: var(--red); }
+    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
+
+    .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">
+        <span>ACERTIVE</span>
+        <span>Enterprise</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-links">
+          <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span>Dashboard</span></a>
+          <a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span>Cobranças</span></a>
+          <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span>Clientes</span></a>
+          <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span>Agendamentos</span></a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <div class="nav-links">
+          <a href="/lembretes" class="nav-link active"><i class="fa-solid fa-bell"></i><span>Lembretes</span><span class="nav-badge green">NOVO</span></a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Configurações</div>
+        <div class="nav-links">
+          <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">Administrador</div>
+        </div>
+        <button class="user-menu-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">ACERTIVE</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Automação</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Lembretes</span>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <div class="page-title-icon"><i class="fa-solid fa-bell"></i></div>
+            Lembretes Automáticos
+          </h1>
+          <p class="page-subtitle">Configure o envio automático de lembretes por e-mail e WhatsApp</p>
+        </div>
+      </div>
+
+      <!-- Status Card -->
+      <div class="status-card">
+        <div class="status-info">
+          <div class="status-icon" id="statusIcon">
+            <i class="fa-solid fa-bell-slash"></i>
+          </div>
+          <div class="status-text">
+            <h3 id="statusTitle">Sistema Desativado</h3>
+            <p id="statusDesc">Ative para começar a enviar lembretes automaticamente</p>
+          </div>
+        </div>
+        <div class="toggle-container">
+          <span class="toggle-label">Desativado</span>
+          <div class="toggle" id="toggleAtivo" onclick="toggleSistema()"></div>
+          <span class="toggle-label">Ativado</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-icon green"><i class="fa-solid fa-paper-plane"></i></div>
+          </div>
+          <div class="stat-value" id="statEnviados">0</div>
+          <div class="stat-label">Total Enviados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-icon blue"><i class="fa-solid fa-clock"></i></div>
+          </div>
+          <div class="stat-value" id="statHoje">0</div>
+          <div class="stat-label">Enviados Hoje</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-icon gold"><i class="fa-solid fa-calendar-week"></i></div>
+          </div>
+          <div class="stat-value" id="statSemana">0</div>
+          <div class="stat-label">Últimos 7 dias</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-icon red"><i class="fa-solid fa-exclamation-circle"></i></div>
+          </div>
+          <div class="stat-value" id="statErros">0</div>
+          <div class="stat-label">Erros</div>
+        </div>
+      </div>
+
+      <!-- Cards Grid -->
+      <div class="cards-grid">
+        <!-- Configurações -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fa-solid fa-gear"></i>
+            <h3>Configurações</h3>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">E-mail de Teste</label>
+            <input type="email" class="form-input" id="emailTeste" placeholder="seu@email.com">
+            <p class="form-hint">Se preenchido, todos os e-mails serão enviados para este endereço (modo teste)</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Limite Diário</label>
+            <input type="number" class="form-input" id="limiteDiario" value="100" min="1" max="1000">
+            <p class="form-hint">Máximo de e-mails enviados por dia</p>
+          </div>
+          
+          <button class="btn btn-primary" onclick="salvarConfig()">
+            <i class="fa-solid fa-save"></i> Salvar Configurações
+          </button>
+        </div>
+
+        <!-- Teste -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fa-solid fa-flask"></i>
+            <h3>Enviar E-mail de Teste</h3>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">E-mail Destinatário</label>
+            <input type="email" class="form-input" id="emailTesteEnvio" placeholder="teste@email.com">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Tipo de Template</label>
+            <select class="form-input" id="tipoTemplate">
+              <option value="novaCobranca">Nova Cobrança</option>
+              <option value="lembrete7dias">Lembrete 7 dias</option>
+              <option value="lembrete3dias">Lembrete 3 dias</option>
+              <option value="lembreteHoje">Lembrete Hoje</option>
+              <option value="cobrancaAtraso">Cobrança em Atraso</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-success" onclick="enviarTeste()">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Teste
+          </button>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <i class="fa-solid fa-envelope"></i>
+          <h3>Templates de E-mail</h3>
+        </div>
+        <div class="templates-list">
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-icon blue"><i class="fa-solid fa-file-invoice"></i></div>
+              <div>
+                <div class="template-name">Nova Cobrança</div>
+                <div class="template-desc">Enviado quando uma cobrança é associada ao cliente</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-icon blue"><i class="fa-solid fa-calendar"></i></div>
+              <div>
+                <div class="template-name">Lembrete 7 dias</div>
+                <div class="template-desc">Enviado 7 dias antes do vencimento</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-icon orange"><i class="fa-solid fa-calendar-day"></i></div>
+              <div>
+                <div class="template-name">Lembrete 3 dias</div>
+                <div class="template-desc">Enviado 3 dias antes do vencimento</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-icon red"><i class="fa-solid fa-bell"></i></div>
+              <div>
+                <div class="template-name">Vencimento Hoje</div>
+                <div class="template-desc">Enviado no dia do vencimento</div>
+              </div>
+            </div>
+          </div>
+          <div class="template-item">
+            <div class="template-info">
+              <div class="template-icon red"><i class="fa-solid fa-exclamation-triangle"></i></div>
+              <div>
+                <div class="template-name">Cobrança em Atraso</div>
+                <div class="template-desc">Enviado 1, 3, 7, 15 e 30 dias após o vencimento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico -->
+      <div class="table-container">
+        <div class="table-header">
+          <h3><i class="fa-solid fa-history"></i> Histórico de Envios</h3>
+          <button class="btn btn-secondary" onclick="carregarHistorico()">
+            <i class="fa-solid fa-refresh"></i> Atualizar
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Cliente</th>
+              <th>Tipo</th>
+              <th>Destinatário</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historicoBody">
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <p>Nenhum envio registrado ainda</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script>
+    const API_URL = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+    
+    let sistemaAtivo = false;
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
+
+    function showToast(msg, type = 'success') {
+      Toastify({
+        text: msg, duration: 3000, gravity: "top", position: "right",
+        style: { background: type === 'success' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #F6C84C, #d4a833)', borderRadius: '12px', fontWeight: '600' }
+      }).showToast();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    // Carregar configurações
+    async function carregarConfig() {
+      try {
+        const res = await fetch(`${API_URL}/api/lembretes/config`, { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success) {
+          sistemaAtivo = data.config.ativo;
+          document.getElementById('emailTeste').value = data.config.emailTeste || '';
+          document.getElementById('limiteDiario').value = data.config.limiteDiario || 100;
+          atualizarStatusUI();
+        }
+      } catch (err) {
+        console.error('Erro ao carregar config:', err);
+      }
+    }
+
+    // Carregar estatísticas
+    async function carregarEstatisticas() {
+      try {
+        const res = await fetch(`${API_URL}/api/lembretes/estatisticas`, { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('statEnviados').textContent = data.estatisticas.total_enviados || 0;
+          document.getElementById('statHoje').textContent = data.estatisticas.enviados_hoje || 0;
+          document.getElementById('statSemana').textContent = data.estatisticas.enviados_semana || 0;
+          document.getElementById('statErros').textContent = data.estatisticas.total_erros || 0;
+        }
+      } catch (err) {
+        console.error('Erro ao carregar estatísticas:', err);
+      }
+    }
+
+    // Carregar histórico
+    async function carregarHistorico() {
+      try {
+        const res = await fetch(`${API_URL}/api/lembretes/historico?limit=20`, { headers: getHeaders() });
+        const data = await res.json();
+        
+        const tbody = document.getElementById('historicoBody');
+        
+        if (!data.success || !data.data || data.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Nenhum envio registrado ainda</p></div></td></tr>`;
+          return;
+        }
+        
+        tbody.innerHTML = data.data.map(h => `
+          <tr>
+            <td>${new Date(h.created_at).toLocaleString('pt-BR')}</td>
+            <td>${h.cliente_nome || '-'}</td>
+            <td>${h.tipo}</td>
+            <td>${h.destinatario}</td>
+            <td><span class="status-badge ${h.status}">${h.status}</span></td>
+          </tr>
+        `).join('');
+        
+      } catch (err) {
+        console.error('Erro ao carregar histórico:', err);
+      }
+    }
+
+    // Toggle sistema
+    async function toggleSistema() {
+      try {
+        const novoStatus = !sistemaAtivo;
+        
+        const res = await fetch(`${API_URL}/api/lembretes/ativar`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ ativo: novoStatus })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          sistemaAtivo = data.ativo;
+          atualizarStatusUI();
+          showToast(data.message, 'success');
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao alterar status', 'error');
+      }
+    }
+
+    function atualizarStatusUI() {
+      const toggle = document.getElementById('toggleAtivo');
+      const icon = document.getElementById('statusIcon');
+      const title = document.getElementById('statusTitle');
+      const desc = document.getElementById('statusDesc');
+      
+      if (sistemaAtivo) {
+        toggle.classList.add('active');
+        icon.className = 'status-icon ativo';
+        icon.innerHTML = '<i class="fa-solid fa-bell"></i>';
+        title.textContent = 'Sistema Ativado';
+        desc.textContent = 'Lembretes estão sendo enviados automaticamente';
+      } else {
+        toggle.classList.remove('active');
+        icon.className = 'status-icon inativo';
+        icon.innerHTML = '<i class="fa-solid fa-bell-slash"></i>';
+        title.textContent = 'Sistema Desativado';
+        desc.textContent = 'Ative para começar a enviar lembretes automaticamente';
+      }
+    }
+
+    // Salvar configurações
+    async function salvarConfig() {
+      try {
+        const emailTeste = document.getElementById('emailTeste').value;
+        const limiteDiario = document.getElementById('limiteDiario').value;
+        
+        const res = await fetch(`${API_URL}/api/lembretes/config`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ emailTeste, limiteDiario })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast('Configurações salvas!', 'success');
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao salvar', 'error');
+      }
+    }
+
+    // Enviar teste
+    async function enviarTeste() {
+      const email = document.getElementById('emailTesteEnvio').value;
+      const tipo = document.getElementById('tipoTemplate').value;
+      
+      if (!email) {
+        showToast('Informe o e-mail', 'error');
+        return;
+      }
+      
+      try {
+        showToast('Enviando...', 'info');
+        
+        const res = await fetch(`${API_URL}/api/lembretes/teste`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ email, tipo })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast(data.message, 'success');
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao enviar teste', 'error');
+      }
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarConfig();
+      carregarEstatisticas();
+      carregarHistorico();
+    });
+  </script>
+</body>
+</html>
