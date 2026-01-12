@@ -4,505 +4,151 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Novo Agendamento - ACERTIVE</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
-      min-height: 100vh;
-      color: #e0e0e0;
-    }
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
 
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 280px;
-      height: 100vh;
-      background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
-      border-right: 1px solid #2a2a2a;
-      padding: 30px 20px;
-      z-index: 1000;
-      overflow-y: auto;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 40px;
-      padding-bottom: 30px;
-      border-bottom: 1px solid #2a2a2a;
-    }
-    .logo-icon {
-      width: 50px;
-      height: 50px;
-      background: linear-gradient(135deg, #F6C84C, #f5b800);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 900;
-      color: #000;
-      box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4);
-    }
-    .logo-text { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+    /* SIDEBAR PADRÃO */
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
 
-    .nav-section { margin-bottom: 30px; }
-    .nav-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 15px;
-      padding-left: 15px;
-    }
-    .nav-links { display: flex; flex-direction: column; gap: 5px; }
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 15px;
-      color: #888;
-      text-decoration: none;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      font-weight: 500;
-    }
-    .nav-link:hover { background: rgba(246, 200, 76, 0.1); color: #F6C84C; }
-    .nav-link.active {
-      background: linear-gradient(135deg, rgba(246, 200, 76, 0.2), rgba(246, 200, 76, 0.1));
-      color: #F6C84C;
-      border-left: 3px solid #F6C84C;
-    }
-    .nav-link svg { width: 20px; height: 20px; }
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .page-subtitle{color:var(--text-muted);font-size:14px;margin-top:4px}
 
-    /* Main Content */
-    .main-content {
-      margin-left: 280px;
-      padding: 30px;
-      min-height: 100vh;
-    }
-
-    /* Header */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .page-title {
-      font-size: 32px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #fff, #ccc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .page-subtitle { color: #666; margin-top: 5px; font-size: 14px; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: none;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #F6C84C, #f5b800);
-      color: #000;
-      box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4);
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(246, 200, 76, 0.5); }
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: 1px solid #333;
-    }
-    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all var(--transition-fast);text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);border-color:var(--border-gold);color:var(--gold)}
 
     /* Form Container */
-    .form-container {
-      background: linear-gradient(145deg, #1e1e1e, #252525);
-      border: 1px solid #2a2a2a;
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 800px;
-    }
-    .form-header {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #333;
-    }
-    .form-header h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #F6C84C;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .form-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;max-width:800px}
+    .form-header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .form-header h2{font-size:18px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:10px}
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 25px;
-    }
-    .form-grid.full { grid-template-columns: 1fr; }
-
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-group.full { grid-column: 1 / -1; }
-
-    .form-group label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #888;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .form-group label .required { color: #ef4444; }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      padding: 14px 18px;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid #333;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 15px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.3s ease;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #F6C84C;
-      background: rgba(246, 200, 76, 0.05);
-    }
-    .form-group textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-    .form-group select option {
-      background: #1e1e1e;
-      color: #fff;
-    }
+    .form-group{margin-bottom:20px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}.form-label .required{color:var(--red)}
+    .form-input,.form-select,.form-textarea{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px;transition:all var(--transition-fast)}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}.form-select option{background:var(--bg-primary)}.form-textarea{min-height:120px;resize:vertical}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
     /* Cliente Select */
-    .cliente-select-container { position: relative; }
-    .cliente-search {
-      width: 100%;
-      padding: 14px 18px;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid #333;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 15px;
-    }
-    .cliente-search:focus {
-      outline: none;
-      border-color: #F6C84C;
-    }
-    .cliente-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: #1e1e1e;
-      border: 1px solid #333;
-      border-radius: 12px;
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 100;
-      display: none;
-      margin-top: 5px;
-    }
-    .cliente-dropdown.active { display: block; }
-    .cliente-option {
-      padding: 12px 18px;
-      cursor: pointer;
-      border-bottom: 1px solid #2a2a2a;
-      transition: all 0.2s ease;
-    }
-    .cliente-option:hover { background: rgba(246, 200, 76, 0.1); }
-    .cliente-option:last-child { border-bottom: none; }
-    .cliente-option .nome { font-weight: 600; color: #fff; }
-    .cliente-option .info { font-size: 12px; color: #666; margin-top: 3px; }
-
-    .cliente-selecionado {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      background: rgba(246, 200, 76, 0.1);
-      border: 2px solid rgba(246, 200, 76, 0.3);
-      border-radius: 12px;
-    }
-    .cliente-selecionado .info { }
-    .cliente-selecionado .nome { font-weight: 600; color: #F6C84C; }
-    .cliente-selecionado .detalhes { font-size: 12px; color: #888; }
-    .cliente-selecionado .remover {
-      background: rgba(239, 68, 68, 0.2);
-      border: none;
-      color: #ef4444;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .cliente-select-container{position:relative}
+    .cliente-search{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}.cliente-search:focus{outline:none;border-color:var(--gold)}
+    .cliente-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);max-height:250px;overflow-y:auto;z-index:100;display:none;margin-top:5px}.cliente-dropdown.active{display:block}
+    .cliente-option{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:all 0.2s}.cliente-option:hover{background:var(--gold-glow)}.cliente-option:last-child{border-bottom:none}
+    .cliente-option .nome{font-weight:600}.cliente-option .info{font-size:12px;color:var(--text-muted);margin-top:3px}
+    .cliente-selecionado{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--gold-glow);border:1px solid var(--border-gold);border-radius:var(--radius-md)}
+    .cliente-selecionado .nome{font-weight:600;color:var(--gold)}.cliente-selecionado .detalhes{font-size:12px;color:var(--text-muted)}
+    .cliente-selecionado .remover{background:var(--red-bg);border:none;color:var(--red);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600}
 
     /* Tipo Cards */
-    .tipo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-    }
-    .tipo-card {
-      padding: 15px;
-      background: rgba(255,255,255,0.03);
-      border: 2px solid #333;
-      border-radius: 12px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-    .tipo-card:hover {
-      border-color: #555;
-      background: rgba(255,255,255,0.05);
-    }
-    .tipo-card.selected {
-      border-color: #F6C84C;
-      background: rgba(246, 200, 76, 0.1);
-    }
-    .tipo-card .icon { font-size: 24px; margin-bottom: 8px; }
-    .tipo-card .label { font-size: 12px; font-weight: 600; color: #888; }
-    .tipo-card.selected .label { color: #F6C84C; }
+    .tipo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
+    .tipo-card{padding:14px 10px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;transition:all 0.2s}.tipo-card:hover{border-color:#555}.tipo-card.selected{border-color:var(--gold);background:var(--gold-glow)}
+    .tipo-card .icon{font-size:22px;margin-bottom:6px}.tipo-card .label{font-size:11px;font-weight:600;color:var(--text-muted)}.tipo-card.selected .label{color:var(--gold)}
 
     /* Prioridade */
-    .prioridade-grid {
-      display: flex;
-      gap: 12px;
-    }
-    .prioridade-option {
-      flex: 1;
-      padding: 12px;
-      background: rgba(255,255,255,0.03);
-      border: 2px solid #333;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s ease;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .prioridade-option:hover { border-color: #555; }
-    .prioridade-option.selected { border-width: 2px; }
-    .prioridade-option.baixa.selected { border-color: #9ca3af; background: rgba(156, 163, 175, 0.1); color: #9ca3af; }
-    .prioridade-option.normal.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-    .prioridade-option.alta.selected { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .prioridade-grid{display:flex;gap:12px}
+    .prioridade-option{flex:1;padding:12px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.2s}.prioridade-option:hover{border-color:#555}
+    .prioridade-option.baixa.selected{border-color:#9ca3af;background:rgba(156,163,175,0.1);color:#9ca3af}
+    .prioridade-option.normal.selected{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+    .prioridade-option.alta.selected{border-color:var(--red);background:var(--red-bg);color:var(--red)}
 
-    /* Form Actions */
-    .form-actions {
-      display: flex;
-      gap: 15px;
-      margin-top: 35px;
-      padding-top: 25px;
-      border-top: 1px solid #333;
-    }
-    .form-actions .btn { flex: 1; justify-content: center; padding: 16px; }
+    .form-actions{display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}.form-actions .btn{flex:1}
 
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      padding: 15px 25px;
-      border-radius: 12px;
-      font-weight: 600;
-      z-index: 3000;
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-    .toast.success { background: #10b981; color: #fff; }
-    .toast.error { background: #ef4444; color: #fff; }
-    .toast.active { display: block; }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-    /* Loading */
-    .btn.loading {
-      pointer-events: none;
-      opacity: 0.7;
-    }
-
-    /* Responsivo */
-    @media (max-width: 1024px) {
-      .sidebar { width: 80px; padding: 20px 10px; }
-      .logo-text, .nav-title, .nav-link span { display: none; }
-      .logo { justify-content: center; padding-bottom: 20px; }
-      .nav-link { justify-content: center; padding: 14px; }
-      .main-content { margin-left: 80px; }
-    }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding: 20px; }
-      .form-container { padding: 25px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .tipo-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
+    @media(max-width:768px){.form-row{grid-template-columns:1fr}.tipo-grid{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-icon">A</div>
-      <span class="logo-text">ACERTIVE</span>
-    </div>
-    <nav class="nav-section">
-      <div class="nav-title">Menu Principal</div>
-      <div class="nav-links">
-        <a href="/dashboard" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-          <span>Dashboard</span>
-        </a>
-        <a href="/cobrancas" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-          <span>Cobranças</span>
-        </a>
-        <a href="/clientes-ativos" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <span>Clientes</span>
-        </a>
-        <a href="/agendamentos" class="nav-link active">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          <span>Agendamentos</span>
-        </a>
-        <a href="/cobrancas-recorrentes" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          <span>Recorrentes</span>
-        </a>
+  <!-- SIDEBAR PADRÃO -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link active"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
       </div>
     </nav>
-    <nav class="nav-section">
-      <div class="nav-title">Sistema</div>
-      <div class="nav-links">
-        <a href="/configuracoes" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <span>Configurações</span>
-        </a>
-        <a href="#" onclick="logout()" class="nav-link">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-          <span>Sair</span>
-        </a>
-      </div>
-    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
   </aside>
 
-  <!-- Main Content -->
+  <!-- MAIN -->
   <main class="main-content">
     <header class="page-header">
-      <div>
-        <h1 class="page-title">📅 Novo Agendamento</h1>
-        <p class="page-subtitle">Agende um contato, renegociação ou liquidação</p>
-      </div>
-      <a href="/agendamentos" class="btn btn-secondary">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Voltar
-      </a>
+      <div><h1 class="page-title"><div class="page-title-icon"><i class="fas fa-calendar-plus"></i></div> Novo Agendamento</h1><p class="page-subtitle">Agende um contato, renegociação ou liquidação</p></div>
+      <a href="/agendamentos" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
     </header>
 
-    <!-- Form -->
     <div class="form-container">
-      <div class="form-header">
-        <h2>📋 Informações do Agendamento</h2>
-      </div>
-
-      <form id="formAgendamento" onsubmit="salvarAgendamento(event)">
+      <div class="form-header"><h2><i class="fas fa-clipboard-list"></i> Informações do Agendamento</h2></div>
+      <form id="formAgendamento">
         <!-- Cliente -->
-        <div class="form-group full" style="margin-bottom: 25px;">
-          <label>Cliente <span class="required">*</span></label>
+        <div class="form-group">
+          <label class="form-label">Cliente <span class="required">*</span></label>
           <div class="cliente-select-container" id="clienteContainer">
-            <input type="text" class="cliente-search" id="clienteSearch" placeholder="Digite para buscar um cliente..." autocomplete="off">
+            <input type="text" class="cliente-search" id="clienteSearch" placeholder="Digite para buscar..." autocomplete="off">
             <div class="cliente-dropdown" id="clienteDropdown"></div>
           </div>
-          <div class="cliente-selecionado" id="clienteSelecionado" style="display: none;">
-            <div class="info">
-              <div class="nome" id="clienteNome"></div>
-              <div class="detalhes" id="clienteDetalhes"></div>
-            </div>
-            <button type="button" class="remover" onclick="removerCliente()">✕ Remover</button>
-          </div>
+          <div class="cliente-selecionado" id="clienteSelecionado" style="display:none"><div><div class="nome" id="clienteNome"></div><div class="detalhes" id="clienteDetalhes"></div></div><button type="button" class="remover" onclick="removerCliente()">✕ Remover</button></div>
           <input type="hidden" id="clienteId" required>
         </div>
 
-        <!-- Tipo de Agendamento -->
-        <div class="form-group full" style="margin-bottom: 25px;">
-          <label>Tipo de Agendamento <span class="required">*</span></label>
+        <!-- Tipo -->
+        <div class="form-group">
+          <label class="form-label">Tipo <span class="required">*</span></label>
           <div class="tipo-grid">
-            <div class="tipo-card" data-tipo="novo_contato" onclick="selecionarTipo('novo_contato')">
-              <div class="icon">📞</div>
-              <div class="label">Novo Contato</div>
-            </div>
-            <div class="tipo-card" data-tipo="renegociacao" onclick="selecionarTipo('renegociacao')">
-              <div class="icon">🤝</div>
-              <div class="label">Renegociação</div>
-            </div>
-            <div class="tipo-card" data-tipo="liquidacao" onclick="selecionarTipo('liquidacao')">
-              <div class="icon">💰</div>
-              <div class="label">Liquidação</div>
-            </div>
-            <div class="tipo-card" data-tipo="cobranca" onclick="selecionarTipo('cobranca')">
-              <div class="icon">📄</div>
-              <div class="label">Cobrança</div>
-            </div>
-            <div class="tipo-card" data-tipo="lembrete" onclick="selecionarTipo('lembrete')">
-              <div class="icon">⏰</div>
-              <div class="label">Lembrete</div>
-            </div>
-            <div class="tipo-card" data-tipo="retorno" onclick="selecionarTipo('retorno')">
-              <div class="icon">↩️</div>
-              <div class="label">Retorno</div>
-            </div>
-            <div class="tipo-card" data-tipo="visita" onclick="selecionarTipo('visita')">
-              <div class="icon">🏠</div>
-              <div class="label">Visita</div>
-            </div>
+            <div class="tipo-card" data-tipo="novo_contato" onclick="selecionarTipo('novo_contato')"><div class="icon">📞</div><div class="label">Contato</div></div>
+            <div class="tipo-card" data-tipo="renegociacao" onclick="selecionarTipo('renegociacao')"><div class="icon">🤝</div><div class="label">Renegociação</div></div>
+            <div class="tipo-card" data-tipo="liquidacao" onclick="selecionarTipo('liquidacao')"><div class="icon">💰</div><div class="label">Liquidação</div></div>
+            <div class="tipo-card" data-tipo="cobranca" onclick="selecionarTipo('cobranca')"><div class="icon">📄</div><div class="label">Cobrança</div></div>
+            <div class="tipo-card" data-tipo="lembrete" onclick="selecionarTipo('lembrete')"><div class="icon">⏰</div><div class="label">Lembrete</div></div>
+            <div class="tipo-card" data-tipo="retorno" onclick="selecionarTipo('retorno')"><div class="icon">↩️</div><div class="label">Retorno</div></div>
+            <div class="tipo-card" data-tipo="visita" onclick="selecionarTipo('visita')"><div class="icon">🏠</div><div class="label">Visita</div></div>
           </div>
           <input type="hidden" id="tipoAgendamento" required>
         </div>
 
-        <div class="form-grid">
-          <!-- Data -->
-          <div class="form-group">
-            <label>Data <span class="required">*</span></label>
-            <input type="date" id="dataAgendamento" required>
-          </div>
-
-          <!-- Hora -->
-          <div class="form-group">
-            <label>Hora <span class="required">*</span></label>
-            <input type="time" id="horaAgendamento" required>
-          </div>
+        <!-- Data/Hora -->
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Data <span class="required">*</span></label><input type="date" class="form-input" id="dataAgendamento" required></div>
+          <div class="form-group"><label class="form-label">Hora <span class="required">*</span></label><input type="time" class="form-input" id="horaAgendamento" required></div>
         </div>
 
         <!-- Prioridade -->
-        <div class="form-group full" style="margin-top: 25px; margin-bottom: 25px;">
-          <label>Prioridade</label>
+        <div class="form-group">
+          <label class="form-label">Prioridade</label>
           <div class="prioridade-grid">
             <div class="prioridade-option baixa" data-prioridade="baixa" onclick="selecionarPrioridade('baixa')">🟢 Baixa</div>
             <div class="prioridade-option normal selected" data-prioridade="normal" onclick="selecionarPrioridade('normal')">🔵 Normal</div>
@@ -512,117 +158,71 @@
         </div>
 
         <!-- Descrição -->
-        <div class="form-group full">
-          <label>Descrição / Observações</label>
-          <textarea id="descricaoAgendamento" placeholder="Descreva detalhes do agendamento..."></textarea>
-        </div>
+        <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-textarea" id="descricaoAgendamento" placeholder="Detalhes do agendamento..."></textarea></div>
 
-        <!-- Actions -->
-        <div class="form-actions">
-          <a href="/agendamentos" class="btn btn-secondary">Cancelar</a>
-          <button type="submit" class="btn btn-primary" id="btnSalvar">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            Criar Agendamento
-          </button>
-        </div>
+        <div class="form-actions"><a href="/agendamentos" class="btn btn-secondary">Cancelar</a><button type="submit" class="btn btn-primary" id="btnSalvar"><i class="fas fa-check"></i> Criar Agendamento</button></div>
       </form>
     </div>
   </main>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-    const API_URL = window.location.origin;
+    const API = window.location.origin;
     let token = localStorage.getItem('token');
     let clientes = [];
     let clienteSelecionadoId = null;
+    if (!token) window.location.href = '/login';
 
-    // Verificar autenticação
-    if (!token) {
-      window.location.href = '/login';
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type = 'success') { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : '#ef4444', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
+        }
+      } catch (e) { console.error(e); }
     }
 
-    // Headers
-    function getHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
-    }
-
-    // Carregar clientes
     async function carregarClientes() {
       try {
-        const response = await fetch(`${API_URL}/api/clientes-ativos`, { headers: getHeaders() });
-        const result = await response.json();
-        if (result.success) {
-          clientes = result.data || [];
-        }
-      } catch (err) {
-        console.error('Erro ao carregar clientes:', err);
-      }
+        const res = await fetch(API + '/api/clientes-ativos', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) clientes = data.data || [];
+      } catch (e) { console.error(e); }
     }
 
-    // Busca de cliente
     function setupClienteSearch() {
       const searchInput = document.getElementById('clienteSearch');
       const dropdown = document.getElementById('clienteDropdown');
-
       searchInput.addEventListener('input', function() {
         const termo = this.value.toLowerCase().trim();
-        
-        if (termo.length < 2) {
-          dropdown.classList.remove('active');
-          return;
-        }
-
-        const filtrados = clientes.filter(c => 
-          c.nome.toLowerCase().includes(termo) ||
-          (c.cpf_cnpj && c.cpf_cnpj.includes(termo)) ||
-          (c.telefone && c.telefone.includes(termo))
-        ).slice(0, 10);
-
-        if (filtrados.length === 0) {
-          dropdown.innerHTML = '<div class="cliente-option"><span class="nome">Nenhum cliente encontrado</span></div>';
-        } else {
-          dropdown.innerHTML = filtrados.map(c => `
-            <div class="cliente-option" onclick="selecionarCliente('${c.id}', '${c.nome}', '${c.telefone || ''}', '${c.email || ''}')">
-              <div class="nome">${c.nome}</div>
-              <div class="info">${c.telefone || ''} ${c.email ? '• ' + c.email : ''}</div>
-            </div>
-          `).join('');
-        }
-
+        if (termo.length < 2) { dropdown.classList.remove('active'); return; }
+        const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(termo) || (c.cpf_cnpj && c.cpf_cnpj.includes(termo)) || (c.telefone && c.telefone.includes(termo))).slice(0, 10);
+        if (!filtrados.length) dropdown.innerHTML = '<div class="cliente-option"><span class="nome">Nenhum cliente encontrado</span></div>';
+        else dropdown.innerHTML = filtrados.map(c => '<div class="cliente-option" onclick="selecionarCliente(\'' + c.id + '\', \'' + c.nome + '\', \'' + (c.telefone || '') + '\', \'' + (c.email || '') + '\')"><div class="nome">' + c.nome + '</div><div class="info">' + (c.telefone || '') + (c.email ? ' • ' + c.email : '') + '</div></div>').join('');
         dropdown.classList.add('active');
       });
-
-      searchInput.addEventListener('focus', function() {
-        if (this.value.length >= 2) {
-          dropdown.classList.add('active');
-        }
-      });
-
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.cliente-select-container')) {
-          dropdown.classList.remove('active');
-        }
-      });
+      searchInput.addEventListener('focus', function() { if (this.value.length >= 2) dropdown.classList.add('active'); });
+      document.addEventListener('click', function(e) { if (!e.target.closest('.cliente-select-container')) dropdown.classList.remove('active'); });
     }
 
-    // Selecionar cliente
     function selecionarCliente(id, nome, telefone, email) {
       clienteSelecionadoId = id;
       document.getElementById('clienteId').value = id;
       document.getElementById('clienteNome').textContent = nome;
-      document.getElementById('clienteDetalhes').textContent = `${telefone} ${email ? '• ' + email : ''}`;
-      
+      document.getElementById('clienteDetalhes').textContent = telefone + (email ? ' • ' + email : '');
       document.getElementById('clienteContainer').style.display = 'none';
       document.getElementById('clienteSelecionado').style.display = 'flex';
       document.getElementById('clienteDropdown').classList.remove('active');
     }
 
-    // Remover cliente
     function removerCliente() {
       clienteSelecionadoId = null;
       document.getElementById('clienteId').value = '';
@@ -631,24 +231,20 @@
       document.getElementById('clienteSelecionado').style.display = 'none';
     }
 
-    // Selecionar tipo
     function selecionarTipo(tipo) {
-      document.querySelectorAll('.tipo-card').forEach(card => card.classList.remove('selected'));
-      document.querySelector(`.tipo-card[data-tipo="${tipo}"]`).classList.add('selected');
+      document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+      document.querySelector('.tipo-card[data-tipo="' + tipo + '"]').classList.add('selected');
       document.getElementById('tipoAgendamento').value = tipo;
     }
 
-    // Selecionar prioridade
     function selecionarPrioridade(prioridade) {
-      document.querySelectorAll('.prioridade-option').forEach(opt => opt.classList.remove('selected'));
-      document.querySelector(`.prioridade-option[data-prioridade="${prioridade}"]`).classList.add('selected');
+      document.querySelectorAll('.prioridade-option').forEach(o => o.classList.remove('selected'));
+      document.querySelector('.prioridade-option[data-prioridade="' + prioridade + '"]').classList.add('selected');
       document.getElementById('prioridadeAgendamento').value = prioridade;
     }
 
-    // Salvar agendamento
-    async function salvarAgendamento(e) {
+    document.getElementById('formAgendamento').addEventListener('submit', async function(e) {
       e.preventDefault();
-
       const clienteId = document.getElementById('clienteId').value;
       const tipo = document.getElementById('tipoAgendamento').value;
       const data = document.getElementById('dataAgendamento').value;
@@ -656,83 +252,38 @@
       const prioridade = document.getElementById('prioridadeAgendamento').value;
       const descricao = document.getElementById('descricaoAgendamento').value;
 
-      // Validações
-      if (!clienteId) {
-        showToast('Selecione um cliente', 'error');
-        return;
-      }
-      if (!tipo) {
-        showToast('Selecione o tipo de agendamento', 'error');
-        return;
-      }
-      if (!data || !hora) {
-        showToast('Preencha data e hora', 'error');
-        return;
-      }
+      if (!clienteId) { showToast('Selecione um cliente', 'error'); return; }
+      if (!tipo) { showToast('Selecione o tipo', 'error'); return; }
+      if (!data || !hora) { showToast('Preencha data e hora', 'error'); return; }
 
-      const dataAgendamento = `${data}T${hora}:00`;
-
-      const btnSalvar = document.getElementById('btnSalvar');
-      btnSalvar.classList.add('loading');
-      btnSalvar.innerHTML = 'Salvando...';
+      const btn = document.getElementById('btnSalvar');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
       try {
-        const response = await fetch(`${API_URL}/api/agendamentos`, {
+        const res = await fetch(API + '/api/agendamentos', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({
-            cliente_id: clienteId,
-            tipo,
-            data_agendamento: dataAgendamento,
-            prioridade,
-            descricao
-          })
+          body: JSON.stringify({ cliente_id: clienteId, tipo, data_agendamento: data + 'T' + hora + ':00', prioridade, descricao })
         });
-
-        const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.message || 'Erro ao criar agendamento');
-        }
-
-        showToast('Agendamento criado com sucesso!', 'success');
-        
-        setTimeout(() => {
-          window.location.href = '/agendamentos';
-        }, 1500);
+        const result = await res.json();
+        if (!result.success) throw new Error(result.message || 'Erro');
+        showToast('Agendamento criado!', 'success');
+        setTimeout(() => window.location.href = '/agendamentos', 1500);
       } catch (err) {
-        console.error('Erro ao salvar:', err);
-        showToast(err.message || 'Erro ao criar agendamento', 'error');
-        btnSalvar.classList.remove('loading');
-        btnSalvar.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Criar Agendamento';
+        showToast(err.message || 'Erro ao criar', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Criar Agendamento';
       }
-    }
+    });
 
-    // Toast
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = `toast ${type} active`;
-      setTimeout(() => toast.classList.remove('active'), 3000);
-    }
-
-    // Logout
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-
-    // Inicializar
     document.addEventListener('DOMContentLoaded', async () => {
+      await carregarUsuario();
       await carregarClientes();
       setupClienteSearch();
-
-      // Definir data mínima como hoje
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('dataAgendamento').value = hoje;
       document.getElementById('dataAgendamento').min = hoje;
-
-      // Definir hora padrão como 09:00
       document.getElementById('horaAgendamento').value = '09:00';
     });
   </script>

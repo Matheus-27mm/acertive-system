@@ -3,154 +3,115 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Usuários - ACERTIVE Enterprise</title>
+  <title>Usuários - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root { --bg-primary: #09090b; --bg-card: rgba(17, 17, 21, 0.95); --bg-sidebar: #0c0c0f; --text-primary: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a; --gold: #F6C84C; --gold-light: #FFD56A; --gold-glow: rgba(246, 200, 76, 0.15); --gold-glow-strong: rgba(246, 200, 76, 0.3); --border: rgba(255, 255, 255, 0.08); --border-gold: rgba(246, 200, 76, 0.2); --green: #22c55e; --green-bg: rgba(34, 197, 94, 0.15); --red: #ef4444; --red-bg: rgba(239, 68, 68, 0.15); --blue: #3b82f6; --blue-bg: rgba(59, 130, 246, 0.15); --sidebar-width: 280px; --sidebar-collapsed: 80px; --header-height: 70px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px; --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2); --transition-fast: 0.15s ease; --transition-normal: 0.25s ease; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
 
-    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000; display: flex; flex-direction: column; transition: width var(--transition-normal); }
-    .sidebar.collapsed { width: var(--sidebar-collapsed); }
-    .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-info, .sidebar.collapsed .nav-section-title { display: none; }
-    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
-    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
-    .logo-icon { min-width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
-    .logo-text { display: flex; flex-direction: column; }
-    .logo-text span:first-child { font-size: 20px; font-weight: 800; }
-    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
-    .nav-section { margin-bottom: 28px; }
-    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
-    .nav-links { display: flex; flex-direction: column; gap: 4px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative; }
-    .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
-    .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
-    .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0; }
-    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
-    .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: var(--blue); color: white; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
-    .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--bg-primary); }
-    .user-info { flex: 1; }
-    .user-name { font-weight: 600; font-size: 13px; }
-    .user-role { font-size: 11px; color: var(--text-muted); }
-    .user-menu-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
+    /* SIDEBAR PADRÃO */
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
 
-    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left var(--transition-normal); }
-    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .page-subtitle{color:var(--text-muted);font-size:14px}
 
-    .header { height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
-    .header-left { display: flex; align-items: center; gap: 20px; }
-    .sidebar-toggle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
-    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-    .breadcrumb-item { color: var(--text-muted); }
-    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;transition:all var(--transition-fast);border:none;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);border-color:var(--border-gold);color:var(--gold)}
+    .btn-success{background:var(--green);color:white}.btn-danger{background:var(--red);color:white}
+    .btn-sm{padding:8px 14px;font-size:12px}
 
-    .page-content { padding: 32px; }
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 20px; }
-    .page-title { font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .page-title-icon { width: 42px; height: 42px; background: var(--gold-glow-strong); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
-    .page-subtitle { color: var(--text-muted); font-size: 14px; }
+    /* TABLE */
+    .table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    .table-header{padding:20px;border-bottom:1px solid var(--border)}.table-title{font-size:16px;font-weight:700}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:rgba(0,0,0,0.3);padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+    tbody td{padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-secondary)}
+    tbody tr{transition:all var(--transition-fast)}tbody tr:hover{background:var(--gold-glow)}
 
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: all var(--transition-fast); border: none; text-decoration: none; }
-    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
-    .btn-primary:hover { transform: translateY(-2px); }
-    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
-    .btn-success { background: var(--green); color: white; }
-    .btn-danger { background: var(--red); color: white; }
-    .btn-sm { padding: 8px 14px; font-size: 12px; }
+    .user-cell{display:flex;align-items:center;gap:12px}
+    .user-cell-avatar{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--bg-primary)}
+    .user-cell-name{font-weight:700;color:var(--text-primary)}.user-cell-email{font-size:12px;color:var(--text-muted)}
 
-    .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .table-header { padding: 20px; border-bottom: 1px solid var(--border); }
-    .table-title { font-size: 16px; font-weight: 700; }
-    .table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 700px; }
-    thead th { background: rgba(0,0,0,0.3); padding: 14px 20px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    tbody td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
-    tbody tr { transition: all var(--transition-fast); }
-    tbody tr:hover { background: var(--gold-glow); }
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase}
+    .badge-admin{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.badge-operador{background:var(--blue-bg);color:var(--blue)}
+    .badge-ativo{background:var(--green-bg);color:var(--green)}.badge-inativo{background:var(--red-bg);color:var(--red)}
 
-    .user-cell { display: flex; align-items: center; gap: 12px; }
-    .user-cell-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: var(--bg-primary); }
-    .user-cell-info { display: flex; flex-direction: column; }
-    .user-cell-name { font-weight: 700; color: var(--text-primary); }
-    .user-cell-email { font-size: 12px; color: var(--text-muted); }
+    .actions-cell{display:flex;gap:8px}
+    .loading-cell{text-align:center;padding:40px !important;color:var(--text-muted)}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5;color:var(--gold)}
 
-    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .badge-admin { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
-    .badge-operador { background: var(--blue-bg); color: var(--blue); }
-    .badge-ativo { background: var(--green-bg); color: var(--green); }
-    .badge-inativo { background: var(--red-bg); color: var(--red); }
+    .access-denied{text-align:center;padding:100px 20px}.access-denied i{font-size:64px;color:var(--gold);margin-bottom:24px}.access-denied h2{font-size:24px;margin-bottom:12px}.access-denied p{color:var(--text-muted);margin-bottom:24px}
 
-    .actions-cell { display: flex; gap: 8px; }
-    .loading-cell { text-align: center; padding: 40px !important; color: var(--text-muted); }
-    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: var(--gold); }
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:2000}.modal-overlay.active{display:flex}
+    .modal{background:var(--bg-card);border:1px solid var(--border-gold);border-radius:var(--radius-lg);padding:28px;width:90%;max-width:450px}
+    .modal-header{margin-bottom:24px}.modal-title{font-size:20px;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:10px}
+    .form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
+    .form-input,.form-select{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--gold)}.form-select option{background:var(--bg-primary)}
+    .modal-footer{display:flex;gap:12px;margin-top:24px;justify-content:flex-end}
+    .alert{padding:14px;border-radius:var(--radius-md);margin-bottom:16px;font-weight:600;font-size:13px}
+    .alert-error{background:var(--red-bg);color:var(--red);border:1px solid var(--red)}.alert-success{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
 
-    .access-denied { text-align: center; padding: 100px 20px; }
-    .access-denied i { font-size: 64px; color: var(--gold); margin-bottom: 24px; }
-    .access-denied h2 { font-size: 24px; margin-bottom: 12px; }
-    .access-denied p { color: var(--text-muted); margin-bottom: 24px; }
-
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
-    .modal-overlay.active { display: flex; }
-    .modal { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: var(--radius-xl); padding: 28px; width: 90%; max-width: 480px; }
-    .modal-header { margin-bottom: 24px; }
-    .modal-title { font-size: 20px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 10px; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
-    .form-input, .form-select { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; }
-    .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
-    .form-select option { background: var(--bg-primary); }
-    .modal-footer { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
-    .alert { padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px; font-weight: 600; font-size: 13px; }
-    .alert-error { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
-    .alert-success { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
-
-    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-wrapper { margin-left: 0; } }
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
   </style>
 </head>
 <body>
+  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links">
-        <a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a>
-        <a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a>
-        <a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a>
-        <a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a>
-      </div></div>
-      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links">
-        <a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a>
-        <a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a>
-        <a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a>
-      </div></div>
-      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links">
-        <a href="/usuarios" class="nav-link active"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a>
-        <a href="/configuracoes" class="nav-link"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a>
-      </div></div>
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link active"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
     </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
   </aside>
 
-  <div class="main-wrapper">
-    <header class="header">
-      <div class="header-left">
-        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
-        <div class="breadcrumb"><span class="breadcrumb-item">Administração</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Usuários</span></div>
-      </div>
-    </header>
-    <main class="page-content" id="conteudoPrincipal"><div class="loading-cell"><i class="fa-solid fa-spinner fa-spin"></i> Verificando permissões...</div></main>
-  </div>
+  <!-- MAIN -->
+  <main class="main-content" id="conteudoPrincipal">
+    <div class="loading-cell"><i class="fas fa-spinner fa-spin"></i> Verificando permissões...</div>
+  </main>
 
+  <!-- MODAL -->
   <div class="modal-overlay" id="modalUsuario">
     <div class="modal">
-      <div class="modal-header"><h2 class="modal-title" id="modalTitulo"><i class="fa-solid fa-user-plus"></i> Novo Usuário</h2></div>
+      <div class="modal-header"><h2 class="modal-title" id="modalTitulo"><i class="fas fa-user-plus"></i> Novo Usuário</h2></div>
       <div id="modalAlert"></div>
       <form id="formUsuario">
         <input type="hidden" id="usuarioId">
@@ -158,30 +119,25 @@
         <div class="form-group"><label class="form-label">E-mail *</label><input type="email" class="form-input" id="usuarioEmail" required placeholder="Ex: joao@empresa.com"></div>
         <div class="form-group"><label class="form-label">Senha <span id="senhaObrigatoria">*</span></label><input type="password" class="form-input" id="usuarioSenha" placeholder="Mínimo 6 caracteres"></div>
         <div class="form-group"><label class="form-label">Nível de Acesso *</label><select class="form-select" id="usuarioNivel" required><option value="operador">Operador</option><option value="admin">Administrador</option></select></div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Salvar</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Salvar</button></div>
       </form>
     </div>
   </div>
 
   <script>
-    const API_URL = window.location.origin;
-    const token = localStorage.getItem('token');
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
     if (!token) window.location.href = '/login';
     let usuarioAtual = null, editandoId = null;
 
-    document.getElementById('sidebarToggle').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      if (window.innerWidth <= 1024) sidebar.classList.toggle('open');
-      else sidebar.classList.toggle('collapsed');
-    });
-    document.getElementById('btnLogout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href = '/login'; });
-
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
     function getIniciais(nome) { if (!nome) return '?'; return nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(); }
     function formatarData(data) { if (!data) return '—'; return new Date(data).toLocaleDateString('pt-BR'); }
 
     async function verificarPermissao() {
       try {
-        const res = await fetch(`${API_URL}/api/usuarios/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
         const data = await res.json();
         if (!data.success || data.data.nivel !== 'admin') { mostrarAcessoNegado(); return; }
         usuarioAtual = data.data;
@@ -190,59 +146,71 @@
         document.getElementById('userAvatar').textContent = getIniciais(data.data.nome);
         renderizarPagina();
         carregarUsuarios();
-      } catch (err) { mostrarAcessoNegado(); }
+      } catch (e) { mostrarAcessoNegado(); }
     }
 
     function mostrarAcessoNegado() {
-      document.getElementById('conteudoPrincipal').innerHTML = `<div class="access-denied"><i class="fa-solid fa-lock"></i><h2>Acesso Restrito</h2><p>Apenas administradores podem acessar esta página.</p><a href="/dashboard" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a></div>`;
+      document.getElementById('conteudoPrincipal').innerHTML = '<div class="access-denied"><i class="fas fa-lock"></i><h2>Acesso Restrito</h2><p>Apenas administradores podem acessar esta página.</p><a href="/dashboard" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Voltar</a></div>';
     }
 
     function renderizarPagina() {
       document.getElementById('conteudoPrincipal').innerHTML = `
-        <div class="page-header"><div><h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-user-shield"></i></div>Gestão de Usuários</h1><p class="page-subtitle">Gerencie os usuários do sistema</p></div><button class="btn btn-primary" onclick="abrirModalNovo()"><i class="fa-solid fa-plus"></i> Novo Usuário</button></div>
-        <div class="table-card"><div class="table-header"><h3 class="table-title">Usuários do Sistema</h3></div><div class="table-wrapper" id="tabelaContainer"><div class="loading-cell"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div></div></div>`;
+        <div class="page-header"><div><h1 class="page-title"><div class="page-title-icon"><i class="fas fa-user-shield"></i></div> Usuários</h1><p class="page-subtitle">Gerencie os usuários do sistema</p></div><button class="btn btn-primary" onclick="abrirModalNovo()"><i class="fas fa-plus"></i> Novo Usuário</button></div>
+        <div class="table-card"><div class="table-header"><h3 class="table-title">Usuários do Sistema</h3></div><div id="tabelaContainer"><div class="loading-cell"><i class="fas fa-spinner fa-spin"></i> Carregando...</div></div></div>`;
     }
 
     async function carregarUsuarios() {
       const container = document.getElementById('tabelaContainer');
       try {
-        const res = await fetch(`${API_URL}/api/usuarios`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(API + '/api/usuarios', { headers: getHeaders() });
         const data = await res.json();
-        if (!data.success || !data.data?.length) { container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i><h3>Nenhum usuário encontrado</h3></div>'; return; }
+        if (!data.success || !data.data?.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>Nenhum usuário</h3></div>'; return; }
 
-        let html = `<table><thead><tr><th>Usuário</th><th>Nível</th><th>Status</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>`;
+        let html = '<table><thead><tr><th>Usuário</th><th>Nível</th><th>Status</th><th>Criado em</th><th>Ações</th></tr></thead><tbody>';
         data.data.forEach(user => {
           const isMe = user.id === usuarioAtual.id;
-          html += `<tr>
-            <td><div class="user-cell"><div class="user-cell-avatar">${getIniciais(user.nome)}</div><div class="user-cell-info"><span class="user-cell-name">${user.nome} ${isMe ? '(você)' : ''}</span><span class="user-cell-email">${user.email}</span></div></div></td>
-            <td><span class="badge badge-${user.nivel}">${user.nivel}</span></td>
-            <td><span class="badge badge-${user.ativo ? 'ativo' : 'inativo'}">${user.ativo ? '✓ Ativo' : '✗ Inativo'}</span></td>
-            <td>${formatarData(user.created_at)}</td>
-            <td class="actions-cell">
-              <button class="btn btn-primary btn-sm" onclick="editarUsuario('${user.id}')"><i class="fa-solid fa-pen"></i></button>
-              ${!isMe ? (user.ativo ? `<button class="btn btn-danger btn-sm" onclick="desativarUsuario('${user.id}')"><i class="fa-solid fa-ban"></i></button>` : `<button class="btn btn-success btn-sm" onclick="ativarUsuario('${user.id}')"><i class="fa-solid fa-check"></i></button>`) : ''}
-            </td>
-          </tr>`;
+          html += '<tr><td><div class="user-cell"><div class="user-cell-avatar">' + getIniciais(user.nome) + '</div><div><span class="user-cell-name">' + user.nome + (isMe ? ' (você)' : '') + '</span><span class="user-cell-email">' + user.email + '</span></div></div></td>';
+          html += '<td><span class="badge badge-' + user.nivel + '">' + user.nivel + '</span></td>';
+          html += '<td><span class="badge badge-' + (user.ativo ? 'ativo' : 'inativo') + '">' + (user.ativo ? '✓ Ativo' : '✗ Inativo') + '</span></td>';
+          html += '<td>' + formatarData(user.created_at) + '</td>';
+          html += '<td class="actions-cell"><button class="btn btn-primary btn-sm" onclick="editarUsuario(\'' + user.id + '\')"><i class="fas fa-pen"></i></button>';
+          if (!isMe) html += user.ativo ? '<button class="btn btn-danger btn-sm" onclick="desativarUsuario(\'' + user.id + '\')"><i class="fas fa-ban"></i></button>' : '<button class="btn btn-success btn-sm" onclick="ativarUsuario(\'' + user.id + '\')"><i class="fas fa-check"></i></button>';
+          html += '</td></tr>';
         });
         html += '</tbody></table>';
         container.innerHTML = html;
-      } catch (err) { container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-exclamation-triangle"></i><h3>Erro ao carregar</h3></div>'; }
+      } catch (e) { container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar</h3></div>'; }
     }
 
-    function abrirModalNovo() { editandoId = null; document.getElementById('modalTitulo').innerHTML = '<i class="fa-solid fa-user-plus"></i> Novo Usuário'; document.getElementById('formUsuario').reset(); document.getElementById('usuarioSenha').required = true; document.getElementById('senhaObrigatoria').textContent = '*'; document.getElementById('modalAlert').innerHTML = ''; document.getElementById('modalUsuario').classList.add('active'); }
+    function abrirModalNovo() {
+      editandoId = null;
+      document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-user-plus"></i> Novo Usuário';
+      document.getElementById('formUsuario').reset();
+      document.getElementById('usuarioSenha').required = true;
+      document.getElementById('senhaObrigatoria').textContent = '*';
+      document.getElementById('modalAlert').innerHTML = '';
+      document.getElementById('modalUsuario').classList.add('active');
+    }
 
     async function editarUsuario(id) {
       editandoId = id;
-      document.getElementById('modalTitulo').innerHTML = '<i class="fa-solid fa-user-pen"></i> Editar Usuário';
+      document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-user-pen"></i> Editar Usuário';
       document.getElementById('usuarioSenha').required = false;
       document.getElementById('senhaObrigatoria').textContent = '(deixe vazio para manter)';
       document.getElementById('modalAlert').innerHTML = '';
       try {
-        const res = await fetch(`${API_URL}/api/usuarios`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(API + '/api/usuarios', { headers: getHeaders() });
         const data = await res.json();
         const user = data.data.find(u => u.id === id);
-        if (user) { document.getElementById('usuarioId').value = user.id; document.getElementById('usuarioNome').value = user.nome; document.getElementById('usuarioEmail').value = user.email; document.getElementById('usuarioSenha').value = ''; document.getElementById('usuarioNivel').value = user.nivel; document.getElementById('modalUsuario').classList.add('active'); }
-      } catch (err) { alert('Erro ao carregar'); }
+        if (user) {
+          document.getElementById('usuarioId').value = user.id;
+          document.getElementById('usuarioNome').value = user.nome;
+          document.getElementById('usuarioEmail').value = user.email;
+          document.getElementById('usuarioSenha').value = '';
+          document.getElementById('usuarioNivel').value = user.nivel;
+          document.getElementById('modalUsuario').classList.add('active');
+        }
+      } catch (e) { alert('Erro ao carregar'); }
     }
 
     function fecharModal() { document.getElementById('modalUsuario').classList.remove('active'); }
@@ -256,15 +224,15 @@
       if (!editandoId && senha.length < 6) { document.getElementById('modalAlert').innerHTML = '<div class="alert alert-error">Senha deve ter no mínimo 6 caracteres</div>'; return; }
       const body = { nome, email, nivel }; if (senha) body.senha = senha;
       try {
-        const res = await fetch(editandoId ? `${API_URL}/api/usuarios/${editandoId}` : `${API_URL}/api/usuarios`, { method: editandoId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
+        const res = await fetch(editandoId ? API + '/api/usuarios/' + editandoId : API + '/api/usuarios', { method: editandoId ? 'PUT' : 'POST', headers: getHeaders(), body: JSON.stringify(body) });
         const data = await res.json();
-        if (!data.success) { document.getElementById('modalAlert').innerHTML = `<div class="alert alert-error">${data.message}</div>`; return; }
+        if (!data.success) { document.getElementById('modalAlert').innerHTML = '<div class="alert alert-error">' + data.message + '</div>'; return; }
         fecharModal(); carregarUsuarios();
-      } catch (err) { document.getElementById('modalAlert').innerHTML = '<div class="alert alert-error">Erro ao salvar</div>'; }
+      } catch (e) { document.getElementById('modalAlert').innerHTML = '<div class="alert alert-error">Erro ao salvar</div>'; }
     });
 
-    async function desativarUsuario(id) { if (!confirm('Desativar este usuário?')) return; try { const res = await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); const data = await res.json(); if (data.success) carregarUsuarios(); else alert(data.message); } catch (err) { alert('Erro'); } }
-    async function ativarUsuario(id) { try { const res = await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ativo: true }) }); const data = await res.json(); if (data.success) carregarUsuarios(); else alert(data.message); } catch (err) { alert('Erro'); } }
+    async function desativarUsuario(id) { if (!confirm('Desativar este usuário?')) return; try { const res = await fetch(API + '/api/usuarios/' + id, { method: 'DELETE', headers: getHeaders() }); const data = await res.json(); if (data.success) carregarUsuarios(); else alert(data.message); } catch (e) { alert('Erro'); } }
+    async function ativarUsuario(id) { try { const res = await fetch(API + '/api/usuarios/' + id, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ ativo: true }) }); const data = await res.json(); if (data.success) carregarUsuarios(); else alert(data.message); } catch (e) { alert('Erro'); } }
 
     document.getElementById('modalUsuario').addEventListener('click', (e) => { if (e.target.id === 'modalUsuario') fecharModal(); });
     verificarPermissao();

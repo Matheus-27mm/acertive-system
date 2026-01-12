@@ -3,494 +3,360 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Configurações - ACERTIVE Enterprise</title>
+  <title>Configurações - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
-    :root{--bg-primary:#09090b;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:280px;--header-height:70px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:20px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:20px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}.sidebar.collapsed{width:80px}.sidebar.collapsed .nav-text,.sidebar.collapsed .logo-text,.sidebar.collapsed .user-info,.sidebar.collapsed .nav-section-title{display:none}.sidebar.collapsed .nav-link{justify-content:center;padding:14px}
-    .sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}.logo-icon{min-width:46px;height:46px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--bg-primary)}.logo-text span:first-child{font-size:20px;font-weight:800}.logo-text span:last-child{font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase}
-    .sidebar-nav{flex:1;padding:20px 12px;overflow-y:auto}.nav-section{margin-bottom:28px}.nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:10px}.nav-links{display:flex;flex-direction:column;gap:4px}.nav-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-md);color:var(--text-secondary);text-decoration:none;font-weight:500;font-size:14px;transition:all var(--transition-fast);position:relative}.nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow-strong);color:var(--gold)}.nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold);border-radius:0 3px 3px 0}.nav-link i{width:20px;text-align:center}.nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--blue);color:white}
-    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}.user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}.user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}.user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}.user-menu-btn{width:28px;height:28px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;border-radius:6px}
-    .main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.sidebar.collapsed~.main-wrapper{margin-left:80px}
-    .header{height:var(--header-height);background:rgba(9,9,11,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px}.header-left{display:flex;align-items:center;gap:20px}.sidebar-toggle{width:40px;height:40px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center}.sidebar-toggle:hover{background:var(--gold-glow);color:var(--gold)}.breadcrumb{display:flex;align-items:center;gap:8px;font-size:14px}.breadcrumb-item{color:var(--text-muted)}.breadcrumb-item.active{color:var(--text-primary);font-weight:600}
-    .page-content{padding:32px}.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:16px}.page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px;margin-bottom:8px}.page-title-icon{width:42px;height:42px;background:var(--gold-glow-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}.page-subtitle{color:var(--text-muted);font-size:14px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all var(--transition-fast);text-decoration:none}.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}.btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold);border-color:var(--border-gold)}.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.3)}.btn-danger:hover{background:var(--red);color:white}.btn-sm{padding:8px 14px;font-size:12px}
-    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;gap:16px}.stat-icon{width:48px;height:48px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px}.stat-icon.gold{background:var(--gold-glow-strong);color:var(--gold)}.stat-icon.green{background:var(--green-bg);color:var(--green)}.stat-icon.blue{background:var(--blue-bg);color:var(--blue)}.stat-value{font-size:24px;font-weight:800}.stat-label{font-size:12px;color:var(--text-muted);margin-top:2px}
-    .empresas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px}
-    .empresa-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:all 0.3s}.empresa-card:hover{border-color:var(--border-gold)}.empresa-card.padrao{border-color:var(--gold);box-shadow:var(--shadow-gold)}
-    .empresa-header{padding:20px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}.empresa-avatar{width:56px;height:56px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--bg-primary)}.empresa-info{flex:1}.empresa-nome{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.empresa-cnpj{font-size:13px;color:var(--text-muted);font-family:monospace}.badge-padrao{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;background:var(--gold);color:var(--bg-primary)}
-    .empresa-body{padding:20px}.empresa-section{margin-bottom:16px}.empresa-section:last-child{margin-bottom:0}.empresa-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}.empresa-section-title i{color:var(--gold)}
-    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.info-item{padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border)}.info-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px}.info-value{font-size:13px;font-weight:600;word-break:break-all}.info-item.full{grid-column:1/-1}
-    .banco-info{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-md);border:1px solid var(--border)}.banco-icon{width:40px;height:40px;background:var(--purple-bg);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--purple)}.banco-nome{font-size:13px;font-weight:600}.banco-dados{font-size:12px;color:var(--text-muted);margin-top:2px}
-    .pix-info{display:flex;align-items:center;gap:12px;padding:12px;background:var(--green-bg);border-radius:var(--radius-md);border:1px solid rgba(34,197,94,0.2)}.pix-icon{width:40px;height:40px;background:rgba(34,197,94,0.2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:800;font-size:12px}.pix-tipo{font-size:11px;color:var(--green);text-transform:uppercase;font-weight:700}.pix-chave{font-size:13px;font-weight:600;word-break:break-all}
-    .empresa-footer{padding:16px 20px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}.empresa-footer .btn{flex:1;min-width:90px}
-    .empty-state{text-align:center;padding:60px 20px;grid-column:1/-1}.empty-icon{width:80px;height:80px;background:var(--gold-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--gold);font-size:32px}.empty-title{font-size:18px;font-weight:700;margin-bottom:8px}.empty-desc{color:var(--text-muted);font-size:14px;margin-bottom:24px}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}.modal-overlay.show{display:flex}
-    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);width:100%;max-width:700px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
-    .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}.modal-title{font-size:20px;font-weight:700;display:flex;align-items:center;gap:12px}.modal-title i{color:var(--gold)}.modal-close{width:36px;height:36px;background:rgba(255,255,255,0.05);border:none;border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}.modal-close:hover{background:var(--red-bg);color:var(--red)}
+
+    /* SIDEBAR PADRÃO */
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .page-subtitle{color:var(--text-muted);font-size:14px}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all var(--transition-fast);text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold);border-color:var(--border-gold)}
+    .btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.3)}.btn-danger:hover{background:var(--red);color:white}
+    .btn-sm{padding:8px 14px;font-size:12px}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;gap:16px}
+    .stat-icon{width:48px;height:48px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px}
+    .stat-icon.gold{background:var(--gold-glow-strong);color:var(--gold)}.stat-icon.green{background:var(--green-bg);color:var(--green)}.stat-icon.blue{background:var(--blue-bg);color:var(--blue)}
+    .stat-value{font-size:24px;font-weight:800}.stat-label{font-size:12px;color:var(--text-muted);margin-top:2px}
+
+    /* EMPRESAS GRID */
+    .empresas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:20px}
+    .empresa-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:all 0.3s}.empresa-card:hover{border-color:var(--border-gold)}
+    .empresa-card.padrao{border-color:var(--gold);box-shadow:var(--shadow-gold)}
+    .empresa-header{padding:20px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+    .empresa-avatar{width:52px;height:52px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--bg-primary)}
+    .empresa-info{flex:1}.empresa-nome{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.empresa-cnpj{font-size:13px;color:var(--text-muted);font-family:monospace}
+    .badge-padrao{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;background:var(--gold);color:var(--bg-primary)}
+    .empresa-body{padding:20px}.empresa-section{margin-bottom:16px}.empresa-section:last-child{margin-bottom:0}
+    .empresa-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}.empresa-section-title i{color:var(--gold)}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .info-item{padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border)}
+    .info-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px}.info-value{font-size:13px;font-weight:600;word-break:break-all}.info-item.full{grid-column:1/-1}
+    .banco-info{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-md);border:1px solid var(--border)}
+    .banco-icon{width:40px;height:40px;background:var(--purple-bg);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--purple)}
+    .banco-nome{font-size:13px;font-weight:600}.banco-dados{font-size:12px;color:var(--text-muted);margin-top:2px}
+    .pix-info{display:flex;align-items:center;gap:12px;padding:12px;background:var(--green-bg);border-radius:var(--radius-md);border:1px solid rgba(34,197,94,0.2)}
+    .pix-icon{width:40px;height:40px;background:rgba(34,197,94,0.2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:800;font-size:12px}
+    .pix-tipo{font-size:11px;color:var(--green);text-transform:uppercase;font-weight:700}.pix-chave{font-size:13px;font-weight:600;word-break:break-all}
+    .empresa-footer{padding:16px 20px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}.empresa-footer .btn{flex:1;min-width:80px}
+    .empty-state{text-align:center;padding:60px 20px;grid-column:1/-1}
+    .empty-icon{width:80px;height:80px;background:var(--gold-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--gold);font-size:32px}
+    .empty-title{font-size:18px;font-weight:700;margin-bottom:8px}.empty-desc{color:var(--text-muted);font-size:14px;margin-bottom:24px}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}.modal-overlay.show{display:flex}
+    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);width:100%;max-width:650px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+    .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-title i{color:var(--gold)}
+    .modal-close{width:36px;height:36px;background:rgba(255,255,255,0.05);border:none;border-radius:var(--radius-sm);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}.modal-close:hover{background:var(--red-bg);color:var(--red)}
     .modal-body{padding:24px;overflow-y:auto;flex:1}.modal-footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
-    .form-section{margin-bottom:28px}.form-section-title{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}.form-section-title i{font-size:16px}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}.form-label .required{color:var(--red)}.form-input,.form-select,.form-textarea{width:100%;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}.form-select{cursor:pointer}.form-select option{background:var(--bg-primary)}.form-textarea{min-height:80px;resize:vertical}.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    .form-section{margin-bottom:24px}.form-section-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}.form-section-title i{font-size:14px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .form-group{margin-bottom:14px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}.form-label .required{color:var(--red)}
+    .form-input,.form-select,.form-textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}
+    .form-select{cursor:pointer}.form-select option{background:var(--bg-primary)}.form-textarea{min-height:70px;resize:vertical}
+
     @media(max-width:1200px){.stats-row{grid-template-columns:1fr}.empresas-grid{grid-template-columns:1fr}}
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-wrapper{margin-left:0}}
-    @media(max-width:768px){.form-row,.form-row-3{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.modal{max-width:100%;margin:10px;border-radius:var(--radius-lg)}.empresas-grid{grid-template-columns:1fr}}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
+    @media(max-width:768px){.form-row,.form-row-3{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
+  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text"><span>ACERTIVE</span><span>Enterprise</span></div></div>
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div><div class="nav-links"><a href="/dashboard" class="nav-link"><i class="fa-solid fa-grid-2"></i><span class="nav-text">Dashboard</span></a><a href="/cobrancas" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Cobranças</span></a><a href="/clientes-ativos" class="nav-link"><i class="fa-solid fa-users"></i><span class="nav-text">Clientes</span></a><a href="/agendamentos" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="nav-text">Agendamentos</span></a></div></div>
-      <div class="nav-section"><div class="nav-section-title">Financeiro</div><div class="nav-links"><a href="/nova-cobranca" class="nav-link"><i class="fa-solid fa-plus-circle"></i><span class="nav-text">Nova Cobrança</span></a><a href="/cobrancas-recorrentes" class="nav-link"><i class="fa-solid fa-repeat"></i><span class="nav-text">Recorrentes</span></a><a href="/historico" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Histórico</span></a></div></div>
-      <div class="nav-section"><div class="nav-section-title">Administração</div><div class="nav-links"><a href="/usuarios" class="nav-link"><i class="fa-solid fa-user-shield"></i><span class="nav-text">Usuários</span><span class="nav-badge">ADM</span></a><a href="/configuracoes" class="nav-link active"><i class="fa-solid fa-gear"></i><span class="nav-text">Configurações</span></a></div></div>
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link active"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
     </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="user-menu-btn" id="btnLogout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
   </aside>
 
-  <div class="main-wrapper">
-    <header class="header">
-      <div class="header-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button><div class="breadcrumb"><span class="breadcrumb-item">Sistema</span><span class="breadcrumb-item">/</span><span class="breadcrumb-item active">Configurações</span></div></div>
-    </header>
-    
-    <main class="page-content">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title"><div class="page-title-icon"><i class="fa-solid fa-building"></i></div>Empresas Cadastradas</h1>
-          <p class="page-subtitle">Gerencie as empresas e dados bancários para suas cobranças</p>
-        </div>
-        <button class="btn btn-primary" id="btnNovaEmpresa"><i class="fa-solid fa-plus"></i> Nova Empresa</button>
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-building"></i></div> Empresas</h1>
+        <p class="page-subtitle">Gerencie as empresas e dados bancários</p>
       </div>
+      <button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Nova Empresa</button>
+    </div>
 
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon gold"><i class="fa-solid fa-building"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Empresas Cadastradas</div></div></div>
-        <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-university"></i></div><div><div class="stat-value" id="statBancos">0</div><div class="stat-label">Contas Bancárias</div></div></div>
-        <div class="stat-card"><div class="stat-icon blue"><i class="fa-brands fa-pix"></i></div><div><div class="stat-value" id="statPix">0</div><div class="stat-label">Chaves PIX</div></div></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-building"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Empresas</div></div></div>
+      <div class="stat-card"><div class="stat-icon green"><i class="fas fa-university"></i></div><div><div class="stat-value" id="statBancos">0</div><div class="stat-label">Contas Bancárias</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue"><i class="fab fa-pix"></i></div><div><div class="stat-value" id="statPix">0</div><div class="stat-label">Chaves PIX</div></div></div>
+    </div>
+
+    <div class="empresas-grid" id="empresasGrid">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-building"></i></div>
+        <div class="empty-title">Nenhuma empresa cadastrada</div>
+        <div class="empty-desc">Cadastre sua primeira empresa para emitir cobranças</div>
+        <button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Cadastrar Empresa</button>
       </div>
+    </div>
+  </main>
 
-      <div class="empresas-grid" id="empresasGrid">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-icon"><i class="fa-solid fa-building"></i></div>
-          <div class="empty-title">Nenhuma empresa cadastrada</div>
-          <div class="empty-desc">Cadastre sua primeira empresa para começar a emitir cobranças</div>
-          <button class="btn btn-primary" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Cadastrar Empresa</button>
-        </div>
-      </div>
-    </main>
-  </div>
-
+  <!-- MODAL -->
   <div class="modal-overlay" id="modalEmpresa">
     <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title"><i class="fa-solid fa-building"></i> <span id="modalTitulo">Nova Empresa</span></h2>
-        <button class="modal-close" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
+      <div class="modal-header"><h2 class="modal-title"><i class="fas fa-building"></i> <span id="modalTitulo">Nova Empresa</span></h2><button class="modal-close" onclick="fecharModal()"><i class="fas fa-xmark"></i></button></div>
       <div class="modal-body">
         <form id="formEmpresa">
           <input type="hidden" id="empresaId">
           <div class="form-section">
-            <div class="form-section-title"><i class="fa-solid fa-building"></i> Dados da Empresa</div>
+            <div class="form-section-title"><i class="fas fa-building"></i> Dados da Empresa</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Nome/Razão Social <span class="required">*</span></label><input type="text" class="form-input" id="nome" placeholder="Ex: ACERTIVE Cobranças LTDA" required></div>
-              <div class="form-group"><label class="form-label">CNPJ</label><input type="text" class="form-input" id="cnpj" placeholder="00.000.000/0000-00"></div>
+              <div class="form-group"><label class="form-label">Nome/Razão Social <span class="required">*</span></label><input type="text" class="form-input" id="nome" required></div>
+              <div class="form-group"><label class="form-label">CNPJ</label><input type="text" class="form-input" id="cnpj"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Telefone</label><input type="text" class="form-input" id="telefone" placeholder="(00) 00000-0000"></div>
-              <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="email" placeholder="contato@empresa.com"></div>
+              <div class="form-group"><label class="form-label">Telefone</label><input type="text" class="form-input" id="telefone"></div>
+              <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="email"></div>
             </div>
-            <div class="form-group"><label class="form-label">Endereço Completo</label><textarea class="form-textarea" id="endereco" placeholder="Rua, número, bairro, cidade - estado"></textarea></div>
+            <div class="form-group"><label class="form-label">Endereço</label><textarea class="form-textarea" id="endereco"></textarea></div>
           </div>
           <div class="form-section">
-            <div class="form-section-title"><i class="fa-solid fa-university"></i> Dados Bancários</div>
+            <div class="form-section-title"><i class="fas fa-university"></i> Dados Bancários</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Banco</label><select class="form-select" id="banco"><option value="">Selecione...</option><option value="001">001 - Banco do Brasil</option><option value="033">033 - Santander</option><option value="104">104 - Caixa Econômica</option><option value="237">237 - Bradesco</option><option value="341">341 - Itaú</option><option value="260">260 - Nubank</option><option value="077">077 - Inter</option><option value="212">212 - Original</option><option value="336">336 - C6 Bank</option><option value="290">290 - PagSeguro</option><option value="380">380 - PicPay</option><option value="323">323 - Mercado Pago</option><option value="outros">Outro</option></select></div>
-              <div class="form-group"><label class="form-label">Tipo de Conta</label><select class="form-select" id="tipoConta"><option value="corrente">Conta Corrente</option><option value="poupanca">Conta Poupança</option><option value="pagamento">Conta de Pagamento</option></select></div>
+              <div class="form-group"><label class="form-label">Banco</label><select class="form-select" id="banco"><option value="">Selecione...</option><option value="001">001 - Banco do Brasil</option><option value="033">033 - Santander</option><option value="104">104 - Caixa</option><option value="237">237 - Bradesco</option><option value="341">341 - Itaú</option><option value="260">260 - Nubank</option><option value="077">077 - Inter</option><option value="336">336 - C6 Bank</option><option value="outros">Outro</option></select></div>
+              <div class="form-group"><label class="form-label">Tipo de Conta</label><select class="form-select" id="tipoConta"><option value="corrente">Conta Corrente</option><option value="poupanca">Conta Poupança</option><option value="pagamento">Conta Pagamento</option></select></div>
             </div>
             <div class="form-row-3">
-              <div class="form-group"><label class="form-label">Agência</label><input type="text" class="form-input" id="agencia" placeholder="0000"></div>
-              <div class="form-group"><label class="form-label">Conta</label><input type="text" class="form-input" id="conta" placeholder="00000-0"></div>
-              <div class="form-group"><label class="form-label">Dígito</label><input type="text" class="form-input" id="digito" placeholder="0" maxlength="2"></div>
+              <div class="form-group"><label class="form-label">Agência</label><input type="text" class="form-input" id="agencia"></div>
+              <div class="form-group"><label class="form-label">Conta</label><input type="text" class="form-input" id="conta"></div>
+              <div class="form-group"><label class="form-label">Dígito</label><input type="text" class="form-input" id="digito" maxlength="2"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Nome do Titular</label><input type="text" class="form-input" id="titular" placeholder="Nome completo ou razão social"></div>
-              <div class="form-group"><label class="form-label">CPF/CNPJ do Titular</label><input type="text" class="form-input" id="cpfCnpjTitular" placeholder="000.000.000-00"></div>
+              <div class="form-group"><label class="form-label">Titular</label><input type="text" class="form-input" id="titular"></div>
+              <div class="form-group"><label class="form-label">CPF/CNPJ Titular</label><input type="text" class="form-input" id="cpfCnpjTitular"></div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title"><i class="fa-brands fa-pix"></i> Chave PIX</div>
+            <div class="form-section-title"><i class="fab fa-pix"></i> Chave PIX</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Tipo de Chave</label><select class="form-select" id="tipoChavePix"><option value="">Selecione...</option><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="telefone">Telefone</option><option value="aleatoria">Chave Aleatória</option></select></div>
-              <div class="form-group"><label class="form-label">Chave PIX</label><input type="text" class="form-input" id="chavePix" placeholder="Digite sua chave PIX"></div>
+              <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="tipoChavePix"><option value="">Selecione...</option><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="telefone">Telefone</option><option value="aleatoria">Aleatória</option></select></div>
+              <div class="form-group"><label class="form-label">Chave PIX</label><input type="text" class="form-input" id="chavePix"></div>
             </div>
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btnSalvar" onclick="salvarEmpresa()"><i class="fa-solid fa-check"></i> Salvar Empresa</button>
-      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button><button type="button" class="btn btn-primary" onclick="salvarEmpresa()"><i class="fas fa-check"></i> Salvar</button></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
-const token = localStorage.getItem('token');
-if (!token) window.location.href = '/login';
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+    let empresas = [];
+    let editandoId = null;
 
-let empresas = [];
-let editandoId = null;
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'error' ? '#ef4444' : '#22c55e', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
 
-document.getElementById('sidebarToggle').addEventListener('click', () => {
-  const s = document.getElementById('sidebar');
-  if (window.innerWidth <= 1024) s.classList.toggle('open');
-  else s.classList.toggle('collapsed');
-});
-
-document.getElementById('btnLogout').addEventListener('click', () => {
-  localStorage.removeItem('token');
-  window.location.href = '/login';
-});
-
-document.getElementById('btnNovaEmpresa').addEventListener('click', () => abrirModal());
-
-function showToast(m, t = 'success') {
-  Toastify({
-    text: m,
-    duration: 3000,
-    gravity: 'top',
-    position: 'right',
-    style: {
-      background: t === 'error' ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#22c55e,#16a34a)',
-      borderRadius: '12px',
-      fontWeight: '600'
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
+        }
+      } catch (e) { console.error(e); }
     }
-  }).showToast();
-}
 
-// Máscaras
-document.getElementById('cnpj').addEventListener('input', function(e) {
-  let v = e.target.value.replace(/\D/g, '');
-  if (v.length > 14) v = v.slice(0, 14);
-  v = v.replace(/^(\d{2})(\d)/, '$1.$2')
-       .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-       .replace(/\.(\d{3})(\d)/, '.$1/$2')
-       .replace(/(\d{4})(\d)/, '$1-$2');
-  e.target.value = v;
-});
-
-document.getElementById('telefone').addEventListener('input', function(e) {
-  let v = e.target.value.replace(/\D/g, '');
-  if (v.length > 11) v = v.slice(0, 11);
-  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-  else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d+)$/, '($1) $2-$3');
-  else if (v.length > 2) v = v.replace(/^(\d{2})(\d+)$/, '($1) $2');
-  e.target.value = v;
-});
-
-document.getElementById('cpfCnpjTitular').addEventListener('input', function(e) {
-  let v = e.target.value.replace(/\D/g, '');
-  if (v.length > 14) v = v.slice(0, 14);
-  if (v.length <= 11) {
-    v = v.replace(/(\d{3})(\d)/, '$1.$2')
-         .replace(/(\d{3})(\d)/, '$1.$2')
-         .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-  } else {
-    v = v.replace(/^(\d{2})(\d)/, '$1.$2')
-         .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-         .replace(/\.(\d{3})(\d)/, '.$1/$2')
-         .replace(/(\d{4})(\d)/, '$1-$2');
-  }
-  e.target.value = v;
-});
-
-function abrirModal(empresa = null) {
-  editandoId = empresa ? empresa.id : null;
-  document.getElementById('modalTitulo').textContent = empresa ? 'Editar Empresa' : 'Nova Empresa';
-  document.getElementById('formEmpresa').reset();
-  
-  if (empresa) {
-    document.getElementById('empresaId').value = empresa.id || '';
-    document.getElementById('nome').value = empresa.nome || '';
-    document.getElementById('cnpj').value = empresa.cnpj || '';
-    document.getElementById('telefone').value = empresa.telefone || '';
-    document.getElementById('email').value = empresa.email || '';
-    document.getElementById('endereco').value = empresa.endereco || '';
-    document.getElementById('banco').value = empresa.banco || '';
-    document.getElementById('tipoConta').value = empresa.tipo_conta || 'corrente';
-    document.getElementById('agencia').value = empresa.agencia || '';
-    document.getElementById('conta').value = empresa.conta || '';
-    document.getElementById('digito').value = empresa.digito || '';
-    document.getElementById('titular').value = empresa.titular || '';
-    document.getElementById('cpfCnpjTitular').value = empresa.cpf_cnpj_titular || '';
-    document.getElementById('tipoChavePix').value = empresa.tipo_chave_pix || '';
-    document.getElementById('chavePix').value = empresa.chave_pix || '';
-  }
-  
-  document.getElementById('modalEmpresa').classList.add('show');
-}
-
-function fecharModal() {
-  document.getElementById('modalEmpresa').classList.remove('show');
-  editandoId = null;
-}
-
-async function salvarEmpresa() {
-  const nome = document.getElementById('nome').value.trim();
-  
-  if (!nome) {
-    showToast('Nome da empresa é obrigatório', 'error');
-    return;
-  }
-  
-  const dados = {
-    nome,
-    cnpj: document.getElementById('cnpj').value.trim(),
-    telefone: document.getElementById('telefone').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    endereco: document.getElementById('endereco').value.trim(),
-    banco: document.getElementById('banco').value,
-    tipo_conta: document.getElementById('tipoConta').value,
-    agencia: document.getElementById('agencia').value.trim(),
-    conta: document.getElementById('conta').value.trim(),
-    digito: document.getElementById('digito').value.trim(),
-    titular: document.getElementById('titular').value.trim(),
-    cpf_cnpj_titular: document.getElementById('cpfCnpjTitular').value.trim(),
-    tipo_chave_pix: document.getElementById('tipoChavePix').value,
-    chave_pix: document.getElementById('chavePix').value.trim()
-  };
-  
-  const btn = document.getElementById('btnSalvar');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-  
-  try {
-    const url = editandoId ? `/api/empresas/${editandoId}` : '/api/empresas';
-    const method = editandoId ? 'PUT' : 'POST';
-    
-    const r = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(dados)
-    });
-    
-    const d = await r.json();
-    
-    if (d.success) {
-      showToast(editandoId ? 'Empresa atualizada!' : 'Empresa cadastrada!');
-      fecharModal();
-      carregarEmpresas();
-    } else {
-      showToast(d.message || 'Erro ao salvar', 'error');
+    function getBancoNome(c) {
+      const b = { '001': 'Banco do Brasil', '033': 'Santander', '104': 'Caixa', '237': 'Bradesco', '341': 'Itaú', '260': 'Nubank', '077': 'Inter', '336': 'C6 Bank' };
+      return b[c] || c || '—';
     }
-  } catch (e) {
-    console.error(e);
-    showToast('Erro ao salvar empresa', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvar Empresa';
-  }
-}
 
-async function excluirEmpresa(id) {
-  if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
-  
-  try {
-    const r = await fetch(`/api/empresas/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const d = await r.json();
-    
-    if (d.success) {
-      showToast('Empresa excluída!');
-      carregarEmpresas();
-    } else {
-      showToast(d.message || 'Erro', 'error');
+    function getTipoPixLabel(t) {
+      const x = { 'cpf': 'CPF', 'cnpj': 'CNPJ', 'email': 'E-mail', 'telefone': 'Telefone', 'aleatoria': 'Aleatória' };
+      return x[t] || t || '';
     }
-  } catch (e) {
-    showToast('Erro ao excluir', 'error');
-  }
-}
 
-async function definirPadrao(id) {
-  try {
-    const r = await fetch(`/api/empresas/${id}/padrao`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const d = await r.json();
-    
-    if (d.success) {
-      showToast('Empresa definida como padrão!');
-      carregarEmpresas();
-    } else {
-      showToast(d.message || 'Erro', 'error');
+    function abrirModal(empresa = null) {
+      editandoId = empresa ? empresa.id : null;
+      document.getElementById('modalTitulo').textContent = empresa ? 'Editar Empresa' : 'Nova Empresa';
+      document.getElementById('formEmpresa').reset();
+      if (empresa) {
+        document.getElementById('empresaId').value = empresa.id || '';
+        document.getElementById('nome').value = empresa.nome || '';
+        document.getElementById('cnpj').value = empresa.cnpj || '';
+        document.getElementById('telefone').value = empresa.telefone || '';
+        document.getElementById('email').value = empresa.email || '';
+        document.getElementById('endereco').value = empresa.endereco || '';
+        document.getElementById('banco').value = empresa.banco || '';
+        document.getElementById('tipoConta').value = empresa.tipo_conta || 'corrente';
+        document.getElementById('agencia').value = empresa.agencia || '';
+        document.getElementById('conta').value = empresa.conta || '';
+        document.getElementById('digito').value = empresa.digito || '';
+        document.getElementById('titular').value = empresa.titular || '';
+        document.getElementById('cpfCnpjTitular').value = empresa.cpf_cnpj_titular || '';
+        document.getElementById('tipoChavePix').value = empresa.tipo_chave_pix || '';
+        document.getElementById('chavePix').value = empresa.chave_pix || '';
+      }
+      document.getElementById('modalEmpresa').classList.add('show');
     }
-  } catch (e) {
-    showToast('Erro', 'error');
-  }
-}
 
-function getBancoNome(c) {
-  const b = {
-    '001': 'Banco do Brasil', '033': 'Santander', '104': 'Caixa',
-    '237': 'Bradesco', '341': 'Itaú', '260': 'Nubank',
-    '077': 'Inter', '212': 'Original', '336': 'C6 Bank',
-    '290': 'PagSeguro', '380': 'PicPay', '323': 'Mercado Pago'
-  };
-  return b[c] || c || '—';
-}
+    function fecharModal() { document.getElementById('modalEmpresa').classList.remove('show'); editandoId = null; }
 
-function getTipoPixLabel(t) {
-  const x = { 'cpf': 'CPF', 'cnpj': 'CNPJ', 'email': 'E-mail', 'telefone': 'Telefone', 'aleatoria': 'Chave Aleatória' };
-  return x[t] || t || '';
-}
+    async function salvarEmpresa() {
+      const nome = document.getElementById('nome').value.trim();
+      if (!nome) { showToast('Nome é obrigatório', 'error'); return; }
+      const dados = {
+        nome,
+        cnpj: document.getElementById('cnpj').value.trim(),
+        telefone: document.getElementById('telefone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        endereco: document.getElementById('endereco').value.trim(),
+        banco: document.getElementById('banco').value,
+        tipo_conta: document.getElementById('tipoConta').value,
+        agencia: document.getElementById('agencia').value.trim(),
+        conta: document.getElementById('conta').value.trim(),
+        digito: document.getElementById('digito').value.trim(),
+        titular: document.getElementById('titular').value.trim(),
+        cpf_cnpj_titular: document.getElementById('cpfCnpjTitular').value.trim(),
+        tipo_chave_pix: document.getElementById('tipoChavePix').value,
+        chave_pix: document.getElementById('chavePix').value.trim()
+      };
+      try {
+        const url = editandoId ? '/api/empresas/' + editandoId : '/api/empresas';
+        const method = editandoId ? 'PUT' : 'POST';
+        const res = await fetch(API + url, { method, headers: getHeaders(), body: JSON.stringify(dados) });
+        const data = await res.json();
+        if (data.success) { showToast(editandoId ? 'Empresa atualizada!' : 'Empresa cadastrada!', 'success'); fecharModal(); carregarEmpresas(); }
+        else showToast(data.message || 'Erro', 'error');
+      } catch (e) { showToast('Erro ao salvar', 'error'); }
+    }
 
-function editarEmpresa(index) {
-  const empresa = empresas[index];
-  if (empresa) abrirModal(empresa);
-}
+    async function excluirEmpresa(id) {
+      if (!confirm('Excluir esta empresa?')) return;
+      try {
+        const res = await fetch(API + '/api/empresas/' + id, { method: 'DELETE', headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) { showToast('Excluída!', 'success'); carregarEmpresas(); }
+        else showToast(data.message || 'Erro', 'error');
+      } catch (e) { showToast('Erro', 'error'); }
+    }
 
-function renderEmpresas() {
-  const grid = document.getElementById('empresasGrid');
-  const empty = document.getElementById('emptyState');
-  
-  if (!empresas || empresas.length === 0) {
-    grid.innerHTML = '';
-    const emptyDiv = document.createElement('div');
-    emptyDiv.className = 'empty-state';
-    emptyDiv.innerHTML = `
-      <div class="empty-icon"><i class="fa-solid fa-building"></i></div>
-      <div class="empty-title">Nenhuma empresa cadastrada</div>
-      <div class="empty-desc">Cadastre sua primeira empresa para começar a emitir cobranças</div>
-      <button class="btn btn-primary" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Cadastrar Empresa</button>
-    `;
-    grid.appendChild(emptyDiv);
-    return;
-  }
-  
-  grid.innerHTML = empresas.map((e, index) => `
-    <div class="empresa-card ${e.padrao ? 'padrao' : ''}">
-      <div class="empresa-header">
-        <div class="empresa-avatar">${(e.nome || 'E').charAt(0).toUpperCase()}</div>
-        <div class="empresa-info">
-          <div class="empresa-nome">
-            ${e.nome || '—'}
-            ${e.padrao ? '<span class="badge-padrao">⭐ PADRÃO</span>' : ''}
-          </div>
-          <div class="empresa-cnpj">${e.cnpj || '—'}</div>
-        </div>
-      </div>
-      <div class="empresa-body">
-        <div class="empresa-section">
-          <div class="empresa-section-title"><i class="fa-solid fa-id-card"></i> CONTATO</div>
-          <div class="info-grid">
-            <div class="info-item">
-              <div class="info-label">Telefone</div>
-              <div class="info-value">${e.telefone || '—'}</div>
+    async function definirPadrao(id) {
+      try {
+        const res = await fetch(API + '/api/empresas/' + id + '/padrao', { method: 'PUT', headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) { showToast('Definida como padrão!', 'success'); carregarEmpresas(); }
+        else showToast(data.message || 'Erro', 'error');
+      } catch (e) { showToast('Erro', 'error'); }
+    }
+
+    function editarEmpresa(index) { const empresa = empresas[index]; if (empresa) abrirModal(empresa); }
+
+    function renderEmpresas() {
+      const grid = document.getElementById('empresasGrid');
+      if (!empresas || !empresas.length) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fas fa-building"></i></div><div class="empty-title">Nenhuma empresa cadastrada</div><div class="empty-desc">Cadastre sua primeira empresa</div><button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Cadastrar</button></div>';
+        return;
+      }
+      grid.innerHTML = empresas.map((e, index) => `
+        <div class="empresa-card ${e.padrao ? 'padrao' : ''}">
+          <div class="empresa-header">
+            <div class="empresa-avatar">${(e.nome || 'E').charAt(0).toUpperCase()}</div>
+            <div class="empresa-info">
+              <div class="empresa-nome">${e.nome || '—'} ${e.padrao ? '<span class="badge-padrao">⭐ PADRÃO</span>' : ''}</div>
+              <div class="empresa-cnpj">${e.cnpj || '—'}</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">E-mail</div>
-              <div class="info-value">${e.email || '—'}</div>
-            </div>
-            ${e.endereco ? `<div class="info-item full"><div class="info-label">Endereço</div><div class="info-value">${e.endereco}</div></div>` : ''}
           </div>
-        </div>
-        ${e.banco ? `
-          <div class="empresa-section">
-            <div class="empresa-section-title"><i class="fa-solid fa-university"></i> DADOS BANCÁRIOS</div>
-            <div class="banco-info">
-              <div class="banco-icon"><i class="fa-solid fa-building-columns"></i></div>
-              <div>
-                <div class="banco-nome">${getBancoNome(e.banco)}</div>
-                <div class="banco-dados">Ag: ${e.agencia || '—'} | Conta: ${e.conta || '—'}${e.digito ? '-' + e.digito : ''} | ${e.tipo_conta || 'corrente'}</div>
+          <div class="empresa-body">
+            <div class="empresa-section">
+              <div class="empresa-section-title"><i class="fas fa-id-card"></i> CONTATO</div>
+              <div class="info-grid">
+                <div class="info-item"><div class="info-label">Telefone</div><div class="info-value">${e.telefone || '—'}</div></div>
+                <div class="info-item"><div class="info-label">E-mail</div><div class="info-value">${e.email || '—'}</div></div>
+                ${e.endereco ? '<div class="info-item full"><div class="info-label">Endereço</div><div class="info-value">' + e.endereco + '</div></div>' : ''}
               </div>
             </div>
+            ${e.banco ? '<div class="empresa-section"><div class="empresa-section-title"><i class="fas fa-university"></i> BANCO</div><div class="banco-info"><div class="banco-icon"><i class="fas fa-building-columns"></i></div><div><div class="banco-nome">' + getBancoNome(e.banco) + '</div><div class="banco-dados">Ag: ' + (e.agencia || '—') + ' | Conta: ' + (e.conta || '—') + (e.digito ? '-' + e.digito : '') + '</div></div></div></div>' : ''}
+            ${e.chave_pix ? '<div class="empresa-section"><div class="empresa-section-title"><i class="fab fa-pix"></i> PIX</div><div class="pix-info"><div class="pix-icon">PIX</div><div><div class="pix-tipo">' + getTipoPixLabel(e.tipo_chave_pix) + '</div><div class="pix-chave">' + e.chave_pix + '</div></div></div></div>' : ''}
           </div>
-        ` : ''}
-        ${e.chave_pix ? `
-          <div class="empresa-section">
-            <div class="empresa-section-title"><i class="fa-brands fa-pix"></i> CHAVE PIX</div>
-            <div class="pix-info">
-              <div class="pix-icon">PIX</div>
-              <div>
-                <div class="pix-tipo">${getTipoPixLabel(e.tipo_chave_pix)}</div>
-                <div class="pix-chave">${e.chave_pix}</div>
-              </div>
-            </div>
+          <div class="empresa-footer">
+            <button class="btn btn-secondary btn-sm" onclick="editarEmpresa(${index})"><i class="fas fa-pen"></i> Editar</button>
+            ${!e.padrao ? '<button class="btn btn-secondary btn-sm" onclick="definirPadrao(\'' + e.id + '\')"><i class="fas fa-star"></i> Padrão</button>' : ''}
+            <button class="btn btn-danger btn-sm" onclick="excluirEmpresa(\'' + e.id + '\')"><i class="fas fa-trash"></i></button>
           </div>
-        ` : ''}
-      </div>
-      <div class="empresa-footer">
-        <button class="btn btn-secondary btn-sm" onclick="editarEmpresa(${index})">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
-        ${!e.padrao ? `
-          <button class="btn btn-secondary btn-sm" onclick="definirPadrao('${e.id}')">
-            <i class="fa-solid fa-star"></i> Padrão
-          </button>
-        ` : ''}
-        <button class="btn btn-danger btn-sm" onclick="excluirEmpresa('${e.id}')">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function atualizarStats() {
-  document.getElementById('statTotal').textContent = empresas.length;
-  document.getElementById('statBancos').textContent = empresas.filter(e => e.banco).length;
-  document.getElementById('statPix').textContent = empresas.filter(e => e.chave_pix).length;
-}
-
-async function carregarEmpresas() {
-  try {
-    const r = await fetch('/api/empresas', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const d = await r.json();
-    
-    if (d.success) {
-      empresas = d.data || [];
-      renderEmpresas();
-      atualizarStats();
+        </div>
+      `).join('');
     }
-  } catch (e) {
-    console.error('Erro ao carregar empresas:', e);
-  }
-}
 
-async function carregarUsuario() {
-  try {
-    const r = await fetch('/api/usuarios/me', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const d = await r.json();
-    
-    if (d.success && d.data) {
-      document.getElementById('userName').textContent = d.data.nome || 'Usuário';
-      document.getElementById('userRole').textContent = d.data.nivel === 'admin' ? 'Administrador' : 'Operador';
-      document.getElementById('userAvatar').textContent = (d.data.nome || 'U').charAt(0).toUpperCase();
+    function atualizarStats() {
+      document.getElementById('statTotal').textContent = empresas.length;
+      document.getElementById('statBancos').textContent = empresas.filter(e => e.banco).length;
+      document.getElementById('statPix').textContent = empresas.filter(e => e.chave_pix).length;
     }
-  } catch (e) {
-    console.error('Erro ao carregar usuário:', e);
-  }
-}
 
-// Fechar modal ao clicar fora
-document.getElementById('modalEmpresa').addEventListener('click', function(e) {
-  if (e.target === this) fecharModal();
-});
+    async function carregarEmpresas() {
+      try {
+        const res = await fetch(API + '/api/empresas', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) { empresas = data.data || []; renderEmpresas(); atualizarStats(); }
+      } catch (e) { console.error(e); }
+    }
 
-// Inicializar
-carregarUsuario();
-carregarEmpresas();
+    document.getElementById('modalEmpresa').addEventListener('click', function(e) { if (e.target === this) fecharModal(); });
+
+    carregarUsuario();
+    carregarEmpresas();
   </script>
 </body>
 </html>
