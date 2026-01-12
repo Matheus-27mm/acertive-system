@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Templates de Mensagem - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;margin-bottom:2px}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow-strong);color:var(--gold)}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px}.btn-logout:hover{color:var(--red)}
+    .main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.page-content{padding:32px}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:var(--gold-glow-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-md);font-weight:600;font-size:13px;cursor:pointer;border:none;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}
+    .btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-success{background:var(--green);color:white}
+    .btn-sm{padding:8px 12px;font-size:12px}
+
+    .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+    .card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .card-title i{color:var(--gold)}
+
+    .templates-list{display:flex;flex-direction:column;gap:12px}
+    .template-item{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;cursor:pointer;transition:all var(--transition-fast)}
+    .template-item:hover{border-color:var(--gold)}
+    .template-item.active{border-color:var(--gold);background:var(--gold-glow)}
+    .template-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .template-name{font-weight:600;display:flex;align-items:center;gap:8px}
+    .template-name i{color:var(--gold)}
+    .template-tipo{font-size:10px;padding:4px 8px;border-radius:4px;font-weight:600}
+    .template-tipo.whatsapp{background:var(--green-bg);color:var(--green)}
+    .template-tipo.email{background:var(--blue-bg);color:var(--blue)}
+    .template-tipo.sms{background:var(--purple-bg);color:var(--purple)}
+    .template-preview{font-size:13px;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+    .editor-section{position:sticky;top:32px}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px}
+    .form-control{width:100%;padding:12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px}
+    .form-control:focus{outline:none;border-color:var(--gold)}
+    textarea.form-control{min-height:150px;resize:vertical;font-family:inherit}
+    select.form-control{cursor:pointer}select.form-control option{background:var(--bg-secondary)}
+
+    .variaveis{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+    .variavel{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:monospace}
+    .variavel:hover{border-color:var(--gold);color:var(--gold)}
+
+    .preview-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-top:16px}
+    .preview-title{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .preview-content{font-size:14px;line-height:1.6;white-space:pre-wrap}
+
+    .actions-bar{display:flex;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+
+    @media(max-width:1024px){.sidebar{display:none}.main-wrapper{margin-left:0}.content-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+        <a href="/templates" class="nav-link active"><i class="fas fa-file-alt"></i> Templates</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-file-alt"></i></div> Templates de Mensagem</h1>
+        <button class="btn btn-primary" onclick="novoTemplate()"><i class="fas fa-plus"></i> Novo Template</button>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-list"></i> Meus Templates</div>
+          <div class="templates-list" id="templatesList"></div>
+        </div>
+
+        <div class="card editor-section">
+          <div class="card-title"><i class="fas fa-edit"></i> <span id="editorTitle">Editor</span></div>
+          
+          <div class="form-group">
+            <label>Nome do Template</label>
+            <input type="text" class="form-control" id="templateNome" placeholder="Ex: Lembrete de Vencimento">
+          </div>
+
+          <div class="form-group">
+            <label>Tipo</label>
+            <select class="form-control" id="templateTipo">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">E-mail</option>
+              <option value="sms">SMS</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Assunto (apenas e-mail)</label>
+            <input type="text" class="form-control" id="templateAssunto" placeholder="Assunto do e-mail">
+          </div>
+
+          <div class="form-group">
+            <label>Variáveis Disponíveis <small style="color:var(--text-muted)">(clique para inserir)</small></label>
+            <div class="variaveis">
+              <span class="variavel" onclick="inserirVariavel('{cliente_nome}')">{cliente_nome}</span>
+              <span class="variavel" onclick="inserirVariavel('{valor}')">{valor}</span>
+              <span class="variavel" onclick="inserirVariavel('{vencimento}')">{vencimento}</span>
+              <span class="variavel" onclick="inserirVariavel('{descricao}')">{descricao}</span>
+              <span class="variavel" onclick="inserirVariavel('{dias_atraso}')">{dias_atraso}</span>
+              <span class="variavel" onclick="inserirVariavel('{empresa}')">{empresa}</span>
+              <span class="variavel" onclick="inserirVariavel('{link_boleto}')">{link_boleto}</span>
+              <span class="variavel" onclick="inserirVariavel('{pix_codigo}')">{pix_codigo}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Mensagem</label>
+            <textarea class="form-control" id="templateMensagem" placeholder="Digite a mensagem..."></textarea>
+          </div>
+
+          <div class="preview-box">
+            <div class="preview-title"><i class="fas fa-eye"></i> Pré-visualização</div>
+            <div class="preview-content" id="previewContent">Sua mensagem aparecerá aqui...</div>
+          </div>
+
+          <div class="actions-bar">
+            <button class="btn btn-secondary" onclick="cancelarEdicao()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn btn-success" onclick="salvarTemplate()" style="margin-left:auto"><i class="fas fa-save"></i> Salvar Template</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    let templates = [];
+    let templateAtual = null;
+
+    // Templates padrão
+    const templatesDefault = [
+      { id: 'default-1', nome: 'Lembrete de Vencimento', tipo: 'whatsapp', assunto: '', mensagem: 'Olá {cliente_nome}! 👋\n\nLembramos que você tem uma cobrança no valor de {valor} com vencimento em {vencimento}.\n\n📋 Descrição: {descricao}\n\nPara evitar juros e multa, efetue o pagamento até a data.\n\nQualquer dúvida, estamos à disposição!\n\n{empresa}', padrao: true },
+      { id: 'default-2', nome: 'Cobrança Vencida', tipo: 'whatsapp', assunto: '', mensagem: 'Olá {cliente_nome}! ⚠️\n\nIdentificamos que sua cobrança está em atraso há {dias_atraso} dias.\n\n💰 Valor atualizado: {valor}\n📅 Vencimento original: {vencimento}\n\nRegularize sua situação para evitar maiores encargos.\n\n{empresa}', padrao: true },
+      { id: 'default-3', nome: 'Lembrete por E-mail', tipo: 'email', assunto: 'Lembrete de Pagamento - {descricao}', mensagem: 'Prezado(a) {cliente_nome},\n\nEsperamos que esteja bem.\n\nGostaríamos de lembrar que você possui uma cobrança pendente:\n\n• Descrição: {descricao}\n• Valor: {valor}\n• Vencimento: {vencimento}\n\nPara sua comodidade, disponibilizamos as seguintes formas de pagamento:\n\n📱 PIX: {pix_codigo}\n📄 Boleto: {link_boleto}\n\nCaso já tenha efetuado o pagamento, por favor desconsidere esta mensagem.\n\nAtenciosamente,\n{empresa}', padrao: true },
+      { id: 'default-4', nome: 'Cobrança Urgente', tipo: 'whatsapp', assunto: '', mensagem: '🚨 URGENTE - {cliente_nome}\n\nSua cobrança está vencida há {dias_atraso} dias!\n\nValor atual com encargos: {valor}\n\nEntre em contato HOJE para negociar.\n\n{empresa}', padrao: true },
+      { id: 'default-5', nome: 'Agradecimento', tipo: 'whatsapp', assunto: '', mensagem: 'Olá {cliente_nome}! 🎉\n\nConfirmamos o recebimento do seu pagamento no valor de {valor}.\n\nMuito obrigado pela confiança!\n\n{empresa}', padrao: true }
+    ];
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#F6C84C', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
+
+    async function carregarTemplates() {
+      try {
+        const res = await fetch(API + '/api/templates', { headers: getHeaders() });
+        const data = await res.json();
+        templates = data.success && data.data ? [...templatesDefault, ...data.data] : templatesDefault;
+      } catch (e) {
+        templates = templatesDefault;
+      }
+      renderTemplates();
+    }
+
+    function renderTemplates() {
+      const container = document.getElementById('templatesList');
+      container.innerHTML = templates.map(t => `
+        <div class="template-item ${templateAtual?.id === t.id ? 'active' : ''}" onclick="selecionarTemplate('${t.id}')">
+          <div class="template-header">
+            <div class="template-name"><i class="fas fa-${t.tipo === 'whatsapp' ? 'brands fa-whatsapp' : t.tipo === 'email' ? 'envelope' : 'sms'}"></i> ${t.nome}</div>
+            <span class="template-tipo ${t.tipo}">${t.tipo.toUpperCase()}</span>
+          </div>
+          <div class="template-preview">${t.mensagem.substring(0, 100)}...</div>
+        </div>
+      `).join('');
+    }
+
+    function selecionarTemplate(id) {
+      templateAtual = templates.find(t => t.id === id);
+      if (!templateAtual) return;
+      
+      document.getElementById('editorTitle').textContent = templateAtual.padrao ? 'Visualizar Template' : 'Editar Template';
+      document.getElementById('templateNome').value = templateAtual.nome;
+      document.getElementById('templateTipo').value = templateAtual.tipo;
+      document.getElementById('templateAssunto').value = templateAtual.assunto || '';
+      document.getElementById('templateMensagem').value = templateAtual.mensagem;
+      
+      atualizarPreview();
+      renderTemplates();
+    }
+
+    function novoTemplate() {
+      templateAtual = { id: null, nome: '', tipo: 'whatsapp', assunto: '', mensagem: '' };
+      document.getElementById('editorTitle').textContent = 'Novo Template';
+      document.getElementById('templateNome').value = '';
+      document.getElementById('templateTipo').value = 'whatsapp';
+      document.getElementById('templateAssunto').value = '';
+      document.getElementById('templateMensagem').value = '';
+      document.getElementById('previewContent').textContent = 'Sua mensagem aparecerá aqui...';
+      renderTemplates();
+    }
+
+    function cancelarEdicao() {
+      templateAtual = null;
+      document.getElementById('templateNome').value = '';
+      document.getElementById('templateMensagem').value = '';
+      document.getElementById('previewContent').textContent = 'Sua mensagem aparecerá aqui...';
+      renderTemplates();
+    }
+
+    function inserirVariavel(variavel) {
+      const textarea = document.getElementById('templateMensagem');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + variavel + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + variavel.length, start + variavel.length);
+      atualizarPreview();
+    }
+
+    document.getElementById('templateMensagem').addEventListener('input', atualizarPreview);
+
+    function atualizarPreview() {
+      let msg = document.getElementById('templateMensagem').value;
+      // Substituir variáveis por exemplos
+      msg = msg.replace(/{cliente_nome}/g, 'João Silva');
+      msg = msg.replace(/{valor}/g, 'R$ 350,00');
+      msg = msg.replace(/{vencimento}/g, '15/01/2026');
+      msg = msg.replace(/{descricao}/g, 'Mensalidade Janeiro');
+      msg = msg.replace(/{dias_atraso}/g, '5');
+      msg = msg.replace(/{empresa}/g, 'ACERTIVE Cobranças');
+      msg = msg.replace(/{link_boleto}/g, 'https://boleto.exemplo.com/123');
+      msg = msg.replace(/{pix_codigo}/g, '00020126580014br.gov.bcb...');
+      document.getElementById('previewContent').textContent = msg || 'Sua mensagem aparecerá aqui...';
+    }
+
+    async function salvarTemplate() {
+      const nome = document.getElementById('templateNome').value.trim();
+      const tipo = document.getElementById('templateTipo').value;
+      const assunto = document.getElementById('templateAssunto').value.trim();
+      const mensagem = document.getElementById('templateMensagem').value.trim();
+
+      if (!nome || !mensagem) {
+        showToast('Preencha nome e mensagem', 'error');
+        return;
+      }
+
+      const dados = { nome, tipo, assunto, mensagem };
+
+      try {
+        const method = templateAtual?.id && !templateAtual.padrao ? 'PUT' : 'POST';
+        const url = templateAtual?.id && !templateAtual.padrao ? API + '/api/templates/' + templateAtual.id : API + '/api/templates';
+        
+        const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(dados) });
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast('Template salvo!', 'success');
+          carregarTemplates();
+          cancelarEdicao();
+        } else {
+          showToast(data.message || 'Erro ao salvar', 'error');
+        }
+      } catch (e) {
+        // Se API não existir, salva localmente
+        if (!templateAtual?.id) {
+          templates.push({ ...dados, id: 'local-' + Date.now(), padrao: false });
+        }
+        showToast('Template salvo localmente!', 'success');
+        renderTemplates();
+        cancelarEdicao();
+      }
+    }
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (e) {}
+    }
+
+    carregarUsuario();
+    carregarTemplates();
+  </script>
+</body>
+</html>

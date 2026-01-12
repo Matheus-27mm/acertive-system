@@ -494,6 +494,9 @@ app.get("/configuracoes", sendFront("configuracoes.html"));
 app.get("/importar-cobrancas", sendFront("importar-cobrancas.html"));
 app.get("/lembretes", sendFront("lembretes.html"));
 app.get("/clientes", sendFront("clientes.html"));
+app.get("/relatorios", sendFront("relatorios.html"));
+app.get("/importar-clientes", sendFront("importar-clientes.html"));
+app.get("/templates", sendFront("templates-mensagem.html"));
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
@@ -2981,6 +2984,382 @@ app.post("/api/cobrancas/:id/notificar", auth, async (req, res) => {
 
 
 console.log('[LEMBRETES] ✅ Sistema de lembretes automáticos carregado (DESATIVADO por padrão)');
+// ==================== RELATÓRIO DE INADIMPLÊNCIA ====================
+app.get('/api/relatorios/inadimplencia', authenticateToken, async (req, res) => {
+  try {
+    const { dataInicio, dataFim, status, ordem } = req.query;
+    const empresaId = req.user.empresa_id;
+    
+    // Buscar cobranças vencidas não pagas
+    const query = `
+      SELECT 
+        c.id,
+        c.cliente_id,
+        cl.nome as cliente_nome,
+        cl.cpf_cnpj,
+        c.valor_original,
+        c.valor_atualizado,
+        c.vencimento,
+        c.status,
+        CURRENT_DATE - c.vencimento::date as dias_atraso
+      FROM cobrancas c
+      INNER JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.empresa_id = $1
+        AND c.status IN ('pendente', 'vencido')
+        AND c.vencimento < CURRENT_DATE
+      ORDER BY dias_atraso DESC
+    `;
+    
+    const result = await pool.query(query, [empresaId]);
+    const cobrancas = result.rows;
+
+    // Agrupar por cliente
+    const clientesMap = {};
+    cobrancas.forEach(c => {
+      if (!clientesMap[c.cliente_id]) {
+        clientesMap[c.cliente_id] = {
+          id: c.cliente_id,
+          nome: c.cliente_nome,
+          cpf_cnpj: c.cpf_cnpj,
+          cobrancas: [],
+          totalCobrancas: 0,
+          valorTotal: 0,
+          diasAtraso: 0
+        };
+      }
+      clientesMap[c.cliente_id].cobrancas.push(c);
+      clientesMap[c.cliente_id].totalCobrancas++;
+      clientesMap[c.cliente_id].valorTotal += parseFloat(c.valor_atualizado || c.valor_original || 0);
+      if (c.dias_atraso > clientesMap[c.cliente_id].diasAtraso) {
+        clientesMap[c.cliente_id].diasAtraso = c.dias_atraso;
+      }
+    });
+
+    const clientes = Object.values(clientesMap);
+    
+    // Ordenar
+    if (ordem === 'valor-desc') clientes.sort((a, b) => b.valorTotal - a.valorTotal);
+    else if (ordem === 'valor-asc') clientes.sort((a, b) => a.valorTotal - b.valorTotal);
+    else if (ordem === 'dias-desc') clientes.sort((a, b) => b.diasAtraso - a.diasAtraso);
+    else if (ordem === 'nome-asc') clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    // Calcular estatísticas
+    const totalInadimplentes = clientes.length;
+    const valorTotalAtraso = clientes.reduce((sum, c) => sum + c.valorTotal, 0);
+    const mediaDiasAtraso = clientes.length > 0 ? Math.round(clientes.reduce((sum, c) => sum + c.diasAtraso, 0) / clientes.length) : 0;
+
+    // Total de clientes para taxa
+    const totalClientesResult = await pool.query('SELECT COUNT(*) FROM clientes WHERE empresa_id = $1', [empresaId]);
+    const totalClientes = parseInt(totalClientesResult.rows[0].count) || 1;
+    const taxaInadimplencia = (totalInadimplentes / totalClientes) * 100;
+
+    // Faixas de atraso
+    const faixas = {
+      '1-30': clientes.filter(c => c.diasAtraso >= 1 && c.diasAtraso <= 30).length,
+      '31-60': clientes.filter(c => c.diasAtraso >= 31 && c.diasAtraso <= 60).length,
+      '61-90': clientes.filter(c => c.diasAtraso >= 61 && c.diasAtraso <= 90).length,
+      '90+': clientes.filter(c => c.diasAtraso > 90).length
+    };
+
+    // Evolução mensal (últimos 6 meses)
+    const evolucaoQuery = `
+      SELECT 
+        TO_CHAR(DATE_TRUNC('month', vencimento), 'Mon') as mes,
+        SUM(valor_atualizado) as valor
+      FROM cobrancas
+      WHERE empresa_id = $1
+        AND status IN ('pendente', 'vencido')
+        AND vencimento < CURRENT_DATE
+        AND vencimento >= CURRENT_DATE - INTERVAL '6 months'
+      GROUP BY DATE_TRUNC('month', vencimento)
+      ORDER BY DATE_TRUNC('month', vencimento)
+    `;
+    const evolucaoResult = await pool.query(evolucaoQuery, [empresaId]);
+    const evolucao = evolucaoResult.rows.map(r => ({ mes: r.mes, valor: parseFloat(r.valor) }));
+
+    res.json({
+      success: true,
+      data: {
+        totalInadimplentes,
+        valorTotalAtraso,
+        mediaDiasAtraso,
+        taxaInadimplencia,
+        faixas,
+        evolucao,
+        clientes
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao gerar relatório de inadimplência:', error);
+    res.status(500).json({ success: false, message: 'Erro ao gerar relatório' });
+  }
+});
+
+// ==================== RELATÓRIO DE RECEBIMENTOS ====================
+app.get('/api/relatorios/recebimentos', authenticateToken, async (req, res) => {
+  try {
+    const { dataInicio, dataFim } = req.query;
+    const empresaId = req.user.empresa_id;
+
+    let whereDate = '';
+    const params = [empresaId];
+    
+    if (dataInicio && dataFim) {
+      whereDate = ' AND c.pago_em BETWEEN $2 AND $3';
+      params.push(dataInicio, dataFim);
+    }
+
+    const query = `
+      SELECT 
+        c.id,
+        c.descricao,
+        c.valor_atualizado,
+        c.pago_em,
+        c.pagamento,
+        cl.nome as cliente_nome
+      FROM cobrancas c
+      INNER JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.empresa_id = $1
+        AND c.status = 'pago'
+        ${whereDate}
+      ORDER BY c.pago_em DESC
+      LIMIT 100
+    `;
+    
+    const result = await pool.query(query, params);
+    const recebimentos = result.rows;
+
+    // Estatísticas
+    const statsQuery = `
+      SELECT 
+        COUNT(*) as total_pagas,
+        SUM(valor_atualizado) as total_recebido
+      FROM cobrancas
+      WHERE empresa_id = $1 AND status = 'pago'
+        ${whereDate}
+    `;
+    const statsResult = await pool.query(statsQuery, params);
+    const stats = statsResult.rows[0];
+
+    const totalRecebido = parseFloat(stats.total_recebido) || 0;
+    const totalPagas = parseInt(stats.total_pagas) || 0;
+    const ticketMedio = totalPagas > 0 ? totalRecebido / totalPagas : 0;
+
+    // Total de cobranças para taxa conversão
+    const totalCobrancasResult = await pool.query(
+      'SELECT COUNT(*) FROM cobrancas WHERE empresa_id = $1' + whereDate.replace('pago_em', 'created_at'),
+      params
+    );
+    const totalCobrancas = parseInt(totalCobrancasResult.rows[0].count) || 1;
+    const taxaConversao = (totalPagas / totalCobrancas) * 100;
+
+    // Recebimentos por mês
+    const porMesQuery = `
+      SELECT 
+        TO_CHAR(DATE_TRUNC('month', pago_em), 'Mon') as mes,
+        SUM(valor_atualizado) as valor
+      FROM cobrancas
+      WHERE empresa_id = $1 AND status = 'pago'
+        AND pago_em >= CURRENT_DATE - INTERVAL '6 months'
+      GROUP BY DATE_TRUNC('month', pago_em)
+      ORDER BY DATE_TRUNC('month', pago_em)
+    `;
+    const porMesResult = await pool.query(porMesQuery, [empresaId]);
+    const recebimentosPorMes = porMesResult.rows.map(r => ({ mes: r.mes, valor: parseFloat(r.valor) }));
+
+    // Por forma de pagamento
+    const formasQuery = `
+      SELECT pagamento, COUNT(*) as qtd
+      FROM cobrancas
+      WHERE empresa_id = $1 AND status = 'pago' AND pagamento IS NOT NULL
+      GROUP BY pagamento
+    `;
+    const formasResult = await pool.query(formasQuery, [empresaId]);
+    const formasPagamento = {};
+    formasResult.rows.forEach(r => { formasPagamento[r.pagamento || 'Outros'] = parseInt(r.qtd); });
+
+    res.json({
+      success: true,
+      data: {
+        totalRecebido,
+        totalPagas,
+        ticketMedio,
+        taxaConversao,
+        recebimentosPorMes,
+        formasPagamento,
+        recebimentos
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao gerar relatório de recebimentos:', error);
+    res.status(500).json({ success: false, message: 'Erro ao gerar relatório' });
+  }
+});
+
+// ==================== RELATÓRIO POR PERÍODO ====================
+app.get('/api/relatorios/periodo', authenticateToken, async (req, res) => {
+  try {
+    const { dataInicio, dataFim } = req.query;
+    const empresaId = req.user.empresa_id;
+
+    const query = `
+      SELECT 
+        TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') as mes,
+        TO_CHAR(DATE_TRUNC('month', created_at), 'Mon/YYYY') as mes_label,
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'pago') as pagas,
+        COUNT(*) FILTER (WHERE status = 'pendente') as pendentes,
+        COUNT(*) FILTER (WHERE status = 'vencido') as vencidas,
+        SUM(valor_original) as valor_gerado,
+        SUM(valor_atualizado) FILTER (WHERE status = 'pago') as valor_recebido
+      FROM cobrancas
+      WHERE empresa_id = $1
+        AND created_at >= CURRENT_DATE - INTERVAL '12 months'
+      GROUP BY DATE_TRUNC('month', created_at)
+      ORDER BY DATE_TRUNC('month', created_at) DESC
+    `;
+    
+    const result = await pool.query(query, [empresaId]);
+    
+    const totais = {
+      total: 0,
+      pagas: 0,
+      pendentes: 0,
+      vencidas: 0
+    };
+    
+    result.rows.forEach(r => {
+      totais.total += parseInt(r.total);
+      totais.pagas += parseInt(r.pagas);
+      totais.pendentes += parseInt(r.pendentes);
+      totais.vencidas += parseInt(r.vencidas);
+    });
+
+    res.json({
+      success: true,
+      data: {
+        ...totais,
+        meses: result.rows.map(r => ({
+          mes: r.mes_label,
+          total: parseInt(r.total),
+          pagas: parseInt(r.pagas),
+          pendentes: parseInt(r.pendentes),
+          vencidas: parseInt(r.vencidas),
+          valorGerado: parseFloat(r.valor_gerado) || 0,
+          valorRecebido: parseFloat(r.valor_recebido) || 0
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao gerar relatório por período:', error);
+    res.status(500).json({ success: false, message: 'Erro ao gerar relatório' });
+  }
+});
+
+// ==================== RELATÓRIO POR CLIENTE ====================
+app.get('/api/relatorios/clientes', authenticateToken, async (req, res) => {
+  try {
+    const empresaId = req.user.empresa_id;
+
+    const query = `
+      SELECT 
+        cl.id,
+        cl.nome,
+        cl.cpf_cnpj,
+        COUNT(c.id) as total_cobrancas,
+        COUNT(c.id) FILTER (WHERE c.status = 'pago') as pagas,
+        COUNT(c.id) FILTER (WHERE c.status IN ('pendente', 'vencido')) as em_aberto,
+        COALESCE(SUM(c.valor_atualizado), 0) as valor_total,
+        CASE 
+          WHEN COUNT(c.id) FILTER (WHERE c.status = 'vencido') > 0 THEN 'inadimplente'
+          WHEN COUNT(c.id) FILTER (WHERE c.status = 'pendente') > 0 THEN 'pendente'
+          ELSE 'em_dia'
+        END as situacao
+      FROM clientes cl
+      LEFT JOIN cobrancas c ON c.cliente_id = cl.id
+      WHERE cl.empresa_id = $1
+      GROUP BY cl.id, cl.nome, cl.cpf_cnpj
+      ORDER BY valor_total DESC
+    `;
+    
+    const result = await pool.query(query, [empresaId]);
+    const clientes = result.rows;
+
+    const totalClientes = clientes.length;
+    const emDia = clientes.filter(c => c.situacao === 'em_dia').length;
+    const inadimplentes = clientes.filter(c => c.situacao === 'inadimplente').length;
+    
+    // Melhor pagador (mais cobranças pagas)
+    const melhorPagador = clientes.reduce((best, c) => {
+      if (parseInt(c.pagas) > parseInt(best?.pagas || 0)) return c;
+      return best;
+    }, null);
+
+    res.json({
+      success: true,
+      data: {
+        totalClientes,
+        emDia,
+        inadimplentes,
+        melhorPagador: melhorPagador?.nome || '-',
+        clientes: clientes.map((c, i) => ({
+          posicao: i + 1,
+          id: c.id,
+          nome: c.nome,
+          cpf_cnpj: c.cpf_cnpj,
+          totalCobrancas: parseInt(c.total_cobrancas),
+          pagas: parseInt(c.pagas),
+          emAberto: parseInt(c.em_aberto),
+          valorTotal: parseFloat(c.valor_total),
+          situacao: c.situacao
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao gerar relatório por cliente:', error);
+    res.status(500).json({ success: false, message: 'Erro ao gerar relatório' });
+  }
+});
+
+// ==================== HISTÓRICO DE ATIVIDADES ====================
+app.get('/api/atividades', authenticateToken, async (req, res) => {
+  try {
+    const empresaId = req.user.empresa_id;
+    const { limit = 50 } = req.query;
+
+    // Se a tabela de atividades existir
+    const query = `
+      SELECT * FROM atividades
+      WHERE empresa_id = $1
+      ORDER BY created_at DESC
+      LIMIT $2
+    `;
+    
+    try {
+      const result = await pool.query(query, [empresaId, limit]);
+      res.json({ success: true, data: result.rows });
+    } catch (e) {
+      // Se a tabela não existir, retorna vazio
+      res.json({ success: true, data: [] });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar atividades:', error);
+    res.status(500).json({ success: false, message: 'Erro ao buscar atividades' });
+  }
+});
+
+// ==================== REGISTRAR ATIVIDADE (helper) ====================
+async function registrarAtividade(empresaId, usuarioId, tipo, descricao, entidadeId = null, entidadeTipo = null) {
+  try {
+    await pool.query(
+      `INSERT INTO atividades (empresa_id, usuario_id, tipo, descricao, entidade_id, entidade_tipo, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [empresaId, usuarioId, tipo, descricao, entidadeId, entidadeTipo]
+    );
+  } catch (e) {
+    console.log('Tabela de atividades não existe ou erro ao registrar:', e.message);
+  }
+}
 
 // =====================
 // 404

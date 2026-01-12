@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Importar Clientes - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow-strong);color:var(--gold)}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px}.btn-logout:hover{color:var(--red)}
+    .main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.page-content{padding:32px}
+    .page-header{margin-bottom:24px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:var(--gold-glow-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-md);font-weight:600;font-size:13px;cursor:pointer;border:none;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}
+    .btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-success{background:var(--green);color:white}
+    .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+    .card-title{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .card-title i{color:var(--gold)}
+    .upload-area{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:60px 40px;text-align:center;cursor:pointer}
+    .upload-area:hover{border-color:var(--gold);background:var(--gold-glow)}
+    .upload-area i{font-size:48px;color:var(--gold);margin-bottom:16px}
+    .upload-area h3{margin-bottom:8px}
+    .upload-area p{color:var(--text-muted);font-size:14px}
+    .upload-area input{display:none}
+    .file-selected{display:none;background:var(--green-bg);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius-md);padding:16px;margin-top:20px}
+    .file-selected.active{display:flex;align-items:center;gap:12px}
+    .file-icon{width:48px;height:48px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px}
+    .file-info{flex:1}.file-name{font-weight:600}.file-size{font-size:12px;color:var(--text-muted)}
+    .file-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px}.file-remove:hover{color:var(--red)}
+    .formato-info{background:var(--bg-secondary);border-radius:var(--radius-md);padding:20px;margin-bottom:20px}
+    .formato-info h4{font-size:14px;margin-bottom:12px;color:var(--gold)}
+    .formato-cols{display:flex;flex-wrap:wrap;gap:8px}
+    .formato-col{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:12px}
+    .formato-col.required{border-color:var(--gold);color:var(--gold)}
+    .download-modelo{display:flex;align-items:center;gap:16px;background:var(--blue-bg);border:1px solid rgba(59,130,246,0.3);border-radius:var(--radius-md);padding:16px;margin-bottom:20px}
+    .download-modelo i{font-size:32px;color:var(--blue)}
+    .download-modelo-info{flex:1}
+    .download-modelo-info h4{margin-bottom:4px}
+    .download-modelo-info p{font-size:13px;color:var(--text-muted)}
+    .preview-section{display:none;margin-top:24px}.preview-section.active{display:block}
+    .preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .preview-title{font-size:16px;font-weight:700}
+    .preview-stats{display:flex;gap:16px}
+    .preview-stat{text-align:center;padding:8px 16px;background:var(--bg-secondary);border-radius:8px}
+    .preview-stat-value{font-size:20px;font-weight:800}
+    .preview-stat-label{font-size:10px;color:var(--text-muted)}
+    .preview-stat.success .preview-stat-value{color:var(--green)}
+    .preview-stat.error .preview-stat-value{color:var(--red)}
+    .table-container{max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:rgba(0,0,0,0.4);padding:12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;position:sticky;top:0}
+    tbody td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px}
+    tbody tr:hover{background:var(--gold-glow)}
+    tbody tr.error{background:var(--red-bg)}
+    .status-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .status-icon.success{background:var(--green-bg);color:var(--green)}
+    .status-icon.error{background:var(--red-bg);color:var(--red)}
+    .progress-bar{height:8px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;margin:20px 0}
+    .progress-fill{height:100%;background:var(--gold);transition:width 0.3s}
+    .resultado{display:none;margin-top:24px;text-align:center;padding:40px}.resultado.active{display:block}
+    .resultado-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
+    .resultado-icon.success{background:var(--green-bg);color:var(--green)}
+    @media(max-width:1024px){.sidebar{display:none}.main-wrapper{margin-left:0}.content-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar Cobranças</a>
+        <a href="/importar-clientes" class="nav-link active"><i class="fas fa-users-cog"></i> Importar Clientes</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <main class="page-content">
+      <div class="page-header"><h1 class="page-title"><div class="page-title-icon"><i class="fas fa-users-cog"></i></div> Importar Clientes</h1></div>
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-upload"></i> Upload do Arquivo</div>
+          <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h3>Arraste seu arquivo aqui</h3>
+            <p>ou clique para selecionar (.xlsx, .csv)</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(this.files[0])">
+          </div>
+          <div class="file-selected" id="fileSelected">
+            <div class="file-icon"><i class="fas fa-file-excel"></i></div>
+            <div class="file-info"><div class="file-name" id="fileName">arquivo.xlsx</div><div class="file-size" id="fileSize">0 KB</div></div>
+            <button class="file-remove" onclick="removerArquivo()"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="preview-section" id="previewSection">
+            <div class="preview-header">
+              <div class="preview-title"><i class="fas fa-eye"></i> Pré-visualização</div>
+              <div class="preview-stats">
+                <div class="preview-stat success"><div class="preview-stat-value" id="statValidos">0</div><div class="preview-stat-label">Válidos</div></div>
+                <div class="preview-stat error"><div class="preview-stat-value" id="statErros">0</div><div class="preview-stat-label">Erros</div></div>
+              </div>
+            </div>
+            <div class="table-container"><table><thead><tr><th>#</th><th>Nome</th><th>CPF/CNPJ</th><th>Telefone</th><th>Status</th></tr></thead><tbody id="previewTable"></tbody></table></div>
+            <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end">
+              <button class="btn btn-secondary" onclick="removerArquivo()"><i class="fas fa-times"></i> Cancelar</button>
+              <button class="btn btn-success" onclick="iniciarImportacao()" id="btnImportar"><i class="fas fa-check"></i> Importar <span id="qtdImportar">0</span> Clientes</button>
+            </div>
+          </div>
+          <div class="progress-bar" id="progressBar" style="display:none"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+          <div class="resultado" id="resultado">
+            <div class="resultado-icon success"><i class="fas fa-check"></i></div>
+            <h3 id="resultadoTitulo">Importação Concluída!</h3>
+            <p id="resultadoMsg">0 clientes importados com sucesso.</p>
+            <div style="display:flex;gap:12px;justify-content:center">
+              <button class="btn btn-secondary" onclick="location.reload()"><i class="fas fa-redo"></i> Nova Importação</button>
+              <a href="/clientes" class="btn btn-primary"><i class="fas fa-users"></i> Ver Clientes</a>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-info-circle"></i> Instruções</div>
+          <div class="download-modelo">
+            <i class="fas fa-file-excel"></i>
+            <div class="download-modelo-info"><h4>Baixe o modelo</h4><p>Use nosso modelo pronto</p></div>
+            <button class="btn btn-secondary" onclick="baixarModelo()"><i class="fas fa-download"></i> Baixar</button>
+          </div>
+          <div class="formato-info">
+            <h4><i class="fas fa-columns"></i> Colunas do Arquivo</h4>
+            <div class="formato-cols">
+              <div class="formato-col required">nome *</div>
+              <div class="formato-col required">cpf_cnpj *</div>
+              <div class="formato-col">telefone</div>
+              <div class="formato-col">email</div>
+              <div class="formato-col">endereco</div>
+              <div class="formato-col">cidade</div>
+              <div class="formato-col">estado</div>
+              <div class="formato-col">cep</div>
+            </div>
+            <p style="margin-top:12px;font-size:12px;color:var(--text-muted)">* Campos obrigatórios</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+    let dadosParaImportar = [];
+    let clientesExistentes = new Set();
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#F6C84C', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
+    
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = '#F6C84C'; });
+    uploadArea.addEventListener('dragleave', () => uploadArea.style.borderColor = '');
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = ''; if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+    async function carregarClientesExistentes() {
+      try {
+        const res = await fetch(API + '/api/clientes?limit=10000', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) data.data.forEach(c => { if (c.cpf_cnpj) clientesExistentes.add(c.cpf_cnpj.replace(/\D/g, '')); });
+      } catch (e) { console.error(e); }
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!['xlsx', 'xls', 'csv'].includes(ext)) { showToast('Formato inválido', 'error'); return; }
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('fileSelected').classList.add('active');
+      document.getElementById('uploadArea').style.display = 'none';
+      processarArquivo(file);
+    }
+
+    function removerArquivo() {
+      dadosParaImportar = [];
+      document.getElementById('fileSelected').classList.remove('active');
+      document.getElementById('uploadArea').style.display = 'block';
+      document.getElementById('previewSection').classList.remove('active');
+      document.getElementById('fileInput').value = '';
+    }
+
+    async function processarArquivo(file) {
+      showToast('Processando...', 'info');
+      await carregarClientesExistentes();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
+          if (jsonData.length === 0) { showToast('Arquivo vazio!', 'error'); removerArquivo(); return; }
+          
+          dadosParaImportar = jsonData.map((row, i) => {
+            const nome = (row.nome || row.Nome || '').trim();
+            const cpfCnpj = (row.cpf_cnpj || row.cpf || row.CPF || '').toString().replace(/\D/g, '');
+            const telefone = (row.telefone || row.Telefone || '').toString();
+            const email = (row.email || row.Email || '').trim();
+            let status = 'valid', erro = '';
+            if (!nome) { status = 'error'; erro = 'Nome obrigatório'; }
+            else if (!cpfCnpj || (cpfCnpj.length !== 11 && cpfCnpj.length !== 14)) { status = 'error'; erro = 'CPF/CNPJ inválido'; }
+            else if (clientesExistentes.has(cpfCnpj)) { status = 'error'; erro = 'Duplicado'; }
+            return { linha: i + 2, nome, cpf_cnpj: cpfCnpj, telefone, email, endereco: row.endereco || '', cidade: row.cidade || '', estado: row.estado || '', cep: row.cep || '', status, erro };
+          });
+          renderPreview();
+          showToast('Arquivo processado!', 'success');
+        } catch (err) { console.error(err); showToast('Erro ao processar', 'error'); removerArquivo(); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderPreview() {
+      const validos = dadosParaImportar.filter(d => d.status === 'valid').length;
+      const erros = dadosParaImportar.filter(d => d.status === 'error').length;
+      document.getElementById('statValidos').textContent = validos;
+      document.getElementById('statErros').textContent = erros;
+      document.getElementById('qtdImportar').textContent = validos;
+      const tbody = document.getElementById('previewTable');
+      tbody.innerHTML = dadosParaImportar.slice(0, 50).map(d => {
+        const icon = d.status === 'valid' ? '<div class="status-icon success"><i class="fas fa-check"></i></div>' : '<div class="status-icon error" title="' + d.erro + '"><i class="fas fa-times"></i></div>';
+        return '<tr class="' + (d.status === 'error' ? 'error' : '') + '"><td>' + d.linha + '</td><td>' + d.nome + '</td><td>' + d.cpf_cnpj + '</td><td>' + d.telefone + '</td><td>' + icon + '</td></tr>';
+      }).join('');
+      document.getElementById('previewSection').classList.add('active');
+      document.getElementById('btnImportar').disabled = validos === 0;
+    }
+
+    async function iniciarImportacao() {
+      const validos = dadosParaImportar.filter(d => d.status === 'valid');
+      if (validos.length === 0) { showToast('Nenhum registro válido', 'error'); return; }
+      document.getElementById('previewSection').classList.remove('active');
+      document.getElementById('progressBar').style.display = 'block';
+      let importados = 0;
+      for (let i = 0; i < validos.length; i++) {
+        const c = validos[i];
+        try {
+          await fetch(API + '/api/clientes', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ nome: c.nome, cpf_cnpj: c.cpf_cnpj, telefone: c.telefone, email: c.email, endereco: c.endereco, cidade: c.cidade, estado: c.estado, cep: c.cep }) });
+          importados++;
+        } catch (e) { console.error(e); }
+        document.getElementById('progressFill').style.width = ((i + 1) / validos.length * 100) + '%';
+      }
+      document.getElementById('progressBar').style.display = 'none';
+      document.getElementById('resultadoMsg').textContent = importados + ' clientes importados com sucesso.';
+      document.getElementById('resultado').classList.add('active');
+      showToast('Importação concluída!', 'success');
+    }
+
+    function baixarModelo() {
+      const ws = XLSX.utils.aoa_to_sheet([['nome', 'cpf_cnpj', 'telefone', 'email', 'endereco', 'cidade', 'estado', 'cep'], ['João Silva', '12345678901', '92999999999', 'joao@email.com', 'Rua A, 123', 'Manaus', 'AM', '69000000']]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+      XLSX.writeFile(wb, 'modelo_importacao_clientes.xlsx');
+    }
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (e) {}
+    }
+    carregarUsuario();
+  </script>
+</body>
+</html>

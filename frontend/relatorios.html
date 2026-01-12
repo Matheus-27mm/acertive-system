@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatórios - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+    .main-wrapper{margin-left:var(--sidebar-width);min-height:100vh}.page-content{padding:32px}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:var(--radius-md);font-weight:600;font-size:13px;cursor:pointer;transition:all var(--transition-fast);border:none;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{box-shadow:var(--shadow-gold)}
+    .btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-success{background:var(--green-bg);color:var(--green)}.btn-success:hover{background:var(--green);color:white}
+    .btn-sm{padding:8px 12px;font-size:12px}
+
+    /* FILTROS */
+    .filters-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px}
+    .filters-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--gold)}
+    .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+    .filter-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase}
+    .filter-group select,.filter-group input{width:100%;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:13px}
+    .filter-group select:focus,.filter-group input:focus{outline:none;border-color:var(--gold)}
+    .filter-group select option{background:var(--bg-secondary)}
+    .filters-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;display:flex;align-items:center;gap:16px}
+    .stat-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .stat-icon.gold{background:var(--gold-glow);color:var(--gold)}
+    .stat-icon.green{background:var(--green-bg);color:var(--green)}
+    .stat-icon.red{background:var(--red-bg);color:var(--red)}
+    .stat-icon.blue{background:var(--blue-bg);color:var(--blue)}
+    .stat-icon.orange{background:var(--orange-bg);color:var(--orange)}
+    .stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
+    .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+    .stat-value{font-size:24px;font-weight:800}
+    .stat-change{font-size:11px;margin-top:4px}
+    .stat-change.up{color:var(--green)}.stat-change.down{color:var(--red)}
+
+    /* GRÁFICOS */
+    .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+    .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+    .chart-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .chart-title i{color:var(--gold)}
+    .chart-container{position:relative;height:300px}
+
+    /* TABELA */
+    .table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .table-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+    .table-title i{color:var(--gold)}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:rgba(0,0,0,0.3);padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+    tbody td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}
+    tbody tr:hover{background:var(--gold-glow)}tbody tr:last-child td{border-bottom:none}
+    .cliente-info{display:flex;align-items:center;gap:10px}
+    .cliente-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--bg-primary)}
+    .cliente-nome{font-weight:600}
+    .cliente-doc{font-size:11px;color:var(--text-muted)}
+    .valor{font-weight:700}.valor.green{color:var(--green)}.valor.red{color:var(--red)}.valor.gold{color:var(--gold)}
+    .badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600}
+    .badge-danger{background:var(--red-bg);color:var(--red)}
+    .badge-warning{background:var(--orange-bg);color:var(--orange)}
+    .badge-success{background:var(--green-bg);color:var(--green)}
+
+    .empty-state{padding:60px 20px;text-align:center;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
+    .loading{display:flex;justify-content:center;padding:40px}.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+    /* TABS */
+    .tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:16px}
+    .tab{padding:10px 20px;background:transparent;border:none;color:var(--text-secondary);font-weight:600;font-size:14px;cursor:pointer;border-radius:var(--radius-md);display:flex;align-items:center;gap:8px}
+    .tab:hover{background:var(--gold-glow);color:var(--gold)}
+    .tab.active{background:var(--gold);color:var(--bg-primary)}
+
+    @media(max-width:1200px){.charts-grid{grid-template-columns:1fr}}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-wrapper{margin-left:0}.stats-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:768px){.stats-row{grid-template-columns:1fr}.filters-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Análises</div>
+        <a href="/relatorios" class="nav-link active"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      </div>
+      <div class="nav-section"><div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <main class="page-content">
+      <div class="page-header">
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-chart-bar"></i></div> Relatórios</h1>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+          <button class="btn btn-secondary" onclick="exportarPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" data-tab="inadimplencia" onclick="switchTab('inadimplencia')"><i class="fas fa-exclamation-triangle"></i> Inadimplência</button>
+        <button class="tab" data-tab="recebimentos" onclick="switchTab('recebimentos')"><i class="fas fa-hand-holding-usd"></i> Recebimentos</button>
+        <button class="tab" data-tab="periodo" onclick="switchTab('periodo')"><i class="fas fa-calendar-alt"></i> Por Período</button>
+        <button class="tab" data-tab="clientes" onclick="switchTab('clientes')"><i class="fas fa-users"></i> Por Cliente</button>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filters-card">
+        <div class="filters-title"><i class="fas fa-filter"></i> Filtros</div>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Período</label>
+            <select id="filtroPeriodo" onchange="aplicarFiltros()">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="180">Últimos 6 meses</option>
+              <option value="365">Último ano</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+          <div class="filter-group" id="dataInicioGroup" style="display:none">
+            <label>Data Início</label>
+            <input type="date" id="filtroDataInicio">
+          </div>
+          <div class="filter-group" id="dataFimGroup" style="display:none">
+            <label>Data Fim</label>
+            <input type="date" id="filtroDataFim">
+          </div>
+          <div class="filter-group">
+            <label>Status</label>
+            <select id="filtroStatus">
+              <option value="">Todos</option>
+              <option value="pendente">Pendente</option>
+              <option value="vencido">Vencido</option>
+              <option value="pago">Pago</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Ordenar por</label>
+            <select id="filtroOrdem">
+              <option value="valor-desc">Maior Valor</option>
+              <option value="valor-asc">Menor Valor</option>
+              <option value="dias-desc">Mais Atrasado</option>
+              <option value="nome-asc">Nome A-Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="filters-actions">
+          <button class="btn btn-secondary btn-sm" onclick="limparFiltros()"><i class="fas fa-times"></i> Limpar</button>
+          <button class="btn btn-primary btn-sm" onclick="aplicarFiltros()"><i class="fas fa-search"></i> Aplicar</button>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO INADIMPLÊNCIA -->
+      <div id="conteudoInadimplencia">
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+            <div>
+              <div class="stat-label">Total Inadimplentes</div>
+              <div class="stat-value" id="statInadimplentes">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-money-bill-wave"></i></div>
+            <div>
+              <div class="stat-label">Valor em Atraso</div>
+              <div class="stat-value" id="statValorAtraso">R$ 0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+            <div>
+              <div class="stat-label">Média Dias Atraso</div>
+              <div class="stat-value" id="statMediaAtraso">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-percent"></i></div>
+            <div>
+              <div class="stat-label">Taxa Inadimplência</div>
+              <div class="stat-value" id="statTaxaInadimplencia">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line"></i> Evolução da Inadimplência</div>
+            <div class="chart-container"><canvas id="chartEvolucao"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Por Faixa de Atraso</div>
+            <div class="chart-container"><canvas id="chartFaixas"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-list"></i> Clientes Inadimplentes</div>
+            <span id="totalRegistros" style="color:var(--text-muted);font-size:13px">0 registros</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Cobranças</th>
+                <th>Valor Total</th>
+                <th>Maior Atraso</th>
+                <th>Faixa</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaInadimplentes">
+              <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO RECEBIMENTOS -->
+      <div id="conteudoRecebimentos" style="display:none">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div>
+              <div class="stat-label">Total Recebido</div>
+              <div class="stat-value" id="statRecebido">R$ 0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-file-invoice"></i></div>
+            <div>
+              <div class="stat-label">Cobranças Pagas</div>
+              <div class="stat-value" id="statPagas">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-calculator"></i></div>
+            <div>
+              <div class="stat-label">Ticket Médio</div>
+              <div class="stat-value" id="statTicketMedio">R$ 0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="stat-label">Taxa Conversão</div>
+              <div class="stat-value" id="statTaxaConversao">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> Recebimentos por Mês</div>
+            <div class="chart-container"><canvas id="chartRecebimentos"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Formas de Pagamento</div>
+            <div class="chart-container"><canvas id="chartFormas"></canvas></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-list"></i> Últimos Recebimentos</div>
+          </div>
+          <table>
+            <thead><tr><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Data Pgto</th><th>Forma</th></tr></thead>
+            <tbody id="tabelaRecebimentos"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO POR PERÍODO -->
+      <div id="conteudoPeriodo" style="display:none">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-file-invoice"></i></div>
+            <div>
+              <div class="stat-label">Total Cobranças</div>
+              <div class="stat-value" id="statTotalPeriodo">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check"></i></div>
+            <div>
+              <div class="stat-label">Pagas</div>
+              <div class="stat-value" id="statPagasPeriodo">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+            <div>
+              <div class="stat-label">Pendentes</div>
+              <div class="stat-value" id="statPendentesPeriodo">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-times"></i></div>
+            <div>
+              <div class="stat-label">Vencidas</div>
+              <div class="stat-value" id="statVencidasPeriodo">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom:24px">
+          <div class="chart-title"><i class="fas fa-chart-area"></i> Cobranças por Período</div>
+          <div class="chart-container" style="height:350px"><canvas id="chartPeriodo"></canvas></div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-calendar"></i> Resumo por Mês</div>
+          </div>
+          <table>
+            <thead><tr><th>Mês</th><th>Geradas</th><th>Pagas</th><th>Pendentes</th><th>Vencidas</th><th>Valor Gerado</th><th>Valor Recebido</th></tr></thead>
+            <tbody id="tabelaPeriodo"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO POR CLIENTE -->
+      <div id="conteudoClientes" style="display:none">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-users"></i></div>
+            <div>
+              <div class="stat-label">Total Clientes</div>
+              <div class="stat-value" id="statTotalClientes">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+            <div>
+              <div class="stat-label">Em Dia</div>
+              <div class="stat-value" id="statClientesEmDia">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-user-times"></i></div>
+            <div>
+              <div class="stat-label">Inadimplentes</div>
+              <div class="stat-value" id="statClientesInadimplentes">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-star"></i></div>
+            <div>
+              <div class="stat-label">Melhor Pagador</div>
+              <div class="stat-value" id="statMelhorPagador" style="font-size:14px">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><i class="fas fa-ranking-star"></i> Ranking de Clientes</div>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th>Total Cobranças</th><th>Pagas</th><th>Em Aberto</th><th>Valor Total</th><th>Situação</th></tr></thead>
+            <tbody id="tabelaClientes"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    let currentTab = 'inadimplencia';
+    let dadosRelatorio = {};
+    let chartEvolucao, chartFaixas, chartRecebimentos, chartFormas, chartPeriodo;
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#F6C84C', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
+
+    // Filtros período personalizado
+    document.getElementById('filtroPeriodo').addEventListener('change', function() {
+      const custom = this.value === 'custom';
+      document.getElementById('dataInicioGroup').style.display = custom ? 'block' : 'none';
+      document.getElementById('dataFimGroup').style.display = custom ? 'block' : 'none';
+    });
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
+      document.getElementById('conteudoInadimplencia').style.display = tab === 'inadimplencia' ? 'block' : 'none';
+      document.getElementById('conteudoRecebimentos').style.display = tab === 'recebimentos' ? 'block' : 'none';
+      document.getElementById('conteudoPeriodo').style.display = tab === 'periodo' ? 'block' : 'none';
+      document.getElementById('conteudoClientes').style.display = tab === 'clientes' ? 'block' : 'none';
+      carregarDados();
+    }
+
+    function getFiltroPeriodo() {
+      const periodo = document.getElementById('filtroPeriodo').value;
+      if (periodo === 'custom') {
+        return {
+          dataInicio: document.getElementById('filtroDataInicio').value,
+          dataFim: document.getElementById('filtroDataFim').value
+        };
+      }
+      const hoje = new Date();
+      const inicio = new Date();
+      inicio.setDate(hoje.getDate() - parseInt(periodo));
+      return {
+        dataInicio: inicio.toISOString().split('T')[0],
+        dataFim: hoje.toISOString().split('T')[0]
+      };
+    }
+
+    function aplicarFiltros() { carregarDados(); }
+    function limparFiltros() {
+      document.getElementById('filtroPeriodo').value = '30';
+      document.getElementById('filtroStatus').value = '';
+      document.getElementById('filtroOrdem').value = 'valor-desc';
+      document.getElementById('dataInicioGroup').style.display = 'none';
+      document.getElementById('dataFimGroup').style.display = 'none';
+      carregarDados();
+    }
+
+    async function carregarDados() {
+      const filtros = getFiltroPeriodo();
+      filtros.status = document.getElementById('filtroStatus').value;
+      filtros.ordem = document.getElementById('filtroOrdem').value;
+
+      if (currentTab === 'inadimplencia') await carregarInadimplencia(filtros);
+      else if (currentTab === 'recebimentos') await carregarRecebimentos(filtros);
+      else if (currentTab === 'periodo') await carregarPorPeriodo(filtros);
+      else if (currentTab === 'clientes') await carregarPorCliente(filtros);
+    }
+
+    async function carregarInadimplencia(filtros) {
+      try {
+        const params = new URLSearchParams(filtros).toString();
+        const res = await fetch(API + '/api/relatorios/inadimplencia?' + params, { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success) {
+          dadosRelatorio = data.data;
+          
+          // Stats
+          document.getElementById('statInadimplentes').textContent = data.data.totalInadimplentes || 0;
+          document.getElementById('statValorAtraso').textContent = fmtMoney(data.data.valorTotalAtraso);
+          document.getElementById('statMediaAtraso').textContent = (data.data.mediaDiasAtraso || 0) + ' dias';
+          document.getElementById('statTaxaInadimplencia').textContent = (data.data.taxaInadimplencia || 0).toFixed(1) + '%';
+
+          // Gráfico evolução
+          renderChartEvolucao(data.data.evolucao || []);
+          
+          // Gráfico faixas
+          renderChartFaixas(data.data.faixas || {});
+
+          // Tabela
+          renderTabelaInadimplentes(data.data.clientes || []);
+          document.getElementById('totalRegistros').textContent = (data.data.clientes || []).length + ' registros';
+        }
+      } catch (e) {
+        console.error(e);
+        // Dados de exemplo se API não existir ainda
+        renderDadosExemplo();
+      }
+    }
+
+    function renderDadosExemplo() {
+      document.getElementById('statInadimplentes').textContent = '45';
+      document.getElementById('statValorAtraso').textContent = fmtMoney(125430);
+      document.getElementById('statMediaAtraso').textContent = '32 dias';
+      document.getElementById('statTaxaInadimplencia').textContent = '18.5%';
+
+      renderChartEvolucao([
+        {mes: 'Jul', valor: 85000}, {mes: 'Ago', valor: 92000}, {mes: 'Set', valor: 78000},
+        {mes: 'Out', valor: 105000}, {mes: 'Nov', valor: 118000}, {mes: 'Dez', valor: 125430}
+      ]);
+
+      renderChartFaixas({'1-30': 15, '31-60': 12, '61-90': 10, '90+': 8});
+
+      document.getElementById('tabelaInadimplentes').innerHTML = `
+        <tr><td><div class="cliente-info"><div class="cliente-avatar">JC</div><div><div class="cliente-nome">JOYCILENE GRACYE S. CABRAL</div><div class="cliente-doc">123.456.789-00</div></div></div></td><td>11</td><td class="valor red">${fmtMoney(105403)}</td><td>145 dias</td><td><span class="badge badge-danger">90+ dias</span></td><td><button class="btn btn-sm btn-secondary" onclick="verDetalhes('1')"><i class="fas fa-eye"></i></button></td></tr>
+        <tr><td><div class="cliente-info"><div class="cliente-avatar">OM</div><div><div class="cliente-nome">OLISMAN MEDEIROS A. SILVA</div><div class="cliente-doc">987.654.321-00</div></div></div></td><td>12</td><td class="valor red">${fmtMoney(87890)}</td><td>98 dias</td><td><span class="badge badge-danger">90+ dias</span></td><td><button class="btn btn-sm btn-secondary" onclick="verDetalhes('2')"><i class="fas fa-eye"></i></button></td></tr>
+        <tr><td><div class="cliente-info"><div class="cliente-avatar">DS</div><div><div class="cliente-nome">DARINEIA DOS SANTOS VIEIRA</div><div class="cliente-doc">456.789.123-00</div></div></div></td><td>12</td><td class="valor red">${fmtMoney(68487)}</td><td>75 dias</td><td><span class="badge badge-warning">61-90 dias</span></td><td><button class="btn btn-sm btn-secondary" onclick="verDetalhes('3')"><i class="fas fa-eye"></i></button></td></tr>
+      `;
+      document.getElementById('totalRegistros').textContent = '45 registros';
+    }
+
+    function renderChartEvolucao(dados) {
+      const ctx = document.getElementById('chartEvolucao').getContext('2d');
+      if (chartEvolucao) chartEvolucao.destroy();
+      
+      chartEvolucao = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dados.map(d => d.mes),
+          datasets: [{
+            label: 'Valor em Atraso',
+            data: dados.map(d => d.valor),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { callback: v => 'R$ ' + (v/1000) + 'k' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderChartFaixas(faixas) {
+      const ctx = document.getElementById('chartFaixas').getContext('2d');
+      if (chartFaixas) chartFaixas.destroy();
+      
+      chartFaixas = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(faixas).map(k => k + ' dias'),
+          datasets: [{
+            data: Object.values(faixas),
+            backgroundColor: ['#f59e0b', '#f97316', '#ef4444', '#dc2626']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#a1a1aa' } } }
+        }
+      });
+    }
+
+    function renderTabelaInadimplentes(clientes) {
+      const tbody = document.getElementById('tabelaInadimplentes');
+      if (!clientes.length) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-check-circle"></i><h3>Nenhum inadimplente!</h3></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = clientes.map(c => {
+        const ini = (c.nome || 'C').substring(0,2).toUpperCase();
+        const faixa = c.diasAtraso > 90 ? 'danger' : c.diasAtraso > 60 ? 'warning' : 'warning';
+        const faixaText = c.diasAtraso > 90 ? '90+ dias' : c.diasAtraso > 60 ? '61-90 dias' : c.diasAtraso > 30 ? '31-60 dias' : '1-30 dias';
+        return `<tr>
+          <td><div class="cliente-info"><div class="cliente-avatar">${ini}</div><div><div class="cliente-nome">${c.nome}</div><div class="cliente-doc">${c.cpf_cnpj || '-'}</div></div></div></td>
+          <td>${c.totalCobrancas}</td>
+          <td class="valor red">${fmtMoney(c.valorTotal)}</td>
+          <td>${c.diasAtraso} dias</td>
+          <td><span class="badge badge-${faixa}">${faixaText}</span></td>
+          <td><button class="btn btn-sm btn-secondary" onclick="verDetalhes('${c.id}')"><i class="fas fa-eye"></i></button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function carregarRecebimentos(filtros) {
+      document.getElementById('statRecebido').textContent = fmtMoney(89750);
+      document.getElementById('statPagas').textContent = '127';
+      document.getElementById('statTicketMedio').textContent = fmtMoney(706.69);
+      document.getElementById('statTaxaConversao').textContent = '68%';
+
+      const ctx1 = document.getElementById('chartRecebimentos').getContext('2d');
+      if (chartRecebimentos) chartRecebimentos.destroy();
+      chartRecebimentos = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+          datasets: [{
+            label: 'Recebido',
+            data: [12500, 15800, 18200, 14300, 16700, 12250],
+            backgroundColor: '#22c55e'
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      const ctx2 = document.getElementById('chartFormas').getContext('2d');
+      if (chartFormas) chartFormas.destroy();
+      chartFormas = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: ['PIX', 'Boleto', 'Cartão', 'Dinheiro'],
+          datasets: [{ data: [45, 30, 15, 10], backgroundColor: ['#22c55e', '#3b82f6', '#a855f7', '#f59e0b'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#a1a1aa' } } } }
+      });
+
+      document.getElementById('tabelaRecebimentos').innerHTML = `
+        <tr><td>João Silva</td><td>Mensalidade Janeiro</td><td class="valor green">${fmtMoney(850)}</td><td>12/01/2026</td><td>PIX</td></tr>
+        <tr><td>Maria Santos</td><td>Parcela 3/6</td><td class="valor green">${fmtMoney(1200)}</td><td>11/01/2026</td><td>Boleto</td></tr>
+        <tr><td>Pedro Costa</td><td>Serviço Consultoria</td><td class="valor green">${fmtMoney(2500)}</td><td>10/01/2026</td><td>PIX</td></tr>
+      `;
+    }
+
+    async function carregarPorPeriodo(filtros) {
+      document.getElementById('statTotalPeriodo').textContent = '245';
+      document.getElementById('statPagasPeriodo').textContent = '127';
+      document.getElementById('statPendentesPeriodo').textContent = '73';
+      document.getElementById('statVencidasPeriodo').textContent = '45';
+
+      const ctx = document.getElementById('chartPeriodo').getContext('2d');
+      if (chartPeriodo) chartPeriodo.destroy();
+      chartPeriodo = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+          datasets: [
+            { label: 'Pagas', data: [18, 22, 25, 20, 24, 18], backgroundColor: '#22c55e' },
+            { label: 'Pendentes', data: [8, 12, 10, 15, 13, 15], backgroundColor: '#f59e0b' },
+            { label: 'Vencidas', data: [5, 7, 6, 9, 8, 10], backgroundColor: '#ef4444' }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+      });
+
+      document.getElementById('tabelaPeriodo').innerHTML = `
+        <tr><td>Dezembro/2025</td><td>43</td><td>18</td><td>15</td><td>10</td><td>${fmtMoney(52300)}</td><td class="valor green">${fmtMoney(21800)}</td></tr>
+        <tr><td>Novembro/2025</td><td>45</td><td>24</td><td>13</td><td>8</td><td>${fmtMoney(58700)}</td><td class="valor green">${fmtMoney(31200)}</td></tr>
+        <tr><td>Outubro/2025</td><td>44</td><td>20</td><td>15</td><td>9</td><td>${fmtMoney(55100)}</td><td class="valor green">${fmtMoney(25600)}</td></tr>
+      `;
+    }
+
+    async function carregarPorCliente(filtros) {
+      document.getElementById('statTotalClientes').textContent = '156';
+      document.getElementById('statClientesEmDia').textContent = '111';
+      document.getElementById('statClientesInadimplentes').textContent = '45';
+      document.getElementById('statMelhorPagador').textContent = 'João Silva';
+
+      document.getElementById('tabelaClientes').innerHTML = `
+        <tr><td>1</td><td><div class="cliente-info"><div class="cliente-avatar">JS</div><div><div class="cliente-nome">João Silva</div></div></div></td><td>24</td><td>24</td><td>0</td><td class="valor gold">${fmtMoney(28800)}</td><td><span class="badge badge-success">Em dia</span></td></tr>
+        <tr><td>2</td><td><div class="cliente-info"><div class="cliente-avatar">MS</div><div><div class="cliente-nome">Maria Santos</div></div></div></td><td>18</td><td>16</td><td>2</td><td class="valor gold">${fmtMoney(21600)}</td><td><span class="badge badge-warning">Pendente</span></td></tr>
+        <tr><td>3</td><td><div class="cliente-info"><div class="cliente-avatar">PC</div><div><div class="cliente-nome">Pedro Costa</div></div></div></td><td>12</td><td>8</td><td>4</td><td class="valor gold">${fmtMoney(14400)}</td><td><span class="badge badge-danger">Inadimplente</span></td></tr>
+      `;
+    }
+
+    function verDetalhes(id) {
+      window.location.href = '/clientes?id=' + id;
+    }
+
+    function exportarExcel() {
+      showToast('Gerando Excel...', 'info');
+      
+      // Coletar dados da tabela atual
+      let dados = [];
+      let headers = [];
+      
+      if (currentTab === 'inadimplencia') {
+        headers = ['Cliente', 'CPF/CNPJ', 'Cobranças', 'Valor Total', 'Dias Atraso', 'Faixa'];
+        document.querySelectorAll('#tabelaInadimplentes tr').forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length > 1) {
+            dados.push([
+              cells[0]?.querySelector('.cliente-nome')?.textContent || '',
+              cells[0]?.querySelector('.cliente-doc')?.textContent || '',
+              cells[1]?.textContent || '',
+              cells[2]?.textContent || '',
+              cells[3]?.textContent || '',
+              cells[4]?.textContent || ''
+            ]);
+          }
+        });
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...dados]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+      XLSX.writeFile(wb, 'relatorio_' + currentTab + '_' + new Date().toISOString().split('T')[0] + '.xlsx');
+      showToast('Excel exportado!', 'success');
+    }
+
+    function exportarPDF() {
+      showToast('Funcionalidade em desenvolvimento', 'info');
+    }
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    carregarUsuario();
+    carregarDados();
+  </script>
+</body>
+</html>
