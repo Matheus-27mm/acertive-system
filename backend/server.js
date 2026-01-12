@@ -482,7 +482,6 @@ app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
 app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
 app.get("/cobrancas", sendFront("cobrancas.html"));
-app.get("/clientes-ativos", sendFront("clientes-ativos.html"));
 app.get(["/novo-cliente", "/novo-cliente/"], sendFront("novo-cliente.html"));
 app.get("/novo-cliente.html", sendFront("novo-cliente.html"));
 app.get("/cobrancas-recorrentes", sendFront("cobrancas-recorrentes.html"));
@@ -492,9 +491,9 @@ app.get("/usuarios", sendFront("usuarios.html"));
 app.get("/agendamentos", sendFront("agendamentos.html"));
 app.get("/novo-agendamento", sendFront("novo-agendamento.html"));
 app.get("/configuracoes", sendFront("configuracoes.html"));
-app.get("/consulta-cliente", sendFront("consulta-cliente.html"));
 app.get("/importar-cobrancas", sendFront("importar-cobrancas.html"));
 app.get("/lembretes", sendFront("lembretes.html"));
+app.get("/clientes", sendFront("clientes.html"));
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
