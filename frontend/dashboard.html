@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ACERTIVE • Dashboard Enterprise</title>
+  <title>ACERTIVE • Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -12,14 +12,12 @@
       --bg-primary: #09090b;
       --bg-secondary: #0f0f12;
       --bg-card: rgba(17, 17, 21, 0.95);
-      --bg-card-hover: rgba(24, 24, 30, 0.98);
       --bg-sidebar: #0c0c0f;
       --text-primary: #fafafa;
       --text-secondary: #a1a1aa;
       --text-muted: #71717a;
       --gold: #F6C84C;
       --gold-light: #FFD56A;
-      --gold-dark: #d4a833;
       --gold-glow: rgba(246, 200, 76, 0.15);
       --gold-glow-strong: rgba(246, 200, 76, 0.3);
       --border: rgba(255, 255, 255, 0.08);
@@ -34,636 +32,275 @@
       --orange-bg: rgba(245, 158, 11, 0.15);
       --purple: #a855f7;
       --purple-bg: rgba(168, 85, 247, 0.15);
-      --sidebar-width: 280px;
-      --sidebar-collapsed: 80px;
+      --sidebar-width: 260px;
       --header-height: 70px;
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
-      --radius-xl: 20px;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
       --shadow-gold: 0 8px 32px rgba(246, 200, 76, 0.2);
       --transition-fast: 0.15s ease;
-      --transition-normal: 0.25s ease;
-      --transition-slow: 0.4s ease;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 
-    .loading-screen {
-      position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-    .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loading-logo {
-      width: 80px; height: 80px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 20px; display: flex; align-items: center; justify-content: center;
-      font-size: 40px; font-weight: 900; color: var(--bg-primary);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(246, 200, 76, 0.4); }
-      50% { transform: scale(1.05); box-shadow: 0 0 40px 10px rgba(246, 200, 76, 0.2); }
-    }
-    .loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-    .loading-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 2px; animation: loadingFill 1.5s ease forwards; }
-    @keyframes loadingFill { to { width: 100%; } }
-    .loading-text { color: var(--text-muted); font-size: 13px; font-weight: 500; }
-
+    /* SIDEBAR PADRÃO */
     .sidebar {
       position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
       background: var(--bg-sidebar); border-right: 1px solid var(--border); z-index: 1000;
-      display: flex; flex-direction: column; transition: width var(--transition-normal), transform var(--transition-normal);
+      display: flex; flex-direction: column;
     }
-    .sidebar.collapsed { width: var(--sidebar-collapsed); }
-    .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text, .sidebar.collapsed .user-info, .sidebar.collapsed .nav-section-title { display: none; }
-    .sidebar.collapsed .nav-link { justify-content: center; padding: 14px; }
-    .sidebar.collapsed .user-avatar { margin: 0 auto; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+    .logo-text { font-size: 20px; font-weight: 800; }
+    .logo-text span { color: var(--gold); }
 
-    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
-    .logo-icon {
-      min-width: 46px; height: 46px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 22px; color: var(--bg-primary); box-shadow: var(--shadow-gold);
-    }
-    .logo-text { display: flex; flex-direction: column; }
-    .logo-text span:first-child { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
-    .logo-text span:last-child { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-    .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
-    .sidebar-nav::-webkit-scrollbar { width: 4px; }
-    .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .nav-section { margin-bottom: 28px; }
-    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 10px; }
-    .nav-links { display: flex; flex-direction: column; gap: 4px; }
-    .nav-link {
-      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-      border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none;
-      font-weight: 500; font-size: 14px; transition: all var(--transition-fast); position: relative;
-    }
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md); font-weight: 500; font-size: 14px; transition: all var(--transition-fast); margin-bottom: 2px; position: relative; }
     .nav-link:hover { background: var(--gold-glow); color: var(--gold); }
     .nav-link.active { background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); color: var(--gold); }
-    .nav-link.active::before {
-      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 24px; background: var(--gold); border-radius: 0 3px 3px 0;
-    }
-    .nav-link i { width: 20px; text-align: center; font-size: 16px; }
+    .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: var(--gold); border-radius: 0 3px 3px 0; }
+    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
     .nav-badge { margin-left: auto; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
     .nav-badge.gold { background: var(--gold); color: var(--bg-primary); }
-    .nav-badge.red { background: var(--red); color: white; animation: pulseBadge 2s infinite; }
-    .nav-badge.blue { background: var(--blue); color: white; }
     .nav-badge.green { background: var(--green); color: white; }
-    @keyframes pulseBadge { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .nav-badge.blue { background: var(--blue); color: white; }
+    .nav-badge.red { background: var(--red); color: white; }
 
     .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .user-card {
-      display: flex; align-items: center; gap: 12px; padding: 12px;
-      background: rgba(255,255,255,0.03); border-radius: var(--radius-md);
-      cursor: pointer; transition: background var(--transition-fast);
-    }
-    .user-card:hover { background: rgba(255,255,255,0.06); }
-    .user-avatar {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 16px; color: var(--bg-primary);
-    }
-    .user-info { flex: 1; min-width: 0; }
-    .user-name { font-weight: 600; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); }
+    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--bg-primary); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; }
     .user-role { font-size: 11px; color: var(--text-muted); }
-    .user-menu-btn {
-      width: 28px; height: 28px; background: transparent; border: none;
-      color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: all var(--transition-fast);
-    }
-    .user-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; }
+    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
 
-    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left var(--transition-normal); }
-    .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
-
-    .header {
-      height: var(--header-height); background: rgba(9, 9, 11, 0.8); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
-    }
-    .header-left { display: flex; align-items: center; gap: 20px; }
-    .sidebar-toggle {
-      width: 40px; height: 40px; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      color: var(--text-secondary); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast);
-    }
-    .sidebar-toggle:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-    
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-    .breadcrumb-item { color: var(--text-muted); }
-    .breadcrumb-item.active { color: var(--text-primary); font-weight: 600; }
+    /* MAIN */
+    .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
+    .header { height: var(--header-height); background: rgba(9,9,11,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .sidebar-toggle { display: none; width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; align-items: center; justify-content: center; }
+    .breadcrumb { font-size: 14px; color: var(--text-muted); }
+    .breadcrumb .active { color: var(--text-primary); font-weight: 600; }
 
     .header-right { display: flex; align-items: center; gap: 12px; }
-    .header-btn {
-      width: 40px; height: 40px; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      color: var(--text-secondary); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition-fast); position: relative;
-    }
+    .header-btn { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); position: relative; }
     .header-btn:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-    .header-btn .notification-dot {
-      position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
-      background: var(--red); border-radius: 50%; border: 2px solid var(--bg-primary);
-    }
-    .header-search {
-      display: flex; align-items: center; gap: 10px; padding: 10px 16px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      border-radius: var(--radius-md); min-width: 280px; transition: all var(--transition-fast);
-    }
-    .header-search:focus-within { border-color: var(--border-gold); background: var(--gold-glow); }
-    .header-search i { color: var(--text-muted); font-size: 14px; }
-    .header-search input { flex: 1; background: none; border: none; outline: none; color: var(--text-primary); font-size: 13px; }
-    .header-search input::placeholder { color: var(--text-muted); }
-    .search-shortcut { padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .notification-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; display: none; }
 
     .page-content { padding: 32px; }
-    
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 24px; flex-wrap: wrap; }
-    .page-title { font-size: 28px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .page-title-icon {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow));
-      border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold);
-    }
-    .page-subtitle { color: var(--text-muted); font-size: 14px; }
-    .page-header-right { display: flex; gap: 12px; flex-wrap: wrap; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+    .page-title { font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .page-title-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--gold-glow-strong), var(--gold-glow)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--gold); }
+    .page-subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px;
-      cursor: pointer; transition: all var(--transition-fast); border: none; text-decoration: none; white-space: nowrap;
-    }
-    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(246, 200, 76, 0.3); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: all var(--transition-fast); border: none; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
     .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
 
-    .alerts-panel {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.04));
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: var(--radius-lg);
-      margin-bottom: 32px;
-      overflow: hidden;
-      display: none;
-    }
-    .alerts-panel.active { display: block; animation: slideDown 0.4s ease; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .alerts-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 20px; background: rgba(0,0,0,0.2);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .alerts-title { display: flex; align-items: center; gap: 12px; }
-    .alerts-title i { font-size: 22px; color: var(--red); animation: ring 2s ease infinite; }
-    @keyframes ring { 0%,100%{transform:rotate(0)} 10%,30%{transform:rotate(-10deg)} 20%,40%{transform:rotate(10deg)} 50%{transform:rotate(0)} }
-    .alerts-title h2 { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-    .alerts-title .alerts-count { background: var(--red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .btn-close-alerts {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--text-muted); cursor: pointer; padding: 8px 12px;
-      border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
-      display: flex; align-items: center; gap: 6px; transition: all var(--transition-fast);
-    }
-    .btn-close-alerts:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
-
-    .alerts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 20px; }
-    
-    .alert-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 16px; transition: all var(--transition-fast);
-    }
-    .alert-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
-    .alert-card.urgente { border-left: 4px solid var(--red); }
-    .alert-card.atencao { border-left: 4px solid var(--orange); }
-    .alert-card.info { border-left: 4px solid var(--blue); }
-    
-    .alert-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .alert-card-title { font-size: 12px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .alert-card-title i { font-size: 14px; }
-    .alert-card-title.red i { color: var(--red); }
-    .alert-card-title.orange i { color: var(--orange); }
-    .alert-card-title.blue i { color: var(--blue); }
-    .alert-card-count { font-size: 28px; font-weight: 800; line-height: 1; }
-    .alert-card-count.red { color: var(--red); }
-    .alert-card-count.orange { color: var(--orange); }
-    .alert-card-count.blue { color: var(--blue); }
-
-    .alert-card-value { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
-    .alert-card-value strong { color: var(--gold); font-size: 14px; }
-
-    .alert-list { max-height: 100px; overflow-y: auto; }
-    .alert-list::-webkit-scrollbar { width: 3px; }
-    .alert-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .alert-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-    .alert-item:last-child { border-bottom: none; }
-    .alert-item-name { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
-    .alert-item-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; margin: 0 6px; }
-    .alert-item-badge.red { background: var(--red-bg); color: var(--red); }
-    .alert-item-badge.orange { background: var(--orange-bg); color: var(--orange); }
-    .alert-item-value { color: var(--text-primary); font-weight: 600; }
-
-    .alert-card-action { margin-top: 12px; }
-    .alert-card-action a {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text-secondary); font-size: 11px; font-weight: 600;
-      text-decoration: none; transition: all var(--transition-fast);
-    }
-    .alert-card-action a:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
-
-    .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 32px; }
-    .kpi-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 20px; position: relative;
-      overflow: hidden; transition: all var(--transition-normal);
-    }
-    .kpi-card:hover { transform: translateY(-4px); border-color: var(--border-gold); box-shadow: var(--shadow-md); }
-    .kpi-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-light)); opacity: 0;
-      transition: opacity var(--transition-fast);
-    }
-    .kpi-card:hover::before { opacity: 1; }
-    
+    /* KPIs */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+    .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; transition: all var(--transition-fast); }
+    .kpi-card:hover { transform: translateY(-4px); border-color: var(--border-gold); }
     .kpi-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
-    .kpi-recebido .kpi-icon { background: var(--green-bg); color: var(--green); }
-    .kpi-pendente .kpi-icon { background: var(--orange-bg); color: var(--orange); }
-    .kpi-vencido .kpi-icon { background: var(--red-bg); color: var(--red); }
-    .kpi-clientes .kpi-icon { background: var(--blue-bg); color: var(--blue); }
-    .kpi-cobrancas .kpi-icon { background: var(--purple-bg); color: var(--purple); }
-    .kpi-agendamentos .kpi-icon { background: var(--gold-glow); color: var(--gold); }
+    .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .kpi-value { font-size: 24px; font-weight: 800; }
 
-    .kpi-content { position: relative; z-index: 1; }
-    .kpi-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .kpi-value { display: block; font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
-    .kpi-trend { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; }
-    .kpi-trend.up { color: var(--green); }
-    .kpi-trend.down { color: var(--red); }
-    .kpi-trend.neutral { color: var(--text-muted); }
-
+    /* Charts */
     .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px; }
-    .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; transition: all var(--transition-normal); }
-    .chart-card:hover { border-color: var(--border-gold); }
-    
+    .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
     .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .chart-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .chart-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .chart-title i { color: var(--gold); }
-    .chart-actions { display: flex; gap: 4px; }
-    .chart-filter {
-      padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all var(--transition-fast);
-    }
-    .chart-filter:hover { background: var(--gold-glow); color: var(--gold); }
-    .chart-filter.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
-    
-    .chart-body { height: 280px; position: relative; }
+    .chart-body { height: 280px; }
     .chart-body-donut { height: 200px; display: flex; align-items: center; justify-content: center; }
-    
     .chart-legend { display: flex; justify-content: center; gap: 24px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
     .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .legend-item strong { color: var(--text-primary); margin-left: 4px; }
 
-    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
-    .actions-card, .activity-card, .debtors-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 24px; transition: all var(--transition-normal);
-    }
-    .actions-card:hover, .activity-card:hover, .debtors-card:hover { border-color: var(--border-gold); }
-    
+    /* Bottom Grid */
+    .bottom-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .card-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .card-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .card-title i { color: var(--gold); }
-    .card-link { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--gold); text-decoration: none; transition: gap var(--transition-fast); }
-    .card-link:hover { gap: 10px; }
+    .card-link { font-size: 13px; font-weight: 600; color: var(--gold); text-decoration: none; display: flex; align-items: center; gap: 6px; }
 
     .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .action-item {
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      padding: 16px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-      border-radius: var(--radius-md); text-decoration: none; color: var(--text-secondary);
-      font-size: 12px; font-weight: 600; transition: all var(--transition-fast);
-    }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius-md); text-decoration: none; color: var(--text-secondary); font-size: 12px; font-weight: 600; transition: all var(--transition-fast); }
     .action-item:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--text-primary); transform: translateY(-2px); }
     .action-icon { width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
     .activity-list { display: flex; flex-direction: column; gap: 12px; max-height: 280px; overflow-y: auto; }
-    .activity-list::-webkit-scrollbar { width: 4px; }
-    .activity-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    
-    .activity-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); transition: background var(--transition-fast); }
-    .activity-item:hover { background: rgba(255,255,255,0.05); }
+    .activity-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); }
     .activity-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-    .activity-info { flex: 1; min-width: 0; }
-    .activity-title { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .activity-info { flex: 1; }
+    .activity-title { font-size: 13px; font-weight: 600; }
     .activity-subtitle { font-size: 11px; color: var(--text-muted); }
-    .activity-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-    .activity-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; color: var(--text-muted); gap: 12px; }
+    .activity-time { font-size: 11px; color: var(--text-muted); }
+    .activity-empty { display: flex; flex-direction: column; align-items: center; padding: 40px; color: var(--text-muted); gap: 12px; }
     .activity-empty i { font-size: 32px; opacity: 0.5; }
 
     .debtors-list { display: flex; flex-direction: column; gap: 8px; }
-    .debtor-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); transition: background var(--transition-fast); }
-    .debtor-item:hover { background: rgba(255,255,255,0.05); }
+    .debtor-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); }
     .debtor-rank { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: var(--gold-glow); color: var(--gold); }
     .debtor-rank.top { background: var(--gold); color: var(--bg-primary); }
-    .debtor-info { flex: 1; min-width: 0; }
-    .debtor-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .debtor-info { flex: 1; }
+    .debtor-name { font-size: 13px; font-weight: 600; }
     .debtor-details { font-size: 11px; color: var(--text-muted); }
     .debtor-value { font-size: 14px; font-weight: 700; color: var(--red); }
 
-    @media (max-width: 1400px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 1200px) { .charts-grid { grid-template-columns: 1fr; } .bottom-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-wrapper { margin-left: 0; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } .header-search { display: none; } }
-    @media (max-width: 640px) { .kpi-grid { grid-template-columns: 1fr; } .page-header { flex-direction: column; align-items: stretch; } .page-header-right { justify-content: stretch; } .page-header-right .btn { flex: 1; } .actions-grid { grid-template-columns: repeat(2, 1fr); } .alerts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid, .bottom-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); transition: transform 0.3s; } .sidebar.open { transform: translateX(0); } .main-wrapper { margin-left: 0; } .sidebar-toggle { display: flex; } }
+    @media (max-width: 640px) { .kpi-grid { grid-template-columns: 1fr; } .page-header { flex-direction: column; } .actions-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-logo">A</div>
-    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
-    <div class="loading-text">Carregando sistema...</div>
-  </div>
-
+  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo-icon">A</div>
-      <div class="logo-text">
-        <span>ACERTIVE</span>
-        <span>Enterprise</span>
-      </div>
+      <div class="logo-text">ACERT<span>IVE</span></div>
     </div>
-
     <nav class="sidebar-nav">
+      <!-- PRINCIPAL -->
       <div class="nav-section">
         <div class="nav-section-title">Principal</div>
-        <div class="nav-links">
-          <a href="/dashboard" class="nav-link active">
-            <i class="fa-solid fa-grid-2"></i>
-            <span class="nav-text">Dashboard</span>
-            <span class="nav-badge red" id="navBadgeAlertas" style="display:none;">0</span>
-          </a>
-          <a href="/cobrancas" class="nav-link">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <span class="nav-text">Cobranças</span>
-            <span class="nav-badge gold" id="navBadgeCobrancas">0</span>
-          </a>
-          <a href="/clientes-ativos" class="nav-link">
-            <i class="fa-solid fa-users"></i>
-            <span class="nav-text">Clientes</span>
-          </a>
-          <a href="/consulta-cliente" class="nav-link">
-            <i class="fa-solid fa-magnifying-glass-dollar"></i>
-            <span class="nav-text">Consulta Cliente</span>
-            <span class="nav-badge green">NOVO</span>
-          </a>
-          <a href="/agendamentos" class="nav-link">
-            <i class="fa-solid fa-calendar-check"></i>
-            <span class="nav-text">Agendamentos</span>
-            <span class="nav-badge red" id="navBadgeAgendamentos" style="display:none;">0</span>
-          </a>
-        </div>
+        <a href="/dashboard" class="nav-link active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-
+      <!-- AÇÕES -->
       <div class="nav-section">
-        <div class="nav-section-title">Financeiro</div>
-        <div class="nav-links">
-          <a href="/nova-cobranca" class="nav-link">
-            <i class="fa-solid fa-plus-circle"></i>
-            <span class="nav-text">Nova Cobrança</span>
-          </a>
-          <a href="/importar-cobrancas" class="nav-link">
-            <i class="fa-solid fa-file-import"></i>
-            <span class="nav-text">Importar Cobranças</span>
-            <span class="nav-badge green">NOVO</span>
-          </a>
-          <a href="/cobrancas-recorrentes" class="nav-link">
-            <i class="fa-solid fa-repeat"></i>
-            <span class="nav-text">Recorrentes</span>
-          </a>
-          <a href="/historico" class="nav-link">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span class="nav-text">Histórico</span>
-          </a>
-        </div>
+        <div class="nav-section-title">Ações</div>
+        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
+        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
       </div>
-
+      <!-- AUTOMAÇÃO -->
       <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      </div>
+      <!-- ADMIN -->
+      <div class="nav-section" id="adminSection">
         <div class="nav-section-title">Administração</div>
-        <div class="nav-links">
-          <a href="/usuarios" class="nav-link" id="navUsuarios">
-            <i class="fa-solid fa-user-shield"></i>
-            <span class="nav-text">Usuários</span>
-            <span class="nav-badge blue">ADM</span>
-          </a>
-          <a href="/lembretes" class="nav-link">
-            <i class="fa-solid fa-envelope"></i>
-            <span class="nav-text">Lembretes E-mail</span>
-            <span class="nav-badge green">NOVO</span>
-          </a>
-          <a href="/configuracoes" class="nav-link">
-            <i class="fa-solid fa-gear"></i>
-            <span class="nav-text">Configurações</span>
-          </a>
-        </div>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
       </div>
     </nav>
-
     <div class="sidebar-footer">
-      <div class="user-card" id="userCard">
+      <div class="user-card">
         <div class="user-avatar" id="userAvatar">U</div>
         <div class="user-info">
           <div class="user-name" id="userName">Usuário</div>
           <div class="user-role" id="userRole">Operador</div>
         </div>
-        <button class="user-menu-btn" id="btnLogout" title="Sair">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
+        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </div>
   </aside>
 
+  <!-- MAIN -->
   <div class="main-wrapper">
     <header class="header">
       <div class="header-left">
-        <button class="sidebar-toggle" id="sidebarToggle">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="breadcrumb">
-          <span class="breadcrumb-item">ACERTIVE</span>
-          <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-item active">Dashboard</span>
-        </div>
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <div class="breadcrumb">ACERTIVE / <span class="active">Dashboard</span></div>
       </div>
       <div class="header-right">
-        <div class="header-search">
-          <i class="fa-solid fa-search"></i>
-          <input type="text" placeholder="Buscar cliente, cobrança..." id="globalSearch">
-          <span class="search-shortcut">⌘K</span>
-        </div>
-        <button class="header-btn" id="btnNotifications" title="Notificações">
-          <i class="fa-solid fa-bell"></i>
-          <span class="notification-dot" id="notificationDot" style="display:none;"></span>
-        </button>
-        <button class="header-btn" id="btnRefresh" title="Atualizar dados">
-          <i class="fa-solid fa-rotate"></i>
-        </button>
-        <button class="header-btn" id="btnExportar" title="Exportar relatório">
-          <i class="fa-solid fa-download"></i>
-        </button>
+        <button class="header-btn" id="btnRefresh" title="Atualizar"><i class="fas fa-rotate"></i></button>
+        <button class="header-btn" id="btnExportar" title="Exportar"><i class="fas fa-download"></i></button>
       </div>
     </header>
 
     <main class="page-content">
       <div class="page-header">
-        <div class="page-header-left">
-          <h1 class="page-title">
-            <div class="page-title-icon"><i class="fa-solid fa-chart-line"></i></div>
-            Dashboard
-          </h1>
-          <p class="page-subtitle">Visão geral do seu negócio em tempo real</p>
+        <div>
+          <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-chart-line"></i></div> Dashboard</h1>
+          <p class="page-subtitle">Visão geral do seu negócio</p>
         </div>
-        <div class="page-header-right">
-          <a href="/novo-cliente" class="btn btn-secondary">
-            <i class="fa-solid fa-user-plus"></i> Novo Cliente
-          </a>
-          <a href="/nova-cobranca" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Nova Cobrança
-          </a>
+        <div style="display:flex;gap:12px;">
+          <a href="/novo-cliente" class="btn btn-secondary"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+          <a href="/nova-cobranca" class="btn btn-primary"><i class="fas fa-plus"></i> Nova Cobrança</a>
         </div>
       </div>
 
-      <div class="alerts-panel" id="alertsPanel">
-        <div class="alerts-header">
-          <div class="alerts-title">
-            <i class="fa-solid fa-bell"></i>
-            <h2>Central de Alertas</h2>
-            <span class="alerts-count" id="alertsCount">0</span>
-          </div>
-          <button class="btn-close-alerts" onclick="fecharAlertas()">
-            <i class="fa-solid fa-times"></i> Fechar
-          </button>
-        </div>
-        <div class="alerts-grid" id="alertsGrid"></div>
-      </div>
-
+      <!-- KPIs -->
       <div class="kpi-grid">
-        <div class="kpi-card kpi-recebido">
-          <div class="kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Total Recebido</span>
-            <span class="kpi-value" id="totalRecebido">R$ 0,00</span>
-            <span class="kpi-trend up" id="trendRecebido"><i class="fa-solid fa-arrow-up"></i> +0% este mês</span>
-          </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-circle-dollar-to-slot"></i></div>
+          <div class="kpi-label">Total Recebido</div>
+          <div class="kpi-value" id="totalRecebido">R$ 0,00</div>
         </div>
-        <div class="kpi-card kpi-pendente">
-          <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Pendentes</span>
-            <span class="kpi-value" id="totalPendentes">R$ 0,00</span>
-            <span class="kpi-trend neutral" id="trendPendentes"><i class="fa-solid fa-minus"></i> Sem variação</span>
-          </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-clock"></i></div>
+          <div class="kpi-label">Pendentes</div>
+          <div class="kpi-value" id="totalPendentes">R$ 0,00</div>
         </div>
-        <div class="kpi-card kpi-vencido">
-          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Vencidos</span>
-            <span class="kpi-value" id="totalVencidos">R$ 0,00</span>
-            <span class="kpi-trend down" id="trendVencidos"><i class="fa-solid fa-arrow-down"></i> -0% este mês</span>
-          </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-triangle-exclamation"></i></div>
+          <div class="kpi-label">Vencidos</div>
+          <div class="kpi-value" id="totalVencidos">R$ 0,00</div>
         </div>
-        <div class="kpi-card kpi-clientes">
-          <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Clientes Ativos</span>
-            <span class="kpi-value" id="totalClientes">0</span>
-            <span class="kpi-trend up" id="trendClientes"><i class="fa-solid fa-arrow-up"></i> +0 novos</span>
-          </div>
-        </div>
-        <div class="kpi-card kpi-cobrancas">
-          <div class="kpi-icon"><i class="fa-solid fa-file-invoice"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Total Cobranças</span>
-            <span class="kpi-value" id="totalTitulos">0</span>
-            <span class="kpi-trend neutral" id="trendTitulos"><i class="fa-solid fa-chart-simple"></i> Ver detalhes</span>
-          </div>
-        </div>
-        <div class="kpi-card kpi-agendamentos">
-          <div class="kpi-icon"><i class="fa-solid fa-calendar-check"></i></div>
-          <div class="kpi-content">
-            <span class="kpi-label">Agendamentos Hoje</span>
-            <span class="kpi-value" id="totalAgendamentos">0</span>
-            <span class="kpi-trend neutral" id="trendAgendamentos"><i class="fa-solid fa-bell"></i> Pendentes</span>
-          </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-users"></i></div>
+          <div class="kpi-label">Clientes Ativos</div>
+          <div class="kpi-value" id="totalClientes">0</div>
         </div>
       </div>
 
+      <!-- Charts -->
       <div class="charts-grid">
-        <div class="chart-card chart-large">
+        <div class="chart-card">
           <div class="chart-header">
-            <div class="chart-title"><i class="fa-solid fa-chart-area"></i><span>Faturamento Mensal</span></div>
-            <div class="chart-actions">
-              <button class="chart-filter active" data-period="6m">6M</button>
-              <button class="chart-filter" data-period="12m">12M</button>
-              <button class="chart-filter" data-period="all">Tudo</button>
-            </div>
+            <div class="chart-title"><i class="fas fa-chart-area"></i> Faturamento Mensal</div>
           </div>
           <div class="chart-body"><canvas id="chartFaturamento"></canvas></div>
         </div>
         <div class="chart-card">
           <div class="chart-header">
-            <div class="chart-title"><i class="fa-solid fa-chart-pie"></i><span>Status das Cobranças</span></div>
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Status das Cobranças</div>
           </div>
           <div class="chart-body chart-body-donut"><canvas id="chartStatus"></canvas></div>
-          <div class="chart-legend" id="chartLegend">
-            <div class="legend-item"><span class="legend-dot" style="background: var(--green);"></span><span>Pago</span><strong id="legendPago">0</strong></div>
-            <div class="legend-item"><span class="legend-dot" style="background: var(--orange);"></span><span>Pendente</span><strong id="legendPendente">0</strong></div>
-            <div class="legend-item"><span class="legend-dot" style="background: var(--red);"></span><span>Vencido</span><strong id="legendVencido">0</strong></div>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span> Pago <strong id="legendPago">0</strong></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--orange);"></span> Pendente <strong id="legendPendente">0</strong></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--red);"></span> Vencido <strong id="legendVencido">0</strong></div>
           </div>
         </div>
       </div>
 
+      <!-- Bottom Grid -->
       <div class="bottom-grid">
-        <div class="actions-card">
-          <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-bolt"></i> Ações Rápidas</h3></div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-bolt"></i> Ações Rápidas</h3></div>
           <div class="actions-grid">
-            <a href="/nova-cobranca" class="action-item"><div class="action-icon" style="background: var(--gold-glow); color: var(--gold);"><i class="fa-solid fa-plus"></i></div><span>Nova Cobrança</span></a>
-            <a href="/novo-cliente" class="action-item"><div class="action-icon" style="background: var(--blue-bg); color: var(--blue);"><i class="fa-solid fa-user-plus"></i></div><span>Novo Cliente</span></a>
-            <a href="/consulta-cliente" class="action-item"><div class="action-icon" style="background: var(--green-bg); color: var(--green);"><i class="fa-solid fa-magnifying-glass-dollar"></i></div><span>Consulta Cliente</span></a>
-            <a href="/importar-cobrancas" class="action-item"><div class="action-icon" style="background: var(--purple-bg); color: var(--purple);"><i class="fa-solid fa-file-import"></i></div><span>Importar</span></a>
-            <a href="/cobrancas?status=vencido" class="action-item"><div class="action-icon" style="background: var(--red-bg); color: var(--red);"><i class="fa-solid fa-triangle-exclamation"></i></div><span>Ver Vencidos</span></a>
-            <a href="/configuracoes" class="action-item"><div class="action-icon" style="background: var(--orange-bg); color: var(--orange);"><i class="fa-solid fa-gear"></i></div><span>Configurações</span></a>
+            <a href="/nova-cobranca" class="action-item"><div class="action-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-plus"></i></div> Nova Cobrança</a>
+            <a href="/novo-cliente" class="action-item"><div class="action-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-user-plus"></i></div> Novo Cliente</a>
+            <a href="/clientes" class="action-item"><div class="action-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-search"></i></div> Buscar Cliente</a>
+            <a href="/importar-cobrancas" class="action-item"><div class="action-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-file-import"></i></div> Importar</a>
+            <a href="/cobrancas?status=vencido" class="action-item"><div class="action-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-triangle-exclamation"></i></div> Ver Vencidos</a>
+            <a href="/configuracoes" class="action-item"><div class="action-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-gear"></i></div> Configurações</a>
           </div>
         </div>
-        <div class="activity-card">
-          <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-calendar-day"></i> Agendamentos de Hoje</h3><a href="/agendamentos" class="card-link">Ver todos <i class="fa-solid fa-arrow-right"></i></a></div>
-          <div class="activity-list" id="listaAgendamentosHoje"><div class="activity-empty"><i class="fa-solid fa-calendar-check"></i><span>Nenhum agendamento para hoje</span></div></div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-calendar-day"></i> Agendamentos Hoje</h3><a href="/agendamentos" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a></div>
+          <div class="activity-list" id="listaAgendamentos">
+            <div class="activity-empty"><i class="fas fa-calendar-check"></i><span>Nenhum agendamento hoje</span></div>
+          </div>
         </div>
-        <div class="debtors-card">
-          <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-ranking-star"></i> Maiores Devedores</h3><a href="/consulta-cliente" class="card-link">Consultar <i class="fa-solid fa-arrow-right"></i></a></div>
-          <div class="debtors-list" id="listaDevedores"><div class="activity-empty"><i class="fa-solid fa-check-circle"></i><span>Nenhum devedor encontrado</span></div></div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-ranking-star"></i> Maiores Devedores</h3><a href="/clientes" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a></div>
+          <div class="debtors-list" id="listaDevedores">
+            <div class="activity-empty"><i class="fas fa-check-circle"></i><span>Nenhum devedor</span></div>
+          </div>
         </div>
       </div>
     </main>
@@ -671,272 +308,130 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
-  
   <script>
-    const API_URL = window.location.origin;
+    const API = window.location.origin;
     let token = localStorage.getItem('token');
-    let chartFaturamento = null;
-    let chartStatus = null;
-    let alertasFechados = sessionStorage.getItem('alertasFechados') === 'true';
+    let chartFaturamento = null, chartStatus = null;
+    if (!token) window.location.href = '/login';
 
-    if (!token) { window.location.href = '/login'; }
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function fmtTime(d) { return new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'error' ? '#ef4444' : '#22c55e', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
 
-    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; }
-    function formatMoney(value) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0); }
-    function formatNumber(value) { return new Intl.NumberFormat('pt-BR').format(value || 0); }
-    function formatTime(date) { return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
-    function formatDate(date) { return new Date(date).toLocaleDateString('pt-BR'); }
-
-    function showToast(message, type = 'success') {
-      Toastify({
-        text: message, duration: 3000, gravity: "top", position: "right",
-        style: {
-          background: type === 'success' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #F6C84C, #d4a833)',
-          borderRadius: '12px', fontWeight: '600', boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
-        }
-      }).showToast();
-    }
-
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    
-    sidebarToggle.addEventListener('click', () => {
-      if (window.innerWidth <= 1024) { sidebar.classList.toggle('open'); }
-      else { sidebar.classList.toggle('collapsed'); }
-    });
-
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    });
-
-    async function carregarAlertas() {
-      try {
-        const response = await fetch(`${API_URL}/api/alertas`, { headers: getHeaders() });
-        const result = await response.json();
-        if (result.success) {
-          const total = result.totalAlertas || 0;
-          const badge = document.getElementById('navBadgeAlertas');
-          if (total > 0) {
-            badge.textContent = total > 99 ? '99+' : total;
-            badge.style.display = 'inline-block';
-            document.getElementById('notificationDot').style.display = 'block';
-          } else { badge.style.display = 'none'; }
-          renderizarAlertas(result);
-          if (total > 0 && !alertasFechados) { document.getElementById('alertsPanel').classList.add('active'); }
-        }
-      } catch (err) { console.error('[ALERTAS] Erro:', err); }
-    }
-
-    function renderizarAlertas(data) {
-      const alertas = data.alertas || {};
-      const grid = document.getElementById('alertsGrid');
-      document.getElementById('alertsCount').textContent = data.totalAlertas || 0;
-      let html = '';
-      if (alertas.vencidas?.length > 0) {
-        const valor = alertas.vencidas.reduce((s, c) => s + Number(c.valor_atualizado || 0), 0);
-        html += `<div class="alert-card urgente"><div class="alert-card-header"><div class="alert-card-title red"><i class="fa-solid fa-exclamation-circle"></i> COBRANÇAS VENCIDAS</div><div class="alert-card-count red">${alertas.vencidas.length}</div></div><div class="alert-card-value">Total em atraso: <strong>${formatMoney(valor)}</strong></div><div class="alert-list">${alertas.vencidas.slice(0, 4).map(c => `<div class="alert-item"><span class="alert-item-name">${c.cliente}</span><span class="alert-item-badge red">${c.dias_atraso}d</span><span class="alert-item-value">${formatMoney(c.valor_atualizado)}</span></div>`).join('')}</div><div class="alert-card-action"><a href="/cobrancas?status=vencido"><i class="fa-solid fa-arrow-right"></i> Ver todas vencidas</a></div></div>`;
-      }
-      if (alertas.vencendoHoje?.length > 0) {
-        const valor = alertas.vencendoHoje.reduce((s, c) => s + Number(c.valor_atualizado || 0), 0);
-        html += `<div class="alert-card atencao"><div class="alert-card-header"><div class="alert-card-title orange"><i class="fa-solid fa-calendar-day"></i> VENCENDO HOJE</div><div class="alert-card-count orange">${alertas.vencendoHoje.length}</div></div><div class="alert-card-value">Total: <strong>${formatMoney(valor)}</strong></div><div class="alert-list">${alertas.vencendoHoje.slice(0, 4).map(c => `<div class="alert-item"><span class="alert-item-name">${c.cliente}</span><span class="alert-item-value">${formatMoney(c.valor_atualizado)}</span></div>`).join('')}</div><div class="alert-card-action"><a href="/cobrancas"><i class="fa-solid fa-arrow-right"></i> Ver cobranças</a></div></div>`;
-      }
-      if (alertas.agendamentosHoje?.length > 0) {
-        html += `<div class="alert-card info"><div class="alert-card-header"><div class="alert-card-title blue"><i class="fa-solid fa-calendar-check"></i> AGENDA HOJE</div><div class="alert-card-count blue">${alertas.agendamentosHoje.length}</div></div><div class="alert-list">${alertas.agendamentosHoje.slice(0, 4).map(a => `<div class="alert-item"><span class="alert-item-name">${a.cliente}</span><span class="alert-item-badge orange">${formatTime(a.data_agendamento)}</span><span class="alert-item-value">${a.tipo}</span></div>`).join('')}</div><div class="alert-card-action"><a href="/agendamentos"><i class="fa-solid fa-arrow-right"></i> Ver agenda</a></div></div>`;
-      }
-      grid.innerHTML = html || '<p style="color:var(--text-muted);text-align:center;padding:40px;grid-column:1/-1;">✅ Nenhum alerta no momento!</p>';
-    }
-
-    function fecharAlertas() {
-      document.getElementById('alertsPanel').classList.remove('active');
-      sessionStorage.setItem('alertasFechados', 'true');
-    }
-
-    document.getElementById('btnNotifications').addEventListener('click', () => {
-      const panel = document.getElementById('alertsPanel');
-      if (panel.classList.contains('active')) { fecharAlertas(); }
-      else { sessionStorage.removeItem('alertasFechados'); alertasFechados = false; panel.classList.add('active'); }
-    });
+    document.getElementById('sidebarToggle').onclick = () => document.getElementById('sidebar').classList.toggle('open');
 
     async function carregarUsuario() {
       try {
-        const response = await fetch(`${API_URL}/api/usuarios/me`, { headers: getHeaders() });
-        const result = await response.json();
-        if (result.success && result.data) {
-          const user = result.data;
-          document.getElementById('userName').textContent = user.nome || user.email || 'Usuário';
-          document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (user.nome || user.email || 'U').charAt(0).toUpperCase();
-          if (user.nivel !== 'admin') { const navUsuarios = document.getElementById('navUsuarios'); if (navUsuarios) navUsuarios.style.display = 'none'; }
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
         }
-      } catch (err) { console.error('Erro ao carregar usuário:', err); }
+      } catch (e) { console.error(e); }
     }
 
     async function carregarDashboard() {
       try {
-        const response = await fetch(`${API_URL}/api/dashboard`, { headers: getHeaders() });
-        const result = await response.json();
-        if (result.success) {
-          document.getElementById('totalRecebido').textContent = formatMoney(result.totalRecebido);
-          document.getElementById('totalPendentes').textContent = formatMoney(result.totalPendente);
-          document.getElementById('totalVencidos').textContent = formatMoney(result.totalVencido);
-          document.getElementById('totalClientes').textContent = formatNumber(result.clientesAtivos);
-          document.getElementById('totalTitulos').textContent = formatNumber(result.totalCobrancas);
-          document.getElementById('totalAgendamentos').textContent = formatNumber(result.agendamentosHoje || 0);
-          document.getElementById('navBadgeCobrancas').textContent = result.totalCobrancas || 0;
-          if (result.agendamentosHoje > 0) {
-            document.getElementById('navBadgeAgendamentos').textContent = result.agendamentosHoje;
-            document.getElementById('navBadgeAgendamentos').style.display = 'inline';
-          }
+        const res = await fetch(API + '/api/dashboard', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('totalRecebido').textContent = fmtMoney(data.totalRecebido);
+          document.getElementById('totalPendentes').textContent = fmtMoney(data.totalPendente);
+          document.getElementById('totalVencidos').textContent = fmtMoney(data.totalVencido);
+          document.getElementById('totalClientes').textContent = data.clientesAtivos || 0;
         }
-      } catch (err) { console.error('Erro ao carregar dashboard:', err); showToast('Erro ao carregar dados', 'error'); }
+      } catch (e) { console.error(e); }
     }
 
     async function carregarGraficos() {
       try {
-        const response = await fetch(`${API_URL}/api/dashboard/graficos`, { headers: getHeaders() });
-        const result = await response.json();
-        if (result.success) {
-          renderizarGraficoFaturamento(result.faturamentoMensal);
-          renderizarGraficoStatus(result.statusCobrancas);
-          renderizarTopDevedores(result.topDevedores);
+        const res = await fetch(API + '/api/dashboard/graficos', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          renderFaturamento(data.faturamentoMensal);
+          renderStatus(data.statusCobrancas);
+          renderDevedores(data.topDevedores);
         }
-      } catch (err) { console.error('Erro ao carregar gráficos:', err); }
+      } catch (e) { console.error(e); }
     }
 
-    function renderizarGraficoFaturamento(dados) {
+    function renderFaturamento(d) {
       const ctx = document.getElementById('chartFaturamento');
-      if (!ctx) return;
       if (chartFaturamento) chartFaturamento.destroy();
       const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
-      gradient.addColorStop(0, 'rgba(246, 200, 76, 0.3)');
-      gradient.addColorStop(1, 'rgba(246, 200, 76, 0)');
+      gradient.addColorStop(0, 'rgba(246,200,76,0.3)');
+      gradient.addColorStop(1, 'rgba(246,200,76,0)');
       chartFaturamento = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-          datasets: [{
-            label: 'Faturado', data: dados?.total || [0, 0, 0, 0, 0, 0],
-            borderColor: '#F6C84C', backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4,
-            pointBackgroundColor: '#F6C84C', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6
-          }, {
-            label: 'Recebido', data: dados?.recebido || [0, 0, 0, 0, 0, 0],
-            borderColor: '#22c55e', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5],
-            tension: 0.4, pointRadius: 3, pointHoverRadius: 5
-          }]
+          labels: d?.meses || ['Jan','Fev','Mar','Abr','Mai','Jun'],
+          datasets: [{ label: 'Faturado', data: d?.total || [0,0,0,0,0,0], borderColor: '#F6C84C', backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 4 },
+                     { label: 'Recebido', data: d?.recebido || [0,0,0,0,0,0], borderColor: '#22c55e', borderWidth: 2, borderDash: [5,5], tension: 0.4, pointRadius: 3 }]
         },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: true, position: 'top', align: 'end', labels: { color: '#a1a1aa', usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } } },
-            tooltip: { backgroundColor: 'rgba(15, 15, 18, 0.95)', titleColor: '#F6C84C', bodyColor: '#fff', borderColor: 'rgba(246, 200, 76, 0.3)', borderWidth: 1, padding: 12, displayColors: true, callbacks: { label: (context) => ` ${context.dataset.label}: ${formatMoney(context.raw)}` } }
-          },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', font: { size: 11 } } },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', font: { size: 11 }, callback: (value) => formatMoney(value) } }
-          },
-          interaction: { intersect: false, mode: 'index' }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { color: '#a1a1aa', usePointStyle: true } } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', callback: v => fmtMoney(v) } } } }
       });
     }
 
-    function renderizarGraficoStatus(dados) {
+    function renderStatus(d) {
       const ctx = document.getElementById('chartStatus');
-      if (!ctx) return;
       if (chartStatus) chartStatus.destroy();
-      const pago = dados?.pago || 0;
-      const pendente = dados?.pendente || 0;
-      const vencido = dados?.vencido || 0;
+      const pago = d?.pago || 0, pendente = d?.pendente || 0, vencido = d?.vencido || 0;
       document.getElementById('legendPago').textContent = pago;
       document.getElementById('legendPendente').textContent = pendente;
       document.getElementById('legendVencido').textContent = vencido;
       chartStatus = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: ['Pago', 'Pendente', 'Vencido'], datasets: [{ data: [pago, pendente, vencido], backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderColor: '#09090b', borderWidth: 4, hoverBorderWidth: 0, hoverOffset: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 15, 18, 0.95)', titleColor: '#F6C84C', bodyColor: '#fff', borderColor: 'rgba(246, 200, 76, 0.3)', borderWidth: 1, padding: 12 } } }
+        data: { labels: ['Pago','Pendente','Vencido'], datasets: [{ data: [pago, pendente, vencido], backgroundColor: ['#22c55e','#f59e0b','#ef4444'], borderColor: '#09090b', borderWidth: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
       });
     }
 
-    function renderizarTopDevedores(devedores) {
-      const container = document.getElementById('listaDevedores');
-      if (!container) return;
-      if (!devedores || devedores.length === 0) {
-        container.innerHTML = `<div class="activity-empty"><i class="fa-solid fa-check-circle"></i><span>Nenhum devedor encontrado</span></div>`;
-        return;
-      }
-      container.innerHTML = devedores.map((d, i) => `<div class="debtor-item"><div class="debtor-rank ${i === 0 ? 'top' : ''}">${i + 1}º</div><div class="debtor-info"><div class="debtor-name">${d.cliente || 'Sem nome'}</div><div class="debtor-details">Pendente</div></div><div class="debtor-value">${formatMoney(d.total)}</div></div>`).join('');
+    function renderDevedores(lista) {
+      const el = document.getElementById('listaDevedores');
+      if (!lista || !lista.length) { el.innerHTML = '<div class="activity-empty"><i class="fas fa-check-circle"></i><span>Nenhum devedor</span></div>'; return; }
+      el.innerHTML = lista.map((d, i) => '<div class="debtor-item"><div class="debtor-rank ' + (i === 0 ? 'top' : '') + '">' + (i + 1) + 'º</div><div class="debtor-info"><div class="debtor-name">' + (d.cliente || 'Sem nome') + '</div><div class="debtor-details">Pendente</div></div><div class="debtor-value">' + fmtMoney(d.total) + '</div></div>').join('');
     }
 
-    async function carregarAgendamentosHoje() {
+    async function carregarAgendamentos() {
       try {
-        const response = await fetch(`${API_URL}/api/agendamentos/hoje`, { headers: getHeaders() });
-        const result = await response.json();
-        const container = document.getElementById('listaAgendamentosHoje');
-        if (!container) return;
-        if (!result.success || !result.data || result.data.length === 0) {
-          container.innerHTML = `<div class="activity-empty"><i class="fa-solid fa-calendar-check"></i><span>Nenhum agendamento para hoje</span></div>`;
-          return;
-        }
-        const tipoIcons = {
-          'novo_contato': { icon: 'fa-phone', bg: 'var(--blue-bg)', color: 'var(--blue)' },
-          'renegociacao': { icon: 'fa-handshake', bg: 'var(--purple-bg)', color: 'var(--purple)' },
-          'liquidacao': { icon: 'fa-money-bill', bg: 'var(--green-bg)', color: 'var(--green)' },
-          'cobranca': { icon: 'fa-file-invoice', bg: 'var(--orange-bg)', color: 'var(--orange)' },
-          'lembrete': { icon: 'fa-bell', bg: 'var(--gold-glow)', color: 'var(--gold)' },
-          'retorno': { icon: 'fa-reply', bg: 'var(--blue-bg)', color: 'var(--blue)' },
-          'visita': { icon: 'fa-location-dot', bg: 'var(--red-bg)', color: 'var(--red)' }
-        };
-        container.innerHTML = result.data.slice(0, 5).map(a => {
-          const tipo = tipoIcons[a.tipo] || tipoIcons['lembrete'];
-          return `<div class="activity-item"><div class="activity-icon" style="background: ${tipo.bg}; color: ${tipo.color};"><i class="fa-solid ${tipo.icon}"></i></div><div class="activity-info"><div class="activity-title">${a.cliente_nome || 'Cliente'}</div><div class="activity-subtitle">${a.descricao || a.tipo}</div></div><div class="activity-time">${formatTime(a.data_agendamento)}</div></div>`;
-        }).join('');
-      } catch (err) { console.error('Erro ao carregar agendamentos:', err); }
+        const res = await fetch(API + '/api/agendamentos/hoje', { headers: getHeaders() });
+        const data = await res.json();
+        const el = document.getElementById('listaAgendamentos');
+        if (!data.success || !data.data || !data.data.length) { el.innerHTML = '<div class="activity-empty"><i class="fas fa-calendar-check"></i><span>Nenhum agendamento hoje</span></div>'; return; }
+        el.innerHTML = data.data.slice(0, 5).map(a => '<div class="activity-item"><div class="activity-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-calendar"></i></div><div class="activity-info"><div class="activity-title">' + (a.cliente_nome || 'Cliente') + '</div><div class="activity-subtitle">' + (a.descricao || a.tipo) + '</div></div><div class="activity-time">' + fmtTime(a.data_agendamento) + '</div></div>').join('');
+      } catch (e) { console.error(e); }
     }
 
-    document.getElementById('btnRefresh').addEventListener('click', async () => {
-      const btn = document.getElementById('btnRefresh');
-      btn.querySelector('i').classList.add('fa-spin');
-      await Promise.all([carregarDashboard(), carregarGraficos(), carregarAgendamentosHoje(), carregarAlertas()]);
-      btn.querySelector('i').classList.remove('fa-spin');
-      showToast('Dados atualizados!', 'success');
-    });
+    document.getElementById('btnRefresh').onclick = async () => {
+      document.getElementById('btnRefresh').querySelector('i').classList.add('fa-spin');
+      await Promise.all([carregarDashboard(), carregarGraficos(), carregarAgendamentos()]);
+      document.getElementById('btnRefresh').querySelector('i').classList.remove('fa-spin');
+      showToast('Dados atualizados!');
+    };
 
-    document.getElementById('btnExportar').addEventListener('click', async () => {
+    document.getElementById('btnExportar').onclick = async () => {
       try {
-        showToast('Gerando relatório...', 'info');
-        const response = await fetch(`${API_URL}/api/relatorios/export-csv`, { headers: getHeaders() });
-        if (!response.ok) throw new Error('Erro ao gerar relatório');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        showToast('Gerando relatório...');
+        const res = await fetch(API + '/api/relatorios/export-csv', { headers: getHeaders() });
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `relatorio_acertive_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.download = 'relatorio_' + new Date().toISOString().slice(0, 10) + '.csv';
         a.click();
-        window.URL.revokeObjectURL(url);
-        showToast('Relatório exportado!', 'success');
-      } catch (err) { console.error('Erro ao exportar:', err); showToast('Erro ao exportar relatório', 'error'); }
-    });
+        showToast('Relatório exportado!');
+      } catch (e) { showToast('Erro ao exportar', 'error'); }
+    };
 
-    const globalSearch = document.getElementById('globalSearch');
-    globalSearch.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter' && globalSearch.value.trim()) {
-        window.location.href = `/consulta-cliente?q=${encodeURIComponent(globalSearch.value.trim())}`;
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); globalSearch.focus(); }
-    });
-
-    async function init() {
-      try {
-        await Promise.all([carregarUsuario(), carregarDashboard(), carregarGraficos(), carregarAgendamentosHoje(), carregarAlertas()]);
-        setInterval(carregarAlertas, 5 * 60 * 1000);
-      } catch (err) { console.error('Erro na inicialização:', err); }
-      finally { setTimeout(() => { document.getElementById('loadingScreen').classList.add('hidden'); }, 800); }
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
+    carregarUsuario();
+    carregarDashboard();
+    carregarGraficos();
+    carregarAgendamentos();
   </script>
 </body>
 </html>
