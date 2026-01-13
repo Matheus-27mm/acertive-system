@@ -3096,7 +3096,7 @@ app.get('/api/relatorios/inadimplencia', auth, async (req, res) => {
 });
 
 // ==================== RELATÓRIO DE RECEBIMENTOS ====================
-app.get('/api/relatorios/recebimentos', authe, async (req, res) => {
+app.get('/api/relatorios/recebimentos', auth, async (req, res) => {
   try {
     const { dataInicio, dataFim } = req.query;
     const empresaId = req.user.empresa_id;
