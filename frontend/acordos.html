@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Acordos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b; --bg-secondary: #111113; --bg-card: #16161a;
+      --text-primary: #ffffff; --text-secondary: #a1a1aa; --text-muted: #71717a;
+      --gold: #d4a853; --gold-light: #e8c068; --gold-glow: rgba(212, 168, 83, 0.15);
+      --border: rgba(255, 255, 255, 0.06);
+      --green: #10b981; --green-bg: rgba(16, 185, 129, 0.12);
+      --red: #ef4444; --red-bg: rgba(239, 68, 68, 0.12);
+      --blue: #3b82f6; --blue-bg: rgba(59, 130, 246, 0.12);
+      --orange: #f59e0b; --orange-bg: rgba(245, 158, 11, 0.12);
+      --purple: #8b5cf6; --purple-bg: rgba(139, 92, 246, 0.12);
+      --sidebar-width: 260px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .logo { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; color: var(--bg-primary); }
+    .logo-text { font-size: 18px; font-weight: 800; }
+    .logo-text span { color: var(--gold); }
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; padding: 0 12px; margin-bottom: 10px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 13px; transition: all 0.15s; margin-bottom: 2px; }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-link.active { background: var(--gold-glow); color: var(--gold); border-left: 3px solid var(--gold); margin-left: -3px; padding-left: 15px; }
+    .nav-link i { width: 18px; text-align: center; font-size: 14px; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .user-avatar { width: 36px; height: 36px; background: var(--gold-glow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--gold); }
+    .user-details { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    .main { margin-left: var(--sidebar-width); min-height: 100vh; }
+    .header { height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+    .page-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .page-title i { color: var(--gold); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .content { padding: 24px; }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.3); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--gold-glow); color: var(--gold); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px; }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 800; }
+    .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-box input { width: 100%; padding: 10px 12px 10px 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; }
+    .search-box input:focus { outline: none; border-color: var(--gold); }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .filter-select { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; min-width: 140px; }
+
+    .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .table-title { font-size: 14px; font-weight: 700; }
+    .table-count { font-size: 12px; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(255,255,255,0.02); }
+    th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.02); cursor: pointer; }
+
+    .acordo-info { display: flex; align-items: center; gap: 10px; }
+    .acordo-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .acordo-id { font-weight: 700; font-size: 13px; }
+    .acordo-data { font-size: 11px; color: var(--text-muted); }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .status-badge.ativo { background: var(--green-bg); color: var(--green); }
+    .status-badge.pendente { background: var(--orange-bg); color: var(--orange); }
+    .status-badge.pago { background: var(--blue-bg); color: var(--blue); }
+    .status-badge.quebrado { background: var(--red-bg); color: var(--red); }
+    .status-badge.cancelado { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+
+    .parcelas-info { display: flex; align-items: center; gap: 8px; }
+    .parcelas-bar { width: 60px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+    .parcelas-bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+    .parcelas-text { font-size: 12px; font-weight: 600; }
+
+    .valor-cell { text-align: right; }
+    .valor-acordo { font-weight: 700; color: var(--gold); }
+    .valor-desconto { font-size: 11px; color: var(--green); }
+
+    .actions { display: flex; gap: 6px; }
+
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .pagination-info { font-size: 13px; color: var(--text-muted); }
+    .pagination-buttons { display: flex; gap: 8px; }
+    .page-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); cursor: pointer; }
+    .page-btn:hover { background: var(--gold-glow); border-color: var(--gold); color: var(--gold); }
+    .page-btn.active { background: var(--gold); color: var(--bg-primary); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 800px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .modal-title i { color: var(--gold); }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+
+    .acordo-detalhes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .detalhe-card { background: var(--bg-primary); border-radius: 10px; padding: 16px; }
+    .detalhe-card h4 { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+    .detalhe-card .valor { font-size: 20px; font-weight: 800; }
+    .detalhe-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .parcelas-lista { margin-top: 20px; }
+    .parcela-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 8px; }
+    .parcela-numero { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+    .parcela-info { flex: 1; }
+    .parcela-valor { font-weight: 600; }
+    .parcela-venc { font-size: 11px; color: var(--text-muted); }
+    .parcela-status { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+
+    @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .acordo-detalhes { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">A</div>
+      <div class="logo-text">ACERT<span>IVE</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/devedores" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/dividas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Negociação</div>
+        <a href="/acordos" class="nav-link active"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+          <div class="user-name">Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title"><i class="fas fa-handshake"></i> Acordos</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary"><i class="fas fa-download"></i> Exportar</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-handshake"></i></div>
+          <div class="stat-label">Acordos Ativos</div>
+          <div class="stat-value">156</div>
+          <div class="stat-sub">Este mês: 32 novos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-dollar-sign"></i></div>
+          <div class="stat-label">Valor Negociado</div>
+          <div class="stat-value">R$ 320k</div>
+          <div class="stat-sub">Desconto médio: 18%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-label">Acordos Quitados</div>
+          <div class="stat-value">89</div>
+          <div class="stat-sub">R$ 145k recuperado</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-times-circle"></i></div>
+          <div class="stat-label">Acordos Quebrados</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">7.7% do total</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por devedor, acordo..." id="searchAcordo">
+        </div>
+        <select class="filter-select">
+          <option value="">Todos os Credores</option>
+          <option value="1">Loja ABC</option>
+          <option value="2">Banco XYZ</option>
+        </select>
+        <select class="filter-select">
+          <option value="">Todos os Status</option>
+          <option value="ativo">Ativo</option>
+          <option value="pago">Quitado</option>
+          <option value="quebrado">Quebrado</option>
+          <option value="pendente">Pendente Aprovação</option>
+        </select>
+        <select class="filter-select">
+          <option value="recente">Mais Recente</option>
+          <option value="valor">Maior Valor</option>
+          <option value="vencimento">Próximo Vencimento</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">Lista de Acordos</div>
+          <div class="table-count">156 acordos</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Acordo</th>
+              <th>Devedor</th>
+              <th>Credor</th>
+              <th>Parcelas</th>
+              <th>Próx. Venc.</th>
+              <th>Status</th>
+              <th style="text-align:right;">Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="verAcordo(1)">
+              <td>
+                <div class="acordo-info">
+                  <div class="acordo-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-file-contract"></i></div>
+                  <div>
+                    <div class="acordo-id">#AC-2024-001</div>
+                    <div class="acordo-data">10/01/2026</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">José da Silva</div>
+                <div style="font-size:11px;color:var(--text-muted);">123.456.789-00</div>
+              </td>
+              <td>Loja ABC</td>
+              <td>
+                <div class="parcelas-info">
+                  <div class="parcelas-bar"><div class="parcelas-bar-fill" style="width:50%;"></div></div>
+                  <span class="parcelas-text">3/6</span>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">15/01/2026</div>
+                <div style="font-size:11px;color:var(--orange);">Em 2 dias</div>
+              </td>
+              <td><span class="status-badge ativo"><i class="fas fa-circle" style="font-size:6px;"></i> Ativo</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-acordo">R$ 1.960,00</div>
+                  <div class="valor-desconto">-20% desconto</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Detalhes" onclick="verAcordo(1)"><i class="fas fa-eye"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Registrar Pagamento"><i class="fas fa-dollar-sign"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="verAcordo(2)">
+              <td>
+                <div class="acordo-info">
+                  <div class="acordo-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-file-contract"></i></div>
+                  <div>
+                    <div class="acordo-id">#AC-2024-002</div>
+                    <div class="acordo-data">08/01/2026</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">Maria Fernandes</div>
+                <div style="font-size:11px;color:var(--text-muted);">987.654.321-00</div>
+              </td>
+              <td>Banco XYZ</td>
+              <td>
+                <div class="parcelas-info">
+                  <div class="parcelas-bar"><div class="parcelas-bar-fill" style="width:100%;"></div></div>
+                  <span class="parcelas-text">4/4</span>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--green);">Quitado</div>
+                <div style="font-size:11px;color:var(--text-muted);">05/01/2026</div>
+              </td>
+              <td><span class="status-badge pago"><i class="fas fa-check"></i> Quitado</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-acordo">R$ 4.640,00</div>
+                  <div class="valor-desconto">-15% desconto</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Detalhes"><i class="fas fa-eye"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="PDF"><i class="fas fa-file-pdf"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="verAcordo(3)">
+              <td>
+                <div class="acordo-info">
+                  <div class="acordo-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-file-contract"></i></div>
+                  <div>
+                    <div class="acordo-id">#AC-2024-003</div>
+                    <div class="acordo-data">12/01/2026</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">Pedro Santos</div>
+                <div style="font-size:11px;color:var(--text-muted);">456.789.123-00</div>
+              </td>
+              <td>Financeira 123</td>
+              <td>
+                <div class="parcelas-info">
+                  <div class="parcelas-bar"><div class="parcelas-bar-fill" style="width:0%;"></div></div>
+                  <span class="parcelas-text">0/10</span>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">20/01/2026</div>
+                <div style="font-size:11px;color:var(--text-muted);">Em 7 dias</div>
+              </td>
+              <td><span class="status-badge pendente"><i class="fas fa-clock"></i> Pendente</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-acordo">R$ 3.200,00</div>
+                  <div class="valor-desconto">-10% desconto</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Aprovar" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-check"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Rejeitar" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="verAcordo(4)">
+              <td>
+                <div class="acordo-info">
+                  <div class="acordo-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-file-contract"></i></div>
+                  <div>
+                    <div class="acordo-id">#AC-2024-004</div>
+                    <div class="acordo-data">05/12/2025</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">Ana Costa</div>
+                <div style="font-size:11px;color:var(--text-muted);">321.654.987-00</div>
+              </td>
+              <td>Loja ABC</td>
+              <td>
+                <div class="parcelas-info">
+                  <div class="parcelas-bar"><div class="parcelas-bar-fill" style="width:33%;background:var(--red);"></div></div>
+                  <span class="parcelas-text" style="color:var(--red);">2/6</span>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--red);">Vencida</div>
+                <div style="font-size:11px;color:var(--red);">15 dias atraso</div>
+              </td>
+              <td><span class="status-badge quebrado"><i class="fas fa-times"></i> Quebrado</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-acordo">R$ 890,00</div>
+                  <div class="valor-desconto">-25% desconto</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Renegociar"><i class="fas fa-redo"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Detalhes"><i class="fas fa-eye"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="pagination-info">Mostrando 1-10 de 156</div>
+          <div class="pagination-buttons">
+            <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DETALHES DO ACORDO -->
+  <div class="modal-overlay" id="modalAcordo">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-file-contract"></i> Acordo #AC-2024-001</h3>
+        <button class="modal-close" onclick="fecharModal('modalAcordo')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="acordo-detalhes">
+          <div class="detalhe-card">
+            <h4>Devedor</h4>
+            <div class="valor">José da Silva</div>
+            <div class="sub">CPF: 123.456.789-00</div>
+          </div>
+          <div class="detalhe-card">
+            <h4>Credor</h4>
+            <div class="valor">Loja ABC</div>
+            <div class="sub">Comissão: 15%</div>
+          </div>
+          <div class="detalhe-card">
+            <h4>Valor Original</h4>
+            <div class="valor" style="text-decoration:line-through;color:var(--text-muted);">R$ 2.450,00</div>
+          </div>
+          <div class="detalhe-card">
+            <h4>Valor do Acordo</h4>
+            <div class="valor" style="color:var(--green);">R$ 1.960,00</div>
+            <div class="sub">Desconto: 20% (R$ 490,00)</div>
+          </div>
+          <div class="detalhe-card">
+            <h4>Forma de Pagamento</h4>
+            <div class="valor">6x de R$ 326,66</div>
+            <div class="sub">Entrada: R$ 0,00</div>
+          </div>
+          <div class="detalhe-card">
+            <h4>Progresso</h4>
+            <div class="valor" style="color:var(--gold);">50%</div>
+            <div class="sub">3 de 6 parcelas pagas</div>
+          </div>
+        </div>
+
+        <div class="parcelas-lista">
+          <h4 style="margin-bottom:12px;font-size:14px;"><i class="fas fa-calendar-alt" style="color:var(--gold);"></i> Parcelas</h4>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:var(--green-bg);color:var(--green);">1</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 10/11/2025</div>
+            </div>
+            <span class="parcela-status" style="background:var(--green-bg);color:var(--green);">Pago em 10/11</span>
+          </div>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:var(--green-bg);color:var(--green);">2</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 10/12/2025</div>
+            </div>
+            <span class="parcela-status" style="background:var(--green-bg);color:var(--green);">Pago em 08/12</span>
+          </div>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:var(--green-bg);color:var(--green);">3</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 10/01/2026</div>
+            </div>
+            <span class="parcela-status" style="background:var(--green-bg);color:var(--green);">Pago em 10/01</span>
+          </div>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:var(--orange-bg);color:var(--orange);">4</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 15/01/2026</div>
+            </div>
+            <span class="parcela-status" style="background:var(--orange-bg);color:var(--orange);">Pendente</span>
+          </div>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:rgba(255,255,255,0.1);color:var(--text-muted);">5</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 10/02/2026</div>
+            </div>
+            <span class="parcela-status" style="background:rgba(255,255,255,0.1);color:var(--text-muted);">A vencer</span>
+          </div>
+          <div class="parcela-item">
+            <div class="parcela-numero" style="background:rgba(255,255,255,0.1);color:var(--text-muted);">6</div>
+            <div class="parcela-info">
+              <div class="parcela-valor">R$ 326,66</div>
+              <div class="parcela-venc">Vencimento: 10/03/2026</div>
+            </div>
+            <span class="parcela-status" style="background:rgba(255,255,255,0.1);color:var(--text-muted);">A vencer</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalAcordo')">Fechar</button>
+        <button class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+        <button class="btn btn-primary"><i class="fas fa-dollar-sign"></i> Registrar Pagamento</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function verAcordo(id) { document.getElementById('modalAcordo').classList.add('show'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+  </script>
+</body>
+</html>

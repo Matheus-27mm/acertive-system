@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Devedores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b; --bg-secondary: #111113; --bg-card: #16161a;
+      --text-primary: #ffffff; --text-secondary: #a1a1aa; --text-muted: #71717a;
+      --gold: #d4a853; --gold-light: #e8c068; --gold-glow: rgba(212, 168, 83, 0.15);
+      --border: rgba(255, 255, 255, 0.06); --border-gold: rgba(212, 168, 83, 0.3);
+      --green: #10b981; --green-bg: rgba(16, 185, 129, 0.12);
+      --red: #ef4444; --red-bg: rgba(239, 68, 68, 0.12);
+      --blue: #3b82f6; --blue-bg: rgba(59, 130, 246, 0.12);
+      --orange: #f59e0b; --orange-bg: rgba(245, 158, 11, 0.12);
+      --purple: #8b5cf6; --purple-bg: rgba(139, 92, 246, 0.12);
+      --sidebar-width: 260px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
+    .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .logo { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; color: var(--bg-primary); }
+    .logo-text { font-size: 18px; font-weight: 800; }
+    .logo-text span { color: var(--gold); }
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-title { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; padding: 0 12px; margin-bottom: 10px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 13px; transition: all 0.15s; margin-bottom: 2px; }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-link.active { background: var(--gold-glow); color: var(--gold); border-left: 3px solid var(--gold); margin-left: -3px; padding-left: 15px; }
+    .nav-link i { width: 18px; text-align: center; font-size: 14px; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .user-avatar { width: 36px; height: 36px; background: var(--gold-glow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--gold); }
+    .user-details { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    .main { margin-left: var(--sidebar-width); min-height: 100vh; }
+    .header { height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .page-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .page-title i { color: var(--gold); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .content { padding: 24px; }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.3); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .stat-card:hover { border-color: var(--border-gold); }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px; }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 800; }
+
+    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-box input { width: 100%; padding: 10px 12px 10px 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; }
+    .search-box input:focus { outline: none; border-color: var(--gold); }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+    .filter-select { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; min-width: 150px; }
+
+    .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .table-title { font-size: 14px; font-weight: 700; }
+    .table-count { font-size: 12px; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(255,255,255,0.02); }
+    th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.02); cursor: pointer; }
+
+    .devedor-info { display: flex; align-items: center; gap: 12px; }
+    .devedor-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .devedor-nome { font-weight: 600; font-size: 14px; }
+    .devedor-cpf { font-size: 11px; color: var(--text-muted); }
+
+    .perfil-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .perfil-badge.bom { background: var(--green-bg); color: var(--green); }
+    .perfil-badge.normal { background: var(--blue-bg); color: var(--blue); }
+    .perfil-badge.dificil { background: var(--orange-bg); color: var(--orange); }
+    .perfil-badge.caloteiro { background: var(--red-bg); color: var(--red); }
+
+    .score-bar { display: flex; align-items: center; gap: 8px; }
+    .score-value { font-weight: 700; font-size: 14px; min-width: 30px; }
+    .score-track { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; max-width: 60px; }
+    .score-fill { height: 100%; border-radius: 3px; }
+
+    .valor-cell { text-align: right; }
+    .valor-total { font-weight: 700; font-size: 14px; }
+    .valor-dividas { font-size: 11px; color: var(--text-muted); }
+    .actions { display: flex; gap: 6px; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 700px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .modal-title i { color: var(--gold); }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+    .modal-close:hover { color: var(--red); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+    .form-row.col-3 { grid-template-columns: repeat(3, 1fr); }
+    .form-group { margin-bottom: 16px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-label span { color: var(--red); }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px 14px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 13px; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+
+    .form-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .form-section:last-child { border-bottom: none; }
+    .form-section-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .form-section-title i { color: var(--gold); }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-primary); padding: 4px; border-radius: 10px; }
+    .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-muted); }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { background: var(--gold); color: var(--bg-primary); }
+    .tab-content-devedor { display: none; }
+    .tab-content-devedor.active { display: block; }
+
+    .import-area { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 20px; }
+    .import-area:hover { border-color: var(--gold); background: var(--gold-glow); }
+    .import-area i { font-size: 48px; color: var(--text-muted); margin-bottom: 16px; }
+    .import-area h4 { font-size: 16px; margin-bottom: 8px; }
+    .import-area p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .pagination-info { font-size: 13px; color: var(--text-muted); }
+    .pagination-buttons { display: flex; gap: 8px; }
+    .page-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); cursor: pointer; }
+    .page-btn:hover { background: var(--gold-glow); border-color: var(--gold); color: var(--gold); }
+    .page-btn.active { background: var(--gold); color: var(--bg-primary); border-color: var(--gold); }
+
+    @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">A</div>
+      <div class="logo-text">ACERT<span>IVE</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/devedores" class="nav-link active"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/dividas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+          <div class="user-name">Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title"><i class="fas fa-users"></i> Devedores</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary" onclick="abrirModalImportar()"><i class="fas fa-file-import"></i> Importar</button>
+        <button class="btn btn-secondary"><i class="fas fa-download"></i> Exportar</button>
+        <button class="btn btn-primary" onclick="abrirModalDevedor()"><i class="fas fa-plus"></i> Novo Devedor</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-users"></i></div>
+          <div class="stat-label">Total de Devedores</div>
+          <div class="stat-value">1.247</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-user-clock"></i></div>
+          <div class="stat-label">Com Dívidas Ativas</div>
+          <div class="stat-value">892</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div class="stat-label">Total a Receber</div>
+          <div class="stat-value">R$ 520k</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-user-check"></i></div>
+          <div class="stat-label">Quitados (Mês)</div>
+          <div class="stat-value">45</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por nome, CPF, telefone..." id="searchDevedor">
+        </div>
+        <select class="filter-select">
+          <option value="">Todos os Credores</option>
+          <option value="1">Loja ABC</option>
+          <option value="2">Banco XYZ</option>
+        </select>
+        <select class="filter-select">
+          <option value="">Todos os Perfis</option>
+          <option value="bom">Bom Pagador</option>
+          <option value="normal">Normal</option>
+          <option value="dificil">Difícil</option>
+          <option value="caloteiro">Caloteiro</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">Lista de Devedores</div>
+          <div class="table-count">1.247 devedores</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Devedor</th>
+              <th>Contato</th>
+              <th>Credor(es)</th>
+              <th>Score</th>
+              <th>Perfil</th>
+              <th style="text-align:right;">Total Devido</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="verDevedor(1)">
+              <td>
+                <div class="devedor-info">
+                  <div class="devedor-avatar" style="background:var(--red-bg);color:var(--red);">JS</div>
+                  <div>
+                    <div class="devedor-nome">José da Silva</div>
+                    <div class="devedor-cpf">123.456.789-00</div>
+                  </div>
+                </div>
+              </td>
+              <td><div style="font-size:13px;">(92) 99123-4567</div><div style="font-size:11px;color:var(--text-muted);">jose@email.com</div></td>
+              <td><div style="font-size:13px;">Loja ABC</div><div style="font-size:11px;color:var(--text-muted);">+1 credor</div></td>
+              <td>
+                <div class="score-bar">
+                  <span class="score-value" style="color:var(--orange);">35</span>
+                  <div class="score-track"><div class="score-fill" style="width:35%;background:var(--orange);"></div></div>
+                </div>
+              </td>
+              <td><span class="perfil-badge dificil"><i class="fas fa-exclamation-circle"></i> Difícil</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-total" style="color:var(--red);">R$ 5.450,00</div>
+                  <div class="valor-dividas">3 dívidas</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Atender"><i class="fas fa-headset"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="verDevedor(2)">
+              <td>
+                <div class="devedor-info">
+                  <div class="devedor-avatar" style="background:var(--green-bg);color:var(--green);">MF</div>
+                  <div>
+                    <div class="devedor-nome">Maria Fernandes</div>
+                    <div class="devedor-cpf">987.654.321-00</div>
+                  </div>
+                </div>
+              </td>
+              <td><div style="font-size:13px;">(92) 98765-4321</div><div style="font-size:11px;color:var(--text-muted);">maria@email.com</div></td>
+              <td><div style="font-size:13px;">Banco XYZ</div></td>
+              <td>
+                <div class="score-bar">
+                  <span class="score-value" style="color:var(--green);">78</span>
+                  <div class="score-track"><div class="score-fill" style="width:78%;background:var(--green);"></div></div>
+                </div>
+              </td>
+              <td><span class="perfil-badge bom"><i class="fas fa-check-circle"></i> Bom Pagador</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-total" style="color:var(--gold);">R$ 1.200,00</div>
+                  <div class="valor-dividas">1 dívida</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Atender"><i class="fas fa-headset"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="verDevedor(3)">
+              <td>
+                <div class="devedor-info">
+                  <div class="devedor-avatar" style="background:var(--blue-bg);color:var(--blue);">PS</div>
+                  <div>
+                    <div class="devedor-nome">Pedro Santos</div>
+                    <div class="devedor-cpf">456.789.123-00</div>
+                  </div>
+                </div>
+              </td>
+              <td><div style="font-size:13px;">(92) 99999-8888</div><div style="font-size:11px;color:var(--text-muted);">pedro@email.com</div></td>
+              <td><div style="font-size:13px;">Financeira 123</div></td>
+              <td>
+                <div class="score-bar">
+                  <span class="score-value" style="color:var(--blue);">52</span>
+                  <div class="score-track"><div class="score-fill" style="width:52%;background:var(--blue);"></div></div>
+                </div>
+              </td>
+              <td><span class="perfil-badge normal"><i class="fas fa-minus-circle"></i> Normal</span></td>
+              <td>
+                <div class="valor-cell">
+                  <div class="valor-total" style="color:var(--gold);">R$ 3.800,00</div>
+                  <div class="valor-dividas">2 dívidas</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions" onclick="event.stopPropagation();">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Atender"><i class="fas fa-headset"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="pagination-info">Mostrando 1-10 de 1.247</div>
+          <div class="pagination-buttons">
+            <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL NOVO DEVEDOR -->
+  <div class="modal-overlay" id="modalDevedor">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-user"></i> <span id="modalDevedorTitulo">Novo Devedor</span></h3>
+        <button class="modal-close" onclick="fecharModal('modalDevedor')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="tabs">
+          <div class="tab active" onclick="showTabDevedor('pessoais')">Dados Pessoais</div>
+          <div class="tab" onclick="showTabDevedor('contatos')">Contatos</div>
+          <div class="tab" onclick="showTabDevedor('endereco')">Endereço</div>
+        </div>
+
+        <div class="tab-content-devedor active" id="tab-pessoais">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-user"></i> Identificação</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nome Completo <span>*</span></label>
+                <input type="text" class="form-input" placeholder="Nome do devedor">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo</label>
+                <select class="form-select">
+                  <option value="PF">Pessoa Física</option>
+                  <option value="PJ">Pessoa Jurídica</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">CPF/CNPJ <span>*</span></label>
+                <input type="text" class="form-input" placeholder="000.000.000-00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">RG</label>
+                <input type="text" class="form-input" placeholder="0000000-0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nascimento</label>
+                <input type="date" class="form-input">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-star"></i> Classificação</div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Perfil</label>
+                <select class="form-select">
+                  <option value="normal">Normal</option>
+                  <option value="bom_pagador">Bom Pagador</option>
+                  <option value="dificil">Difícil</option>
+                  <option value="caloteiro">Caloteiro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Score (0-100)</label>
+                <input type="number" class="form-input" value="50" min="0" max="100">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select">
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content-devedor" id="tab-contatos">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-phone"></i> Telefones</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Celular Principal <span>*</span></label>
+                <input type="text" class="form-input" placeholder="(00) 00000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp</label>
+                <input type="text" class="form-input" placeholder="(00) 00000-0000">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Telefone Secundário</label>
+                <input type="text" class="form-input" placeholder="(00) 00000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-input" placeholder="email@exemplo.com">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-user-friends"></i> Referência</div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-input" placeholder="Nome">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Telefone</label>
+                <input type="text" class="form-input" placeholder="(00) 00000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Parentesco</label>
+                <input type="text" class="form-input" placeholder="Ex: Mãe">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content-devedor" id="tab-endereco">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-home"></i> Endereço</div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">CEP</label>
+                <input type="text" class="form-input" placeholder="00000-000">
+              </div>
+              <div class="form-group" style="grid-column:span 2;">
+                <label class="form-label">Endereço</label>
+                <input type="text" class="form-input" placeholder="Rua, Avenida...">
+              </div>
+            </div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Número</label>
+                <input type="text" class="form-input" placeholder="Nº">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bairro</label>
+                <input type="text" class="form-input" placeholder="Bairro">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cidade</label>
+                <input type="text" class="form-input" placeholder="Cidade">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-sticky-note"></i> Observações</div>
+            <div class="form-group">
+              <textarea class="form-textarea" placeholder="Observações gerais..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalDevedor')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarDevedor()"><i class="fas fa-save"></i> Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL IMPORTAR -->
+  <div class="modal-overlay" id="modalImportar">
+    <div class="modal" style="max-width:550px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-file-import"></i> Importar Devedores</h3>
+        <button class="modal-close" onclick="fecharModal('modalImportar')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="import-area" id="dropArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <h4>Arraste seu arquivo aqui</h4>
+          <p>ou clique para selecionar (xlsx, csv)</p>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+          <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-folder-open"></i> Selecionar Arquivo
+          </button>
+        </div>
+        <div style="background:var(--bg-primary);padding:16px;border-radius:10px;margin-top:16px;">
+          <h4 style="font-size:13px;margin-bottom:10px;"><i class="fas fa-info-circle" style="color:var(--blue);"></i> Colunas esperadas:</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">nome*</span>
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">cpf_cnpj*</span>
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">celular</span>
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">email</span>
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">endereco</span>
+            <span style="background:var(--bg-card);padding:4px 8px;border-radius:4px;">cidade</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalImportar')">Cancelar</button>
+        <button class="btn btn-success" id="btnImportar" disabled><i class="fas fa-upload"></i> Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function abrirModalDevedor() { document.getElementById('modalDevedor').classList.add('show'); }
+    function abrirModalImportar() { document.getElementById('modalImportar').classList.add('show'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+    function salvarDevedor() { alert('Devedor salvo!'); fecharModal('modalDevedor'); }
+    function verDevedor(id) { console.log('Ver devedor:', id); }
+    function showTabDevedor(tabId) {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content-devedor').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      if (e.target.files[0]) {
+        document.querySelector('.import-area h4').textContent = e.target.files[0].name;
+        document.getElementById('btnImportar').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

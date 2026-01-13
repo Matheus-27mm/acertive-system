@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Credores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #111113;
+      --bg-card: #16161a;
+      --bg-hover: #1c1c21;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #d4a853;
+      --gold-light: #e8c068;
+      --gold-glow: rgba(212, 168, 83, 0.15);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-gold: rgba(212, 168, 83, 0.3);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.12);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.12);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.12);
+      --purple: #8b5cf6;
+      --purple-bg: rgba(139, 92, 246, 0.12);
+      --sidebar-width: 260px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+      background: var(--bg-secondary); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 100;
+    }
+    .sidebar-header {
+      padding: 24px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo {
+      width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 18px; color: var(--bg-primary);
+    }
+    .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--gold); }
+
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 28px; }
+    .nav-title {
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1.2px; padding: 0 12px; margin-bottom: 10px;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      color: var(--text-secondary); text-decoration: none; border-radius: 8px;
+      font-weight: 500; font-size: 13px; transition: all 0.15s; margin-bottom: 2px;
+    }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-link.active {
+      background: var(--gold-glow); color: var(--gold);
+      border-left: 3px solid var(--gold); margin-left: -3px; padding-left: 15px;
+    }
+    .nav-link i { width: 18px; text-align: center; font-size: 14px; }
+
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .user-info {
+      display: flex; align-items: center; gap: 10px; padding: 10px;
+      background: rgba(255,255,255,0.02); border-radius: 8px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px; background: var(--gold-glow); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: var(--gold);
+    }
+    .user-details { flex: 1; }
+    .user-name { font-weight: 600; font-size: 13px; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    /* MAIN */
+    .main { margin-left: var(--sidebar-width); min-height: 100vh; }
+    
+    .header {
+      height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .page-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .page-title i { color: var(--gold); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+
+    .content { padding: 24px; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+      border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
+      border: none; transition: all 0.15s; text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--bg-primary);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.3); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05); color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid transparent; }
+    .btn-danger:hover { border-color: var(--red); }
+
+    /* STATS ROW */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; transition: all 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border-gold); }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 800; }
+
+    /* FILTERS */
+    .filters {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+    }
+    .search-box {
+      flex: 1; min-width: 250px; position: relative;
+    }
+    .search-box input {
+      width: 100%; padding: 10px 12px 10px 40px; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-primary); font-size: 13px;
+    }
+    .search-box input:focus { outline: none; border-color: var(--gold); }
+    .search-box i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px;
+    }
+    .filter-select {
+      padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary); font-size: 13px; min-width: 150px;
+    }
+    .filter-select:focus { outline: none; border-color: var(--gold); }
+
+    /* TABLE */
+    .table-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden;
+    }
+    .table-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-title { font-size: 14px; font-weight: 700; }
+    .table-count { font-size: 12px; color: var(--text-muted); }
+    
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(255,255,255,0.02); }
+    th {
+      padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    td { padding: 16px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+
+    .credor-info { display: flex; align-items: center; gap: 12px; }
+    .credor-avatar {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--gold-glow);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: var(--gold);
+    }
+    .credor-nome { font-weight: 600; font-size: 14px; }
+    .credor-cnpj { font-size: 11px; color: var(--text-muted); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: 600;
+    }
+    .status-badge.ativo { background: var(--green-bg); color: var(--green); }
+    .status-badge.inativo { background: var(--red-bg); color: var(--red); }
+    .status-badge.suspenso { background: var(--orange-bg); color: var(--orange); }
+
+    .comissao-badge {
+      background: var(--purple-bg); color: var(--purple);
+      padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    }
+
+    .progress-bar {
+      width: 100px; height: 6px; background: rgba(255,255,255,0.1);
+      border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar-fill { height: 100%; border-radius: 3px; }
+
+    .actions { display: flex; gap: 6px; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      z-index: 1000; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+      width: 90%; max-width: 700px; max-height: 90vh; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .modal-header {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .modal-title i { color: var(--gold); }
+    .modal-close {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 20px; padding: 4px;
+    }
+    .modal-close:hover { color: var(--red); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 12px;
+    }
+
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+    .form-row.col-3 { grid-template-columns: repeat(3, 1fr); }
+    .form-group { margin-bottom: 16px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .form-label span { color: var(--red); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 10px 14px; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-primary); font-size: 13px; transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .form-section {
+      margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .form-section-title {
+      font-size: 14px; font-weight: 700; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title i { color: var(--gold); font-size: 14px; }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-primary);
+      padding: 4px; border-radius: 10px;
+    }
+    .tab {
+      flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+      border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { background: var(--gold); color: var(--bg-primary); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">A</div>
+      <div class="logo-text">ACERT<span>IVE</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Cadastros</div>
+        <a href="/credores" class="nav-link active"><i class="fas fa-building"></i> Credores</a>
+        <a href="/devedores" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/dividas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+          <div class="user-name">Admin</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title"><i class="fas fa-building"></i> Credores</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary" onclick="exportarCredores()">
+          <i class="fas fa-download"></i> Exportar
+        </button>
+        <button class="btn btn-primary" onclick="abrirModalCredor()">
+          <i class="fas fa-plus"></i> Novo Credor
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-building"></i></div>
+          <div class="stat-label">Total de Credores</div>
+          <div class="stat-value" id="totalCredores">12</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-label">Credores Ativos</div>
+          <div class="stat-value" id="credoresAtivos">10</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div class="stat-label">Total em Carteira</div>
+          <div class="stat-value" id="totalCarteira">R$ 520k</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-hand-holding-usd"></i></div>
+          <div class="stat-label">Total Recuperado</div>
+          <div class="stat-value" id="totalRecuperado">R$ 85k</div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar por nome, CNPJ..." id="searchCredor">
+        </div>
+        <select class="filter-select" id="filterStatus">
+          <option value="">Todos os Status</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+          <option value="suspenso">Suspenso</option>
+        </select>
+        <select class="filter-select" id="filterOrdem">
+          <option value="nome">Ordenar por Nome</option>
+          <option value="carteira">Maior Carteira</option>
+          <option value="recuperacao">Maior Recuperação</option>
+          <option value="recente">Mais Recente</option>
+        </select>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">Lista de Credores</div>
+          <div class="table-count"><span id="countCredores">12</span> credores encontrados</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Credor</th>
+              <th>Contato</th>
+              <th>Comissão</th>
+              <th>Carteira</th>
+              <th>Recuperação</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCredores">
+            <tr>
+              <td>
+                <div class="credor-info">
+                  <div class="credor-avatar">LA</div>
+                  <div>
+                    <div class="credor-nome">Loja ABC</div>
+                    <div class="credor-cnpj">12.345.678/0001-90</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:13px;">João Silva</div>
+                <div style="font-size:11px;color:var(--text-muted);">(92) 99999-1234</div>
+              </td>
+              <td><span class="comissao-badge">15%</span></td>
+              <td>
+                <div style="font-weight:600;">R$ 245.000</div>
+                <div style="font-size:11px;color:var(--text-muted);">125 dívidas</div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--green);">18%</div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:18%;background:var(--green);"></div>
+                </div>
+              </td>
+              <td><span class="status-badge ativo"><i class="fas fa-circle" style="font-size:6px;"></i> Ativo</span></td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar" onclick="editarCredor(1)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Dívidas"><i class="fas fa-file-invoice"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Relatório"><i class="fas fa-chart-bar"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="credor-info">
+                  <div class="credor-avatar">BX</div>
+                  <div>
+                    <div class="credor-nome">Banco XYZ</div>
+                    <div class="credor-cnpj">98.765.432/0001-10</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:13px;">Maria Santos</div>
+                <div style="font-size:11px;color:var(--text-muted);">(92) 98888-5678</div>
+              </td>
+              <td><span class="comissao-badge">10%</span></td>
+              <td>
+                <div style="font-weight:600;">R$ 180.000</div>
+                <div style="font-size:11px;color:var(--text-muted);">89 dívidas</div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--green);">22%</div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:22%;background:var(--green);"></div>
+                </div>
+              </td>
+              <td><span class="status-badge ativo"><i class="fas fa-circle" style="font-size:6px;"></i> Ativo</span></td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar" onclick="editarCredor(2)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Dívidas"><i class="fas fa-file-invoice"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Relatório"><i class="fas fa-chart-bar"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="credor-info">
+                  <div class="credor-avatar">F1</div>
+                  <div>
+                    <div class="credor-nome">Financeira 123</div>
+                    <div class="credor-cnpj">11.222.333/0001-44</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:13px;">Pedro Costa</div>
+                <div style="font-size:11px;color:var(--text-muted);">(92) 97777-9999</div>
+              </td>
+              <td><span class="comissao-badge">20%</span></td>
+              <td>
+                <div style="font-weight:600;">R$ 95.000</div>
+                <div style="font-size:11px;color:var(--text-muted);">67 dívidas</div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--orange);">15%</div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:15%;background:var(--orange);"></div>
+                </div>
+              </td>
+              <td><span class="status-badge ativo"><i class="fas fa-circle" style="font-size:6px;"></i> Ativo</span></td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar" onclick="editarCredor(3)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Dívidas"><i class="fas fa-file-invoice"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Relatório"><i class="fas fa-chart-bar"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="credor-info">
+                  <div class="credor-avatar" style="background:var(--orange-bg);color:var(--orange);">SM</div>
+                  <div>
+                    <div class="credor-nome">Supermercado Max</div>
+                    <div class="credor-cnpj">55.666.777/0001-88</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:13px;">Ana Lima</div>
+                <div style="font-size:11px;color:var(--text-muted);">(92) 96666-3333</div>
+              </td>
+              <td><span class="comissao-badge">12%</span></td>
+              <td>
+                <div style="font-weight:600;">R$ 45.000</div>
+                <div style="font-size:11px;color:var(--text-muted);">32 dívidas</div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:var(--red);">8%</div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:8%;background:var(--red);"></div>
+                </div>
+              </td>
+              <td><span class="status-badge suspenso"><i class="fas fa-circle" style="font-size:6px;"></i> Suspenso</span></td>
+              <td>
+                <div class="actions">
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Editar" onclick="editarCredor(4)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Ver Dívidas"><i class="fas fa-file-invoice"></i></button>
+                  <button class="btn btn-secondary btn-sm btn-icon" title="Relatório"><i class="fas fa-chart-bar"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL NOVO/EDITAR CREDOR -->
+  <div class="modal-overlay" id="modalCredor">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-building"></i> <span id="modalCredorTitulo">Novo Credor</span></h3>
+        <button class="modal-close" onclick="fecharModal('modalCredor')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- TABS -->
+        <div class="tabs">
+          <div class="tab active" onclick="showTabCredor('dados')">Dados Cadastrais</div>
+          <div class="tab" onclick="showTabCredor('comissao')">Comissão</div>
+          <div class="tab" onclick="showTabCredor('negociacao')">Negociação</div>
+          <div class="tab" onclick="showTabCredor('bancarios')">Dados Bancários</div>
+        </div>
+
+        <!-- TAB DADOS -->
+        <div class="tab-content-credor active" id="tab-dados">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-building"></i> Dados da Empresa</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nome Fantasia <span>*</span></label>
+                <input type="text" class="form-input" id="credorNome" placeholder="Nome do credor">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Razão Social</label>
+                <input type="text" class="form-input" id="credorRazao" placeholder="Razão social">
+              </div>
+            </div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">CNPJ</label>
+                <input type="text" class="form-input" id="credorCnpj" placeholder="00.000.000/0000-00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Telefone</label>
+                <input type="text" class="form-input" id="credorTelefone" placeholder="(00) 0000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-input" id="credorEmail" placeholder="email@empresa.com">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-user"></i> Contato Principal</div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Nome do Contato</label>
+                <input type="text" class="form-input" id="credorContatoNome" placeholder="Nome">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Telefone do Contato</label>
+                <input type="text" class="form-input" id="credorContatoTel" placeholder="(00) 00000-0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">E-mail do Contato</label>
+                <input type="email" class="form-input" id="credorContatoEmail" placeholder="contato@empresa.com">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Endereço</div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">CEP</label>
+                <input type="text" class="form-input" id="credorCep" placeholder="00000-000">
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label class="form-label">Endereço</label>
+                <input type="text" class="form-input" id="credorEndereco" placeholder="Rua, número">
+              </div>
+            </div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Cidade</label>
+                <input type="text" class="form-input" id="credorCidade" placeholder="Cidade">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="credorEstado">
+                  <option value="">Selecione</option>
+                  <option value="AM">AM</option>
+                  <option value="PA">PA</option>
+                  <option value="SP">SP</option>
+                  <option value="RJ">RJ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="credorStatus">
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                  <option value="suspenso">Suspenso</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB COMISSÃO -->
+        <div class="tab-content-credor" id="tab-comissao">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-percentage"></i> Configuração de Comissão</div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Comissão</label>
+              <select class="form-select" id="tipoComissao" onchange="toggleFaixas()">
+                <option value="percentual">Percentual Fixo</option>
+                <option value="fixo">Valor Fixo por Dívida</option>
+                <option value="faixa">Por Faixa de Atraso</option>
+              </select>
+            </div>
+            
+            <div id="comissaoPercentual">
+              <div class="form-group">
+                <label class="form-label">Percentual de Comissão (%)</label>
+                <input type="number" class="form-input" id="credorComissao" value="10" min="0" max="100" step="0.5">
+                <div class="form-hint">Percentual sobre o valor recuperado</div>
+              </div>
+            </div>
+
+            <div id="comissaoFixo" style="display:none;">
+              <div class="form-group">
+                <label class="form-label">Valor Fixo por Dívida (R$)</label>
+                <input type="number" class="form-input" id="credorComissaoFixa" value="50" min="0" step="10">
+              </div>
+            </div>
+
+            <div id="comissaoFaixas" style="display:none;">
+              <div class="form-hint" style="margin-bottom:12px;">Configure a comissão de acordo com os dias de atraso</div>
+              <div class="form-row col-3">
+                <div class="form-group">
+                  <label class="form-label">Até 30 dias</label>
+                  <input type="number" class="form-input" value="10" min="0" max="100"> <span style="font-size:11px;color:var(--text-muted);">%</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">31 a 60 dias</label>
+                  <input type="number" class="form-input" value="15" min="0" max="100"> <span style="font-size:11px;color:var(--text-muted);">%</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">61 a 90 dias</label>
+                  <input type="number" class="form-input" value="20" min="0" max="100"> <span style="font-size:11px;color:var(--text-muted);">%</span>
+                </div>
+              </div>
+              <div class="form-row col-3">
+                <div class="form-group">
+                  <label class="form-label">91 a 120 dias</label>
+                  <input type="number" class="form-input" value="25" min="0" max="100"> <span style="font-size:11px;color:var(--text-muted);">%</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Acima de 120 dias</label>
+                  <input type="number" class="form-input" value="30" min="0" max="100"> <span style="font-size:11px;color:var(--text-muted);">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB NEGOCIAÇÃO -->
+        <div class="tab-content-credor" id="tab-negociacao">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-handshake"></i> Regras de Negociação</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Permite Desconto?</label>
+                <select class="form-select" id="permiteDesconto">
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Desconto Máximo (%)</label>
+                <input type="number" class="form-input" id="descontoMax" value="30" min="0" max="100">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Permite Parcelamento?</label>
+                <select class="form-select" id="permiteParcelamento">
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Máximo de Parcelas</label>
+                <input type="number" class="form-input" id="parcelasMax" value="12" min="1" max="48">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Juros no Parcelamento (% a.m.)</label>
+                <input type="number" class="form-input" id="jurosParcelamento" value="1" min="0" max="10" step="0.1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Entrada Mínima (%)</label>
+                <input type="number" class="form-input" id="entradaMinima" value="0" min="0" max="100">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB BANCÁRIOS -->
+        <div class="tab-content-credor" id="tab-bancarios">
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-university"></i> Dados para Repasse</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Banco</label>
+                <input type="text" class="form-input" id="credorBanco" placeholder="Nome do banco">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo de Conta</label>
+                <select class="form-select" id="credorTipoConta">
+                  <option value="corrente">Conta Corrente</option>
+                  <option value="poupanca">Poupança</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Agência</label>
+                <input type="text" class="form-input" id="credorAgencia" placeholder="0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Conta</label>
+                <input type="text" class="form-input" id="credorConta" placeholder="00000-0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">PIX</label>
+                <input type="text" class="form-input" id="credorPix" placeholder="CPF, CNPJ, E-mail ou Telefone">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalCredor')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarCredor()"><i class="fas fa-save"></i> Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal
+    function abrirModalCredor() {
+      document.getElementById('modalCredorTitulo').textContent = 'Novo Credor';
+      document.getElementById('modalCredor').classList.add('show');
+    }
+    function editarCredor(id) {
+      document.getElementById('modalCredorTitulo').textContent = 'Editar Credor';
+      document.getElementById('modalCredor').classList.add('show');
+      // Carregar dados do credor
+    }
+    function fecharModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    // Tabs
+    function showTabCredor(tabId) {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content-credor').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // Toggle faixas
+    function toggleFaixas() {
+      const tipo = document.getElementById('tipoComissao').value;
+      document.getElementById('comissaoPercentual').style.display = tipo === 'percentual' ? 'block' : 'none';
+      document.getElementById('comissaoFixo').style.display = tipo === 'fixo' ? 'block' : 'none';
+      document.getElementById('comissaoFaixas').style.display = tipo === 'faixa' ? 'block' : 'none';
+    }
+
+    // Salvar
+    function salvarCredor() {
+      alert('Credor salvo com sucesso!');
+      fecharModal('modalCredor');
+    }
+
+    // Exportar
+    function exportarCredores() {
+      alert('Exportando credores...');
+    }
+
+    // Search
+    document.getElementById('searchCredor').addEventListener('input', function(e) {
+      console.log('Buscando:', e.target.value);
+    });
+  </script>
+</body>
+</html>

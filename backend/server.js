@@ -17,6 +17,10 @@ const XLSX = require("xlsx");
 const { chromium } = require("playwright");
 const nodemailer = require("nodemailer");
 const compression = require('compression');
+const credoresRoutes = require('./routes/credores');
+const acordosRoutes = require('./routes/acordos');
+const parcelasRoutes = require('./routes/parcelas');
+const financeiroRoutes = require('./routes/financeiro');
 
 
 const app = express();
