@@ -422,7 +422,7 @@ app.post("/api/login", async (req, res) => {
     if (user.ativo === false) return res.status(401).json({ success: false, message: "Usuário desativado. Contate o administrador." });
     const ok = await bcrypt.compare(senhaStr, user.senha_hash);
     if (!ok) return res.status(401).json({ success: false, message: "Credenciais inválidas." });
-    const token = jwt.sign({ userId: user.id, email: user.email, nome: user.nome, nivel: user.nivel || 'operador' }, process.env.JWT_SECRET, { expiresIn: "12h" });
+    const token = jwt.sign({ userId: user.id, email: user.email, nome: user.nome, nivel: user.nivel || 'operador' }, process.env.JWT_SECRET, { expiresIn: "7d" });
     await registrarLog({ user: { userId: user.id, nome: user.nome }, headers: req.headers, connection: req.connection, ip: req.ip }, 'LOGIN', 'users', user.id, { email: user.email });
     return res.json({ success: true, token, user: { id: user.id, email: user.email, nome: user.nome, nivel: user.nivel || 'operador' } });
   } catch (err) {
