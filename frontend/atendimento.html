@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACERTIVE • Atendimento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #111113;
+      --bg-card: #16161a;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --gold: #d4a853;
+      --gold-glow: rgba(212, 168, 83, 0.15);
+      --border: rgba(255, 255, 255, 0.06);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.12);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.12);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245, 158, 11, 0.12);
+      --purple: #8b5cf6;
+      --purple-bg: rgba(139, 92, 246, 0.12);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+
+    .container { display: grid; grid-template-columns: 300px 1fr 360px; height: 100vh; }
+
+    /* PAINEL FILA */
+    .panel-fila { background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .panel-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .panel-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .panel-title i { color: var(--gold); }
+    .badge { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+
+    .search-box { padding: 12px; border-bottom: 1px solid var(--border); }
+    .search-box input { width: 100%; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 13px; }
+    .search-box input:focus { outline: none; border-color: var(--gold); }
+
+    .fila-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .fila-item { padding: 12px; background: var(--bg-card); border-radius: 10px; margin-bottom: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+    .fila-item:hover { background: rgba(255,255,255,0.03); }
+    .fila-item.active { border-color: var(--gold); background: var(--gold-glow); }
+    .fila-nome { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+    .fila-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+    .fila-valor { color: var(--gold); font-weight: 700; }
+    .fila-dias { color: var(--red); }
+
+    /* PAINEL CENTRAL */
+    .panel-central { display: flex; flex-direction: column; }
+
+    .header-atendimento { padding: 16px 24px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .devedor-header { display: flex; align-items: center; gap: 16px; }
+    .devedor-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #e8c068); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #000; }
+    .devedor-nome { font-size: 18px; font-weight: 700; }
+    .devedor-cpf { font-size: 12px; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 8px; }
+    .btn { padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+    .btn-primary { background: var(--gold); color: #000; }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--gold); color: var(--gold); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+    /* CONTEÚDO CENTRAL */
+    .content-area { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* CARDS DE INFO */
+    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .info-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+    .info-value { font-size: 18px; font-weight: 700; }
+    .info-value.danger { color: var(--red); }
+    .info-value.success { color: var(--green); }
+    .info-value.warning { color: var(--orange); }
+    .info-value.gold { color: var(--gold); }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-card); padding: 4px; border-radius: 10px; }
+    .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { background: var(--gold); color: #000; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* CONTATOS */
+    .contatos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .contato-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; }
+    .contato-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .contato-info { flex: 1; }
+    .contato-tipo { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .contato-numero { font-size: 14px; font-weight: 600; }
+    .contato-actions { display: flex; gap: 6px; }
+    .contato-btn { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .contato-btn.ligar { background: var(--green-bg); color: var(--green); }
+    .contato-btn.whatsapp { background: #25D366; color: #fff; }
+    .contato-btn.copiar { background: var(--blue-bg); color: var(--blue); }
+
+    /* HISTÓRICO */
+    .historico-list { max-height: 300px; overflow-y: auto; }
+    .historico-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .historico-item:last-child { border-bottom: none; }
+    .historico-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .historico-content { flex: 1; }
+    .historico-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .historico-tipo { font-weight: 600; font-size: 13px; }
+    .historico-data { font-size: 11px; color: var(--text-muted); }
+    .historico-desc { font-size: 12px; color: var(--text-secondary); }
+    .historico-resultado { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-top: 6px; }
+
+    /* PAINEL DIREITO - AÇÕES */
+    .panel-acoes { background: var(--bg-secondary); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+
+    .acoes-header { padding: 16px; border-bottom: 1px solid var(--border); }
+    .acoes-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .timer { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg-card); border-radius: 8px; }
+    .timer-icon { color: var(--green); }
+    .timer-value { font-size: 20px; font-weight: 700; font-family: monospace; }
+    .timer-label { font-size: 11px; color: var(--text-muted); }
+
+    .acoes-body { flex: 1; padding: 16px; overflow-y: auto; }
+
+    /* REGISTRAR ACIONAMENTO */
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block; color: var(--text-secondary); }
+    .form-select, .form-input, .form-textarea {
+      width: 100%; padding: 10px 12px; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: #fff; font-size: 13px;
+    }
+    .form-select:focus, .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--gold); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+
+    .resultado-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    .resultado-btn {
+      padding: 12px 10px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.15s;
+    }
+    .resultado-btn:hover { border-color: var(--gold); background: var(--gold-glow); }
+    .resultado-btn.selected { border-color: var(--gold); background: var(--gold-glow); }
+    .resultado-btn i { font-size: 18px; margin-bottom: 4px; display: block; }
+    .resultado-btn span { font-size: 10px; font-weight: 600; }
+    .resultado-btn.success i { color: var(--green); }
+    .resultado-btn.warning i { color: var(--orange); }
+    .resultado-btn.danger i { color: var(--red); }
+    .resultado-btn.info i { color: var(--blue); }
+
+    /* ACORDOS RÁPIDOS */
+    .acordo-rapido { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .acordo-rapido-title { font-size: 12px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .acordo-rapido-title i { color: var(--gold); }
+    .acordo-opcao { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
+    .acordo-opcao:hover { background: var(--gold-glow); }
+    .acordo-opcao-info span { display: block; }
+    .acordo-opcao-info .titulo { font-size: 13px; font-weight: 600; }
+    .acordo-opcao-info .desc { font-size: 11px; color: var(--text-muted); }
+    .acordo-opcao-valor { text-align: right; }
+    .acordo-opcao-valor .valor { font-size: 14px; font-weight: 700; color: var(--green); }
+    .acordo-opcao-valor .economia { font-size: 10px; color: var(--gold); }
+
+    .acoes-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow: hidden; }
+    .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; }
+    .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+    .modal-footer { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end; }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- PAINEL FILA -->
+    <div class="panel-fila">
+      <div class="panel-header">
+        <div class="panel-title"><i class="fas fa-list"></i> Fila de Cobrança</div>
+        <span class="badge" id="totalFila">15</span>
+      </div>
+      <div class="search-box">
+        <input type="text" placeholder="Buscar devedor..." id="searchFila">
+      </div>
+      <div class="fila-list" id="filaList">
+        <!-- Items da fila -->
+        <div class="fila-item active" onclick="selecionarDevedor(1)">
+          <div class="fila-nome">José da Silva</div>
+          <div class="fila-meta">
+            <span>Loja ABC</span>
+            <span class="fila-valor">R$ 2.450,00</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">45 dias atraso</span>
+          </div>
+        </div>
+        <div class="fila-item" onclick="selecionarDevedor(2)">
+          <div class="fila-nome">Maria Fernandes</div>
+          <div class="fila-meta">
+            <span>Banco XYZ</span>
+            <span class="fila-valor">R$ 5.800,00</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">32 dias atraso</span>
+          </div>
+        </div>
+        <div class="fila-item" onclick="selecionarDevedor(3)">
+          <div class="fila-nome">Pedro Santos</div>
+          <div class="fila-meta">
+            <span>Financeira 123</span>
+            <span class="fila-valor">R$ 1.200,00</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">15 dias atraso</span>
+          </div>
+        </div>
+        <div class="fila-item" onclick="selecionarDevedor(4)">
+          <div class="fila-nome">Ana Costa</div>
+          <div class="fila-meta">
+            <span>Loja ABC</span>
+            <span class="fila-valor">R$ 890,00</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">60 dias atraso</span>
+          </div>
+        </div>
+        <div class="fila-item" onclick="selecionarDevedor(5)">
+          <div class="fila-nome">Carlos Mendes</div>
+          <div class="fila-meta">
+            <span>Banco XYZ</span>
+            <span class="fila-valor">R$ 3.200,00</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">28 dias atraso</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL CENTRAL -->
+    <div class="panel-central">
+      <div class="header-atendimento">
+        <div class="devedor-header">
+          <div class="devedor-avatar">JS</div>
+          <div>
+            <div class="devedor-nome">José da Silva</div>
+            <div class="devedor-cpf">CPF: 123.456.789-00</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-secondary btn-icon" title="Histórico"><i class="fas fa-history"></i></button>
+          <button class="btn btn-primary" onclick="abrirSimulador()"><i class="fas fa-calculator"></i> Simular Acordo</button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <!-- CARDS INFO -->
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Valor Original</div>
+            <div class="info-value">R$ 2.000,00</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Valor Atualizado</div>
+            <div class="info-value gold">R$ 2.450,00</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Dias em Atraso</div>
+            <div class="info-value danger">45 dias</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Acionamentos</div>
+            <div class="info-value">8</div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+          <div class="tab active" onclick="showTab('contatos')">Contatos</div>
+          <div class="tab" onclick="showTab('divida')">Dívida</div>
+          <div class="tab" onclick="showTab('historico')">Histórico</div>
+          <div class="tab" onclick="showTab('observacoes')">Observações</div>
+        </div>
+
+        <!-- TAB CONTATOS -->
+        <div class="tab-content active" id="tab-contatos">
+          <div class="contatos-grid">
+            <div class="contato-item">
+              <div class="contato-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-phone"></i></div>
+              <div class="contato-info">
+                <div class="contato-tipo">Celular Principal</div>
+                <div class="contato-numero">(92) 99123-4567</div>
+              </div>
+              <div class="contato-actions">
+                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
+                <button class="contato-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+              </div>
+            </div>
+            <div class="contato-item">
+              <div class="contato-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-phone-alt"></i></div>
+              <div class="contato-info">
+                <div class="contato-tipo">Telefone Fixo</div>
+                <div class="contato-numero">(92) 3234-5678</div>
+              </div>
+              <div class="contato-actions">
+                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
+                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="contato-item">
+              <div class="contato-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-briefcase"></i></div>
+              <div class="contato-info">
+                <div class="contato-tipo">Trabalho</div>
+                <div class="contato-numero">(92) 3456-7890</div>
+              </div>
+              <div class="contato-actions">
+                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
+                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="contato-item">
+              <div class="contato-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-envelope"></i></div>
+              <div class="contato-info">
+                <div class="contato-tipo">E-mail</div>
+                <div class="contato-numero">jose.silva@email.com</div>
+              </div>
+              <div class="contato-actions">
+                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="font-size:13px;margin-bottom:12px;color:var(--text-muted);">Endereço</h4>
+          <div class="contato-item" style="margin-bottom:0;">
+            <div class="contato-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="contato-info">
+              <div class="contato-numero">Rua das Flores, 123 - Centro</div>
+              <div class="contato-tipo">Manaus - AM, 69000-000</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB DÍVIDA -->
+        <div class="tab-content" id="tab-divida">
+          <div class="info-grid" style="grid-template-columns:repeat(2,1fr);">
+            <div class="info-card">
+              <div class="info-label">Credor</div>
+              <div class="info-value" style="font-size:16px;">Loja ABC</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Contrato</div>
+              <div class="info-value" style="font-size:16px;">#12345</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Vencimento Original</div>
+              <div class="info-value" style="font-size:16px;">15/11/2025</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Data Entrada</div>
+              <div class="info-value" style="font-size:16px;">01/12/2025</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Valor Original</div>
+              <div class="info-value" style="font-size:16px;">R$ 2.000,00</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Juros + Multa</div>
+              <div class="info-value danger" style="font-size:16px;">R$ 450,00</div>
+            </div>
+          </div>
+          <div class="info-card" style="margin-top:16px;">
+            <div class="info-label">Descrição</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">Compra parcelada não paga - 3 parcelas em atraso referente a compra de eletrodomésticos.</p>
+          </div>
+        </div>
+
+        <!-- TAB HISTÓRICO -->
+        <div class="tab-content" id="tab-historico">
+          <div class="historico-list">
+            <div class="historico-item">
+              <div class="historico-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-phone"></i></div>
+              <div class="historico-content">
+                <div class="historico-header">
+                  <span class="historico-tipo">Ligação</span>
+                  <span class="historico-data">Hoje, 14:32</span>
+                </div>
+                <div class="historico-desc">Devedor atendeu, disse que está sem condições no momento. Pediu para ligar semana que vem.</div>
+                <span class="historico-resultado" style="background:var(--orange-bg);color:var(--orange);">Prometeu retornar</span>
+              </div>
+            </div>
+            <div class="historico-item">
+              <div class="historico-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-phone-slash"></i></div>
+              <div class="historico-content">
+                <div class="historico-header">
+                  <span class="historico-tipo">Ligação</span>
+                  <span class="historico-data">10/01, 10:15</span>
+                </div>
+                <div class="historico-desc">Não atendeu - Caixa postal</div>
+                <span class="historico-resultado" style="background:var(--red-bg);color:var(--red);">Não atendeu</span>
+              </div>
+            </div>
+            <div class="historico-item">
+              <div class="historico-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fab fa-whatsapp"></i></div>
+              <div class="historico-content">
+                <div class="historico-header">
+                  <span class="historico-tipo">WhatsApp</span>
+                  <span class="historico-data">08/01, 16:45</span>
+                </div>
+                <div class="historico-desc">Mensagem enviada com proposta de acordo. Visualizada mas não respondeu.</div>
+                <span class="historico-resultado" style="background:var(--blue-bg);color:var(--blue);">Visualizado</span>
+              </div>
+            </div>
+            <div class="historico-item">
+              <div class="historico-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-envelope"></i></div>
+              <div class="historico-content">
+                <div class="historico-header">
+                  <span class="historico-tipo">E-mail</span>
+                  <span class="historico-data">05/01, 09:00</span>
+                </div>
+                <div class="historico-desc">E-mail de cobrança enviado automaticamente pela régua.</div>
+                <span class="historico-resultado" style="background:var(--green-bg);color:var(--green);">Enviado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB OBSERVAÇÕES -->
+        <div class="tab-content" id="tab-observacoes">
+          <textarea class="form-textarea" style="min-height:150px;" placeholder="Observações sobre o devedor...">Cliente alega que perdeu o emprego em novembro. Demonstrou interesse em negociar, mas sem condições no momento. Sugerir parcelamento maior na próxima ligação.</textarea>
+          <button class="btn btn-primary" style="margin-top:12px;"><i class="fas fa-save"></i> Salvar Observações</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL AÇÕES -->
+    <div class="panel-acoes">
+      <div class="acoes-header">
+        <div class="acoes-title"><i class="fas fa-clock" style="color:var(--gold);"></i> Tempo de Atendimento</div>
+        <div class="timer">
+          <i class="fas fa-circle timer-icon" style="font-size:8px;"></i>
+          <span class="timer-value" id="timerValue">00:00</span>
+          <span class="timer-label">Em atendimento</span>
+        </div>
+      </div>
+
+      <div class="acoes-body">
+        <!-- RESULTADO DO CONTATO -->
+        <div class="form-group">
+          <label class="form-label">Tipo de Contato</label>
+          <select class="form-select" id="tipoContato">
+            <option value="ligacao">📞 Ligação</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="sms">📱 SMS</option>
+            <option value="email">📧 E-mail</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Resultado</label>
+          <div class="resultado-grid">
+            <div class="resultado-btn success" onclick="selectResultado(this, 'atendeu')">
+              <i class="fas fa-check-circle"></i>
+              <span>Atendeu</span>
+            </div>
+            <div class="resultado-btn danger" onclick="selectResultado(this, 'nao_atendeu')">
+              <i class="fas fa-phone-slash"></i>
+              <span>Não Atendeu</span>
+            </div>
+            <div class="resultado-btn warning" onclick="selectResultado(this, 'prometeu')">
+              <i class="fas fa-handshake"></i>
+              <span>Prometeu Pagar</span>
+            </div>
+            <div class="resultado-btn info" onclick="selectResultado(this, 'negociando')">
+              <i class="fas fa-comments-dollar"></i>
+              <span>Negociando</span>
+            </div>
+            <div class="resultado-btn danger" onclick="selectResultado(this, 'recusou')">
+              <i class="fas fa-times-circle"></i>
+              <span>Recusou</span>
+            </div>
+            <div class="resultado-btn" onclick="selectResultado(this, 'outro')">
+              <i class="fas fa-ellipsis-h"></i>
+              <span>Outro</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observação</label>
+          <textarea class="form-textarea" id="obsAcionamento" placeholder="Descreva o contato..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Agendar Retorno</label>
+          <input type="datetime-local" class="form-input" id="dataRetorno">
+        </div>
+
+        <!-- ACORDOS RÁPIDOS -->
+        <div class="acordo-rapido">
+          <div class="acordo-rapido-title"><i class="fas fa-bolt"></i> Acordos Rápidos</div>
+          <div class="acordo-opcao" onclick="abrirAcordoRapido('avista')">
+            <div class="acordo-opcao-info">
+              <span class="titulo">À Vista (20% desc.)</span>
+              <span class="desc">Pagamento único</span>
+            </div>
+            <div class="acordo-opcao-valor">
+              <span class="valor">R$ 1.960,00</span>
+              <span class="economia">Economia: R$ 490</span>
+            </div>
+          </div>
+          <div class="acordo-opcao" onclick="abrirAcordoRapido('3x')">
+            <div class="acordo-opcao-info">
+              <span class="titulo">3x (10% desc.)</span>
+              <span class="desc">Entrada + 2 parcelas</span>
+            </div>
+            <div class="acordo-opcao-valor">
+              <span class="valor">3x R$ 735,00</span>
+              <span class="economia">Economia: R$ 245</span>
+            </div>
+          </div>
+          <div class="acordo-opcao" onclick="abrirAcordoRapido('6x')">
+            <div class="acordo-opcao-info">
+              <span class="titulo">6x (sem desc.)</span>
+              <span class="desc">Parcelas fixas</span>
+            </div>
+            <div class="acordo-opcao-valor">
+              <span class="valor">6x R$ 408,33</span>
+              <span class="economia">Valor total</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acoes-footer">
+        <button class="btn btn-success btn-block" onclick="registrarAcionamento()">
+          <i class="fas fa-save"></i> Registrar Acionamento
+        </button>
+        <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="proximoDevedor()">
+          <i class="fas fa-arrow-right"></i> Próximo Devedor
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SIMULADOR -->
+  <div class="modal-overlay" id="modalSimulador">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-calculator" style="color:var(--gold);"></i> Simulador de Acordo</h3>
+        <button class="modal-close" onclick="fecharModal('modalSimulador')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="info-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px;">
+          <div class="info-card">
+            <div class="info-label">Valor da Dívida</div>
+            <div class="info-value">R$ 2.450,00</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Desconto Máximo</div>
+            <div class="info-value success">30%</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Desconto (%)</label>
+          <input type="range" min="0" max="30" value="10" id="descontoRange" oninput="calcularAcordo()" style="width:100%;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);">
+            <span>0%</span>
+            <span id="descontoValor">10%</span>
+            <span>30%</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Número de Parcelas</label>
+          <select class="form-select" id="numParcelas" onchange="calcularAcordo()">
+            <option value="1">À Vista</option>
+            <option value="2">2x</option>
+            <option value="3" selected>3x</option>
+            <option value="4">4x</option>
+            <option value="5">5x</option>
+            <option value="6">6x</option>
+            <option value="10">10x</option>
+            <option value="12">12x</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Valor da Entrada</label>
+          <input type="text" class="form-input" id="valorEntrada" value="R$ 0,00" oninput="calcularAcordo()">
+        </div>
+
+        <div style="background:var(--gold-glow);border:1px solid var(--gold);border-radius:10px;padding:20px;margin-top:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <span style="color:var(--text-secondary);">Valor Original:</span>
+            <span style="text-decoration:line-through;color:var(--text-muted);">R$ 2.450,00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <span style="color:var(--text-secondary);">Desconto:</span>
+            <span style="color:var(--green);" id="valorDesconto">- R$ 245,00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <span style="font-weight:700;">Valor Final:</span>
+            <span style="font-size:20px;font-weight:800;color:var(--gold);" id="valorFinal">R$ 2.205,00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-secondary);">Parcelas:</span>
+            <span style="font-weight:700;" id="valorParcela">3x de R$ 735,00</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalSimulador')">Cancelar</button>
+        <button class="btn btn-success" onclick="fecharAcordo()"><i class="fas fa-handshake"></i> Fechar Acordo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Timer
+    let segundos = 0;
+    setInterval(() => {
+      segundos++;
+      const min = Math.floor(segundos / 60).toString().padStart(2, '0');
+      const sec = (segundos % 60).toString().padStart(2, '0');
+      document.getElementById('timerValue').textContent = `${min}:${sec}`;
+    }, 1000);
+
+    // Tabs
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // Selecionar devedor
+    function selecionarDevedor(id) {
+      document.querySelectorAll('.fila-item').forEach(i => i.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      segundos = 0; // Reset timer
+    }
+
+    // Resultado
+    let resultadoSelecionado = null;
+    function selectResultado(el, valor) {
+      document.querySelectorAll('.resultado-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      resultadoSelecionado = valor;
+    }
+
+    // Modal
+    function abrirSimulador() {
+      document.getElementById('modalSimulador').classList.add('show');
+      calcularAcordo();
+    }
+    function fecharModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    // Calcular acordo
+    function calcularAcordo() {
+      const valorDivida = 2450;
+      const desconto = document.getElementById('descontoRange').value;
+      const parcelas = document.getElementById('numParcelas').value;
+      
+      document.getElementById('descontoValor').textContent = desconto + '%';
+      
+      const valorDesconto = valorDivida * (desconto / 100);
+      const valorFinal = valorDivida - valorDesconto;
+      const valorParcela = valorFinal / parcelas;
+      
+      document.getElementById('valorDesconto').textContent = '- R$ ' + valorDesconto.toFixed(2).replace('.', ',');
+      document.getElementById('valorFinal').textContent = 'R$ ' + valorFinal.toFixed(2).replace('.', ',');
+      document.getElementById('valorParcela').textContent = parcelas + 'x de R$ ' + valorParcela.toFixed(2).replace('.', ',');
+    }
+
+    // Registrar acionamento
+    function registrarAcionamento() {
+      if (!resultadoSelecionado) {
+        alert('Selecione o resultado do contato!');
+        return;
+      }
+      alert('Acionamento registrado com sucesso!');
+      proximoDevedor();
+    }
+
+    // Próximo devedor
+    function proximoDevedor() {
+      const items = document.querySelectorAll('.fila-item');
+      let currentIndex = -1;
+      items.forEach((item, index) => {
+        if (item.classList.contains('active')) currentIndex = index;
+      });
+      if (currentIndex < items.length - 1) {
+        items[currentIndex].classList.remove('active');
+        items[currentIndex + 1].classList.add('active');
+      }
+      segundos = 0;
+      resultadoSelecionado = null;
+      document.querySelectorAll('.resultado-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('obsAcionamento').value = '';
+    }
+
+    // Acordo rápido
+    function abrirAcordoRapido(tipo) {
+      abrirSimulador();
+      if (tipo === 'avista') {
+        document.getElementById('descontoRange').value = 20;
+        document.getElementById('numParcelas').value = 1;
+      } else if (tipo === '3x') {
+        document.getElementById('descontoRange').value = 10;
+        document.getElementById('numParcelas').value = 3;
+      } else if (tipo === '6x') {
+        document.getElementById('descontoRange').value = 0;
+        document.getElementById('numParcelas').value = 6;
+      }
+      calcularAcordo();
+    }
+
+    // Fechar acordo
+    function fecharAcordo() {
+      alert('Acordo fechado com sucesso! As parcelas foram geradas.');
+      fecharModal('modalSimulador');
+    }
+  </script>
+</body>
+</html>
