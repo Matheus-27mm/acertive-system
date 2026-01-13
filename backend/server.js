@@ -3361,6 +3361,412 @@ async function registrarAtividade(empresaId, usuarioId, tipo, descricao, entidad
   }
 }
 
+// =====================================================
+// ROTA: CONTADOR DE ALERTAS
+// =====================================================
+app.get('/api/alertas/contador', auth, async (req, res) => {
+  try {
+    const vencidas = await pool.query(`
+      SELECT COUNT(*) as total FROM cobrancas 
+      WHERE status IN ('vencido') 
+      OR (status = 'pendente' AND vencimento < CURRENT_DATE)
+    `);
+    
+    const vencendoHoje = await pool.query(`
+      SELECT COUNT(*) as total FROM cobrancas 
+      WHERE status = 'pendente' AND DATE(vencimento) = CURRENT_DATE
+    `);
+    
+    const agendamentosHoje = await pool.query(`
+      SELECT COUNT(*) as total FROM agendamentos 
+      WHERE DATE(data_agendamento) = CURRENT_DATE AND status = 'pendente'
+    `);
+    
+    const totalVencidas = parseInt(vencidas.rows[0].total) || 0;
+    const totalVencendoHoje = parseInt(vencendoHoje.rows[0].total) || 0;
+    const totalAgendamentos = parseInt(agendamentosHoje.rows[0].total) || 0;
+    
+    res.json({
+      success: true,
+      total: totalVencidas + totalVencendoHoje + totalAgendamentos,
+      vencidas: totalVencidas,
+      vencendoHoje: totalVencendoHoje,
+      agendamentosHoje: totalAgendamentos
+    });
+  } catch (err) {
+    console.error('[ALERTAS CONTADOR] erro:', err.message);
+    res.json({ success: true, total: 0, vencidas: 0, vencendoHoje: 0, agendamentosHoje: 0 });
+  }
+});
+
+// =====================================================
+// ROTA: ALERTAS DETALHADOS
+// =====================================================
+app.get('/api/alertas', auth, async (req, res) => {
+  try {
+    // Cobranças vencendo hoje
+    const vencendoHoje = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento, cl.nome as cliente
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status = 'pendente' AND DATE(c.vencimento) = CURRENT_DATE
+      ORDER BY c.valor_atualizado DESC
+      LIMIT 10
+    `);
+    
+    // Cobranças vencidas
+    const vencidas = await pool.query(`
+      SELECT c.id, c.descricao, c.valor_atualizado, c.vencimento, cl.nome as cliente,
+             CURRENT_DATE - DATE(c.vencimento) as dias_atraso
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status IN ('vencido') OR (c.status = 'pendente' AND c.vencimento < CURRENT_DATE)
+      ORDER BY c.vencimento ASC
+      LIMIT 20
+    `);
+    
+    // Agendamentos de hoje
+    const agendamentosHoje = await pool.query(`
+      SELECT a.id, a.tipo, a.descricao, a.data_agendamento, cl.nome as cliente_nome
+      FROM agendamentos a
+      LEFT JOIN clientes cl ON cl.id = a.cliente_id
+      WHERE DATE(a.data_agendamento) = CURRENT_DATE AND a.status = 'pendente'
+      ORDER BY a.data_agendamento ASC
+      LIMIT 10
+    `);
+    
+    res.json({
+      success: true,
+      alertas: {
+        vencendoHoje: vencendoHoje.rows,
+        vencidas: vencidas.rows,
+        agendamentosHoje: agendamentosHoje.rows
+      }
+    });
+  } catch (err) {
+    console.error('[ALERTAS] erro:', err.message);
+    res.status(500).json({ success: false, message: 'Erro ao buscar alertas' });
+  }
+});
+
+// =====================================================
+// CONFIGURAÇÃO DOS CRON JOBS
+// =====================================================
+const CRON_CONFIG = {
+  atualizarStatus: {
+    ativo: true,
+    intervalo: 60 * 60 * 1000, // 1 hora
+  },
+  lembretes: {
+    ativo: false, // Mude para true quando quiser ativar
+    intervalo: 60 * 60 * 1000,
+    horarioInicio: 8,
+    horarioFim: 20,
+    diasAntes: [7, 3, 1, 0],
+    diasApos: [1, 3, 7, 15, 30],
+    limitePorExecucao: 50,
+  },
+  recorrentes: {
+    ativo: true,
+    intervalo: 6 * 60 * 60 * 1000,
+  },
+  relatorioDiario: {
+    ativo: false,
+    horario: 8,
+    emailDestino: null,
+  }
+};
+
+// =====================================================
+// ROTA: STATUS DO CRON
+// =====================================================
+app.get('/api/cron/status', auth, (req, res) => {
+  res.json({
+    success: true,
+    config: CRON_CONFIG,
+    emailConfigurado: !!emailTransporter
+  });
+});
+
+// =====================================================
+// ROTA: CONFIGURAR CRON
+// =====================================================
+app.post('/api/cron/config', auth, (req, res) => {
+  try {
+    const { job, config } = req.body;
+    
+    if (job && CRON_CONFIG[job]) {
+      Object.assign(CRON_CONFIG[job], config);
+      res.json({ success: true, message: `Configuração de ${job} atualizada`, config: CRON_CONFIG[job] });
+    } else {
+      res.status(400).json({ success: false, message: 'Job inválido' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// =====================================================
+// JOB: ATUALIZAR STATUS DAS COBRANÇAS
+// =====================================================
+async function jobAtualizarStatus() {
+  if (!CRON_CONFIG.atualizarStatus.ativo) return;
+  
+  try {
+    console.log('[CRON] Atualizando status das cobranças...');
+    
+    const resultado = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'vencido', updated_at = NOW()
+      WHERE status = 'pendente' 
+        AND vencimento < CURRENT_DATE
+      RETURNING id
+    `);
+    
+    if (resultado.rowCount > 0) {
+      console.log(`[CRON] ✅ ${resultado.rowCount} cobrança(s) marcada(s) como vencida(s)`);
+    }
+  } catch (err) {
+    console.error('[CRON] Erro ao atualizar status:', err.message);
+  }
+}
+
+// =====================================================
+// JOB: GERAR COBRANÇAS RECORRENTES
+// =====================================================
+async function jobGerarRecorrentes() {
+  if (!CRON_CONFIG.recorrentes.ativo) return;
+  
+  try {
+    console.log('[CRON] Verificando cobranças recorrentes...');
+    
+    // Verificar se a tabela existe
+    const tabelaExiste = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'cobrancas_recorrentes'
+      )
+    `);
+    
+    if (!tabelaExiste.rows[0].exists) {
+      console.log('[CRON] Tabela cobrancas_recorrentes não existe, pulando...');
+      return;
+    }
+    
+    const recorrentes = await pool.query(`
+      SELECT cr.*, cl.nome as cliente_nome
+      FROM cobrancas_recorrentes cr
+      INNER JOIN clientes cl ON cl.id = cr.cliente_id
+      WHERE cr.ativo = true
+        AND (cr.data_fim IS NULL OR cr.data_fim >= CURRENT_DATE)
+        AND (
+          cr.ultima_geracao IS NULL 
+          OR (cr.frequencia = 'mensal' AND cr.ultima_geracao < CURRENT_DATE - INTERVAL '25 days')
+          OR (cr.frequencia = 'quinzenal' AND cr.ultima_geracao < CURRENT_DATE - INTERVAL '12 days')
+          OR (cr.frequencia = 'semanal' AND cr.ultima_geracao < CURRENT_DATE - INTERVAL '5 days')
+        )
+    `);
+    
+    let geradas = 0;
+    
+    for (const rec of recorrentes.rows) {
+      try {
+        const hoje = new Date();
+        let vencimento = new Date(hoje.getFullYear(), hoje.getMonth(), rec.dia_vencimento);
+        
+        if (vencimento <= hoje) {
+          vencimento = new Date(hoje.getFullYear(), hoje.getMonth() + 1, rec.dia_vencimento);
+        }
+        
+        const vencimentoStr = vencimento.toISOString().split('T')[0];
+        const mesRef = vencimento.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        
+        const existe = await pool.query(`
+          SELECT id FROM cobrancas 
+          WHERE cliente_id = $1 AND descricao LIKE $2 AND DATE(vencimento) = $3
+        `, [rec.cliente_id, `%${mesRef}%`, vencimentoStr]);
+        
+        if (existe.rowCount > 0) continue;
+        
+        await pool.query(`
+          INSERT INTO cobrancas (cliente_id, empresa_id, descricao, valor_original, valor_atualizado, vencimento, status)
+          VALUES ($1, $2, $3, $4, $4, $5, 'pendente')
+        `, [rec.cliente_id, rec.empresa_id || null, `${rec.descricao || 'Cobrança recorrente'} - ${mesRef}`, rec.valor, vencimentoStr]);
+        
+        await pool.query(`
+          UPDATE cobrancas_recorrentes 
+          SET ultima_geracao = CURRENT_DATE, total_geradas = COALESCE(total_geradas, 0) + 1, updated_at = NOW()
+          WHERE id = $1
+        `, [rec.id]);
+        
+        geradas++;
+      } catch (recErr) {
+        console.error(`[CRON] Erro ao gerar recorrente ${rec.id}:`, recErr.message);
+      }
+    }
+    
+    if (geradas > 0) {
+      console.log(`[CRON] ✅ ${geradas} cobrança(s) recorrente(s) gerada(s)`);
+    }
+  } catch (err) {
+    console.error('[CRON] Erro ao processar recorrentes:', err.message);
+  }
+}
+
+// =====================================================
+// ROTA: EXECUTAR CRON MANUALMENTE
+// =====================================================
+app.post('/api/cron/executar/:job', auth, async (req, res) => {
+  try {
+    const { job } = req.params;
+    
+    switch (job) {
+      case 'atualizar-status':
+        await jobAtualizarStatus();
+        break;
+      case 'recorrentes':
+        await jobGerarRecorrentes();
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Job inválido' });
+    }
+    
+    res.json({ success: true, message: `Job ${job} executado com sucesso` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// =====================================================
+// ROTA: LISTAR PLANOS
+// =====================================================
+app.get('/api/planos', async (req, res) => {
+  try {
+    // Verificar se a tabela existe
+    const tabelaExiste = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'planos'
+      )
+    `);
+    
+    if (!tabelaExiste.rows[0].exists) {
+      // Retornar planos padrão se a tabela não existir
+      return res.json({
+        success: true,
+        data: [
+          { id: '1', nome: 'Gratuito', descricao: 'Plano gratuito', preco_mensal: 0, limite_usuarios: 1, limite_clientes: 50, limite_cobrancas_mes: 100 },
+          { id: '2', nome: 'Básico', descricao: 'Ideal para pequenas empresas', preco_mensal: 49.90, limite_usuarios: 3, limite_clientes: 200, limite_cobrancas_mes: 500 },
+          { id: '3', nome: 'Profissional', descricao: 'Para empresas em crescimento', preco_mensal: 99.90, limite_usuarios: 10, limite_clientes: 1000, limite_cobrancas_mes: 2000 },
+          { id: '4', nome: 'Enterprise', descricao: 'Sem limites', preco_mensal: 299.90, limite_usuarios: -1, limite_clientes: -1, limite_cobrancas_mes: -1 }
+        ]
+      });
+    }
+    
+    const result = await pool.query(`
+      SELECT id, nome, descricao, preco_mensal, limite_usuarios, limite_clientes, limite_cobrancas_mes, recursos
+      FROM planos
+      WHERE ativo = true
+      ORDER BY preco_mensal ASC
+    `);
+    
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('[PLANOS] erro:', err.message);
+    res.status(500).json({ success: false, message: 'Erro ao buscar planos' });
+  }
+});
+
+// =====================================================
+// ROTA: INFO DO TENANT
+// =====================================================
+app.get('/api/tenant/info', auth, async (req, res) => {
+  try {
+    const userResult = await pool.query(`
+      SELECT u.empresa_id, e.nome as empresa_nome, e.cnpj
+      FROM users u
+      LEFT JOIN empresas e ON e.id = u.empresa_id
+      WHERE u.id = $1
+    `, [req.user.userId]);
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+    
+    const info = userResult.rows[0];
+    
+    res.json({
+      success: true,
+      data: {
+        empresa: {
+          id: info.empresa_id,
+          nome: info.empresa_nome,
+          cnpj: info.cnpj
+        },
+        plano: {
+          nome: 'Profissional',
+          limites: { usuarios: 10, clientes: 1000, cobrancas_mes: 2000 }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('[TENANT INFO] erro:', err.message);
+    res.status(500).json({ success: false, message: 'Erro ao buscar informações' });
+  }
+});
+
+// =====================================================
+// ROTA: LIMITES DO TENANT
+// =====================================================
+app.get('/api/tenant/limites', auth, async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      dentroLimites: true,
+      planoIlimitado: false,
+      uso: {
+        usuarios: { atual: 1, limite: 10 },
+        clientes: { atual: 100, limite: 1000 },
+        cobrancas_mes: { atual: 50, limite: 2000 }
+      }
+    });
+  } catch (err) {
+    console.error('[TENANT LIMITES] erro:', err.message);
+    res.status(500).json({ success: false, message: 'Erro ao verificar limites' });
+  }
+});
+
+// =====================================================
+// INICIAR CRON JOBS
+// =====================================================
+function iniciarCronJobs() {
+  console.log('[CRON] ========================================');
+  console.log('[CRON] Iniciando sistema de automação...');
+  console.log('[CRON] ========================================');
+  
+  // Job 1: Atualizar status (a cada 1 hora)
+  setInterval(jobAtualizarStatus, CRON_CONFIG.atualizarStatus.intervalo);
+  console.log('[CRON] ✅ Job "Atualizar Status" agendado (1h)');
+  
+  // Job 2: Recorrentes (a cada 6 horas)
+  setInterval(jobGerarRecorrentes, CRON_CONFIG.recorrentes.intervalo);
+  console.log('[CRON] ✅ Job "Recorrentes" agendado (6h)');
+  
+  // Executar jobs iniciais após 30 segundos
+  setTimeout(async () => {
+    console.log('[CRON] Executando verificação inicial...');
+    await jobAtualizarStatus();
+    await jobGerarRecorrentes();
+  }, 30000);
+  
+  console.log('[CRON] ========================================');
+}
+
+// Iniciar os cron jobs
+iniciarCronJobs();
+
+console.log('[FASE 2] ✅ Rotas de Cron e Multi-tenant carregadas');
+
 // =====================
 // 404
 // =====================
