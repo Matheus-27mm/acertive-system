@@ -2985,7 +2985,7 @@ app.post("/api/cobrancas/:id/notificar", auth, async (req, res) => {
 
 console.log('[LEMBRETES] ✅ Sistema de lembretes automáticos carregado (DESATIVADO por padrão)');
 // ==================== RELATÓRIO DE INADIMPLÊNCIA ====================
-app.get('/api/relatorios/inadimplencia', authenticateToken, async (req, res) => {
+app.get('/api/relatorios/inadimplencia', auth, async (req, res) => {
   try {
     const { dataInicio, dataFim, status, ordem } = req.query;
     const empresaId = req.user.empresa_id;
@@ -3096,7 +3096,7 @@ app.get('/api/relatorios/inadimplencia', authenticateToken, async (req, res) => 
 });
 
 // ==================== RELATÓRIO DE RECEBIMENTOS ====================
-app.get('/api/relatorios/recebimentos', authenticateToken, async (req, res) => {
+app.get('/api/relatorios/recebimentos', authe, async (req, res) => {
   try {
     const { dataInicio, dataFim } = req.query;
     const empresaId = req.user.empresa_id;
@@ -3197,7 +3197,7 @@ app.get('/api/relatorios/recebimentos', authenticateToken, async (req, res) => {
 });
 
 // ==================== RELATÓRIO POR PERÍODO ====================
-app.get('/api/relatorios/periodo', authenticateToken, async (req, res) => {
+app.get('/api/relatorios/periodo', auth, async (req, res) => {
   try {
     const { dataInicio, dataFim } = req.query;
     const empresaId = req.user.empresa_id;
@@ -3257,7 +3257,7 @@ app.get('/api/relatorios/periodo', authenticateToken, async (req, res) => {
 });
 
 // ==================== RELATÓRIO POR CLIENTE ====================
-app.get('/api/relatorios/clientes', authenticateToken, async (req, res) => {
+app.get('/api/relatorios/clientes', auth, async (req, res) => {
   try {
     const empresaId = req.user.empresa_id;
 
@@ -3322,7 +3322,7 @@ app.get('/api/relatorios/clientes', authenticateToken, async (req, res) => {
 });
 
 // ==================== HISTÓRICO DE ATIVIDADES ====================
-app.get('/api/atividades', authenticateToken, async (req, res) => {
+app.get('/api/atividades', auth, async (req, res) => {
   try {
     const empresaId = req.user.empresa_id;
     const { limit = 50 } = req.query;
