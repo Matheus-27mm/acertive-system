@@ -501,7 +501,10 @@ app.get("/clientes", sendFront("clientes.html"));
 app.get("/relatorios", sendFront("relatorios.html"));
 app.get("/importar-clientes", sendFront("importar-clientes.html"));
 app.get("/templates", sendFront("templates-mensagem.html"));
-
+app.get("/credores", sendFront("credores.html"));
+app.get("/acordos", sendFront("acordos.html")); 
+app.get("/parcelas", sendFront("parcelas.html"));
+app.get("/financeiro-b2b", sendFront("financeiro-b2b.html"));
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
   if (req.path.includes(".")) return res.status(404).send("Arquivo não encontrado");
