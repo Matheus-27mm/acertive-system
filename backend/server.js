@@ -480,7 +480,6 @@ function sendFront(file) {
     return res.sendFile(target);
   };
 }
-
 app.get("/", sendFront("login.html"));
 app.get("/login", sendFront("login.html"));
 app.get("/dashboard", sendFront("dashboard.html"));
@@ -517,6 +516,8 @@ app.get("/financeiro", sendFront("financeiro.html"));
 app.get("/fila", sendFront("fila-cobranca.html"));
 app.get("/regua", sendFront("regua-cobranca.html"));
 app.get("/config", sendFront("configuracoes.html"));
+app.get("/importar-massa", sendFront("importar-massa.html"));
+
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
@@ -3786,7 +3787,147 @@ function iniciarCronJobs() {
 iniciarCronJobs();
 
 console.log('[FASE 2] ✅ Rotas de Cron e Multi-tenant carregadas');
+// =====================================================
+// ROTA DE IMPORTAÇÃO EM MASSA - ACERTIVE
+// Cole este código no server.js ANTES da linha:
+// app.use((req, res) => res.status(404).send("Página não encontrada."));
+// =====================================================
 
+// POST /api/importar-cobrancas-massa - Importar cobranças via JSON
+app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
+  try {
+    const { cobrancas } = req.body;
+    
+    if (!cobrancas || !Array.isArray(cobrancas)) {
+      return res.status(400).json({ success: false, message: 'Dados inválidos. Envie um array de cobranças.' });
+    }
+    
+    console.log(`[IMPORTAÇÃO] Iniciando importação de ${cobrancas.length} cobranças...`);
+    
+    let importados = 0;
+    let erros = 0;
+    let clientesNaoEncontrados = 0;
+    
+    for (const cob of cobrancas) {
+      try {
+        // Buscar cliente pelo CPF/CNPJ (removendo formatação)
+        const cpfLimpo = String(cob.cpf_cnpj || '').replace(/\D/g, '');
+        
+        if (!cpfLimpo) {
+          erros++;
+          continue;
+        }
+        
+        const cliente = await pool.query(
+          `SELECT id FROM clientes 
+           WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf_cnpj,''), '.', ''), '-', ''), '/', '') = $1 
+           LIMIT 1`,
+          [cpfLimpo]
+        );
+        
+        if (cliente.rows.length === 0) {
+          clientesNaoEncontrados++;
+          erros++;
+          continue;
+        }
+        
+        const clienteId = cliente.rows[0].id;
+        
+        // Determinar status baseado na data de vencimento
+        let status = 'pendente';
+        if (cob.vencimento) {
+          const venc = new Date(cob.vencimento);
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          if (venc < hoje) {
+            status = 'vencido';
+          }
+        }
+        
+        // Valor - garantir que é número
+        const valor = parseFloat(cob.valor) || 0;
+        
+        if (valor <= 0) {
+          erros++;
+          continue;
+        }
+        
+        // Inserir cobrança
+        await pool.query(
+          `INSERT INTO cobrancas 
+           (cliente_id, valor, valor_original, valor_atualizado, descricao, vencimento, emissao, status, created_at)
+           VALUES ($1, $2, $2, $2, $3, $4, $5, $6, NOW())`,
+          [
+            clienteId,
+            valor,
+            cob.descricao || 'Cobrança importada',
+            cob.vencimento || null,
+            cob.emissao || null,
+            status
+          ]
+        );
+        
+        importados++;
+        
+      } catch (err) {
+        console.error('[IMPORTAÇÃO] Erro em registro:', err.message);
+        erros++;
+      }
+    }
+    
+    console.log(`[IMPORTAÇÃO] ✅ Concluído: ${importados} importados, ${erros} erros, ${clientesNaoEncontrados} clientes não encontrados`);
+    
+    // Registrar no log
+    await registrarLog(req, 'IMPORTAR_COBRANCAS_MASSA', 'cobrancas', null, {
+      total: cobrancas.length,
+      importados,
+      erros,
+      clientesNaoEncontrados
+    });
+    
+    res.json({
+      success: true,
+      message: `Importação concluída!`,
+      importados,
+      erros,
+      clientesNaoEncontrados,
+      total: cobrancas.length
+    });
+    
+  } catch (error) {
+    console.error('[IMPORTAÇÃO] Erro geral:', error);
+    res.status(500).json({ success: false, message: 'Erro na importação: ' + error.message });
+  }
+});
+
+// GET /api/importacao/status - Verificar status da base
+app.get('/api/importacao/status', auth, async (req, res) => {
+  try {
+    const clientes = await pool.query('SELECT COUNT(*)::int as total FROM clientes');
+    const cobrancas = await pool.query('SELECT COUNT(*)::int as total FROM cobrancas');
+    const cobrancasAtivas = await pool.query("SELECT COUNT(*)::int as total FROM cobrancas WHERE status != 'arquivado'");
+    
+    const valorTotal = await pool.query(`
+      SELECT COALESCE(SUM(valor_atualizado), 0)::numeric as total 
+      FROM cobrancas 
+      WHERE status IN ('pendente', 'vencido')
+    `);
+    
+    res.json({
+      success: true,
+      data: {
+        clientes: clientes.rows[0].total,
+        cobrancas: cobrancas.rows[0].total,
+        cobrancasAtivas: cobrancasAtivas.rows[0].total,
+        valorPendente: parseFloat(valorTotal.rows[0].total) || 0
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+console.log('[IMPORTAÇÃO] ✅ Rota de importação em massa carregada');
 // =====================
 // 404
 // =====================
