@@ -505,6 +505,19 @@ app.get("/credores", sendFront("credores.html"));
 app.get("/acordos", sendFront("acordos.html")); 
 app.get("/parcelas", sendFront("parcelas.html"));
 app.get("/financeiro-b2b", sendFront("financeiro-b2b.html"));
+app.get("/fila-cobranca", sendFront("fila-cobranca.html"));
+app.get("/atendimento", sendFront("atendimento.html"));
+app.get("/devedores", sendFront("devedores.html"));
+app.get("/dividas", sendFront("dividas.html"));
+app.get("/simulador", sendFront("simulador.html"));
+app.get("/comissoes", sendFront("comissoes.html"));
+app.get("/repasses", sendFront("repasses.html"));
+app.get("/regua-cobranca", sendFront("regua-cobranca.html"));
+app.get("/financeiro", sendFront("financeiro.html"));
+app.get("/fila", sendFront("fila-cobranca.html"));
+app.get("/regua", sendFront("regua-cobranca.html"));
+app.get("/config", sendFront("configuracoes.html"));
+
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
   if (req.path.includes(".")) return res.status(404).send("Arquivo não encontrado");
