@@ -3818,12 +3818,12 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
           continue;
         }
         
-        const cliente = await pool.query(
-          `SELECT id FROM clientes 
-           WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf_cnpj,''), '.', ''), '-', ''), '/', '') = $1 
-           LIMIT 1`,
+        
+          const cliente = await pool.query(
+          `SELECT id FROM clientes WHERE cpf_cnpj = $1 LIMIT 1`,
           [cpfLimpo]
-        );
+       );
+        
         
         if (cliente.rows.length === 0) {
           clientesNaoEncontrados++;
