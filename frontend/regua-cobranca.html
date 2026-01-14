@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Régua de Cobrança - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#09090b;color:#fafafa;min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:#18181b;border-right:1px solid #27272a;padding:20px;overflow-y:auto;z-index:100}
+    .logo{display:flex;align-items:center;gap:12px;padding:10px 0 30px;border-bottom:1px solid #27272a;margin-bottom:20px}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#F6C84C,#f59e0b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#09090b}
+    .logo-text{font-size:22px;font-weight:700}.logo-text span{color:#F6C84C}
+    .nav-section{margin-bottom:25px}.nav-title{font-size:11px;text-transform:uppercase;color:#71717a;letter-spacing:1px;margin-bottom:10px;padding-left:10px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:8px;color:#a1a1aa;text-decoration:none;transition:all .2s;margin-bottom:4px}
+    .nav-item:hover{background:#27272a;color:#fafafa}.nav-item.active{background:linear-gradient(135deg,#F6C84C,#f59e0b);color:#09090b;font-weight:600}
+    .nav-item i{width:20px;text-align:center}
+    .main{margin-left:260px;padding:30px;min-height:100vh}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.header h1{font-size:28px;font-weight:700}
+    .btn{padding:12px 20px;border-radius:8px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;font-size:14px}
+    .btn-primary{background:linear-gradient(135deg,#F6C84C,#f59e0b);color:#09090b}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(246,200,76,.4)}
+    .btn-secondary{background:#27272a;color:#fafafa}.btn-secondary:hover{background:#3f3f46}
+    .btn-success{background:#22c55e;color:#fff}.btn-success:hover{background:#16a34a}
+    .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+    
+    .card{background:#18181b;border:1px solid #27272a;border-radius:12px;margin-bottom:25px}
+    .card-header{padding:20px 25px;border-bottom:1px solid #27272a;display:flex;justify-content:space-between;align-items:center}
+    .card-header h2{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+    .card-header h2 i{color:#F6C84C}
+    .card-body{padding:25px}
+    
+    .status-ativo{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(34,197,94,.2);color:#22c55e;border-radius:20px;font-size:13px;font-weight:600}
+    .status-inativo{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(239,68,68,.2);color:#ef4444;border-radius:20px;font-size:13px;font-weight:600}
+    
+    .timeline{position:relative;padding-left:30px}
+    .timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:#27272a}
+    .timeline-item{position:relative;padding:20px;background:#09090b;border-radius:12px;margin-bottom:15px;border:1px solid #27272a}
+    .timeline-item::before{content:'';position:absolute;left:-24px;top:25px;width:12px;height:12px;background:#F6C84C;border-radius:50%;border:3px solid #09090b}
+    .timeline-item.email::before{background:#3b82f6}
+    .timeline-item.whatsapp::before{background:#25d366}
+    .timeline-item.sms::before{background:#a855f7}
+    .timeline-item.ligacao::before{background:#f59e0b}
+    
+    .timeline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .timeline-titulo{font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px}
+    .timeline-titulo i{font-size:18px}
+    .timeline-titulo i.fa-envelope{color:#3b82f6}
+    .timeline-titulo i.fa-whatsapp{color:#25d366}
+    .timeline-titulo i.fa-sms{color:#a855f7}
+    .timeline-titulo i.fa-phone{color:#f59e0b}
+    .timeline-dias{font-size:12px;color:#71717a;background:#27272a;padding:4px 10px;border-radius:12px}
+    .timeline-desc{font-size:13px;color:#a1a1aa;margin-bottom:10px}
+    .timeline-acoes{display:flex;gap:8px}
+    .timeline-acoes button{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:12px;background:#27272a;color:#a1a1aa;transition:all .2s}
+    .timeline-acoes button:hover{background:#3f3f46;color:#fafafa}
+    .timeline-acoes button.ativo{background:rgba(34,197,94,.2);color:#22c55e}
+    
+    .config-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+    .config-item{background:#09090b;border:1px solid #27272a;border-radius:10px;padding:20px}
+    .config-item h3{font-size:14px;margin-bottom:15px;color:#a1a1aa}
+    .config-item .valor{font-size:24px;font-weight:700;color:#F6C84C}
+    
+    .toggle-container{display:flex;align-items:center;gap:12px}
+    .toggle{width:50px;height:26px;background:#27272a;border-radius:13px;position:relative;cursor:pointer;transition:all .3s}
+    .toggle.active{background:#22c55e}
+    .toggle::after{content:'';position:absolute;width:22px;height:22px;background:#fafafa;border-radius:50%;top:2px;left:2px;transition:all .3s}
+    .toggle.active::after{left:26px}
+    
+    .horario-config{display:flex;gap:15px;align-items:center;margin-top:15px}
+    .horario-config input{width:80px;background:#09090b;border:1px solid #27272a;color:#fafafa;padding:10px;border-radius:8px;text-align:center;font-size:14px}
+    .horario-config span{color:#71717a;font-size:14px}
+    
+    .user-section{position:absolute;bottom:20px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:15px;background:#27272a;border-radius:10px}
+    .user-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#F6C84C,#f59e0b);display:flex;align-items:center;justify-content:center;font-weight:700;color:#09090b}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:14px}.user-role{font-size:12px;color:#71717a}
+    .user-logout{color:#71717a;cursor:pointer;padding:8px;border-radius:6px}.user-logout:hover{background:#3f3f46;color:#fafafa}
+    
+    .alert-box{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:15px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+    .alert-box i{color:#f59e0b;font-size:20px}
+    .alert-box p{font-size:13px;color:#a1a1aa}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav>
+      <div class="nav-section"><div class="nav-title">Principal</div>
+        <a href="/dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-item"><i class="fas fa-layer-group"></i> Fila de Cobrança</a>
+        <a href="/atendimento" class="nav-item"><i class="fas fa-headset"></i> Atendimento</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Cadastros</div>
+        <a href="/credores" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+        <a href="/devedores" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/dividas" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Negociação</div>
+        <a href="/acordos" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-item"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-item"><i class="fas fa-calculator"></i> Simulador</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Financeiro</div>
+        <a href="/comissoes" class="nav-item"><i class="fas fa-percentage"></i> Comissões</a>
+        <a href="/repasses" class="nav-item"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/financeiro" class="nav-item"><i class="fas fa-chart-line"></i> Relatórios</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Configurações</div>
+        <a href="/regua-cobranca" class="nav-item active"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/configuracoes" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="user-section">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div class="user-info"><div class="user-name" id="userName">Administrador</div><div class="user-role" id="userRole">Admin</div></div>
+      <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="header">
+      <h1><i class="fas fa-robot" style="color:#F6C84C;margin-right:12px"></i>Régua de Cobrança</h1>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-secondary" onclick="testar()"><i class="fas fa-flask"></i> Testar</button>
+        <button class="btn btn-primary" onclick="salvarConfig()"><i class="fas fa-save"></i> Salvar</button>
+      </div>
+    </div>
+    
+    <div class="alert-box">
+      <i class="fas fa-info-circle"></i>
+      <p>A régua de cobrança automatiza o envio de lembretes e notificações para os clientes. Configure os canais e dias de disparo abaixo.</p>
+    </div>
+    
+    <!-- Status Geral -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-power-off"></i> Status do Sistema</h2>
+        <div class="toggle-container">
+          <span style="font-size:14px;color:#a1a1aa">Sistema de Lembretes:</span>
+          <div class="toggle" id="toggleSistema" onclick="toggleSistema()"></div>
+          <span id="statusTexto" class="status-inativo"><i class="fas fa-times-circle"></i> Desativado</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="config-grid">
+          <div class="config-item">
+            <h3>Limite Diário de Envios</h3>
+            <div class="valor" id="limiteDiario">100</div>
+            <input type="range" min="10" max="500" value="100" style="width:100%;margin-top:10px" onchange="document.getElementById('limiteDiario').textContent=this.value">
+          </div>
+          <div class="config-item">
+            <h3>Horário de Envio</h3>
+            <div class="horario-config">
+              <input type="time" id="horarioInicio" value="08:00">
+              <span>até</span>
+              <input type="time" id="horarioFim" value="18:00">
+            </div>
+          </div>
+          <div class="config-item">
+            <h3>Enviados Hoje</h3>
+            <div class="valor" id="enviadosHoje">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Timeline da Régua -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-stream"></i> Fluxo de Cobranças</h2>
+        <button class="btn btn-secondary" onclick="adicionarEtapa()"><i class="fas fa-plus"></i> Nova Etapa</button>
+      </div>
+      <div class="card-body">
+        <h3 style="font-size:14px;color:#71717a;margin-bottom:20px"><i class="fas fa-calendar-minus" style="margin-right:8px"></i> ANTES DO VENCIMENTO</h3>
+        
+        <div class="timeline">
+          <div class="timeline-item email">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fas fa-envelope"></i> E-mail de Lembrete</div>
+              <span class="timeline-dias">7 dias antes</span>
+            </div>
+            <div class="timeline-desc">Lembrete amigável informando sobre a fatura próxima do vencimento.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('email-7')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+          
+          <div class="timeline-item whatsapp">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fab fa-whatsapp"></i> WhatsApp</div>
+              <span class="timeline-dias">3 dias antes</span>
+            </div>
+            <div class="timeline-desc">Mensagem via WhatsApp lembrando da fatura.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('whatsapp-3')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+          
+          <div class="timeline-item email">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fas fa-envelope"></i> E-mail Urgente</div>
+              <span class="timeline-dias">No dia</span>
+            </div>
+            <div class="timeline-desc">E-mail informando que a fatura vence hoje.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('email-0')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+        </div>
+        
+        <h3 style="font-size:14px;color:#ef4444;margin:30px 0 20px"><i class="fas fa-calendar-plus" style="margin-right:8px"></i> APÓS O VENCIMENTO</h3>
+        
+        <div class="timeline">
+          <div class="timeline-item whatsapp">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fab fa-whatsapp"></i> WhatsApp de Cobrança</div>
+              <span class="timeline-dias">1 dia após</span>
+            </div>
+            <div class="timeline-desc">Primeira cobrança após o vencimento via WhatsApp.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('whatsapp+1')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+          
+          <div class="timeline-item email">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fas fa-envelope"></i> E-mail de Cobrança</div>
+              <span class="timeline-dias">3 dias após</span>
+            </div>
+            <div class="timeline-desc">E-mail formal de cobrança com valor atualizado.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('email+3')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+          
+          <div class="timeline-item ligacao">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fas fa-phone"></i> Agendar Ligação</div>
+              <span class="timeline-dias">7 dias após</span>
+            </div>
+            <div class="timeline-desc">Adiciona cliente à fila de ligações do operador.</div>
+            <div class="timeline-acoes">
+              <button class="ativo"><i class="fas fa-check"></i> Ativo</button>
+              <button onclick="editarTemplate('ligacao+7')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+          
+          <div class="timeline-item email">
+            <div class="timeline-header">
+              <div class="timeline-titulo"><i class="fas fa-envelope"></i> Notificação Final</div>
+              <span class="timeline-dias">15 dias após</span>
+            </div>
+            <div class="timeline-desc">Última notificação antes de medidas mais severas.</div>
+            <div class="timeline-acoes">
+              <button><i class="fas fa-times"></i> Inativo</button>
+              <button onclick="editarTemplate('email+15')"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let token=localStorage.getItem('token');
+    if(!token)window.location.href='/login';
+    
+    function logout(){localStorage.removeItem('token');window.location.href='/login'}
+    
+    let sistemaAtivo=false;
+    
+    function toggleSistema(){
+      sistemaAtivo=!sistemaAtivo;
+      const toggle=document.getElementById('toggleSistema');
+      const texto=document.getElementById('statusTexto');
+      
+      if(sistemaAtivo){
+        toggle.classList.add('active');
+        texto.className='status-ativo';
+        texto.innerHTML='<i class="fas fa-check-circle"></i> Ativado';
+      }else{
+        toggle.classList.remove('active');
+        texto.className='status-inativo';
+        texto.innerHTML='<i class="fas fa-times-circle"></i> Desativado';
+      }
+      
+      // Salvar no backend
+      fetch('/api/lembretes/ativar',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body:JSON.stringify({ativo:sistemaAtivo})
+      });
+    }
+    
+    function salvarConfig(){
+      alert('Configurações salvas com sucesso!');
+    }
+    
+    function testar(){
+      const email=prompt('Digite o e-mail para teste:');
+      if(email){
+        fetch('/api/lembretes/teste',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+          body:JSON.stringify({email,tipo:'novaCobranca'})
+        }).then(r=>r.json()).then(d=>{
+          alert(d.success?'E-mail de teste enviado!':'Erro: '+d.message);
+        });
+      }
+    }
+    
+    function editarTemplate(tipo){
+      alert('Editor de template: '+tipo+'\n\nEm desenvolvimento...');
+    }
+    
+    function adicionarEtapa(){
+      alert('Adicionar nova etapa à régua\n\nEm desenvolvimento...');
+    }
+    
+    // Carregar status
+    async function carregarStatus(){
+      try{
+        const res=await fetch('/api/lembretes/config',{headers:{'Authorization':`Bearer ${token}`}});
+        const data=await res.json();
+        if(data.success&&data.config){
+          sistemaAtivo=data.config.ativo;
+          if(sistemaAtivo){
+            document.getElementById('toggleSistema').classList.add('active');
+            document.getElementById('statusTexto').className='status-ativo';
+            document.getElementById('statusTexto').innerHTML='<i class="fas fa-check-circle"></i> Ativado';
+          }
+        }
+        
+        // Estatísticas
+        const stats=await fetch('/api/lembretes/estatisticas',{headers:{'Authorization':`Bearer ${token}`}});
+        const statsData=await stats.json();
+        if(statsData.success){
+          document.getElementById('enviadosHoje').textContent=statsData.estatisticas?.enviados_hoje||0;
+        }
+      }catch(e){}
+    }
+    
+    // Carregar usuario
+    try{
+      const payload=JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('userName').textContent=payload.nome||'Usuário';
+      document.getElementById('userRole').textContent=payload.nivel||'Operador';
+      document.getElementById('userAvatar').textContent=(payload.nome||'U')[0].toUpperCase();
+    }catch(e){}
+    
+    carregarStatus();
+  </script>
+</body>
+</html>

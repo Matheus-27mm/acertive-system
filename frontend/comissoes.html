@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comissões - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#09090b;color:#fafafa;min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:#18181b;border-right:1px solid #27272a;padding:20px;overflow-y:auto;z-index:100}
+    .logo{display:flex;align-items:center;gap:12px;padding:10px 0 30px;border-bottom:1px solid #27272a;margin-bottom:20px}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#F6C84C,#f59e0b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#09090b}
+    .logo-text{font-size:22px;font-weight:700}.logo-text span{color:#F6C84C}
+    .nav-section{margin-bottom:25px}.nav-title{font-size:11px;text-transform:uppercase;color:#71717a;letter-spacing:1px;margin-bottom:10px;padding-left:10px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:8px;color:#a1a1aa;text-decoration:none;transition:all .2s;margin-bottom:4px}
+    .nav-item:hover{background:#27272a;color:#fafafa}.nav-item.active{background:linear-gradient(135deg,#F6C84C,#f59e0b);color:#09090b;font-weight:600}
+    .nav-item i{width:20px;text-align:center}
+    .main{margin-left:260px;padding:30px;min-height:100vh}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.header h1{font-size:28px;font-weight:700}
+    .btn{padding:12px 20px;border-radius:8px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;font-size:14px}
+    .btn-primary{background:linear-gradient(135deg,#F6C84C,#f59e0b);color:#09090b}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(246,200,76,.4)}
+    .btn-secondary{background:#27272a;color:#fafafa}.btn-secondary:hover{background:#3f3f46}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:30px}
+    .stat-card{background:#18181b;border:1px solid #27272a;border-radius:12px;padding:20px}
+    .stat-card.highlight{border-color:#F6C84C;background:linear-gradient(135deg,rgba(246,200,76,.1),rgba(245,158,11,.05))}
+    .stat-icon{width:45px;height:45px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:15px}
+    .stat-icon.yellow{background:rgba(246,200,76,.2);color:#F6C84C}.stat-icon.green{background:rgba(34,197,94,.2);color:#22c55e}.stat-icon.blue{background:rgba(59,130,246,.2);color:#3b82f6}
+    .stat-label{font-size:13px;color:#71717a;margin-bottom:5px}.stat-value{font-size:28px;font-weight:700}.stat-sub{font-size:12px;color:#71717a;margin-top:5px}
+    .table-container{background:#18181b;border:1px solid #27272a;border-radius:12px;overflow:hidden}
+    table{width:100%;border-collapse:collapse}thead{background:#27272a}
+    th{text-align:left;padding:15px 20px;font-size:12px;text-transform:uppercase;color:#a1a1aa;font-weight:600}
+    td{padding:15px 20px;border-bottom:1px solid #27272a;font-size:14px}tr:hover{background:rgba(246,200,76,.05)}
+    .credor-info{display:flex;align-items:center;gap:12px}
+    .credor-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px}
+    .credor-nome{font-weight:600}.credor-taxa{font-size:12px;color:#71717a}
+    .valor{font-weight:700}.valor.positivo{color:#22c55e}.valor.destaque{color:#F6C84C}
+    .status-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+    .status-badge.pendente{background:rgba(245,158,11,.2);color:#f59e0b}.status-badge.pago{background:rgba(34,197,94,.2);color:#22c55e}
+    .empty-state{text-align:center;padding:60px 20px}.empty-state i{font-size:60px;color:#27272a;margin-bottom:20px}
+    .empty-state h3{font-size:20px;margin-bottom:10px;color:#71717a}.empty-state p{color:#52525b;font-size:14px}
+    .loading{display:flex;justify-content:center;padding:40px}
+    .spinner{width:40px;height:40px;border:3px solid #27272a;border-top-color:#F6C84C;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .user-section{position:absolute;bottom:20px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:15px;background:#27272a;border-radius:10px}
+    .user-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#F6C84C,#f59e0b);display:flex;align-items:center;justify-content:center;font-weight:700;color:#09090b}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:14px}.user-role{font-size:12px;color:#71717a}
+    .user-logout{color:#71717a;cursor:pointer;padding:8px;border-radius:6px}.user-logout:hover{background:#3f3f46;color:#fafafa}
+    .filters{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+    .filter-group select{background:#18181b;border:1px solid #27272a;color:#fafafa;padding:10px 15px;border-radius:8px;font-size:14px}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav>
+      <div class="nav-section"><div class="nav-title">Principal</div>
+        <a href="/dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-item"><i class="fas fa-layer-group"></i> Fila de Cobrança</a>
+        <a href="/atendimento" class="nav-item"><i class="fas fa-headset"></i> Atendimento</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Cadastros</div>
+        <a href="/credores" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+        <a href="/devedores" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/dividas" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Negociação</div>
+        <a href="/acordos" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-item"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-item"><i class="fas fa-calculator"></i> Simulador</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Financeiro</div>
+        <a href="/comissoes" class="nav-item active"><i class="fas fa-percentage"></i> Comissões</a>
+        <a href="/repasses" class="nav-item"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/financeiro" class="nav-item"><i class="fas fa-chart-line"></i> Relatórios</a>
+      </div>
+      <div class="nav-section"><div class="nav-title">Configurações</div>
+        <a href="/regua-cobranca" class="nav-item"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/configuracoes" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="user-section">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div class="user-info"><div class="user-name" id="userName">Administrador</div><div class="user-role" id="userRole">Admin</div></div>
+      <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="header">
+      <h1><i class="fas fa-percentage" style="color:#F6C84C;margin-right:12px"></i>Comissões</h1>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-secondary" onclick="exportar()"><i class="fas fa-download"></i> Exportar</button>
+        <button class="btn btn-primary" onclick="carregar()"><i class="fas fa-sync-alt"></i> Atualizar</button>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card highlight">
+        <div class="stat-icon yellow"><i class="fas fa-coins"></i></div>
+        <div class="stat-label">Total Comissões (Mês)</div>
+        <div class="stat-value" id="statTotal">R$ 0,00</div>
+        <div class="stat-sub">acumulado este mês</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-label">Comissões Pagas</div>
+        <div class="stat-value" id="statPagas">R$ 0,00</div>
+        <div class="stat-sub">já recebido</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-value" id="statPendentes">R$ 0,00</div>
+        <div class="stat-sub">aguardando</div>
+      </div>
+    </div>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <select id="filterCredor"><option value="">Todos Credores</option></select>
+      </div>
+      <div class="filter-group">
+        <select id="filterStatus">
+          <option value="">Todos Status</option>
+          <option value="pendente">Pendente</option>
+          <option value="pago">Pago</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <select id="filterPeriodo">
+          <option value="mes">Este Mês</option>
+          <option value="semana">Esta Semana</option>
+          <option value="ano">Este Ano</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Credor</th>
+            <th>Acordo/Parcela</th>
+            <th>Valor Base</th>
+            <th>Taxa</th>
+            <th>Comissão</th>
+            <th>Status</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const API_URL='';let token=localStorage.getItem('token');
+    if(!token)window.location.href='/login';
+    
+    function logout(){localStorage.removeItem('token');window.location.href='/login'}
+    function formatMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
+    function formatDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('pt-BR')}
+    function getInitials(n){if(!n)return'?';const p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():n.substring(0,2).toUpperCase()}
+    
+    async function fetchAPI(url,opts={}){
+      const res=await fetch(API_URL+url,{...opts,headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`,...opts.headers}});
+      if(res.status===401){logout();return null}return res.json();
+    }
+    
+    async function carregar(){
+      try{
+        const data=await fetchAPI('/api/financeiro/comissoes');
+        if(!data||!data.success){mostrarVazio();return}
+        
+        let total=0,pagas=0,pendentes=0;
+        const comissoes=data.data||[];
+        
+        comissoes.forEach(c=>{
+          total+=parseFloat(c.valor_comissao||0);
+          if(c.status==='pago')pagas+=parseFloat(c.valor_comissao||0);
+          else pendentes+=parseFloat(c.valor_comissao||0);
+        });
+        
+        document.getElementById('statTotal').textContent=formatMoney(total);
+        document.getElementById('statPagas').textContent=formatMoney(pagas);
+        document.getElementById('statPendentes').textContent=formatMoney(pendentes);
+        
+        renderTabela(comissoes);
+      }catch(e){console.error(e);mostrarVazio()}
+    }
+    
+    function renderTabela(dados){
+      const tbody=document.getElementById('tableBody');
+      if(!dados||dados.length===0){mostrarVazio();return}
+      
+      tbody.innerHTML=dados.map(c=>`
+        <tr>
+          <td>
+            <div class="credor-info">
+              <div class="credor-avatar">${getInitials(c.credor_nome||'CR')}</div>
+              <div><div class="credor-nome">${c.credor_nome||'Credor'}</div><div class="credor-taxa">${c.percentual||0}%</div></div>
+            </div>
+          </td>
+          <td>${c.acordo_id?c.acordo_id.substring(0,8):'—'}</td>
+          <td>${formatMoney(c.valor_base)}</td>
+          <td>${c.percentual||0}%</td>
+          <td class="valor destaque">${formatMoney(c.valor_comissao)}</td>
+          <td><span class="status-badge ${c.status}">${c.status==='pago'?'Pago':'Pendente'}</span></td>
+          <td>${formatDate(c.created_at)}</td>
+        </tr>
+      `).join('');
+    }
+    
+    function mostrarVazio(){
+      document.getElementById('tableBody').innerHTML=`
+        <tr><td colspan="7">
+          <div class="empty-state">
+            <i class="fas fa-coins"></i>
+            <h3>Nenhuma comissão encontrada</h3>
+            <p>As comissões serão geradas automaticamente quando parcelas forem pagas.</p>
+          </div>
+        </td></tr>`;
+    }
+    
+    function exportar(){window.location.href='/api/financeiro/comissoes?export=csv'}
+    
+    // Carregar credores no filtro
+    async function carregarCredores(){
+      try{
+        const data=await fetchAPI('/api/credores');
+        if(data&&data.success){
+          const sel=document.getElementById('filterCredor');
+          data.data.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nome;sel.appendChild(o)});
+        }
+      }catch(e){}
+    }
+    
+    // Carregar usuario
+    try{
+      const payload=JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('userName').textContent=payload.nome||'Usuário';
+      document.getElementById('userRole').textContent=payload.nivel||'Operador';
+      document.getElementById('userAvatar').textContent=(payload.nome||'U')[0].toUpperCase();
+    }catch(e){}
+    
+    carregarCredores();
+    carregar();
+  </script>
+</body>
+</html>
