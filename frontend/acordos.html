@@ -1,187 +1,425 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ACERTIVE • Acordos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--border:rgba(255,255,255,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:260px}
-    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
-    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary)}
-    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
-    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
-    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
-    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:12px;font-weight:500;font-size:14px;transition:all 0.15s;margin-bottom:2px}
-    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow);color:var(--gold)}.nav-link i{width:20px;text-align:center}
-    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
-    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px}
-    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
-    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
-    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
-    .main{margin-left:var(--sidebar-width);min-height:100vh}
-    .header{height:64px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
-    .page-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.page-title i{color:var(--gold)}
-    .header-right{display:flex;align-items:center;gap:10px}.content{padding:24px}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s}
-    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-1px)}
-    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold)}
-    .btn-danger{background:var(--red-bg);color:var(--red)}.btn-danger:hover{background:var(--red);color:white}
-    .btn-sm{padding:6px 12px;font-size:12px}.btn-icon{width:36px;height:36px;padding:0;justify-content:center}
-    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
-    .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
-    .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.stat-value{font-size:22px;font-weight:800}
-    .filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-    .search-box{flex:1;min-width:250px;position:relative}
-    .search-box input{width:100%;padding:10px 12px 10px 40px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}
-    .search-box input:focus{outline:none;border-color:var(--gold)}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
-    .filter-select{padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;min-width:140px}
-    .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .table-title{font-size:14px;font-weight:700}.table-count{font-size:12px;color:var(--text-muted)}
-    table{width:100%;border-collapse:collapse}thead{background:rgba(255,255,255,0.02)}
-    th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase}
-    td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}tr:last-child td{border-bottom:none}tr:hover{background:rgba(255,255,255,0.02)}
-    .status-badge{display:inline-flex;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600}
-    .status-badge.ativo{background:var(--green-bg);color:var(--green)}.status-badge.quitado,.status-badge.pago{background:var(--blue-bg);color:var(--blue)}.status-badge.quebrado{background:var(--red-bg);color:var(--red)}
-    .valor-acordo{font-weight:700;color:var(--gold)}.actions{display:flex;gap:6px}
-    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}.empty-state p{font-size:14px;margin-bottom:20px}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center}.modal-overlay.show{display:flex}
-    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:90%;max-width:700px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
-    .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-title i{color:var(--gold)}
-    .modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px}.modal-close:hover{color:var(--red)}
-    .modal-body{padding:24px;overflow-y:auto;flex:1}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
-    .form-section{margin-bottom:24px}.form-section-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}.form-section-title i{color:var(--gold)}
-    .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}.form-row.col-3{grid-template-columns:repeat(3,1fr)}
-    .form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}.form-label span{color:var(--red)}
-    .form-input,.form-select{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}.form-input:focus,.form-select:focus{outline:none;border-color:var(--gold)}
-    .cliente-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px}.cliente-card:hover,.cliente-card.selected{border-color:var(--gold);background:var(--gold-glow)}
-    .cliente-avatar{width:40px;height:40px;background:var(--gold-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold)}
-    .cliente-info{flex:1}.cliente-nome{font-weight:600}.cliente-cpf{font-size:11px;color:var(--text-muted)}.cliente-valor{font-weight:700;color:var(--gold)}
-    .resumo-acordo{background:var(--bg-primary);border-radius:12px;padding:20px;margin-top:20px}
-    .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}.resumo-label{font-size:11px;color:var(--text-muted)}.resumo-valor{font-size:18px;font-weight:800}.resumo-valor.destaque{color:var(--gold)}.resumo-valor.verde{color:var(--green)}
-    .lembrete-toggle{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-primary);border-radius:8px;margin-top:16px}.lembrete-toggle input{width:18px;height:18px;accent-color:var(--gold)}.lembrete-config{margin-top:12px;padding:12px;background:rgba(139,92,246,0.12);border-radius:8px;display:none}.lembrete-config.show{display:block}
-    @media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
-  </style>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ACERTIVE • Acordos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--border:rgba(255,255,255,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:260px}
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+        .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+        .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary)}
+        .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+        .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+        .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:12px;font-weight:500;font-size:14px;transition:all 0.15s;margin-bottom:2px}
+        .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow);color:var(--gold)}.nav-link i{width:20px;text-align:center}
+        .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+        .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px}
+        .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
+        .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+        .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+        .main{margin-left:var(--sidebar-width);min-height:100vh}
+        .header{height:64px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+        .page-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.page-title i{color:var(--gold)}
+        .header-right{display:flex;align-items:center;gap:10px}.content{padding:24px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s}
+        .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-1px)}
+        .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold)}
+        .btn-sm{padding:6px 12px;font-size:12px}.btn-icon{width:36px;height:36px;padding:0;justify-content:center}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
+        .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
+        .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.stat-value{font-size:22px;font-weight:800}
+        .filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+        .search-box{flex:1;min-width:250px;position:relative}
+        .search-box input{width:100%;padding:10px 12px 10px 40px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}
+        .search-box input:focus{outline:none;border-color:var(--gold)}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+        .filter-select{padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;min-width:140px}
+        .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+        .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .table-title{font-size:14px;font-weight:700}.table-count{font-size:12px;color:var(--text-muted)}
+        table{width:100%;border-collapse:collapse}thead{background:rgba(255,255,255,0.02)}
+        th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase}
+        td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}tr:last-child td{border-bottom:none}tr:hover{background:rgba(255,255,255,0.02)}
+        .status-badge{display:inline-flex;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600}
+        .status-badge.ativo{background:var(--green-bg);color:var(--green)}.status-badge.quitado,.status-badge.pago{background:var(--blue-bg);color:var(--blue)}.status-badge.quebrado{background:var(--red-bg);color:var(--red)}
+        .valor-acordo{font-weight:700;color:var(--gold)}.actions{display:flex;gap:6px}
+        .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}.empty-state p{font-size:14px;margin-bottom:20px}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center}.modal-overlay.show{display:flex}
+        .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:90%;max-width:750px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+        .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-title i{color:var(--gold)}
+        .modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px}.modal-close:hover{color:var(--red)}
+        .modal-body{padding:24px;overflow-y:auto;flex:1}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
+        .form-section{margin-bottom:24px}.form-section-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}.form-section-title i{color:var(--gold)}
+        .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}.form-row.col-3{grid-template-columns:repeat(3,1fr)}
+        .form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}.form-label span{color:var(--red)}
+        .form-input{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}.form-input:focus{outline:none;border-color:var(--gold)}
+        .option-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+        .option-card{padding:24px;background:var(--bg-primary);border:2px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;transition:all 0.2s}
+        .option-card:hover,.option-card.selected{border-color:var(--gold);background:var(--gold-glow)}
+        .option-card i{font-size:32px;margin-bottom:12px;color:var(--gold)}.option-card h4{font-size:14px;margin-bottom:4px}.option-card p{font-size:12px;color:var(--text-muted)}
+        .item-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px}
+        .item-card:hover,.item-card.selected{border-color:var(--gold);background:var(--gold-glow)}
+        .item-avatar{width:40px;height:40px;background:var(--gold-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold)}
+        .item-info{flex:1}.item-nome{font-weight:600}.item-meta{font-size:11px;color:var(--text-muted)}.item-valor{font-weight:700;color:var(--gold)}
+        .resumo-acordo{background:var(--bg-primary);border-radius:12px;padding:20px;margin-top:20px}
+        .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}.resumo-label{font-size:11px;color:var(--text-muted)}.resumo-valor{font-size:18px;font-weight:800}.resumo-valor.destaque{color:var(--gold)}.resumo-valor.verde{color:var(--green)}
+        .info-box{background:var(--blue-bg);border:1px solid var(--blue);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+        .info-box i{color:var(--blue);font-size:18px}.info-box p{font-size:13px;color:var(--text-secondary)}
+        @media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}@media(max-width:600px){.option-cards,.form-row.col-3{grid-template-columns:1fr}}
+    </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div><a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a><a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a><a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a></div>
-      <div class="nav-section"><div class="nav-section-title">Cadastros</div><a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a><a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a><a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
-      <div class="nav-section"><div class="nav-section-title">Negociação</div><a href="/acordos" class="nav-link active"><i class="fas fa-handshake"></i> Acordos</a><a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a><a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a></div>
-      <div class="nav-section"><div class="nav-section-title">Financeiro</div><a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a><a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a></div>
-    </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
-  </aside>
-
-  <main class="main">
-    <header class="header"><div class="header-left"><h1 class="page-title"><i class="fas fa-handshake"></i> Acordos</h1></div><div class="header-right"><button class="btn btn-secondary"><i class="fas fa-download"></i> Exportar</button><button class="btn btn-primary" onclick="abrirModalNovoAcordo()"><i class="fas fa-plus"></i> Novo Acordo</button></div></header>
-    <div class="content">
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-handshake"></i></div><div class="stat-label">Acordos Ativos</div><div class="stat-value" id="statAtivos">0</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-dollar-sign"></i></div><div class="stat-label">Valor Negociado</div><div class="stat-value" id="statValor">R$ 0</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-check-circle"></i></div><div class="stat-label">Acordos Quitados</div><div class="stat-value" id="statQuitados">0</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-times-circle"></i></div><div class="stat-label">Acordos Quebrados</div><div class="stat-value" id="statQuebrados">0</div></div>
-      </div>
-      <div class="filters"><div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Buscar..." id="searchAcordo" onkeyup="aplicarFiltros()"></div><select class="filter-select" id="filtroStatus" onchange="aplicarFiltros()"><option value="">Todos</option><option value="ativo">Ativo</option><option value="quitado">Quitado</option><option value="quebrado">Quebrado</option></select></div>
-      <div class="table-container">
-        <div class="table-header"><div class="table-title">Lista de Acordos</div><div class="table-count" id="tableCount">0 acordos</div></div>
-        <table><thead><tr><th>Acordo</th><th>Cliente</th><th>Parcelas</th><th>Status</th><th style="text-align:right;">Valor</th><th>Ações</th></tr></thead><tbody id="acordosBody"></tbody></table>
-        <div id="emptyState" class="empty-state" style="display:none;"><i class="fas fa-handshake"></i><p>Nenhum acordo cadastrado</p><button class="btn btn-primary" onclick="abrirModalNovoAcordo()"><i class="fas fa-plus"></i> Criar Acordo</button></div>
-      </div>
-    </div>
-  </main>
-
-  <div class="modal-overlay" id="modalNovoAcordo">
-    <div class="modal">
-      <div class="modal-header"><h3 class="modal-title"><i class="fas fa-handshake"></i> Novo Acordo</h3><button class="modal-close" onclick="fecharModal('modalNovoAcordo')"><i class="fas fa-times"></i></button></div>
-      <div class="modal-body">
-        <div id="etapa1">
-          <div class="form-section"><div class="form-section-title"><i class="fas fa-user"></i> Selecione o Cliente</div>
-            <div class="search-box" style="margin-bottom:16px;"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cliente..." id="buscaCliente" onkeyup="buscarClientes()"></div>
-            <div id="listaClientes" style="max-height:250px;overflow-y:auto;"><p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p></div>
-          </div>
-        </div>
-        <div id="etapa2" style="display:none;">
-          <div class="form-section"><div class="form-section-title"><i class="fas fa-user-check"></i> Cliente</div><div class="cliente-card selected" id="clienteSelecionadoCard"></div><button class="btn btn-secondary btn-sm" onclick="voltarEtapa1()" style="margin-top:8px;"><i class="fas fa-arrow-left"></i> Trocar</button></div>
-          <div class="form-section"><div class="form-section-title"><i class="fas fa-cog"></i> Configurações</div>
-            <div class="form-row col-3">
-              <div class="form-group"><label class="form-label">Valor Original</label><input type="text" class="form-input" id="valorOriginal" readonly></div>
-              <div class="form-group"><label class="form-label">Desconto (%)</label><input type="number" class="form-input" id="descontoAcordo" value="0" min="0" max="100" oninput="calcularAcordo()"></div>
-              <div class="form-group"><label class="form-label">Valor Final</label><input type="text" class="form-input" id="valorFinal" readonly style="color:var(--gold);font-weight:700;"></div>
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section"><div class="nav-section-title">Principal</div><a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a><a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a><a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a></div>
+            <div class="nav-section"><div class="nav-section-title">Cadastros</div><a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a><a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a><a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
+            <div class="nav-section"><div class="nav-section-title">Negociação</div><a href="/acordos" class="nav-link active"><i class="fas fa-handshake"></i> Acordos</a><a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a><a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a></div>
+            <div class="nav-section"><div class="nav-section-title">Financeiro</div><a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a><a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a></div>
+        </nav>
+        <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+    </aside>
+    <main class="main">
+        <header class="header"><div class="header-left"><h1 class="page-title"><i class="fas fa-handshake"></i> Acordos</h1></div><div class="header-right"><button class="btn btn-secondary"><i class="fas fa-download"></i> Exportar</button><button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Novo Acordo</button></div></header>
+        <div class="content">
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-handshake"></i></div><div class="stat-label">Acordos Ativos</div><div class="stat-value" id="statAtivos">0</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-dollar-sign"></i></div><div class="stat-label">Valor Negociado</div><div class="stat-value" id="statValor">R$ 0</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-check-circle"></i></div><div class="stat-label">Acordos Quitados</div><div class="stat-value" id="statQuitados">0</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-times-circle"></i></div><div class="stat-label">Acordos Quebrados</div><div class="stat-value" id="statQuebrados">0</div></div>
             </div>
-            <div class="form-row col-3">
-              <div class="form-group"><label class="form-label">Nº Parcelas <span>*</span></label><input type="number" class="form-input" id="numParcelas" value="1" min="1" max="48" oninput="calcularAcordo()"></div>
-              <div class="form-group"><label class="form-label">Valor Parcela</label><input type="text" class="form-input" id="valorParcela" readonly></div>
-              <div class="form-group"><label class="form-label">1º Vencimento <span>*</span></label><input type="date" class="form-input" id="primeiroVencimento"></div>
+            <div class="filters"><div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Buscar por nome ou CPF..." id="searchAcordo" onkeyup="filtrar()"></div><select class="filter-select" id="filtroStatus" onchange="filtrar()"><option value="">Todos</option><option value="ativo">Ativo</option><option value="quitado">Quitado</option><option value="quebrado">Quebrado</option></select></div>
+            <div class="table-container">
+                <div class="table-header"><div class="table-title">Lista de Acordos</div><div class="table-count" id="tableCount">0 acordos</div></div>
+                <table><thead><tr><th>Acordo</th><th>Cliente</th><th>Parcelas</th><th>Status</th><th style="text-align:right;">Valor</th><th>Ações</th></tr></thead><tbody id="tbody"></tbody></table>
+                <div id="emptyState" class="empty-state" style="display:none;"><i class="fas fa-handshake"></i><p>Nenhum acordo cadastrado</p><button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Criar Acordo</button></div>
             </div>
-          </div>
-          <div class="form-section"><div class="form-section-title"><i class="fas fa-bell"></i> Lembretes</div>
-            <div class="lembrete-toggle"><input type="checkbox" id="ativarLembrete" onchange="toggleLembreteConfig()"><label for="ativarLembrete">Enviar lembretes</label></div>
-            <div class="lembrete-config" id="lembreteConfig"><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Dias antes</label><select class="form-select" id="diasLembrete"><option value="1">1 dia</option><option value="3" selected>3 dias</option><option value="7">7 dias</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Canal</label><select class="form-select" id="canalLembrete"><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option></select></div></div></div>
-          </div>
-          <div class="resumo-acordo"><div class="form-section-title"><i class="fas fa-file-contract"></i> Resumo</div><div class="resumo-grid"><div><div class="resumo-label">Original</div><div class="resumo-valor" id="resumoOriginal">R$ 0</div></div><div><div class="resumo-label">Desconto</div><div class="resumo-valor verde" id="resumoDesconto">- R$ 0</div></div><div><div class="resumo-label">Acordo</div><div class="resumo-valor destaque" id="resumoFinal">R$ 0</div></div></div></div>
         </div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalNovoAcordo')">Cancelar</button><button class="btn btn-primary" id="btnSalvarAcordo" onclick="salvarAcordo()" style="display:none;"><i class="fas fa-save"></i> Salvar</button></div>
+    </main>
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title"><i class="fas fa-handshake"></i> Novo Acordo</h3><button class="modal-close" onclick="fecharModal()"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body">
+                <div id="etapa0">
+                    <div class="form-section"><div class="form-section-title"><i class="fas fa-route"></i> Como deseja criar o acordo?</div>
+                        <div class="option-cards">
+                            <div class="option-card" onclick="escolherTipo('cobranca')"><i class="fas fa-file-invoice-dollar"></i><h4>Por Cobrança</h4><p>Selecione uma cobrança existente</p></div>
+                            <div class="option-card" onclick="escolherTipo('cliente')"><i class="fas fa-user"></i><h4>Por Cliente</h4><p>Informe o valor manualmente</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="etapa1a" style="display:none;">
+                    <div class="form-section"><div class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Selecione a Cobrança</div>
+                        <button class="btn btn-secondary btn-sm" onclick="voltar0()" style="margin-bottom:16px;"><i class="fas fa-arrow-left"></i> Voltar</button>
+                        <div class="search-box" style="margin-bottom:16px;"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cobrança..." id="buscaCob" onkeyup="buscarCob()"></div>
+                        <div id="listaCob" style="max-height:300px;overflow-y:auto;"><p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p></div>
+                    </div>
+                </div>
+                <div id="etapa1b" style="display:none;">
+                    <div class="form-section"><div class="form-section-title"><i class="fas fa-user"></i> Selecione o Cliente</div>
+                        <button class="btn btn-secondary btn-sm" onclick="voltar0()" style="margin-bottom:16px;"><i class="fas fa-arrow-left"></i> Voltar</button>
+                        <div class="search-box" style="margin-bottom:16px;"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cliente..." id="buscaCli" onkeyup="buscarCli()"></div>
+                        <div id="listaCli" style="max-height:300px;overflow-y:auto;"><p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p></div>
+                    </div>
+                </div>
+                <div id="etapa2" style="display:none;">
+                    <div class="form-section"><div class="form-section-title"><i class="fas fa-check-circle"></i> <span id="tituloSel">Selecionado</span></div>
+                        <div id="cardSel" class="item-card selected"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="voltarBusca()" style="margin-top:8px;"><i class="fas fa-arrow-left"></i> Trocar</button>
+                    </div>
+                    <div class="form-section" id="secaoValorManual" style="display:none;">
+                        <div class="form-section-title"><i class="fas fa-coins"></i> Valor da Dívida</div>
+                        <div class="info-box"><i class="fas fa-info-circle"></i><p>Informe o valor total da dívida.</p></div>
+                        <div class="form-group"><label class="form-label">Valor Original <span>*</span></label><input type="number" class="form-input" id="valorManual" placeholder="0.00" step="0.01" min="0" oninput="calcular()"></div>
+                    </div>
+                    <div class="form-section"><div class="form-section-title"><i class="fas fa-cog"></i> Configurações</div>
+                        <div class="form-row col-3">
+                            <div class="form-group"><label class="form-label">Valor Original</label><input type="text" class="form-input" id="valorOrig" readonly></div>
+                            <div class="form-group"><label class="form-label">Desconto (%)</label><input type="number" class="form-input" id="desconto" value="0" min="0" max="100" oninput="calcular()"></div>
+                            <div class="form-group"><label class="form-label">Valor Final</label><input type="text" class="form-input" id="valorFinal" readonly style="color:var(--gold);font-weight:700;"></div>
+                        </div>
+                        <div class="form-row col-3">
+                            <div class="form-group"><label class="form-label">Nº Parcelas <span>*</span></label><input type="number" class="form-input" id="numParc" value="1" min="1" max="48" oninput="calcular()"></div>
+                            <div class="form-group"><label class="form-label">Valor Parcela</label><input type="text" class="form-input" id="valorParc" readonly></div>
+                            <div class="form-group"><label class="form-label">1º Vencimento <span>*</span></label><input type="date" class="form-input" id="primVenc"></div>
+                        </div>
+                    </div>
+                    <div class="resumo-acordo"><div class="form-section-title"><i class="fas fa-file-contract"></i> Resumo</div>
+                        <div class="resumo-grid"><div><div class="resumo-label">Original</div><div class="resumo-valor" id="resOrig">R$ 0</div></div><div><div class="resumo-label">Desconto</div><div class="resumo-valor verde" id="resDesc">- R$ 0</div></div><div><div class="resumo-label">Acordo</div><div class="resumo-valor destaque" id="resFinal">R$ 0</div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvar" onclick="salvar()" style="display:none;"><i class="fas fa-save"></i> Salvar</button></div>
+        </div>
     </div>
-  </div>
-
-  <script>
-    const API=window.location.origin;let token=localStorage.getItem('token');if(!token)window.location.href='/login';
-    let acordos=[],acordosFiltrados=[],clientes=[],clienteSelecionado=null;
-    function getHeaders(){return{'Content-Type':'application/json','Authorization':'Bearer '+token}}
-    function fmtMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
-    function fmtDate(d){return d?new Date(d).toLocaleDateString('pt-BR'):'—'}
-    function logout(){localStorage.removeItem('token');window.location.href='/login'}
-
-    async function carregarUsuario(){try{const r=await fetch(API+'/api/usuarios/me',{headers:getHeaders()});const d=await r.json();if(d.success&&d.data){document.getElementById('userName').textContent=d.data.nome||'Usuário';document.getElementById('userRole').textContent=d.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(d.data.nome||'U').charAt(0).toUpperCase()}}catch(e){}}
-
-    async function carregarAcordos(){const tbody=document.getElementById('acordosBody');tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin"></i></td></tr>';try{const r=await fetch(API+'/api/acordos',{headers:getHeaders()});const d=await r.json();if(d.success&&d.data&&d.data.length>0){acordos=d.data;acordosFiltrados=[...acordos];atualizarStats();renderizarAcordos();document.getElementById('emptyState').style.display='none'}else{acordos=[];acordosFiltrados=[];tbody.innerHTML='';document.getElementById('emptyState').style.display='block'}}catch(e){acordos=[];acordosFiltrados=[];tbody.innerHTML='';document.getElementById('emptyState').style.display='block'}}
-
-    function aplicarFiltros(){const busca=document.getElementById('searchAcordo').value.toLowerCase().trim();const status=document.getElementById('filtroStatus').value;acordosFiltrados=acordos.filter(a=>{if(status&&a.status!==status){if(status==='quitado'&&a.status!=='pago')return false;if(status!=='quitado')return false}if(busca){const nome=(a.cliente_nome||a.devedor_nome||'').toLowerCase();const cpf=(a.cliente_cpf||'').toLowerCase();if(!nome.includes(busca)&&!cpf.includes(busca))return false}return true});renderizarAcordos()}
-
-    function renderizarAcordos(){const tbody=document.getElementById('acordosBody');document.getElementById('tableCount').textContent=acordosFiltrados.length+' acordos';if(!acordosFiltrados.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum acordo encontrado</td></tr>';return}tbody.innerHTML=acordosFiltrados.map(a=>{const s=a.status||'ativo';const pp=a.parcelas_pagas||0;const tp=a.total_parcelas||a.numero_parcelas||1;const sc=s==='pago'?'quitado':s;const st=s==='pago'?'QUITADO':s.toUpperCase();return`<tr><td><div style="font-weight:700;">#${String(a.id).substring(0,8)}</div><div style="font-size:11px;color:var(--text-muted);">${fmtDate(a.created_at)}</div></td><td><div style="font-weight:600;">${a.cliente_nome||a.devedor_nome||'—'}</div></td><td>${pp}/${tp}</td><td><span class="status-badge ${sc}">${st}</span></td><td style="text-align:right;"><div class="valor-acordo">${fmtMoney(a.valor_acordo)}</div></td><td><div class="actions"><button class="btn btn-secondary btn-sm btn-icon" onclick="verAcordo('${a.id}')"><i class="fas fa-eye"></i></button></div></td></tr>`}).join('')}
-
-    function atualizarStats(){const at=acordos.filter(a=>a.status==='ativo').length;const qt=acordos.filter(a=>a.status==='pago'||a.status==='quitado').length;const qb=acordos.filter(a=>a.status==='quebrado').length;const vt=acordos.reduce((s,a)=>s+(parseFloat(a.valor_acordo)||0),0);document.getElementById('statAtivos').textContent=at;document.getElementById('statQuitados').textContent=qt;document.getElementById('statQuebrados').textContent=qb;document.getElementById('statValor').textContent=fmtMoney(vt)}
-
-    function abrirModalNovoAcordo(){clienteSelecionado=null;document.getElementById('etapa1').style.display='block';document.getElementById('etapa2').style.display='none';document.getElementById('btnSalvarAcordo').style.display='none';document.getElementById('buscaCliente').value='';document.getElementById('listaClientes').innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p>';document.getElementById('modalNovoAcordo').classList.add('show')}
-
-    async function buscarClientes(){const b=document.getElementById('buscaCliente').value.trim();const l=document.getElementById('listaClientes');if(b.length<2){l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite 2+ caracteres...</p>';return}l.innerHTML='<p style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i></p>';try{const r=await fetch(API+'/api/clientes/buscar?q='+encodeURIComponent(b),{headers:getHeaders()});const d=await r.json();if(d.success&&d.data&&d.data.length>0){clientes=d.data;l.innerHTML=clientes.map(c=>`<div class="cliente-card" onclick="selecionarCliente('${c.id}')"><div class="cliente-avatar">${(c.nome||'CL').substring(0,2).toUpperCase()}</div><div class="cliente-info"><div class="cliente-nome">${c.nome||'Cliente'}</div><div class="cliente-cpf">${c.cpf_cnpj||'-'}</div></div><div><div class="cliente-valor">${fmtMoney(c.divida_total||0)}</div></div></div>`).join('')}else{l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhum cliente encontrado</p>'}}catch(e){l.innerHTML='<p style="text-align:center;color:var(--red);padding:20px;">Erro ao buscar</p>'}}
-
-    function selecionarCliente(id){clienteSelecionado=clientes.find(c=>String(c.id)===String(id));if(!clienteSelecionado){alert('Erro');return}document.getElementById('clienteSelecionadoCard').innerHTML=`<div class="cliente-avatar">${(clienteSelecionado.nome||'CL').substring(0,2).toUpperCase()}</div><div class="cliente-info"><div class="cliente-nome">${clienteSelecionado.nome||'Cliente'}</div><div class="cliente-cpf">${clienteSelecionado.cpf_cnpj||'-'}</div></div><div><div class="cliente-valor">${fmtMoney(clienteSelecionado.divida_total||0)}</div></div>`;document.getElementById('valorOriginal').value=fmtMoney(clienteSelecionado.divida_total||0);const h=new Date();h.setDate(h.getDate()+7);document.getElementById('primeiroVencimento').value=h.toISOString().split('T')[0];document.getElementById('descontoAcordo').value=0;document.getElementById('numParcelas').value=1;document.getElementById('etapa1').style.display='none';document.getElementById('etapa2').style.display='block';document.getElementById('btnSalvarAcordo').style.display='inline-flex';calcularAcordo()}
-
-    function voltarEtapa1(){document.getElementById('etapa1').style.display='block';document.getElementById('etapa2').style.display='none';document.getElementById('btnSalvarAcordo').style.display='none'}
-
-    function calcularAcordo(){if(!clienteSelecionado)return;const vo=parseFloat(clienteSelecionado.divida_total)||0;const dc=parseFloat(document.getElementById('descontoAcordo').value)||0;const np=parseInt(document.getElementById('numParcelas').value)||1;const vd=vo*(dc/100);const vf=vo-vd;const vp=np>0?vf/np:vf;document.getElementById('valorFinal').value=fmtMoney(vf);document.getElementById('valorParcela').value=fmtMoney(vp);document.getElementById('resumoOriginal').textContent=fmtMoney(vo);document.getElementById('resumoDesconto').textContent='- '+fmtMoney(vd);document.getElementById('resumoFinal').textContent=fmtMoney(vf)}
-
-    function toggleLembreteConfig(){document.getElementById('lembreteConfig').classList.toggle('show',document.getElementById('ativarLembrete').checked)}
-
-    async function salvarAcordo(){
-      if(!clienteSelecionado){alert('Selecione um cliente');return}
-      const np=parseInt(document.getElementById('numParcelas').value)||0;
-      const pv=document.getElementById('primeiroVencimento').value;
-      console.log('Salvando - Parcelas:',np,'Vencimento:',pv);
-      if(!np||np<1){alert('Número de parcelas é obrigatório');document.getElementById('numParcelas').focus();return}
-      if(!pv){alert('Informe o primeiro vencimento');document.getElementById('primeiroVencimento').focus();return}
-      const vo=parseFloat(clienteSelecionado.divida_total)||0;
-      const dc=parseFloat(document.getElementById('descontoAcordo').value)||0;
-      const vf=vo-(vo*dc/100);
-      const dados={cliente_id:clienteSelecionado.id,devedor_id:clienteSelecionado.id,valor_original:vo,desconto_percentual:dc,valor_acordo:vf,numero_parcelas:np,data_primeiro_vencimento:pv,forma_pagamento:'boleto'};
-      console.log('Dados:',dados);
-      try{const r=await fetch(API+'/api/acordos',{method:'POST',headers:getHeaders(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){fecharModal('modalNovoAcordo');carregarAcordos();alert('Acordo criado com '+np+' parcela(s)!')}else{alert(d.message||'Erro ao criar acordo')}}catch(e){console.error(e);alert('Erro ao criar acordo')}
-    }
-
-    function fecharModal(id){document.getElementById(id).classList.remove('show')}
-    function verAcordo(id){alert('Ver acordo #'+id)}
-
-    carregarUsuario();carregarAcordos();
-  </script>
+    <script>
+        const API = window.location.origin;
+        let token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+        let acordos = [], acordosF = [], clientes = [], cobrancas = [];
+        let tipo = null, item = null, valorOrig = 0;
+        const h = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
+        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+        const fmtD = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+        
+        async function carregarUser() {
+            try {
+                const r = await fetch(API + '/api/usuarios/me', { headers: h() });
+                const d = await r.json();
+                if (d.success && d.data) {
+                    document.getElementById('userName').textContent = d.data.nome || 'Usuário';
+                    document.getElementById('userRole').textContent = d.data.nivel === 'admin' ? 'Admin' : 'Operador';
+                    document.getElementById('userAvatar').textContent = (d.data.nome || 'U')[0].toUpperCase();
+                }
+            } catch (e) { }
+        }
+        
+        async function carregar() {
+            const tb = document.getElementById('tbody');
+            tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+            try {
+                const r = await fetch(API + '/api/acordos', { headers: h() });
+                const d = await r.json();
+                if (d.success && d.data && d.data.length) {
+                    acordos = d.data; acordosF = [...acordos]; stats(); render();
+                    document.getElementById('emptyState').style.display = 'none';
+                } else {
+                    acordos = []; acordosF = []; tb.innerHTML = '';
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+            } catch (e) {
+                acordos = []; acordosF = []; tb.innerHTML = '';
+                document.getElementById('emptyState').style.display = 'block';
+            }
+        }
+        
+        function filtrar() {
+            const b = document.getElementById('searchAcordo').value.toLowerCase();
+            const s = document.getElementById('filtroStatus').value;
+            acordosF = acordos.filter(a => {
+                if (s && a.status !== s && !(s === 'quitado' && a.status === 'pago')) return false;
+                if (b) {
+                    const n = (a.cliente_nome || '').toLowerCase();
+                    const cpf = (a.cliente_cpf || '').toLowerCase();
+                    if (!n.includes(b) && !cpf.includes(b)) return false;
+                }
+                return true;
+            });
+            render();
+        }
+        
+        function render() {
+            const tb = document.getElementById('tbody');
+            document.getElementById('tableCount').textContent = acordosF.length + ' acordos';
+            if (!acordosF.length) {
+                tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum acordo</td></tr>';
+                return;
+            }
+            tb.innerHTML = acordosF.map(a => {
+                const s = a.status || 'ativo';
+                const pp = a.parcelas_pagas || 0;
+                const tp = a.total_parcelas || a.numero_parcelas || 1;
+                const sc = s === 'pago' ? 'quitado' : s;
+                const st = s === 'pago' ? 'QUITADO' : s.toUpperCase();
+                return '<tr><td><div style="font-weight:700;">#' + String(a.id).substring(0, 8) + '</div><div style="font-size:11px;color:var(--text-muted);">' + fmtD(a.created_at) + '</div></td><td><div style="font-weight:600;">' + (a.cliente_nome || '—') + '</div></td><td>' + pp + '/' + tp + '</td><td><span class="status-badge ' + sc + '">' + st + '</span></td><td style="text-align:right;"><div class="valor-acordo">' + fmt(a.valor_acordo) + '</div></td><td><div class="actions"><button class="btn btn-secondary btn-sm btn-icon"><i class="fas fa-eye"></i></button></div></td></tr>';
+            }).join('');
+        }
+        
+        function stats() {
+            const at = acordos.filter(a => a.status === 'ativo').length;
+            const qt = acordos.filter(a => a.status === 'pago' || a.status === 'quitado').length;
+            const qb = acordos.filter(a => a.status === 'quebrado').length;
+            const vt = acordos.reduce((s, a) => s + (parseFloat(a.valor_acordo) || 0), 0);
+            document.getElementById('statAtivos').textContent = at;
+            document.getElementById('statQuitados').textContent = qt;
+            document.getElementById('statQuebrados').textContent = qb;
+            document.getElementById('statValor').textContent = fmt(vt);
+        }
+        
+        function abrirModal() {
+            tipo = null; item = null; valorOrig = 0;
+            document.getElementById('etapa0').style.display = 'block';
+            document.getElementById('etapa1a').style.display = 'none';
+            document.getElementById('etapa1b').style.display = 'none';
+            document.getElementById('etapa2').style.display = 'none';
+            document.getElementById('btnSalvar').style.display = 'none';
+            document.getElementById('secaoValorManual').style.display = 'none';
+            document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function fecharModal() { document.getElementById('modal').classList.remove('show'); }
+        
+        function escolherTipo(t) {
+            tipo = t;
+            event.currentTarget.classList.add('selected');
+            setTimeout(() => {
+                document.getElementById('etapa0').style.display = 'none';
+                if (t === 'cobranca') {
+                    document.getElementById('etapa1a').style.display = 'block';
+                    document.getElementById('buscaCob').value = '';
+                    document.getElementById('listaCob').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p>';
+                    document.getElementById('buscaCob').focus();
+                } else {
+                    document.getElementById('etapa1b').style.display = 'block';
+                    document.getElementById('buscaCli').value = '';
+                    document.getElementById('listaCli').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p>';
+                    document.getElementById('buscaCli').focus();
+                }
+            }, 200);
+        }
+        
+        function voltar0() {
+            document.getElementById('etapa0').style.display = 'block';
+            document.getElementById('etapa1a').style.display = 'none';
+            document.getElementById('etapa1b').style.display = 'none';
+            document.getElementById('etapa2').style.display = 'none';
+            document.getElementById('btnSalvar').style.display = 'none';
+            document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            tipo = null; item = null;
+        }
+        
+        function voltarBusca() {
+            document.getElementById('etapa2').style.display = 'none';
+            document.getElementById('btnSalvar').style.display = 'none';
+            if (tipo === 'cobranca') document.getElementById('etapa1a').style.display = 'block';
+            else document.getElementById('etapa1b').style.display = 'block';
+            item = null;
+        }
+        
+        async function buscarCli() {
+            const b = document.getElementById('buscaCli').value.trim();
+            const l = document.getElementById('listaCli');
+            if (b.length < 2) { l.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite 2+ caracteres...</p>'; return; }
+            l.innerHTML = '<p style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i></p>';
+            try {
+                const r = await fetch(API + '/api/clientes/buscar?q=' + encodeURIComponent(b), { headers: h() });
+                const d = await r.json();
+                if (d.success && d.data && d.data.length) {
+                    clientes = d.data;
+                    l.innerHTML = clientes.map(c => '<div class="item-card" onclick="selCli(\'' + c.id + '\')"><div class="item-avatar">' + (c.nome || 'CL').substring(0, 2).toUpperCase() + '</div><div class="item-info"><div class="item-nome">' + (c.nome || 'Cliente') + '</div><div class="item-meta">' + (c.cpf_cnpj || '-') + '</div></div><div class="item-valor">' + fmt(c.divida_total || 0) + '</div></div>').join('');
+                } else { l.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhum cliente</p>'; }
+            } catch (e) { l.innerHTML = '<p style="text-align:center;color:var(--red);padding:20px;">Erro</p>'; }
+        }
+        
+        function selCli(id) {
+            item = clientes.find(c => String(c.id) === String(id));
+            if (!item) return alert('Erro');
+            document.getElementById('tituloSel').textContent = 'Cliente Selecionado';
+            document.getElementById('cardSel').innerHTML = '<div class="item-avatar">' + (item.nome || 'CL').substring(0, 2).toUpperCase() + '</div><div class="item-info"><div class="item-nome">' + (item.nome || 'Cliente') + '</div><div class="item-meta">' + (item.cpf_cnpj || '-') + '</div></div><div class="item-valor">' + fmt(item.divida_total || 0) + '</div>';
+            if (item.divida_total && parseFloat(item.divida_total) > 0) {
+                valorOrig = parseFloat(item.divida_total);
+                document.getElementById('secaoValorManual').style.display = 'none';
+            } else {
+                valorOrig = 0;
+                document.getElementById('secaoValorManual').style.display = 'block';
+                document.getElementById('valorManual').value = '';
+            }
+            config2();
+        }
+        
+        async function buscarCob() {
+            const b = document.getElementById('buscaCob').value.trim();
+            const l = document.getElementById('listaCob');
+            if (b.length < 2) { l.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite 2+ caracteres...</p>'; return; }
+            l.innerHTML = '<p style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i></p>';
+            try {
+                const r = await fetch(API + '/api/cobrancas?q=' + encodeURIComponent(b), { headers: h() });
+                const d = await r.json();
+                if (d.success && d.data && d.data.length) {
+                    cobrancas = d.data.filter(c => ['pendente', 'vencido', 'vencida'].includes((c.status || '').toLowerCase()));
+                    if (cobrancas.length) {
+                        l.innerHTML = cobrancas.map(c => '<div class="item-card" onclick="selCob(\'' + c.id + '\')"><div class="item-avatar"><i class="fas fa-file-invoice-dollar"></i></div><div class="item-info"><div class="item-nome">' + (c.descricao || 'Cobrança') + '</div><div class="item-meta">' + (c.cliente_nome || 'Cliente') + ' • ' + fmtD(c.vencimento) + '</div></div><div class="item-valor">' + fmt(c.valor_atualizado || c.valor_original) + '</div></div>').join('');
+                    } else { l.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhuma cobrança pendente</p>'; }
+                } else { l.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhuma cobrança</p>'; }
+            } catch (e) { l.innerHTML = '<p style="text-align:center;color:var(--red);padding:20px;">Erro</p>'; }
+        }
+        
+        function selCob(id) {
+            item = cobrancas.find(c => String(c.id) === String(id));
+            if (!item) return alert('Erro');
+            document.getElementById('tituloSel').textContent = 'Cobrança Selecionada';
+            document.getElementById('cardSel').innerHTML = '<div class="item-avatar"><i class="fas fa-file-invoice-dollar"></i></div><div class="item-info"><div class="item-nome">' + (item.descricao || 'Cobrança') + '</div><div class="item-meta">' + (item.cliente_nome || 'Cliente') + ' • ' + fmtD(item.vencimento) + '</div></div><div class="item-valor">' + fmt(item.valor_atualizado || item.valor_original) + '</div>';
+            valorOrig = parseFloat(item.valor_atualizado || item.valor_original) || 0;
+            document.getElementById('secaoValorManual').style.display = 'none';
+            config2();
+        }
+        
+        function config2() {
+            document.getElementById('etapa1a').style.display = 'none';
+            document.getElementById('etapa1b').style.display = 'none';
+            document.getElementById('etapa2').style.display = 'block';
+            document.getElementById('btnSalvar').style.display = 'inline-flex';
+            document.getElementById('valorOrig').value = fmt(valorOrig);
+            document.getElementById('desconto').value = 0;
+            document.getElementById('numParc').value = 1;
+            const d = new Date(); d.setDate(d.getDate() + 7);
+            document.getElementById('primVenc').value = d.toISOString().split('T')[0];
+            calcular();
+        }
+        
+        function calcular() {
+            if (tipo === 'cliente' && document.getElementById('secaoValorManual').style.display !== 'none') {
+                valorOrig = parseFloat(document.getElementById('valorManual').value) || 0;
+                document.getElementById('valorOrig').value = fmt(valorOrig);
+            }
+            const dc = parseFloat(document.getElementById('desconto').value) || 0;
+            const np = parseInt(document.getElementById('numParc').value) || 1;
+            const vd = valorOrig * (dc / 100);
+            const vf = valorOrig - vd;
+            const vp = np > 0 ? vf / np : 0;
+            document.getElementById('valorFinal').value = fmt(vf);
+            document.getElementById('valorParc').value = fmt(vp);
+            document.getElementById('resOrig').textContent = fmt(valorOrig);
+            document.getElementById('resDesc').textContent = '- ' + fmt(vd);
+            document.getElementById('resFinal').textContent = fmt(vf);
+        }
+        
+        async function salvar() {
+            const np = parseInt(document.getElementById('numParc').value) || 0;
+            const pv = document.getElementById('primVenc').value;
+            if (tipo === 'cliente' && document.getElementById('secaoValorManual').style.display !== 'none') {
+                valorOrig = parseFloat(document.getElementById('valorManual').value) || 0;
+            }
+            if (valorOrig <= 0) { alert('Informe o valor da dívida'); return; }
+            if (np < 1) { alert('Número de parcelas inválido'); return; }
+            if (!pv) { alert('Informe a data do primeiro vencimento'); return; }
+            const dc = parseFloat(document.getElementById('desconto').value) || 0;
+            const vd = valorOrig * (dc / 100);
+            const vf = valorOrig - vd;
+            const vp = vf / np;
+            const dados = {
+                cliente_id: tipo === 'cliente' ? item.id : item.cliente_id,
+                credor_id: tipo === 'cobranca' ? item.credor_id : (item.credor_id || null),
+                cobranca_id: tipo === 'cobranca' ? item.id : null,
+                valor_original: valorOrig,
+                desconto_percentual: dc,
+                desconto_valor: vd,
+                valor_acordo: vf,
+                valor_entrada: 0,
+                numero_parcelas: np,
+                valor_parcela: vp,
+                data_primeiro_vencimento: pv,
+                forma_pagamento: 'boleto',
+                observacoes: '',
+                status: 'ativo'
+            };
+            console.log('Enviando:', dados);
+            try {
+                const r = await fetch(API + '/api/acordos', { method: 'POST', headers: h(), body: JSON.stringify(dados) });
+                const d = await r.json();
+                if (d.success) { alert('Acordo criado!'); fecharModal(); carregar(); }
+                else { alert('Erro: ' + (d.message || 'Erro ao criar acordo')); }
+            } catch (e) { console.error(e); alert('Erro de conexão'); }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => { carregarUser(); carregar(); });
+    </script>
 </body>
 </html>
