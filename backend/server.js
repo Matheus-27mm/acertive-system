@@ -3788,9 +3788,8 @@ iniciarCronJobs();
 
 console.log('[FASE 2] ✅ Rotas de Cron e Multi-tenant carregadas');
 // =====================================================
-// ROTA DE IMPORTAÇÃO EM MASSA - ACERTIVE
-// Cole este código no server.js ANTES da linha:
-// app.use((req, res) => res.status(404).send("Página não encontrada."));
+// ROTA DE IMPORTAÇÃO EM MASSA - ACERTIVE (CORRIGIDA)
+// SUBSTITUA a rota anterior por esta no server.js
 // =====================================================
 
 // POST /api/importar-cobrancas-massa - Importar cobranças via JSON
@@ -3810,7 +3809,7 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
     
     for (const cob of cobrancas) {
       try {
-        // Buscar cliente pelo CPF/CNPJ (removendo formatação)
+        // Buscar cliente pelo CPF/CNPJ
         const cpfLimpo = String(cob.cpf_cnpj || '').replace(/\D/g, '');
         
         if (!cpfLimpo) {
@@ -3818,12 +3817,10 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
           continue;
         }
         
-        
-          const cliente = await pool.query(
+        const cliente = await pool.query(
           `SELECT id FROM clientes WHERE cpf_cnpj = $1 LIMIT 1`,
           [cpfLimpo]
-       );
-        
+        );
         
         if (cliente.rows.length === 0) {
           clientesNaoEncontrados++;
@@ -3852,17 +3849,17 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
           continue;
         }
         
-        // Inserir cobrança
+        // Inserir cobrança (usando as colunas corretas da tabela)
         await pool.query(
           `INSERT INTO cobrancas 
-           (cliente_id, valor, valor_original, valor_atualizado, descricao, vencimento, emissao, status, created_at)
-           VALUES ($1, $2, $2, $2, $3, $4, $5, $6, NOW())`,
+           (cliente_id, valor_original, valor_atualizado, descricao, vencimento, status, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
           [
             clienteId,
             valor,
+            valor,
             cob.descricao || 'Cobrança importada',
             cob.vencimento || null,
-            cob.emissao || null,
             status
           ]
         );
@@ -3877,14 +3874,6 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
     
     console.log(`[IMPORTAÇÃO] ✅ Concluído: ${importados} importados, ${erros} erros, ${clientesNaoEncontrados} clientes não encontrados`);
     
-    // Registrar no log
-    await registrarLog(req, 'IMPORTAR_COBRANCAS_MASSA', 'cobrancas', null, {
-      total: cobrancas.length,
-      importados,
-      erros,
-      clientesNaoEncontrados
-    });
-    
     res.json({
       success: true,
       message: `Importação concluída!`,
@@ -3897,33 +3886,6 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
   } catch (error) {
     console.error('[IMPORTAÇÃO] Erro geral:', error);
     res.status(500).json({ success: false, message: 'Erro na importação: ' + error.message });
-  }
-});
-
-// GET /api/importacao/status - Verificar status da base
-app.get('/api/importacao/status', auth, async (req, res) => {
-  try {
-    const clientes = await pool.query('SELECT COUNT(*)::int as total FROM clientes');
-    const cobrancas = await pool.query('SELECT COUNT(*)::int as total FROM cobrancas');
-    const cobrancasAtivas = await pool.query("SELECT COUNT(*)::int as total FROM cobrancas WHERE status != 'arquivado'");
-    
-    const valorTotal = await pool.query(`
-      SELECT COALESCE(SUM(valor_atualizado), 0)::numeric as total 
-      FROM cobrancas 
-      WHERE status IN ('pendente', 'vencido')
-    `);
-    
-    res.json({
-      success: true,
-      data: {
-        clientes: clientes.rows[0].total,
-        cobrancas: cobrancas.rows[0].total,
-        cobrancasAtivas: cobrancasAtivas.rows[0].total,
-        valorPendente: parseFloat(valorTotal.rows[0].total) || 0
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
   }
 });
 
