@@ -284,7 +284,13 @@ pool.connect().then(() => {
 }).catch(err => {
   console.error("[ACERTIVE] Erro ao conectar:", err.message);
 });
-
+// =====================================================
+// ROTAS MODULARES - B2B (CREDORES, ACORDOS, PARCELAS)
+// =====================================================
+app.use('/api/credores', credoresRoutes(pool, auth, registrarLog));
+app.use('/api/acordos', acordosRoutes(pool, auth, registrarLog));
+app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog));
+app.use('/api/financeiro', financeiroRoutes(pool, auth, registrarLog));
 // =====================================================
 // FUNÇÃO DE REGISTRO DE LOG (AUDITORIA)
 // =====================================================
