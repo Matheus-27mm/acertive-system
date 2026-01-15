@@ -1,583 +1,274 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ACERTIVE • Parcelas</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--border:rgba(255,255,255,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#8b5cf6;--purple-bg:rgba(139,92,246,0.12);--sidebar-width:260px}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-
-    /* SIDEBAR PADRÃO */
     .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
     .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary)}
     .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
     .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
     .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
-    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
-    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
-    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
-    .nav-link i{width:20px;text-align:center;font-size:15px}
-    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
-    .nav-badge:not(:empty){display:inline-block}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:12px;font-weight:500;font-size:14px;transition:all 0.15s;margin-bottom:2px}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:var(--gold-glow);color:var(--gold)}
+    .nav-link i{width:20px;text-align:center}
     .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
-    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
-    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
     .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
     .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
-
-    /* MAIN */
-    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
-    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
-    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
-    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
-    .page-subtitle{color:var(--text-muted);font-size:14px;margin-top:4px}
-
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all var(--transition-fast)}
-    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-1px);box-shadow:var(--shadow-gold)}
+    .main{margin-left:var(--sidebar-width);padding:24px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .page-title{font-size:24px;font-weight:800;display:flex;align-items:center;gap:12px}.page-title i{color:var(--gold)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-1px)}
     .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);color:var(--gold)}
-    .btn-success{background:var(--green);color:#fff}
-    .btn-sm{padding:6px 12px;font-size:12px}
-    .btn-icon{width:36px;height:36px;padding:0;justify-content:center}
-
-    /* STATS */
+    .btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#16a34a}
+    .btn-danger{background:var(--red-bg);color:var(--red)}.btn-danger:hover{background:var(--red);color:white}
+    .btn-sm{padding:6px 12px;font-size:12px}.btn-icon{width:36px;height:36px;padding:0;justify-content:center}
+    .bulk-actions{display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--red-bg);border:1px solid var(--red);border-radius:8px;margin-bottom:16px}.bulk-actions.show{display:flex}
+    .bulk-actions-text{flex:1;font-size:13px;font-weight:600;color:var(--red)}.bulk-actions-text span{background:var(--red);color:white;padding:2px 8px;border-radius:4px;margin-right:8px}
+    .alert-banner{background:linear-gradient(135deg,var(--red-bg),rgba(239,68,68,0.05));border:1px solid var(--red);border-radius:12px;padding:16px 20px;margin-bottom:24px;display:none;align-items:center;gap:16px}
+    .alert-banner.show{display:flex}.alert-banner i{font-size:24px;color:var(--red)}
+    .alert-banner-content{flex:1}.alert-banner-title{font-weight:700;font-size:14px}.alert-banner-text{font-size:13px;color:var(--text-secondary)}
     .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
-    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
     .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
-    .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}
-    .stat-value{font-size:22px;font-weight:800}
-    .stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
-
-    /* ALERT */
-    .alert-banner{background:linear-gradient(135deg,var(--red-bg),rgba(239,68,68,0.05));border:1px solid var(--red);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
-    .alert-banner i{font-size:24px;color:var(--red)}
-    .alert-banner-content{flex:1}
-    .alert-banner-title{font-weight:700;font-size:14px;margin-bottom:4px}
-    .alert-banner-text{font-size:13px;color:var(--text-secondary)}
-    .alert-banner .btn{background:var(--red);color:#fff}
-
-    /* TABS */
+    .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.stat-value{font-size:22px;font-weight:800}.stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
     .tabs-filter{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
     .tab-filter{padding:10px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
     .tab-filter:hover{background:var(--gold-glow);border-color:var(--gold);color:var(--gold)}
     .tab-filter.active{background:var(--gold);color:var(--bg-primary);border-color:var(--gold)}
-    .tab-filter .count{padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(0,0,0,0.2)}
-    .tab-filter.active .count{background:rgba(0,0,0,0.3)}
-
-    /* FILTERS */
+    .tab-filter .count{padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(0,0,0,0.2)}.tab-filter.active .count{background:rgba(0,0,0,0.3)}
     .filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
     .search-box{flex:1;min-width:250px;position:relative}
     .search-box input{width:100%;padding:10px 12px 10px 40px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}
-    .search-box input:focus{outline:none;border-color:var(--gold)}
-    .search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+    .search-box input:focus{outline:none;border-color:var(--gold)}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
     .filter-select{padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}
-
-    /* TABLE */
-    .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .table-title{font-size:14px;font-weight:700}
-    .table-count{font-size:12px;color:var(--text-muted)}
-    table{width:100%;border-collapse:collapse}
-    thead{background:rgba(0,0,0,0.3)}
+    .table-title{font-size:14px;font-weight:700}.table-count{font-size:12px;color:var(--text-muted)}
+    table{width:100%;border-collapse:collapse}thead{background:rgba(0,0,0,0.3)}
     th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase}
-    td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}
-    tr:last-child td{border-bottom:none}
-    tr:hover{background:var(--gold-glow)}
-
+    td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px}tr:last-child td{border-bottom:none}tr:hover{background:var(--gold-glow)}tr.selected{background:var(--gold-glow)}
+    .checkbox{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center}.checkbox:hover{border-color:var(--gold)}.checkbox.checked{background:var(--gold);border-color:var(--gold)}.checkbox.checked::after{content:'✓';color:var(--bg-primary);font-size:12px;font-weight:700}
     .parcela-info{display:flex;align-items:center;gap:10px}
     .parcela-numero{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-    .parcela-acordo{font-weight:600}
-    .parcela-id{font-size:11px;color:var(--text-muted)}
-
     .status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600}
-    .status-badge.pago{background:var(--green-bg);color:var(--green)}
-    .status-badge.pendente{background:var(--orange-bg);color:var(--orange)}
-    .status-badge.vencido{background:var(--red-bg);color:var(--red)}
-    .status-badge.hoje{background:var(--blue-bg);color:var(--blue)}
-
-    .vencimento-cell .data{font-weight:600}
-    .vencimento-cell .dias{font-size:11px}
-    .vencimento-cell .dias.vencido{color:var(--red)}
-    .vencimento-cell .dias.hoje{color:var(--blue)}
-    .vencimento-cell .dias.proximo{color:var(--orange)}
-    .vencimento-cell .dias.futuro{color:var(--text-muted)}
-
-    .valor-cell{text-align:right;font-weight:700}
-    .actions{display:flex;gap:6px}
-
-    .pagination{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border)}
-    .pagination-info{font-size:13px;color:var(--text-muted)}
-    .pagination-buttons{display:flex;gap:8px}
-    .page-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer}
-    .page-btn:hover{background:var(--gold-glow);border-color:var(--gold);color:var(--gold)}
-    .page-btn.active{background:var(--gold);color:var(--bg-primary)}
-
-    /* MODAL */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center}
-    .modal-overlay.show{display:flex}
-    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);width:90%;max-width:500px;overflow:hidden}
+    .status-badge.pago{background:var(--green-bg);color:var(--green)}.status-badge.pendente{background:var(--orange-bg);color:var(--orange)}.status-badge.vencido{background:var(--red-bg);color:var(--red)}.status-badge.hoje{background:var(--blue-bg);color:var(--blue)}
+    .valor-cell{text-align:right;font-weight:700}.actions{display:flex;gap:6px}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center}.modal-overlay.show{display:flex}
+    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:90%;max-width:550px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}.modal.modal-sm{max-width:400px}
     .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}
-    .modal-title i{color:var(--gold)}
-    .modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px}
-    .modal-body{padding:24px}
-    .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
-
-    .form-group{margin-bottom:16px}
-    .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
-    .form-input,.form-select{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}
-    .form-input:focus,.form-select:focus{outline:none;border-color:var(--gold)}
-
+    .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-title i{color:var(--gold)}.modal-title.danger i{color:var(--red)}.modal-title.success i{color:var(--green)}
+    .modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px}.modal-close:hover{color:var(--red)}
+    .modal-body{padding:24px;overflow-y:auto;flex:1}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
+    .form-group{margin-bottom:16px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}.form-label span{color:var(--red)}
+    .form-input,.form-select{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px}.form-input:focus,.form-select:focus{outline:none;border-color:var(--gold)}
+    .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
     .pagamento-resumo{background:var(--bg-primary);border-radius:10px;padding:16px;margin-bottom:16px}
-    .pagamento-resumo-row{display:flex;justify-content:space-between;margin-bottom:8px}
-    .pagamento-resumo-row:last-child{margin-bottom:0;padding-top:8px;border-top:1px solid var(--border)}
-    .pagamento-resumo-label{color:var(--text-muted);font-size:13px}
-    .pagamento-resumo-valor{font-weight:700}
-
-    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
-    .empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
-
-    @media(max-width:1400px){.stats-row{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
-    @media(max-width:640px){.stats-row{grid-template-columns:1fr}.tabs-filter{flex-wrap:wrap}}
+    .pagamento-resumo-row{display:flex;justify-content:space-between;margin-bottom:8px}.pagamento-resumo-row:last-child{margin-bottom:0;padding-top:8px;border-top:1px solid var(--border)}
+    .pagamento-resumo-label{color:var(--text-muted);font-size:13px}.pagamento-resumo-valor{font-weight:700}
+    .payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+    .payment-method{padding:12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;transition:all 0.15s}
+    .payment-method:hover{border-color:var(--gold)}.payment-method.selected{border-color:var(--gold);background:var(--gold-glow)}
+    .payment-method i{font-size:20px;margin-bottom:4px;display:block}.payment-method span{font-size:11px;font-weight:600}
+    .pix-qrcode{text-align:center;padding:20px;background:var(--bg-primary);border-radius:8px;margin-top:16px}
+    .pix-qrcode img{width:180px;height:180px;background:white;border-radius:8px;margin-bottom:12px}
+    .pix-code{background:var(--bg-card);padding:10px;border-radius:6px;font-size:11px;word-break:break-all;margin-top:8px}
+    .delete-warning{display:flex;gap:16px;padding:16px;background:var(--red-bg);border-radius:8px;margin-bottom:20px}.delete-warning-icon{width:48px;height:48px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center}.delete-warning-icon i{font-size:24px;color:white}.delete-warning-text h4{color:var(--red);margin-bottom:4px}.delete-warning-text p{font-size:13px;color:var(--text-secondary)}
+    @media(max-width:1400px){.stats-row{grid-template-columns:repeat(3,1fr)}}@media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
   </style>
 </head>
 <body>
-  <!-- SIDEBAR PADRÃO -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-title">Principal</div>
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a>
         <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Cadastros</div>
+      <div class="nav-section"><div class="nav-section-title">Cadastros</div>
         <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
-        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
         <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Negociação</div>
+      <div class="nav-section"><div class="nav-section-title">Negociação</div>
         <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
         <a href="/parcelas" class="nav-link active"><i class="fas fa-calendar-check"></i> Parcelas</a>
         <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Financeiro</div>
+      <div class="nav-section"><div class="nav-section-title">Financeiro</div>
         <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
         <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
-        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Automação</div>
-        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
-        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
-        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
-        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Administração</div>
+      <div class="nav-section"><div class="nav-section-title">Administração</div>
         <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
         <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
         <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
-        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
-      </div>
-    </div>
+    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
   </aside>
 
-  <!-- MAIN -->
-  <main class="main-content">
+  <main class="main">
     <header class="page-header">
-      <div>
-        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-calendar-check"></i></div> Parcelas</h1>
-        <p class="page-subtitle">Gerencie as parcelas dos acordos</p>
-      </div>
+      <h1 class="page-title"><i class="fas fa-calendar-check"></i> Parcelas</h1>
       <button class="btn btn-secondary"><i class="fas fa-download"></i> Exportar</button>
     </header>
 
-    <!-- ALERTA VENCIDAS -->
-    <div class="alert-banner" id="alertVencidas" style="display:none;">
+    <div class="alert-banner" id="alertVencidas">
       <i class="fas fa-exclamation-circle"></i>
-      <div class="alert-banner-content">
-        <div class="alert-banner-title" id="alertVencidasTitulo">0 parcelas vencidas!</div>
-        <div class="alert-banner-text" id="alertVencidasTexto">Total: R$ 0,00</div>
-      </div>
-      <button class="btn" onclick="filtrarVencidas()"><i class="fas fa-eye"></i> Ver Vencidas</button>
+      <div class="alert-banner-content"><div class="alert-banner-title" id="alertTitulo">0 parcelas vencidas!</div><div class="alert-banner-text" id="alertTexto">Total: R$ 0</div></div>
+      <button class="btn btn-danger btn-sm" onclick="filtrarParcelas('vencidas')"><i class="fas fa-eye"></i> Ver Vencidas</button>
     </div>
 
-    <!-- STATS -->
     <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-calendar-day"></i></div>
-        <div class="stat-label">Vencem Hoje</div>
-        <div class="stat-value" id="statHoje">0</div>
-        <div class="stat-sub" id="statHojeValor">R$ 0,00</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-calendar-week"></i></div>
-        <div class="stat-label">Próximos 7 dias</div>
-        <div class="stat-value" id="statSemana">0</div>
-        <div class="stat-sub" id="statSemanaValor">R$ 0,00</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-calendar-times"></i></div>
-        <div class="stat-label">Vencidas</div>
-        <div class="stat-value" id="statVencidas">0</div>
-        <div class="stat-sub" id="statVencidasValor">R$ 0,00</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-check-circle"></i></div>
-        <div class="stat-label">Pagas (Mês)</div>
-        <div class="stat-value" id="statPagas">0</div>
-        <div class="stat-sub" id="statPagasValor">R$ 0,00</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-percentage"></i></div>
-        <div class="stat-label">Taxa de Pagamento</div>
-        <div class="stat-value" id="statTaxa">0%</div>
-        <div class="stat-sub">Meta: 95%</div>
-      </div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-calendar-day"></i></div><div class="stat-label">Vencem Hoje</div><div class="stat-value" id="statHoje">0</div><div class="stat-sub" id="statHojeValor">R$ 0</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-calendar-week"></i></div><div class="stat-label">Próximos 7 dias</div><div class="stat-value" id="statSemana">0</div><div class="stat-sub" id="statSemanaValor">R$ 0</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-calendar-times"></i></div><div class="stat-label">Vencidas</div><div class="stat-value" id="statVencidas">0</div><div class="stat-sub" id="statVencidasValor">R$ 0</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-check-circle"></i></div><div class="stat-label">Pagas (Mês)</div><div class="stat-value" id="statPagas">0</div><div class="stat-sub" id="statPagasValor">R$ 0</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-percentage"></i></div><div class="stat-label">Taxa Pagamento</div><div class="stat-value" id="statTaxa">0%</div><div class="stat-sub">Meta: 95%</div></div>
     </div>
 
-    <!-- TABS -->
+    <div class="bulk-actions" id="bulkActions"><div class="bulk-actions-text"><span id="selectedCount">0</span> parcela(s) selecionada(s)</div><button class="btn btn-success btn-sm" onclick="pagarSelecionadas()"><i class="fas fa-dollar-sign"></i> Pagar Todas</button><button class="btn btn-danger btn-sm" onclick="confirmarExclusaoMassa()"><i class="fas fa-trash"></i> Excluir</button><button class="btn btn-secondary btn-sm" onclick="cancelarSelecao()"><i class="fas fa-times"></i> Cancelar</button></div>
+
     <div class="tabs-filter">
       <div class="tab-filter active" onclick="filtrarParcelas('todas')"><i class="fas fa-list"></i> Todas <span class="count" id="countTodas">0</span></div>
       <div class="tab-filter" onclick="filtrarParcelas('hoje')"><i class="fas fa-calendar-day"></i> Hoje <span class="count" id="countHoje">0</span></div>
-      <div class="tab-filter" onclick="filtrarParcelas('semana')"><i class="fas fa-calendar-week"></i> Esta Semana <span class="count" id="countSemana">0</span></div>
+      <div class="tab-filter" onclick="filtrarParcelas('semana')"><i class="fas fa-calendar-week"></i> Semana <span class="count" id="countSemana">0</span></div>
       <div class="tab-filter" onclick="filtrarParcelas('vencidas')" style="border-color:var(--red);"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Vencidas <span class="count" id="countVencidas" style="background:var(--red);">0</span></div>
       <div class="tab-filter" onclick="filtrarParcelas('pagas')"><i class="fas fa-check"></i> Pagas <span class="count" id="countPagas">0</span></div>
     </div>
 
-    <!-- FILTERS -->
     <div class="filters">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" placeholder="Buscar por devedor, acordo..." id="searchInput">
-      </div>
-      <select class="filter-select" id="filterCredor"><option value="">Todos os Credores</option></select>
-      <input type="date" class="filter-select" id="filterData" style="width:150px;">
+      <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cliente, acordo..." id="searchInput" onkeyup="aplicarFiltros()"></div>
+      <input type="date" class="filter-select" id="filterData" onchange="aplicarFiltros()">
     </div>
 
-    <!-- TABLE -->
     <div class="table-container">
-      <div class="table-header">
-        <div class="table-title">Lista de Parcelas</div>
-        <div class="table-count" id="tableCount">0 parcelas</div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Parcela</th>
-            <th>Devedor</th>
-            <th>Credor</th>
-            <th>Vencimento</th>
-            <th>Status</th>
-            <th style="text-align:right;">Valor</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="parcelasBody">
-          <tr><td colspan="7"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div></td></tr>
-        </tbody>
-      </table>
-      <div class="pagination">
-        <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
-        <div class="pagination-buttons" id="paginationButtons"></div>
-      </div>
+      <div class="table-header"><div class="table-title">Lista de Parcelas</div><div class="table-count" id="tableCount">0 parcelas</div></div>
+      <table><thead><tr><th style="width:40px;"><div class="checkbox" id="checkAll" onclick="toggleSelectAll()"></div></th><th>Parcela</th><th>Cliente</th><th>Vencimento</th><th>Status</th><th style="text-align:right;">Valor</th><th>Ações</th></tr></thead><tbody id="parcelasBody"></tbody></table>
+      <div id="emptyState" class="empty-state" style="display:none;"><i class="fas fa-calendar-check"></i><p>Nenhuma parcela encontrada</p></div>
     </div>
   </main>
 
   <!-- MODAL PAGAMENTO -->
   <div class="modal-overlay" id="modalPagamento">
     <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title"><i class="fas fa-dollar-sign"></i> Registrar Pagamento</h3>
-        <button class="modal-close" onclick="fecharModal('modalPagamento')"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h3 class="modal-title success"><i class="fas fa-dollar-sign"></i> Registrar Pagamento</h3><button class="modal-close" onclick="fecharModal('modalPagamento')"><i class="fas fa-times"></i></button></div>
       <div class="modal-body">
         <div class="pagamento-resumo">
-          <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Devedor</span><span class="pagamento-resumo-valor" id="pagDevedor">—</span></div>
+          <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Cliente</span><span class="pagamento-resumo-valor" id="pagCliente">—</span></div>
           <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Parcela</span><span class="pagamento-resumo-valor" id="pagParcela">—</span></div>
           <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Vencimento</span><span class="pagamento-resumo-valor" id="pagVencimento">—</span></div>
-          <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Valor</span><span class="pagamento-resumo-valor" id="pagValor" style="color:var(--gold);font-size:18px;">R$ 0,00</span></div>
+          <div class="pagamento-resumo-row"><span class="pagamento-resumo-label">Valor</span><span class="pagamento-resumo-valor" id="pagValor" style="color:var(--gold);font-size:18px;">R$ 0</span></div>
         </div>
         <input type="hidden" id="pagId">
-        <div class="form-group"><label class="form-label">Valor Pago</label><input type="text" class="form-input" id="pagValorPago"></div>
-        <div class="form-group"><label class="form-label">Data do Pagamento</label><input type="date" class="form-input" id="pagData"></div>
-        <div class="form-group"><label class="form-label">Forma de Pagamento</label><select class="form-select" id="pagForma"><option value="pix">PIX</option><option value="boleto">Boleto</option><option value="transferencia">Transferência</option><option value="dinheiro">Dinheiro</option><option value="cartao">Cartão</option></select></div>
-        <div class="form-group"><label class="form-label">Observações</label><input type="text" class="form-input" id="pagObs" placeholder="Opcional"></div>
+        <div class="form-group"><label class="form-label">Forma de Pagamento</label>
+          <div class="payment-methods">
+            <div class="payment-method selected" onclick="selecionarMetodo(this,'pix')"><i class="fas fa-qrcode" style="color:var(--green);"></i><span>PIX</span></div>
+            <div class="payment-method" onclick="selecionarMetodo(this,'boleto')"><i class="fas fa-barcode" style="color:var(--orange);"></i><span>Boleto</span></div>
+            <div class="payment-method" onclick="selecionarMetodo(this,'transferencia')"><i class="fas fa-university" style="color:var(--blue);"></i><span>Transf.</span></div>
+            <div class="payment-method" onclick="selecionarMetodo(this,'dinheiro')"><i class="fas fa-money-bill" style="color:var(--green);"></i><span>Dinheiro</span></div>
+            <div class="payment-method" onclick="selecionarMetodo(this,'cartao')"><i class="fas fa-credit-card" style="color:var(--purple);"></i><span>Cartão</span></div>
+            <div class="payment-method" onclick="selecionarMetodo(this,'outro')"><i class="fas fa-ellipsis-h" style="color:var(--text-muted);"></i><span>Outro</span></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Valor Pago <span>*</span></label><input type="number" class="form-input" id="pagValorPago" step="0.01"></div>
+          <div class="form-group"><label class="form-label">Data Pagamento <span>*</span></label><input type="date" class="form-input" id="pagData"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Observações</label><input type="text" class="form-input" id="pagObs" placeholder="Ex: Pago via app do banco"></div>
+        <div class="pix-qrcode" id="pixArea" style="display:none;">
+          <div style="font-weight:700;margin-bottom:12px;"><i class="fas fa-qrcode"></i> PIX Copia e Cola</div>
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" id="pixQRCode" alt="QR Code PIX">
+          <div class="pix-code" id="pixCode">Gerando código PIX...</div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copiarPix()"><i class="fas fa-copy"></i> Copiar Código</button>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="fecharModal('modalPagamento')">Cancelar</button>
-        <button class="btn btn-success" onclick="confirmarPagamento()"><i class="fas fa-check"></i> Confirmar Pagamento</button>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalPagamento')">Cancelar</button><button class="btn btn-success" onclick="confirmarPagamento()"><i class="fas fa-check"></i> Confirmar Pagamento</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL REAGENDAR -->
+  <div class="modal-overlay" id="modalReagendar">
+    <div class="modal modal-sm">
+      <div class="modal-header"><h3 class="modal-title"><i class="fas fa-calendar-alt"></i> Reagendar Vencimento</h3><button class="modal-close" onclick="fecharModal('modalReagendar')"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="reagendarId">
+        <div class="form-group"><label class="form-label">Parcela</label><input type="text" class="form-input" id="reagendarParcela" readonly></div>
+        <div class="form-group"><label class="form-label">Novo Vencimento <span>*</span></label><input type="date" class="form-input" id="reagendarData"></div>
+        <div class="form-group"><label class="form-label">Motivo</label><input type="text" class="form-input" id="reagendarMotivo" placeholder="Ex: Cliente solicitou adiamento"></div>
       </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalReagendar')">Cancelar</button><button class="btn btn-primary" onclick="confirmarReagendamento()"><i class="fas fa-save"></i> Salvar</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL EXCLUIR -->
+  <div class="modal-overlay" id="modalExcluir">
+    <div class="modal modal-sm">
+      <div class="modal-header"><h3 class="modal-title danger"><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3><button class="modal-close" onclick="fecharModal('modalExcluir')"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body"><div class="delete-warning"><div class="delete-warning-icon"><i class="fas fa-trash"></i></div><div class="delete-warning-text"><h4>Atenção!</h4><p>Esta ação não pode ser desfeita.</p></div></div><p style="font-size:13px;" id="deleteInfo">Parcela(s) a excluir:</p></div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">Cancelar</button><button class="btn btn-danger" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button></div>
     </div>
   </div>
 
   <script>
-    const API = window.location.origin;
-    let token = localStorage.getItem('token');
-    let parcelasData = [];
-    let filtroAtual = 'todas';
-    if (!token) window.location.href = '/login';
+    const API=window.location.origin;let token=localStorage.getItem('token');if(!token)window.location.href='/login';
+    let parcelas=[],selectedIds=[],deleteIds=[],filtroAtual='todas',metodoPagamento='pix';
+    function getHeaders(){return{'Content-Type':'application/json','Authorization':'Bearer '+token}}
+    function fmtMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
+    function fmtDate(d){return d?new Date(d).toLocaleDateString('pt-BR'):'—'}
+    function logout(){localStorage.removeItem('token');window.location.href='/login'}
 
-    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
-    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
-    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
-    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; }
+    async function carregarUsuario(){try{const r=await fetch(API+'/api/usuarios/me',{headers:getHeaders()});const d=await r.json();if(d.success&&d.data){document.getElementById('userName').textContent=d.data.nome||'Usuário';document.getElementById('userRole').textContent=d.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(d.data.nome||'U').charAt(0).toUpperCase()}}catch(e){}}
 
-    async function carregarUsuario() {
-      try {
-        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
-        const data = await res.json();
-        if (data.success && data.data) {
-          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
-          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-        }
-      } catch (e) { console.error(e); }
-    }
+    async function carregarParcelas(){document.getElementById('parcelasBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin"></i></td></tr>';try{const r=await fetch(API+'/api/parcelas',{headers:getHeaders()});const d=await r.json();parcelas=d.data||[];atualizarStats();renderizarTabela()}catch(e){parcelas=[];document.getElementById('parcelasBody').innerHTML='';document.getElementById('emptyState').style.display='block'}}
 
-    async function carregarBadges() {
-      try {
-        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
-        const data = await res.json();
-        if (data.success) {
-          const badge = document.getElementById('badgeFila');
-          const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
-          if (badge) badge.textContent = total > 0 ? total : '';
-        }
-      } catch (e) {}
-    }
+    function atualizarStats(){const hoje=new Date();hoje.setHours(0,0,0,0);const em7=new Date(hoje);em7.setDate(em7.getDate()+7);let hC=0,hV=0,sC=0,sV=0,vC=0,vV=0,pC=0,pV=0;parcelas.forEach(p=>{const v=new Date(p.vencimento);v.setHours(0,0,0,0);const val=parseFloat(p.valor)||0;if(p.status==='pago'){pC++;pV+=val}else if(v<hoje){vC++;vV+=val}else if(v.getTime()===hoje.getTime()){hC++;hV+=val}else if(v<=em7){sC++;sV+=val}});document.getElementById('statHoje').textContent=hC;document.getElementById('statHojeValor').textContent=fmtMoney(hV);document.getElementById('statSemana').textContent=sC;document.getElementById('statSemanaValor').textContent=fmtMoney(sV);document.getElementById('statVencidas').textContent=vC;document.getElementById('statVencidasValor').textContent=fmtMoney(vV);document.getElementById('statPagas').textContent=pC;document.getElementById('statPagasValor').textContent=fmtMoney(pV);document.getElementById('statTaxa').textContent=(parcelas.length>0?Math.round((pC/parcelas.length)*100):0)+'%';document.getElementById('countTodas').textContent=parcelas.length;document.getElementById('countHoje').textContent=hC;document.getElementById('countSemana').textContent=sC;document.getElementById('countVencidas').textContent=vC;document.getElementById('countPagas').textContent=pC;if(vC>0){document.getElementById('alertVencidas').classList.add('show');document.getElementById('alertTitulo').textContent=vC+' parcelas vencidas!';document.getElementById('alertTexto').textContent='Total: '+fmtMoney(vV)}else{document.getElementById('alertVencidas').classList.remove('show')}}
 
-    async function carregarParcelas() {
-      try {
-        const res = await fetch(API + '/api/parcelas', { headers: getHeaders() });
-        const data = await res.json();
-        parcelasData = data.data || [];
-        atualizarEstatisticas();
-        renderizarTabela();
-      } catch (e) {
-        console.error(e);
-        document.getElementById('parcelasBody').innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>Erro ao carregar</p></div></td></tr>';
-      }
-    }
+    function filtrarDados(){const hoje=new Date();hoje.setHours(0,0,0,0);const em7=new Date(hoje);em7.setDate(em7.getDate()+7);const busca=document.getElementById('searchInput').value.toLowerCase();const dataFiltro=document.getElementById('filterData').value;return parcelas.filter(p=>{const v=new Date(p.vencimento);v.setHours(0,0,0,0);let passaFiltro=true;switch(filtroAtual){case'hoje':passaFiltro=v.getTime()===hoje.getTime()&&p.status!=='pago';break;case'semana':passaFiltro=v>hoje&&v<=em7&&p.status!=='pago';break;case'vencidas':passaFiltro=v<hoje&&p.status!=='pago';break;case'pagas':passaFiltro=p.status==='pago';break}if(busca&&passaFiltro){passaFiltro=(p.cliente_nome||p.devedor_nome||'').toLowerCase().includes(busca)||(p.acordo_id||'').toString().includes(busca)}if(dataFiltro&&passaFiltro){passaFiltro=p.vencimento&&p.vencimento.startsWith(dataFiltro)}return passaFiltro})}
 
-    function atualizarEstatisticas() {
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const em7dias = new Date(hoje);
-      em7dias.setDate(em7dias.getDate() + 7);
+    function renderizarTabela(){const tbody=document.getElementById('parcelasBody');let dados=filtrarDados();document.getElementById('tableCount').textContent=dados.length+' parcelas';if(!dados.length){tbody.innerHTML='';document.getElementById('emptyState').style.display='block';return}document.getElementById('emptyState').style.display='none';const hoje=new Date();hoje.setHours(0,0,0,0);tbody.innerHTML=dados.map(p=>{const v=new Date(p.vencimento);v.setHours(0,0,0,0);const diff=Math.ceil((v-hoje)/(1000*60*60*24));let st='pendente',stTxt='Pendente',numBg='rgba(255,255,255,0.1)',numC='var(--text-muted)',diasTxt='Em '+diff+' dias',diasC='var(--text-muted)';if(p.status==='pago'){st='pago';stTxt='Pago';numBg='var(--green-bg)';numC='var(--green)';diasTxt='Pago'}else if(diff<0){st='vencido';stTxt='Vencida';numBg='var(--red-bg)';numC='var(--red)';diasTxt=Math.abs(diff)+' dias atraso';diasC='var(--red)'}else if(diff===0){st='hoje';stTxt='Hoje';numBg='var(--blue-bg)';numC='var(--blue)';diasTxt='Vence hoje!';diasC='var(--blue)'}else if(diff<=7){numBg='var(--orange-bg)';numC='var(--orange)';diasC='var(--orange)'}const sel=selectedIds.includes(p.id);return`<tr class="${sel?'selected':''}" data-id="${p.id}"><td><div class="checkbox ${sel?'checked':''}" onclick="toggleSelect('${p.id}')"></div></td><td><div class="parcela-info"><div class="parcela-numero" style="background:${numBg};color:${numC};">${p.status==='pago'?'<i class="fas fa-check"></i>':(p.numero||'—')}</div><div><div style="font-weight:600;">Parcela ${p.numero||'—'}/${p.total_parcelas||'—'}</div><div style="font-size:11px;color:var(--text-muted);">#${String(p.acordo_id||'').substring(0,8)}</div></div></div></td><td><div style="font-weight:600;">${p.cliente_nome||p.devedor_nome||'—'}</div></td><td><div style="font-weight:600;">${fmtDate(p.vencimento)}</div><div style="font-size:11px;color:${diasC};">${diasTxt}</div></td><td><span class="status-badge ${st}"><i class="fas fa-${st==='pago'?'check':st==='vencido'?'exclamation':'clock'}"></i> ${stTxt}</span></td><td class="valor-cell" style="color:${st==='pago'?'var(--green)':st==='vencido'?'var(--red)':'var(--text-primary)'};">${fmtMoney(p.valor)}</td><td><div class="actions">${p.status!=='pago'?`<button class="btn btn-success btn-sm" onclick="abrirPagamento('${p.id}')"><i class="fas fa-dollar-sign"></i></button><button class="btn btn-secondary btn-sm btn-icon" onclick="abrirReagendar('${p.id}')" title="Reagendar"><i class="fas fa-calendar-alt"></i></button>`:''}<button class="btn btn-secondary btn-sm btn-icon" onclick="enviarWhatsApp('${p.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button><button class="btn btn-danger btn-sm btn-icon" onclick="confirmarExclusao('${p.id}')" title="Excluir"><i class="fas fa-trash"></i></button></div></td></tr>`}).join('')}
 
-      let hojeCount = 0, hojeValor = 0;
-      let semanaCount = 0, semanaValor = 0;
-      let vencidasCount = 0, vencidasValor = 0;
-      let pagasCount = 0, pagasValor = 0;
+    function filtrarParcelas(tipo){document.querySelectorAll('.tab-filter').forEach(t=>t.classList.remove('active'));event.currentTarget.classList.add('active');filtroAtual=tipo;renderizarTabela()}
+    function aplicarFiltros(){renderizarTabela()}
 
-      parcelasData.forEach(p => {
-        const venc = new Date(p.vencimento);
-        venc.setHours(0, 0, 0, 0);
-        const valor = parseFloat(p.valor) || 0;
+    function toggleSelect(id){const i=selectedIds.indexOf(id);if(i===-1)selectedIds.push(id);else selectedIds.splice(i,1);atualizarSelecao()}
+    function toggleSelectAll(){if(selectedIds.length===filtrarDados().length)selectedIds=[];else selectedIds=filtrarDados().map(p=>p.id);atualizarSelecao()}
+    function atualizarSelecao(){renderizarTabela();const ba=document.getElementById('bulkActions'),ca=document.getElementById('checkAll');if(selectedIds.length>0){ba.classList.add('show');document.getElementById('selectedCount').textContent=selectedIds.length}else{ba.classList.remove('show')}const dados=filtrarDados();if(selectedIds.length===dados.length&&dados.length>0)ca.classList.add('checked');else ca.classList.remove('checked')}
+    function cancelarSelecao(){selectedIds=[];atualizarSelecao()}
 
-        if (p.status === 'pago') {
-          pagasCount++;
-          pagasValor += valor;
-        } else if (venc < hoje) {
-          vencidasCount++;
-          vencidasValor += valor;
-        } else if (venc.getTime() === hoje.getTime()) {
-          hojeCount++;
-          hojeValor += valor;
-        } else if (venc <= em7dias) {
-          semanaCount++;
-          semanaValor += valor;
-        }
-      });
+    function abrirPagamento(id){const p=parcelas.find(x=>x.id===id);if(!p)return;document.getElementById('pagId').value=id;document.getElementById('pagCliente').textContent=p.cliente_nome||p.devedor_nome||'—';document.getElementById('pagParcela').textContent='Parcela '+(p.numero||'—')+'/'+(p.total_parcelas||'—');document.getElementById('pagVencimento').textContent=fmtDate(p.vencimento);document.getElementById('pagValor').textContent=fmtMoney(p.valor);document.getElementById('pagValorPago').value=p.valor||0;document.getElementById('pagData').value=new Date().toISOString().split('T')[0];document.getElementById('pixArea').style.display='none';document.querySelectorAll('.payment-method').forEach(m=>m.classList.remove('selected'));document.querySelector('.payment-method').classList.add('selected');metodoPagamento='pix';document.getElementById('modalPagamento').classList.add('show')}
 
-      document.getElementById('statHoje').textContent = hojeCount;
-      document.getElementById('statHojeValor').textContent = fmtMoney(hojeValor);
-      document.getElementById('statSemana').textContent = semanaCount;
-      document.getElementById('statSemanaValor').textContent = fmtMoney(semanaValor);
-      document.getElementById('statVencidas').textContent = vencidasCount;
-      document.getElementById('statVencidasValor').textContent = fmtMoney(vencidasValor);
-      document.getElementById('statPagas').textContent = pagasCount;
-      document.getElementById('statPagasValor').textContent = fmtMoney(pagasValor);
+    function selecionarMetodo(el,metodo){document.querySelectorAll('.payment-method').forEach(m=>m.classList.remove('selected'));el.classList.add('selected');metodoPagamento=metodo;document.getElementById('pixArea').style.display=metodo==='pix'?'block':'none';if(metodo==='pix'){document.getElementById('pixCode').textContent='00020126580014br.gov.bcb.pix0136'+Math.random().toString(36).substring(2,15)}}
+    function copiarPix(){navigator.clipboard.writeText(document.getElementById('pixCode').textContent);alert('Código PIX copiado!')}
 
-      const total = parcelasData.length;
-      const taxa = total > 0 ? Math.round((pagasCount / total) * 100) : 0;
-      document.getElementById('statTaxa').textContent = taxa + '%';
+    async function confirmarPagamento(){const id=document.getElementById('pagId').value,valor=document.getElementById('pagValorPago').value,data=document.getElementById('pagData').value;if(!valor||!data){alert('Preencha valor e data');return}try{const r=await fetch(API+'/api/parcelas/'+id+'/pagar',{method:'PUT',headers:getHeaders(),body:JSON.stringify({valor_pago:valor,data_pagamento:data,forma_pagamento:metodoPagamento,observacao:document.getElementById('pagObs').value})});const d=await r.json();if(d.success){fecharModal('modalPagamento');carregarParcelas();alert('Pagamento registrado!')}else alert(d.message||'Erro')}catch(e){alert('Erro ao registrar')}}
 
-      document.getElementById('countTodas').textContent = parcelasData.length;
-      document.getElementById('countHoje').textContent = hojeCount;
-      document.getElementById('countSemana').textContent = semanaCount;
-      document.getElementById('countVencidas').textContent = vencidasCount;
-      document.getElementById('countPagas').textContent = pagasCount;
+    function pagarSelecionadas(){if(selectedIds.length===0)return;alert('Função de pagamento em lote: '+selectedIds.length+' parcelas')}
 
-      if (vencidasCount > 0) {
-        document.getElementById('alertVencidas').style.display = 'flex';
-        document.getElementById('alertVencidasTitulo').textContent = vencidasCount + ' parcelas vencidas!';
-        document.getElementById('alertVencidasTexto').textContent = 'Total: ' + fmtMoney(vencidasValor);
-      }
-    }
+    function abrirReagendar(id){const p=parcelas.find(x=>x.id===id);if(!p)return;document.getElementById('reagendarId').value=id;document.getElementById('reagendarParcela').value='Parcela '+(p.numero||'—')+' - '+(p.cliente_nome||p.devedor_nome||'Cliente');const novaData=new Date();novaData.setDate(novaData.getDate()+7);document.getElementById('reagendarData').value=novaData.toISOString().split('T')[0];document.getElementById('modalReagendar').classList.add('show')}
 
-    function renderizarTabela() {
-      const tbody = document.getElementById('parcelasBody');
-      let dados = filtrarDados();
-      document.getElementById('tableCount').textContent = dados.length + ' parcelas';
+    async function confirmarReagendamento(){const id=document.getElementById('reagendarId').value,data=document.getElementById('reagendarData').value;if(!data){alert('Informe a nova data');return}try{const r=await fetch(API+'/api/parcelas/'+id,{method:'PUT',headers:getHeaders(),body:JSON.stringify({vencimento:data,motivo_reagendamento:document.getElementById('reagendarMotivo').value})});const d=await r.json();if(d.success){fecharModal('modalReagendar');carregarParcelas();alert('Vencimento alterado!')}else alert(d.message||'Erro')}catch(e){alert('Erro ao reagendar')}}
 
-      if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-calendar-check"></i><p>Nenhuma parcela encontrada</p></div></td></tr>';
-        return;
-      }
+    function confirmarExclusao(id){deleteIds=[id];document.getElementById('deleteInfo').textContent='1 parcela será excluída';document.getElementById('modalExcluir').classList.add('show')}
+    function confirmarExclusaoMassa(){deleteIds=[...selectedIds];document.getElementById('deleteInfo').textContent=deleteIds.length+' parcela(s) serão excluídas';document.getElementById('modalExcluir').classList.add('show')}
+    async function executarExclusao(){try{for(const id of deleteIds){await fetch(API+'/api/parcelas/'+id,{method:'DELETE',headers:getHeaders()})}fecharModal('modalExcluir');selectedIds=[];deleteIds=[];carregarParcelas();alert('Excluído!')}catch(e){alert('Erro')}}
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+    function enviarWhatsApp(id){const p=parcelas.find(x=>x.id===id);if(!p||!p.cliente_telefone){alert('Cliente sem telefone cadastrado');return}const msg=`Olá! Lembrete da parcela ${p.numero||''} no valor de ${fmtMoney(p.valor)} com vencimento em ${fmtDate(p.vencimento)}.`;window.open('https://wa.me/55'+p.cliente_telefone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank')}
 
-      tbody.innerHTML = dados.map(p => {
-        const venc = new Date(p.vencimento);
-        venc.setHours(0, 0, 0, 0);
-        const diffDias = Math.ceil((venc - hoje) / (1000 * 60 * 60 * 24));
-        
-        let statusClass = 'pendente', statusText = 'Pendente', diasClass = 'futuro', diasText = 'Em ' + diffDias + ' dias';
-        let numBg = 'rgba(255,255,255,0.1)', numColor = 'var(--text-muted)';
-        
-        if (p.status === 'pago') {
-          statusClass = 'pago';
-          statusText = 'Pago';
-          diasText = 'Pago';
-          numBg = 'var(--green-bg)';
-          numColor = 'var(--green)';
-        } else if (diffDias < 0) {
-          statusClass = 'vencido';
-          statusText = 'Vencida';
-          diasClass = 'vencido';
-          diasText = Math.abs(diffDias) + ' dias atraso';
-          numBg = 'var(--red-bg)';
-          numColor = 'var(--red)';
-        } else if (diffDias === 0) {
-          statusClass = 'hoje';
-          statusText = 'Hoje';
-          diasClass = 'hoje';
-          diasText = 'Vence hoje!';
-          numBg = 'var(--blue-bg)';
-          numColor = 'var(--blue)';
-        } else if (diffDias <= 7) {
-          diasClass = 'proximo';
-          numBg = 'var(--orange-bg)';
-          numColor = 'var(--orange)';
-        }
+    function fecharModal(id){document.getElementById(id).classList.remove('show')}
 
-        return `<tr>
-          <td>
-            <div class="parcela-info">
-              <div class="parcela-numero" style="background:${numBg};color:${numColor};">${p.status === 'pago' ? '<i class="fas fa-check"></i>' : p.numero || '—'}</div>
-              <div>
-                <div class="parcela-acordo">Parcela ${p.numero || '—'}/${p.total_parcelas || '—'}</div>
-                <div class="parcela-id">#${p.acordo_id || '—'}</div>
-              </div>
-            </div>
-          </td>
-          <td><div style="font-weight:600;">${p.devedor_nome || '—'}</div><div style="font-size:11px;color:var(--text-muted);">${p.devedor_cpf || ''}</div></td>
-          <td>${p.credor_nome || '—'}</td>
-          <td><div class="vencimento-cell"><div class="data">${fmtDate(p.vencimento)}</div><div class="dias ${diasClass}">${diasText}</div></div></td>
-          <td><span class="status-badge ${statusClass}"><i class="fas fa-${statusClass === 'pago' ? 'check' : statusClass === 'vencido' ? 'exclamation' : 'clock'}"></i> ${statusText}</span></td>
-          <td class="valor-cell" style="color:${statusClass === 'pago' ? 'var(--green)' : statusClass === 'vencido' ? 'var(--red)' : 'var(--text-primary)'};">${fmtMoney(p.valor)}</td>
-          <td>
-            <div class="actions">
-              ${p.status !== 'pago' ? `<button class="btn btn-success btn-sm" onclick="abrirModalPagamento('${p.id}','${(p.devedor_nome || '').replace(/'/g, "\\'")}','${p.numero || ''}/${p.total_parcelas || ''}','${fmtDate(p.vencimento)}','${p.valor}')"><i class="fas fa-dollar-sign"></i> Pagar</button>` : ''}
-              <button class="btn btn-secondary btn-sm btn-icon" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function filtrarDados() {
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const em7dias = new Date(hoje);
-      em7dias.setDate(em7dias.getDate() + 7);
-
-      return parcelasData.filter(p => {
-        const venc = new Date(p.vencimento);
-        venc.setHours(0, 0, 0, 0);
-
-        switch (filtroAtual) {
-          case 'hoje': return venc.getTime() === hoje.getTime() && p.status !== 'pago';
-          case 'semana': return venc > hoje && venc <= em7dias && p.status !== 'pago';
-          case 'vencidas': return venc < hoje && p.status !== 'pago';
-          case 'pagas': return p.status === 'pago';
-          default: return true;
-        }
-      });
-    }
-
-    function filtrarParcelas(tipo) {
-      document.querySelectorAll('.tab-filter').forEach(t => t.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-      filtroAtual = tipo;
-      renderizarTabela();
-    }
-
-    function filtrarVencidas() {
-      filtroAtual = 'vencidas';
-      document.querySelectorAll('.tab-filter').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-filter')[3].classList.add('active');
-      renderizarTabela();
-    }
-
-    function abrirModalPagamento(id, devedor, parcela, vencimento, valor) {
-      document.getElementById('pagId').value = id;
-      document.getElementById('pagDevedor').textContent = devedor;
-      document.getElementById('pagParcela').textContent = parcela;
-      document.getElementById('pagVencimento').textContent = vencimento;
-      document.getElementById('pagValor').textContent = fmtMoney(valor);
-      document.getElementById('pagValorPago').value = fmtMoney(valor);
-      document.getElementById('pagData').value = new Date().toISOString().split('T')[0];
-      document.getElementById('modalPagamento').classList.add('show');
-    }
-
-    function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
-
-    async function confirmarPagamento() {
-      const id = document.getElementById('pagId').value;
-      try {
-        const res = await fetch(API + '/api/parcelas/' + id + '/pagar', {
-          method: 'PUT',
-          headers: getHeaders(),
-          body: JSON.stringify({
-            data_pagamento: document.getElementById('pagData').value,
-            forma_pagamento: document.getElementById('pagForma').value,
-            observacao: document.getElementById('pagObs').value
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Pagamento registrado!');
-          fecharModal('modalPagamento');
-          carregarParcelas();
-        } else alert(data.message || 'Erro');
-      } catch (e) { alert('Erro ao registrar'); }
-    }
-
-    document.getElementById('modalPagamento').onclick = e => { if (e.target.id === 'modalPagamento') fecharModal('modalPagamento'); };
-
-    carregarUsuario();
-    carregarBadges();
-    carregarParcelas();
+    carregarUsuario();carregarParcelas();
   </script>
 </body>
 </html>

@@ -18,7 +18,6 @@
       --gold: #d4a853;
       --gold-light: #e8c068;
       --gold-glow: rgba(212, 168, 83, 0.15);
-      --gold-glow-strong: rgba(212, 168, 83, 0.25);
       --border: rgba(255, 255, 255, 0.06);
       --border-gold: rgba(212, 168, 83, 0.3);
       --green: #10b981;
@@ -36,7 +35,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 
-    /* SIDEBAR */
     .sidebar {
       position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
       background: var(--bg-sidebar); border-right: 1px solid var(--border);
@@ -53,7 +51,6 @@
     }
     .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
     .logo-text span { color: var(--gold); }
-
     .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
     .nav-section { margin-bottom: 24px; }
     .nav-title {
@@ -73,11 +70,9 @@
     .nav-link i { width: 18px; text-align: center; font-size: 14px; }
     .nav-badge {
       margin-left: auto; padding: 2px 8px; border-radius: 10px;
-      font-size: 10px; font-weight: 700; background: var(--red); color: white;
-      display: none;
+      font-size: 10px; font-weight: 700; background: var(--red); color: white; display: none;
     }
     .nav-badge:not(:empty) { display: inline-block; }
-
     .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
     .user-info {
       display: flex; align-items: center; gap: 10px; padding: 10px;
@@ -97,9 +92,7 @@
     }
     .btn-logout:hover { background: var(--red-bg); color: var(--red); }
 
-    /* MAIN */
     .main { margin-left: var(--sidebar-width); min-height: 100vh; }
-    
     .header {
       height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
@@ -121,141 +114,104 @@
       color: white; display: flex; align-items: center; justify-content: center;
     }
 
-    .content { padding: 24px; }
-
-    /* STATS CARDS */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px;
+    /* DROPDOWN NOTIFICAÇÕES */
+    .notif-wrapper { position: relative; }
+    .notif-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0; width: 380px; max-height: 500px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: none; overflow: hidden; z-index: 1000;
     }
+    .notif-dropdown.show { display: block; animation: slideDown 0.2s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .notif-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .notif-header h3 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .notif-header h3 i { color: var(--gold); }
+    .notif-clear {
+      font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 4px 8px;
+      border-radius: 4px; transition: all 0.15s;
+    }
+    .notif-clear:hover { background: var(--red-bg); color: var(--red); }
+    .notif-tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 12px; }
+    .notif-tab {
+      padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted);
+      cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+    }
+    .notif-tab:hover { color: var(--text-primary); }
+    .notif-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .notif-tab .tab-count {
+      margin-left: 6px; padding: 2px 6px; border-radius: 8px; font-size: 10px;
+      background: var(--red); color: white;
+    }
+    .notif-body { max-height: 350px; overflow-y: auto; }
+    .notif-section { padding: 12px; display: none; }
+    .notif-section.active { display: block; }
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px;
+      cursor: pointer; transition: all 0.15s; margin-bottom: 4px;
+    }
+    .notif-item:hover { background: var(--gold-glow); }
+    .notif-item.unread { background: rgba(255,255,255,0.02); border-left: 3px solid var(--gold); }
+    .notif-icon {
+      width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+    .notif-icon.vencida { background: var(--red-bg); color: var(--red); }
+    .notif-icon.hoje { background: var(--orange-bg); color: var(--orange); }
+    .notif-content { flex: 1; min-width: 0; }
+    .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .notif-meta { display: flex; align-items: center; gap: 8px; }
+    .notif-valor { font-size: 12px; font-weight: 700; color: var(--gold); }
+    .notif-tempo { font-size: 10px; color: var(--text-muted); }
+    .notif-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .notif-empty i { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+    .notif-empty p { font-size: 13px; }
+    .notif-footer { padding: 12px 16px; border-top: 1px solid var(--border); text-align: center; }
+    .notif-footer a { font-size: 12px; color: var(--gold); text-decoration: none; font-weight: 600; }
+    .notif-footer a:hover { text-decoration: underline; }
+
+    .content { padding: 24px; }
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
       padding: 20px; transition: all 0.2s;
     }
     .stat-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
     .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .stat-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; font-size: 16px;
-    }
-    .stat-trend {
-      font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
-      display: flex; align-items: center; gap: 3px;
-    }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .stat-trend { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; display: flex; align-items: center; gap: 3px; }
     .stat-trend.up { background: var(--green-bg); color: var(--green); }
-    .stat-trend.down { background: var(--red-bg); color: var(--red); }
     .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
     .stat-value { font-size: 24px; font-weight: 800; }
     .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-    /* GRID LAYOUT */
     .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-
-    /* CARDS */
-    .card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .card-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--gold); }
     .card-link { font-size: 12px; color: var(--gold); text-decoration: none; font-weight: 600; }
     .card-body { padding: 20px; }
-
-    /* FILA DE COBRANÇA */
-    .fila-item {
-      display: flex; align-items: center; gap: 12px; padding: 12px;
-      background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 8px;
-      cursor: pointer; transition: all 0.15s;
-    }
-    .fila-item:hover { background: var(--gold-glow); }
-    .fila-avatar {
-      width: 40px; height: 40px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px;
-    }
-    .fila-info { flex: 1; }
-    .fila-nome { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
-    .fila-credor { font-size: 11px; color: var(--text-muted); }
-    .fila-valor { text-align: right; }
-    .fila-valor-num { font-weight: 700; font-size: 14px; color: var(--gold); }
-    .fila-dias { font-size: 10px; color: var(--red); }
-    .fila-action {
-      width: 32px; height: 32px; border-radius: 6px;
-      background: var(--gold); color: var(--bg-primary);
-      border: none; cursor: pointer; font-size: 12px;
-    }
-
-    /* ATIVIDADES */
-    .atividade-item {
-      display: flex; align-items: flex-start; gap: 12px; padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .atividade-item:last-child { border-bottom: none; }
-    .atividade-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; font-size: 12px;
-    }
-    .atividade-info { flex: 1; }
-    .atividade-titulo { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-    .atividade-desc { font-size: 11px; color: var(--text-muted); }
-    .atividade-hora { font-size: 10px; color: var(--text-muted); }
-
-    /* METAS */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state p { font-size: 13px; }
     .meta-item { margin-bottom: 16px; }
     .meta-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
     .meta-label { font-size: 12px; color: var(--text-secondary); }
     .meta-valor { font-size: 12px; font-weight: 600; }
     .meta-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
     .meta-progress { height: 100%; border-radius: 3px; transition: width 0.5s; }
-
-    /* CREDORES */
-    .credor-item {
-      display: flex; align-items: center; gap: 12px; padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .credor-item:last-child { border-bottom: none; }
-    .credor-logo {
-      width: 36px; height: 36px; border-radius: 8px; background: var(--gold-glow);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 12px; color: var(--gold);
-    }
-    .credor-info { flex: 1; }
-    .credor-nome { font-size: 13px; font-weight: 600; }
-    .credor-stats { font-size: 11px; color: var(--text-muted); }
-    .credor-valor { font-weight: 700; font-size: 13px; }
-
-    /* EMPTY STATE */
-    .empty-state {
-      text-align: center; padding: 40px 20px; color: var(--text-muted);
-    }
-    .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
-    .empty-state p { font-size: 13px; }
-
-    /* BUTTON */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px;
-      border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
-      border: none; transition: all 0.15s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      color: var(--bg-primary);
-    }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.3); }
-    .btn-secondary {
-      background: rgba(255,255,255,0.05); color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
 
-    /* RESPONSIVE */
     @media (max-width: 1200px) {
       .stats-row { grid-template-columns: repeat(3, 1fr); }
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .notif-dropdown { width: 340px; right: -100px; }
     }
     @media (max-width: 768px) {
       .sidebar { transform: translateX(-100%); }
@@ -265,104 +221,50 @@
   </style>
 </head>
 <body>
-
-  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">A</div>
       <div class="logo-text">ACERT<span>IVE</span></div>
     </div>
-
     <nav class="sidebar-nav">
-      <!-- PRINCIPAL -->
       <div class="nav-section">
         <div class="nav-title">Principal</div>
-        <a href="/dashboard" class="nav-link active" data-page="dashboard">
-          <i class="fas fa-chart-pie"></i> Dashboard
-        </a>
-        <a href="/fila-cobranca" class="nav-link" data-page="fila-cobranca">
-          <i class="fas fa-headset"></i> Fila de Cobrança
-          <span class="nav-badge" id="badgeFila"></span>
-        </a>
-        <a href="/atendimento" class="nav-link" data-page="atendimento">
-          <i class="fas fa-phone-volume"></i> Atendimento
-        </a>
+        <a href="/dashboard" class="nav-link active" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link" data-page="fila-cobranca"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link" data-page="atendimento"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-
-      <!-- CADASTROS -->
       <div class="nav-section">
         <div class="nav-title">Cadastros</div>
-        <a href="/credores" class="nav-link" data-page="credores">
-          <i class="fas fa-building"></i> Credores
-        </a>
-        <a href="/clientes" class="nav-link" data-page="clientes devedores">
-          <i class="fas fa-users"></i> Devedores
-        </a>
-        <a href="/cobrancas" class="nav-link" data-page="cobrancas dividas">
-          <i class="fas fa-file-invoice-dollar"></i> Cobranças
-        </a>
+        <a href="/credores" class="nav-link" data-page="credores"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link" data-page="clientes"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/cobrancas" class="nav-link" data-page="cobrancas"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-
-      <!-- NEGOCIAÇÃO -->
       <div class="nav-section">
         <div class="nav-title">Negociação</div>
-        <a href="/acordos" class="nav-link" data-page="acordos">
-          <i class="fas fa-handshake"></i> Acordos
-        </a>
-        <a href="/parcelas" class="nav-link" data-page="parcelas">
-          <i class="fas fa-calendar-check"></i> Parcelas
-        </a>
-        <a href="/simulador" class="nav-link" data-page="simulador">
-          <i class="fas fa-calculator"></i> Simulador
-        </a>
+        <a href="/acordos" class="nav-link" data-page="acordos"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link" data-page="parcelas"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link" data-page="simulador"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-
-      <!-- FINANCEIRO -->
       <div class="nav-section">
         <div class="nav-title">Financeiro</div>
-        <a href="/comissoes" class="nav-link" data-page="comissoes">
-          <i class="fas fa-coins"></i> Comissões
-        </a>
-        <a href="/repasses" class="nav-link" data-page="repasses">
-          <i class="fas fa-exchange-alt"></i> Repasses
-        </a>
-        <a href="/relatorios" class="nav-link" data-page="relatorios">
-          <i class="fas fa-chart-bar"></i> Relatórios
-        </a>
+        <a href="/comissoes" class="nav-link" data-page="comissoes"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link" data-page="repasses"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link" data-page="relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-
-      <!-- AUTOMAÇÃO -->
       <div class="nav-section">
         <div class="nav-title">Automação</div>
-        <a href="/templates" class="nav-link" data-page="templates">
-          <i class="fas fa-file-alt"></i> Templates
-        </a>
-        <a href="/regua-cobranca" class="nav-link" data-page="regua-cobranca regua">
-          <i class="fas fa-robot"></i> Régua de Cobrança
-        </a>
-        <a href="/lembretes" class="nav-link" data-page="lembretes">
-          <i class="fas fa-bell"></i> Lembretes E-mail
-        </a>
-        <a href="/agendamentos" class="nav-link" data-page="agendamentos">
-          <i class="fas fa-calendar-alt"></i> Agendamentos
-        </a>
+        <a href="/templates" class="nav-link" data-page="templates"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link" data-page="regua-cobranca"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link" data-page="lembretes"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link" data-page="agendamentos"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
       </div>
-
-      <!-- ADMINISTRAÇÃO -->
       <div class="nav-section">
         <div class="nav-title">Administração</div>
-        <a href="/importar-massa" class="nav-link" data-page="importar-massa importar">
-          <i class="fas fa-file-import"></i> Importar
-        </a>
-        <a href="/usuarios" class="nav-link" data-page="usuarios">
-          <i class="fas fa-user-shield"></i> Usuários
-        </a>
-        <a href="/configuracoes" class="nav-link" data-page="configuracoes config">
-          <i class="fas fa-cog"></i> Configurações
-        </a>
+        <a href="/importar-massa" class="nav-link" data-page="importar-massa"><i class="fas fa-file-import"></i> Importar</a>
+        <a href="/usuarios" class="nav-link" data-page="usuarios"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link" data-page="configuracoes"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-
     <div class="sidebar-footer">
       <div class="user-info">
         <div class="user-avatar" id="userAvatar">A</div>
@@ -370,33 +272,53 @@
           <div class="user-name" id="userName">Carregando...</div>
           <div class="user-role" id="userRole">-</div>
         </div>
-        <button class="btn-logout" onclick="logout()" title="Sair">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
+        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <header class="header">
-      <div class="header-left">
-        <h1 class="page-title">Dashboard</h1>
-      </div>
+      <div class="header-left"><h1 class="page-title">Dashboard</h1></div>
       <div class="header-right">
         <button class="header-btn" title="Atualizar" onclick="carregarDados()"><i class="fas fa-sync-alt"></i></button>
-        <button class="header-btn" title="Notificações">
-          <i class="fas fa-bell"></i>
-          <span class="badge" id="notifBadge">3</span>
-        </button>
-        <button class="btn btn-primary" onclick="location.href='/atendimento'">
-          <i class="fas fa-headset"></i> Iniciar Atendimento
-        </button>
+        <div class="notif-wrapper">
+          <button class="header-btn" title="Notificações" onclick="toggleNotificacoes()">
+            <i class="fas fa-bell"></i>
+            <span class="badge" id="notifBadge">0</span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-header">
+              <h3><i class="fas fa-bell"></i> Notificações</h3>
+              <span class="notif-clear" onclick="marcarTodasLidas()">Marcar como lidas</span>
+            </div>
+            <div class="notif-tabs">
+              <div class="notif-tab active" onclick="trocarTabNotif('todas')" data-tab="todas">Todas <span class="tab-count" id="countTodas">0</span></div>
+              <div class="notif-tab" onclick="trocarTabNotif('vencidas')" data-tab="vencidas">Vencidas <span class="tab-count" id="countVencidas">0</span></div>
+              <div class="notif-tab" onclick="trocarTabNotif('hoje')" data-tab="hoje">Hoje <span class="tab-count" id="countHoje">0</span></div>
+            </div>
+            <div class="notif-body">
+              <div class="notif-section active" id="secaoTodas">
+                <div class="notif-empty" id="emptyTodas"><i class="fas fa-check-circle"></i><p>Nenhuma notificação</p></div>
+                <div id="listaTodas"></div>
+              </div>
+              <div class="notif-section" id="secaoVencidas">
+                <div class="notif-empty" id="emptyVencidas"><i class="fas fa-check-circle"></i><p>Nenhuma cobrança vencida</p></div>
+                <div id="listaVencidas"></div>
+              </div>
+              <div class="notif-section" id="secaoHoje">
+                <div class="notif-empty" id="emptyHoje"><i class="fas fa-check-circle"></i><p>Nada vencendo hoje</p></div>
+                <div id="listaHoje"></div>
+              </div>
+            </div>
+            <div class="notif-footer"><a href="/fila-cobranca">Ver todas as cobranças <i class="fas fa-arrow-right"></i></a></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="location.href='/atendimento'"><i class="fas fa-headset"></i> Iniciar Atendimento</button>
       </div>
     </header>
 
     <div class="content">
-      <!-- STATS -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-header">
@@ -407,7 +329,6 @@
           <div class="stat-value" id="totalCarteira">R$ 0</div>
           <div class="stat-sub"><span id="qtdDividas">0</span> dívidas ativas</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-hand-holding-usd"></i></div>
@@ -417,314 +338,185 @@
           <div class="stat-value" id="totalRecuperado">R$ 0</div>
           <div class="stat-sub"><span id="qtdAcordos">0</span> acordos fechados</div>
         </div>
-
         <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-percentage"></i></div>
-          </div>
+          <div class="stat-header"><div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-percentage"></i></div></div>
           <div class="stat-label">Taxa de Recuperação</div>
           <div class="stat-value" id="taxaRecuperacao">0%</div>
           <div class="stat-sub">Meta: 25%</div>
         </div>
-
         <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-coins"></i></div>
-          </div>
+          <div class="stat-header"><div class="stat-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-coins"></i></div></div>
           <div class="stat-label">Comissão (Mês)</div>
           <div class="stat-value" id="totalComissao">R$ 0</div>
           <div class="stat-sub">Pendente: <span id="comissaoPendente">R$ 0</span></div>
         </div>
-
         <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-phone-alt"></i></div>
-          </div>
+          <div class="stat-header"><div class="stat-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-phone-alt"></i></div></div>
           <div class="stat-label">Acionamentos (Hoje)</div>
           <div class="stat-value" id="totalAcionamentos">0</div>
           <div class="stat-sub">CPC: <span id="taxaCPC">0%</span></div>
         </div>
       </div>
 
-      <!-- GRID PRINCIPAL -->
       <div class="grid-2">
-        <!-- FILA DE COBRANÇA -->
         <div class="card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-headset"></i> Fila de Cobrança</h3>
             <a href="/fila-cobranca" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a>
           </div>
-          <div class="card-body" id="filaCobranca">
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--red-bg);color:var(--red);">JM</div>
-              <div class="fila-info">
-                <div class="fila-nome">José da Silva</div>
-                <div class="fila-credor">Loja ABC</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num">R$ 2.450,00</div>
-                <div class="fila-dias">45 dias</div>
-              </div>
-              <button class="fila-action"><i class="fas fa-phone"></i></button>
-            </div>
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--orange-bg);color:var(--orange);">MF</div>
-              <div class="fila-info">
-                <div class="fila-nome">Maria Fernandes</div>
-                <div class="fila-credor">Banco XYZ</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num">R$ 5.800,00</div>
-                <div class="fila-dias">32 dias</div>
-              </div>
-              <button class="fila-action"><i class="fas fa-phone"></i></button>
-            </div>
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--blue-bg);color:var(--blue);">PS</div>
-              <div class="fila-info">
-                <div class="fila-nome">Pedro Santos</div>
-                <div class="fila-credor">Financeira 123</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num">R$ 1.200,00</div>
-                <div class="fila-dias">15 dias</div>
-              </div>
-              <button class="fila-action"><i class="fas fa-phone"></i></button>
-            </div>
-          </div>
+          <div class="card-body" id="filaCobranca"><div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhuma cobrança na fila</p></div></div>
         </div>
-
-        <!-- METAS DO MÊS -->
         <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-bullseye"></i> Metas do Mês</h3>
-          </div>
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-bullseye"></i> Metas do Mês</h3></div>
           <div class="card-body">
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Recuperação</span>
-                <span class="meta-valor">R$ 45.000 / R$ 100.000</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" style="width:45%;background:var(--green);"></div>
-              </div>
-            </div>
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Acordos Fechados</span>
-                <span class="meta-valor">32 / 50</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" style="width:64%;background:var(--blue);"></div>
-              </div>
-            </div>
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Acionamentos</span>
-                <span class="meta-valor">580 / 800</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" style="width:72.5%;background:var(--gold);"></div>
-              </div>
-            </div>
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Taxa CPC</span>
-                <span class="meta-valor">35% / 40%</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" style="width:87.5%;background:var(--purple);"></div>
-              </div>
-            </div>
+            <div class="meta-item"><div class="meta-header"><span class="meta-label">Recuperação</span><span class="meta-valor">R$ 0 / R$ 100.000</span></div><div class="meta-bar"><div class="meta-progress" style="width:0%;background:var(--green);"></div></div></div>
+            <div class="meta-item"><div class="meta-header"><span class="meta-label">Acordos Fechados</span><span class="meta-valor">0 / 50</span></div><div class="meta-bar"><div class="meta-progress" style="width:0%;background:var(--blue);"></div></div></div>
+            <div class="meta-item"><div class="meta-header"><span class="meta-label">Acionamentos</span><span class="meta-valor">0 / 800</span></div><div class="meta-bar"><div class="meta-progress" style="width:0%;background:var(--gold);"></div></div></div>
+            <div class="meta-item"><div class="meta-header"><span class="meta-label">Taxa CPC</span><span class="meta-valor">0% / 40%</span></div><div class="meta-bar"><div class="meta-progress" style="width:0%;background:var(--purple);"></div></div></div>
           </div>
         </div>
       </div>
 
-      <!-- GRID INFERIOR -->
       <div class="grid-3">
-        <!-- ATIVIDADES RECENTES -->
         <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-history"></i> Atividades Recentes</h3>
-          </div>
-          <div class="card-body" id="atividades">
-            <div class="atividade-item">
-              <div class="atividade-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-handshake"></i></div>
-              <div class="atividade-info">
-                <div class="atividade-titulo">Acordo fechado</div>
-                <div class="atividade-desc">João Silva - R$ 2.450 em 6x</div>
-              </div>
-              <div class="atividade-hora">14:32</div>
-            </div>
-            <div class="atividade-item">
-              <div class="atividade-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-phone"></i></div>
-              <div class="atividade-info">
-                <div class="atividade-titulo">Ligação realizada</div>
-                <div class="atividade-desc">Maria Santos - Prometeu pagar</div>
-              </div>
-              <div class="atividade-hora">14:15</div>
-            </div>
-            <div class="atividade-item">
-              <div class="atividade-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-dollar-sign"></i></div>
-              <div class="atividade-info">
-                <div class="atividade-titulo">Pagamento recebido</div>
-                <div class="atividade-desc">Pedro Oliveira - Parcela 3/6</div>
-              </div>
-              <div class="atividade-hora">13:48</div>
-            </div>
-            <div class="atividade-item">
-              <div class="atividade-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fab fa-whatsapp"></i></div>
-              <div class="atividade-info">
-                <div class="atividade-titulo">WhatsApp enviado</div>
-                <div class="atividade-desc">Ana Costa - Proposta de acordo</div>
-              </div>
-              <div class="atividade-hora">13:22</div>
-            </div>
-          </div>
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-history"></i> Atividades Recentes</h3></div>
+          <div class="card-body" id="atividades"><div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma atividade recente</p></div></div>
         </div>
-
-        <!-- TOP CREDORES -->
         <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-building"></i> Top Credores</h3>
-            <a href="/credores" class="card-link">Ver todos</a>
-          </div>
-          <div class="card-body" id="topCredores">
-            <div class="credor-item">
-              <div class="credor-logo">LA</div>
-              <div class="credor-info">
-                <div class="credor-nome">Loja ABC</div>
-                <div class="credor-stats">125 dívidas • 18% recuperado</div>
-              </div>
-              <div class="credor-valor">R$ 245k</div>
-            </div>
-            <div class="credor-item">
-              <div class="credor-logo">BX</div>
-              <div class="credor-info">
-                <div class="credor-nome">Banco XYZ</div>
-                <div class="credor-stats">89 dívidas • 22% recuperado</div>
-              </div>
-              <div class="credor-valor">R$ 180k</div>
-            </div>
-            <div class="credor-item">
-              <div class="credor-logo">F1</div>
-              <div class="credor-info">
-                <div class="credor-nome">Financeira 123</div>
-                <div class="credor-stats">67 dívidas • 15% recuperado</div>
-              </div>
-              <div class="credor-valor">R$ 95k</div>
-            </div>
-          </div>
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-building"></i> Top Credores</h3><a href="/credores" class="card-link">Ver todos</a></div>
+          <div class="card-body" id="topCredores"><div class="empty-state"><i class="fas fa-building"></i><p>Nenhum credor cadastrado</p></div></div>
         </div>
-
-        <!-- PARCELAS DO DIA -->
         <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-calendar-day"></i> Parcelas Hoje</h3>
-            <a href="/parcelas" class="card-link">Ver todas</a>
-          </div>
-          <div class="card-body" id="parcelasHoje">
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-check"></i></div>
-              <div class="fila-info">
-                <div class="fila-nome">Carlos Mendes</div>
-                <div class="fila-credor">Parcela 2/6</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num" style="color:var(--green);">R$ 350,00</div>
-                <div class="fila-dias" style="color:var(--green);">Pago</div>
-              </div>
-            </div>
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-clock"></i></div>
-              <div class="fila-info">
-                <div class="fila-nome">Ana Paula</div>
-                <div class="fila-credor">Parcela 1/4</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num">R$ 520,00</div>
-                <div class="fila-dias" style="color:var(--orange);">Pendente</div>
-              </div>
-            </div>
-            <div class="fila-item">
-              <div class="fila-avatar" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-clock"></i></div>
-              <div class="fila-info">
-                <div class="fila-nome">Roberto Lima</div>
-                <div class="fila-credor">Parcela 3/8</div>
-              </div>
-              <div class="fila-valor">
-                <div class="fila-valor-num">R$ 280,00</div>
-                <div class="fila-dias" style="color:var(--orange);">Pendente</div>
-              </div>
-            </div>
-          </div>
+          <div class="card-header"><h3 class="card-title"><i class="fas fa-calendar-day"></i> Parcelas Hoje</h3><a href="/parcelas" class="card-link">Ver todas</a></div>
+          <div class="card-body" id="parcelasHoje"><div class="empty-state"><i class="fas fa-calendar-check"></i><p>Nenhuma parcela para hoje</p></div></div>
         </div>
       </div>
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     const API = window.location.origin;
     let token = localStorage.getItem('token');
     if (!token) window.location.href = '/login';
 
-    function getHeaders() {
-      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+    let notificacoesData = { vencidas: [], hoje: [], agendamentos: [] };
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function fmtDate(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('pt-BR'); }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+
+    function toggleNotificacoes() {
+      const dropdown = document.getElementById('notifDropdown');
+      dropdown.classList.toggle('show');
+      if (dropdown.classList.contains('show')) carregarNotificacoes();
     }
 
-    function fmtMoney(v) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+    document.addEventListener('click', function(e) {
+      const wrapper = document.querySelector('.notif-wrapper');
+      const dropdown = document.getElementById('notifDropdown');
+      if (wrapper && !wrapper.contains(e.target) && dropdown.classList.contains('show')) dropdown.classList.remove('show');
+    });
+
+    function trocarTabNotif(tab) {
+      document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.notif-tab[data-tab="${tab}"]`).classList.add('active');
+      document.querySelectorAll('.notif-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('secao' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
     }
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    async function carregarNotificacoes() {
+      try {
+        const res = await fetch(API + '/api/alertas', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.alertas) {
+          notificacoesData.vencidas = data.alertas.vencidas || [];
+          notificacoesData.hoje = data.alertas.vencendoHoje || [];
+          renderizarNotificacoes();
+        }
+      } catch (e) { console.error('Erro:', e); }
     }
 
-    // Marcar menu ativo
+    function renderizarNotificacoes() {
+      const vencidas = notificacoesData.vencidas;
+      const hoje = notificacoesData.hoje;
+      const todas = [...vencidas, ...hoje];
+
+      document.getElementById('countTodas').textContent = todas.length;
+      document.getElementById('countVencidas').textContent = vencidas.length;
+      document.getElementById('countHoje').textContent = hoje.length;
+      document.getElementById('notifBadge').textContent = todas.length;
+
+      const listaTodas = document.getElementById('listaTodas');
+      const emptyTodas = document.getElementById('emptyTodas');
+      if (todas.length > 0) {
+        emptyTodas.style.display = 'none';
+        listaTodas.innerHTML = todas.slice(0, 10).map(item => criarItemNotificacao(item, item.dias_atraso ? 'vencida' : 'hoje')).join('');
+      } else { emptyTodas.style.display = 'block'; listaTodas.innerHTML = ''; }
+
+      const listaVencidas = document.getElementById('listaVencidas');
+      const emptyVencidas = document.getElementById('emptyVencidas');
+      if (vencidas.length > 0) {
+        emptyVencidas.style.display = 'none';
+        listaVencidas.innerHTML = vencidas.slice(0, 10).map(item => criarItemNotificacao(item, 'vencida')).join('');
+      } else { emptyVencidas.style.display = 'block'; listaVencidas.innerHTML = ''; }
+
+      const listaHoje = document.getElementById('listaHoje');
+      const emptyHoje = document.getElementById('emptyHoje');
+      if (hoje.length > 0) {
+        emptyHoje.style.display = 'none';
+        listaHoje.innerHTML = hoje.slice(0, 10).map(item => criarItemNotificacao(item, 'hoje')).join('');
+      } else { emptyHoje.style.display = 'block'; listaHoje.innerHTML = ''; }
+    }
+
+    function criarItemNotificacao(item, tipo) {
+      const icone = tipo === 'vencida' ? 'fa-exclamation-circle' : 'fa-clock';
+      const descricao = tipo === 'vencida' ? `${item.dias_atraso || 0} dias em atraso` : `Vence hoje`;
+      return `<div class="notif-item unread" onclick="abrirCobranca('${item.id}')">
+        <div class="notif-icon ${tipo}"><i class="fas ${icone}"></i></div>
+        <div class="notif-content">
+          <div class="notif-title">${item.cliente || 'Cliente'}</div>
+          <div class="notif-desc">${item.descricao || 'Cobrança'}</div>
+          <div class="notif-meta"><span class="notif-valor">${fmtMoney(item.valor_atualizado)}</span><span class="notif-tempo">${descricao}</span></div>
+        </div>
+      </div>`;
+    }
+
+    function abrirCobranca(id) {
+      document.getElementById('notifDropdown').classList.remove('show');
+      window.location.href = `/cobrancas?id=${id}`;
+    }
+
+    function marcarTodasLidas() { document.getElementById('notifDropdown').classList.remove('show'); }
+
     function setActiveMenu() {
       const currentPath = window.location.pathname.replace('/', '').replace('.html', '');
-      const navLinks = document.querySelectorAll('.nav-link');
-      
-      navLinks.forEach(link => {
+      document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
-        const pages = link.getAttribute('data-page') || '';
-        const pageList = pages.split(' ');
-        
-        if (pageList.some(page => currentPath === page || currentPath.includes(page))) {
-          link.classList.add('active');
-        }
+        const pages = (link.getAttribute('data-page') || '').split(' ');
+        if (pages.some(page => currentPath === page || currentPath.includes(page))) link.classList.add('active');
       });
-      
       if (!document.querySelector('.nav-link.active') && (currentPath === '' || currentPath === 'dashboard')) {
-        const dashboardLink = document.querySelector('.nav-link[data-page="dashboard"]');
-        if (dashboardLink) dashboardLink.classList.add('active');
+        const d = document.querySelector('.nav-link[data-page="dashboard"]');
+        if (d) d.classList.add('active');
       }
     }
 
-    // Carregar badges/alertas
     async function carregarBadges() {
       try {
         const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
         const data = await res.json();
         if (data.success) {
           const badgeFila = document.getElementById('badgeFila');
-          if (badgeFila) {
-            const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
-            badgeFila.textContent = total > 0 ? total : '';
-          }
+          if (badgeFila) badgeFila.textContent = (data.vencidas || 0) + (data.vencendoHoje || 0) || '';
           const notifBadge = document.getElementById('notifBadge');
-          if (notifBadge) {
-            notifBadge.textContent = data.total || 0;
-          }
+          if (notifBadge) notifBadge.textContent = data.total || 0;
         }
-      } catch (e) { console.error('Erro badges:', e); }
+      } catch (e) { console.error('Erro:', e); }
     }
 
     async function carregarDados() {
       try {
-        // Carregar dados do dashboard
         const res = await fetch(API + '/api/dashboard', { headers: getHeaders() });
         const data = await res.json();
         if (data.success) {
@@ -732,7 +524,7 @@
           document.getElementById('qtdDividas').textContent = data.totalCobrancas || 0;
           document.getElementById('totalRecuperado').textContent = fmtMoney(data.totalRecebido);
         }
-      } catch (e) { console.error('Erro ao carregar dados:', e); }
+      } catch (e) { console.error('Erro:', e); }
     }
 
     async function carregarUsuario() {
@@ -747,7 +539,6 @@
       } catch (e) { console.error(e); }
     }
 
-    // Inicialização
     setActiveMenu();
     carregarUsuario();
     carregarDados();
