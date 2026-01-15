@@ -70,7 +70,6 @@
     .resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}.resumo-label{font-size:11px;color:var(--text-muted)}.resumo-valor{font-size:18px;font-weight:800}.resumo-valor.destaque{color:var(--gold)}.resumo-valor.verde{color:var(--green)}
     .lembrete-toggle{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-primary);border-radius:8px;margin-top:16px}.lembrete-toggle input{width:18px;height:18px;accent-color:var(--gold)}.lembrete-config{margin-top:12px;padding:12px;background:rgba(139,92,246,0.12);border-radius:8px;display:none}.lembrete-config.show{display:block}
     .delete-warning{display:flex;gap:16px;padding:16px;background:var(--red-bg);border-radius:8px;margin-bottom:20px}.delete-warning-icon{width:48px;height:48px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center}.delete-warning-icon i{font-size:24px;color:white}.delete-warning-text h4{color:var(--red);margin-bottom:4px}.delete-warning-text p{font-size:13px;color:var(--text-secondary)}
-    .delete-items{background:var(--bg-primary);border-radius:8px;padding:12px;max-height:150px;overflow-y:auto}.delete-item{display:flex;align-items:center;padding:8px;border-bottom:1px solid var(--border)}.delete-item:last-child{border-bottom:none}
     @media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
   </style>
 </head>
@@ -141,7 +140,7 @@
       <div class="modal-body">
         <div id="etapa1">
           <div class="form-section"><div class="form-section-title"><i class="fas fa-user"></i> Selecione o Cliente</div>
-            <div class="search-box" style="margin-bottom:16px;"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cliente..." id="buscaCliente" onkeyup="buscarClientes()"></div>
+            <div class="search-box" style="margin-bottom:16px;"><i class="fas fa-search"></i><input type="text" placeholder="Buscar cliente por nome ou CPF..." id="buscaCliente" onkeyup="buscarClientes()"></div>
             <div id="listaClientes" style="max-height:250px;overflow-y:auto;"><p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p></div>
           </div>
         </div>
@@ -166,7 +165,7 @@
   <div class="modal-overlay" id="modalExcluir">
     <div class="modal modal-sm">
       <div class="modal-header"><h3 class="modal-title danger"><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3><button class="modal-close" onclick="fecharModal('modalExcluir')"><i class="fas fa-times"></i></button></div>
-      <div class="modal-body"><div class="delete-warning"><div class="delete-warning-icon"><i class="fas fa-trash"></i></div><div class="delete-warning-text"><h4>Atenção!</h4><p>Esta ação não pode ser desfeita.</p></div></div><p style="font-size:13px;margin-bottom:12px;">Acordos a excluir:</p><div class="delete-items" id="deleteItemsList"></div></div>
+      <div class="modal-body"><div class="delete-warning"><div class="delete-warning-icon"><i class="fas fa-trash"></i></div><div class="delete-warning-text"><h4>Atenção!</h4><p>Esta ação não pode ser desfeita.</p></div></div><p style="font-size:13px;" id="deleteInfo"></p></div>
       <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">Cancelar</button><button class="btn btn-danger" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button></div>
     </div>
   </div>
@@ -192,22 +191,124 @@
     function atualizarSelecao(){renderizarAcordos();const ba=document.getElementById('bulkActions'),ca=document.getElementById('checkAll');if(selectedIds.length>0){ba.classList.add('show');document.getElementById('selectedCount').textContent=selectedIds.length}else{ba.classList.remove('show')}if(selectedIds.length===acordos.length&&acordos.length>0)ca.classList.add('checked');else ca.classList.remove('checked')}
     function cancelarSelecao(){selectedIds=[];atualizarSelecao()}
 
-    function confirmarExclusao(id){deleteIds=[id];mostrarModalExclusao()}
-    function confirmarExclusaoMassa(){deleteIds=[...selectedIds];mostrarModalExclusao()}
-    function mostrarModalExclusao(){const l=document.getElementById('deleteItemsList'),it=acordos.filter(a=>deleteIds.includes(a.id));l.innerHTML=it.map(a=>`<div class="delete-item"><div style="flex:1;font-weight:600;">#${String(a.id).substring(0,8)} - ${a.cliente_nome||a.devedor_nome||'Cliente'}</div><div class="valor-acordo">${fmtMoney(a.valor_acordo||a.valor_final)}</div></div>`).join('');document.getElementById('modalExcluir').classList.add('show')}
-    async function executarExclusao(){try{for(const id of deleteIds){await fetch(API+'/api/acordos/'+id,{method:'DELETE',headers:getHeaders()})}fecharModal('modalExcluir');selectedIds=[];deleteIds=[];carregarAcordos();alert('Excluído com sucesso!')}catch(e){alert('Erro ao excluir')}}
+    function confirmarExclusao(id){deleteIds=[id];document.getElementById('deleteInfo').textContent='1 acordo será excluído';document.getElementById('modalExcluir').classList.add('show')}
+    function confirmarExclusaoMassa(){deleteIds=[...selectedIds];document.getElementById('deleteInfo').textContent=deleteIds.length+' acordo(s) serão excluídos';document.getElementById('modalExcluir').classList.add('show')}
+    async function executarExclusao(){try{for(const id of deleteIds){await fetch(API+'/api/acordos/'+id,{method:'DELETE',headers:getHeaders()})}fecharModal('modalExcluir');selectedIds=[];deleteIds=[];carregarAcordos();alert('Excluído!')}catch(e){alert('Erro')}}
 
     function abrirModalNovoAcordo(){clienteSelecionado=null;document.getElementById('etapa1').style.display='block';document.getElementById('etapa2').style.display='none';document.getElementById('btnSalvarAcordo').style.display='none';document.getElementById('buscaCliente').value='';document.getElementById('listaClientes').innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite para buscar...</p>';document.getElementById('modalNovoAcordo').classList.add('show')}
 
-    async function buscarClientes(){const b=document.getElementById('buscaCliente').value.trim(),l=document.getElementById('listaClientes');if(b.length<2){l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite 2+ caracteres...</p>';return}l.innerHTML='<p style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i></p>';try{const r=await fetch(API+'/api/clientes?busca='+encodeURIComponent(b),{headers:getHeaders()});const d=await r.json();if(d.success&&d.data&&d.data.length>0){clientes=d.data;l.innerHTML=clientes.map(c=>`<div class="cliente-card" onclick="selecionarCliente('${c.id}')"><div class="cliente-avatar">${(c.nome||'CL').substring(0,2).toUpperCase()}</div><div class="cliente-info"><div class="cliente-nome">${c.nome||'Cliente'}</div><div class="cliente-cpf">${c.cpf_cnpj||c.cpf||'-'}</div></div><div><div class="cliente-valor">${fmtMoney(c.total_divida||0)}</div></div></div>`).join('')}else{l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhum cliente encontrado</p>'}}catch(e){l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Erro</p>'}}
+    // ========== BUSCA CORRIGIDA - USA /api/clientes/buscar?q= ==========
+    async function buscarClientes(){
+      const b=document.getElementById('buscaCliente').value.trim();
+      const l=document.getElementById('listaClientes');
+      
+      if(b.length<2){
+        l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Digite 2+ caracteres...</p>';
+        return;
+      }
+      
+      l.innerHTML='<p style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Buscando...</p>';
+      
+      try{
+        // ROTA CORRETA: /api/clientes/buscar?q=TERMO
+        const r=await fetch(API+'/api/clientes/buscar?q='+encodeURIComponent(b),{headers:getHeaders()});
+        const d=await r.json();
+        
+        if(d.success && d.data && d.data.length>0){
+          clientes=d.data;
+          l.innerHTML=clientes.map(c=>`
+            <div class="cliente-card" onclick="selecionarCliente('${c.id}')">
+              <div class="cliente-avatar">${(c.nome||'CL').substring(0,2).toUpperCase()}</div>
+              <div class="cliente-info">
+                <div class="cliente-nome">${c.nome||'Cliente'}</div>
+                <div class="cliente-cpf">${c.cpf_cnpj||'-'}</div>
+              </div>
+              <div>
+                <div class="cliente-valor">${fmtMoney(c.divida_total||0)}</div>
+                <div style="font-size:10px;color:var(--text-muted);">${c.total_cobrancas||0} cobrança(s)</div>
+              </div>
+            </div>
+          `).join('');
+        }else{
+          l.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhum cliente encontrado</p>';
+        }
+      }catch(e){
+        console.error('Erro na busca:',e);
+        l.innerHTML='<p style="text-align:center;color:var(--red);padding:20px;">Erro ao buscar clientes</p>';
+      }
+    }
 
-    function selecionarCliente(id){clienteSelecionado=clientes.find(c=>c.id===id);if(!clienteSelecionado)return;document.getElementById('clienteSelecionadoCard').innerHTML=`<div class="cliente-avatar">${(clienteSelecionado.nome||'CL').substring(0,2).toUpperCase()}</div><div class="cliente-info"><div class="cliente-nome">${clienteSelecionado.nome||'Cliente'}</div><div class="cliente-cpf">${clienteSelecionado.cpf_cnpj||clienteSelecionado.cpf||'-'}</div></div><div><div class="cliente-valor">${fmtMoney(clienteSelecionado.total_divida||0)}</div></div>`;document.getElementById('valorOriginal').value=fmtMoney(clienteSelecionado.total_divida||0);const h=new Date();h.setDate(h.getDate()+7);document.getElementById('primeiroVencimento').value=h.toISOString().split('T')[0];document.getElementById('etapa1').style.display='none';document.getElementById('etapa2').style.display='block';document.getElementById('btnSalvarAcordo').style.display='inline-flex';calcularAcordo()}
+    function selecionarCliente(id){
+      clienteSelecionado=clientes.find(c=>c.id==id||c.id===id||String(c.id)===String(id));
+      if(!clienteSelecionado){alert('Erro ao selecionar cliente');return}
+      
+      document.getElementById('clienteSelecionadoCard').innerHTML=`
+        <div class="cliente-avatar">${(clienteSelecionado.nome||'CL').substring(0,2).toUpperCase()}</div>
+        <div class="cliente-info">
+          <div class="cliente-nome">${clienteSelecionado.nome||'Cliente'}</div>
+          <div class="cliente-cpf">${clienteSelecionado.cpf_cnpj||'-'}</div>
+        </div>
+        <div><div class="cliente-valor">${fmtMoney(clienteSelecionado.divida_total||0)}</div></div>
+      `;
+      document.getElementById('valorOriginal').value=fmtMoney(clienteSelecionado.divida_total||0);
+      const h=new Date();h.setDate(h.getDate()+7);
+      document.getElementById('primeiroVencimento').value=h.toISOString().split('T')[0];
+      document.getElementById('etapa1').style.display='none';
+      document.getElementById('etapa2').style.display='block';
+      document.getElementById('btnSalvarAcordo').style.display='inline-flex';
+      calcularAcordo();
+    }
+    
     function voltarEtapa1(){document.getElementById('etapa1').style.display='block';document.getElementById('etapa2').style.display='none';document.getElementById('btnSalvarAcordo').style.display='none'}
 
-    function calcularAcordo(){if(!clienteSelecionado)return;const vo=parseFloat(clienteSelecionado.total_divida)||0,dc=parseFloat(document.getElementById('descontoAcordo').value)||0,np=parseInt(document.getElementById('numParcelas').value)||1,vd=vo*(dc/100),vf=vo-vd,vp=vf/np;document.getElementById('valorFinal').value=fmtMoney(vf);document.getElementById('valorParcela').value=fmtMoney(vp);document.getElementById('resumoOriginal').textContent=fmtMoney(vo);document.getElementById('resumoDesconto').textContent='- '+fmtMoney(vd);document.getElementById('resumoFinal').textContent=fmtMoney(vf)}
+    function calcularAcordo(){
+      if(!clienteSelecionado)return;
+      const vo=parseFloat(clienteSelecionado.divida_total)||0;
+      const dc=parseFloat(document.getElementById('descontoAcordo').value)||0;
+      const np=parseInt(document.getElementById('numParcelas').value)||1;
+      const vd=vo*(dc/100);
+      const vf=vo-vd;
+      const vp=vf/np;
+      document.getElementById('valorFinal').value=fmtMoney(vf);
+      document.getElementById('valorParcela').value=fmtMoney(vp);
+      document.getElementById('resumoOriginal').textContent=fmtMoney(vo);
+      document.getElementById('resumoDesconto').textContent='- '+fmtMoney(vd);
+      document.getElementById('resumoFinal').textContent=fmtMoney(vf);
+    }
+    
     function toggleLembreteConfig(){document.getElementById('lembreteConfig').classList.toggle('show',document.getElementById('ativarLembrete').checked)}
 
-    async function salvarAcordo(){if(!clienteSelecionado){alert('Selecione um cliente');return}const np=parseInt(document.getElementById('numParcelas').value)||1,pv=document.getElementById('primeiroVencimento').value;if(!pv){alert('Informe o primeiro vencimento');return}const vo=parseFloat(clienteSelecionado.total_divida)||0,dc=parseFloat(document.getElementById('descontoAcordo').value)||0,vf=vo-(vo*dc/100),dados={cliente_id:clienteSelecionado.id,valor_original:vo,desconto:dc,valor_acordo:vf,total_parcelas:np,primeiro_vencimento:pv,lembrete_ativo:document.getElementById('ativarLembrete').checked,lembrete_dias:document.getElementById('diasLembrete').value,lembrete_canal:document.getElementById('canalLembrete').value};try{const r=await fetch(API+'/api/acordos',{method:'POST',headers:getHeaders(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){fecharModal('modalNovoAcordo');carregarAcordos();alert('Acordo criado!')}else{alert(d.message||'Erro')}}catch(e){alert('Erro ao criar acordo')}}
+    async function salvarAcordo(){
+      if(!clienteSelecionado){alert('Selecione um cliente');return}
+      const np=parseInt(document.getElementById('numParcelas').value)||1;
+      const pv=document.getElementById('primeiroVencimento').value;
+      if(!pv){alert('Informe o primeiro vencimento');return}
+      
+      const vo=parseFloat(clienteSelecionado.divida_total)||0;
+      const dc=parseFloat(document.getElementById('descontoAcordo').value)||0;
+      const vf=vo-(vo*dc/100);
+      
+      const dados={
+        cliente_id:clienteSelecionado.id,
+        devedor_id:clienteSelecionado.id,
+        valor_original:vo,
+        desconto:dc,
+        valor_acordo:vf,
+        valor_final:vf,
+        total_parcelas:np,
+        primeiro_vencimento:pv,
+        lembrete_ativo:document.getElementById('ativarLembrete').checked,
+        lembrete_dias:document.getElementById('diasLembrete').value,
+        lembrete_canal:document.getElementById('canalLembrete').value
+      };
+      
+      try{
+        const r=await fetch(API+'/api/acordos',{method:'POST',headers:getHeaders(),body:JSON.stringify(dados)});
+        const d=await r.json();
+        if(d.success){fecharModal('modalNovoAcordo');carregarAcordos();alert('Acordo criado!')}
+        else alert(d.message||'Erro ao criar acordo');
+      }catch(e){console.error(e);alert('Erro ao criar acordo')}
+    }
 
     function fecharModal(id){document.getElementById(id).classList.remove('show')}
     function verAcordo(id){alert('Ver acordo #'+id)}
