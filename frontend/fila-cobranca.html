@@ -4,593 +4,193 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fila de Cobrança - ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #09090b;
-      color: #fafafa;
-      min-height: 100vh;
-    }
-    
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 260px;
-      height: 100vh;
-      background: #18181b;
-      border-right: 1px solid #27272a;
-      padding: 20px;
-      overflow-y: auto;
-      z-index: 100;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0 30px;
-      border-bottom: 1px solid #27272a;
-      margin-bottom: 20px;
-    }
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #F6C84C, #f59e0b);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 20px;
-      color: #09090b;
-    }
-    .logo-text {
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .logo-text span { color: #F6C84C; }
-    
-    .nav-section {
-      margin-bottom: 25px;
-    }
-    .nav-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #71717a;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-      padding-left: 10px;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 15px;
-      border-radius: 8px;
-      color: #a1a1aa;
-      text-decoration: none;
-      transition: all 0.2s;
-      margin-bottom: 4px;
-    }
-    .nav-item:hover {
-      background: #27272a;
-      color: #fafafa;
-    }
-    .nav-item.active {
-      background: linear-gradient(135deg, #F6C84C, #f59e0b);
-      color: #09090b;
-      font-weight: 600;
-    }
-    .nav-item i { width: 20px; text-align: center; }
-    .nav-badge {
-      margin-left: auto;
-      background: #ef4444;
-      color: white;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-    
-    /* Main Content */
-    .main {
-      margin-left: 260px;
-      padding: 30px;
-      min-height: 100vh;
-    }
-    
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .header-actions {
-      display: flex;
-      gap: 12px;
-    }
-    .btn {
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #F6C84C, #f59e0b);
-      color: #09090b;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4); }
-    .btn-secondary {
-      background: #27272a;
-      color: #fafafa;
-    }
-    .btn-secondary:hover { background: #3f3f46; }
-    
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    .stat-card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .stat-card.highlight {
-      border-color: #F6C84C;
-      background: linear-gradient(135deg, rgba(246,200,76,0.1), rgba(245,158,11,0.05));
-    }
-    .stat-icon {
-      width: 45px;
-      height: 45px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      margin-bottom: 15px;
-    }
-    .stat-icon.yellow { background: rgba(246,200,76,0.2); color: #F6C84C; }
-    .stat-icon.red { background: rgba(239,68,68,0.2); color: #ef4444; }
-    .stat-icon.green { background: rgba(34,197,94,0.2); color: #22c55e; }
-    .stat-icon.blue { background: rgba(59,130,246,0.2); color: #3b82f6; }
-    .stat-label {
-      font-size: 13px;
-      color: #71717a;
-      margin-bottom: 5px;
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .stat-sub {
-      font-size: 12px;
-      color: #71717a;
-      margin-top: 5px;
-    }
-    
-    /* Filters */
-    .filters {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .filter-group label {
-      font-size: 13px;
-      color: #a1a1aa;
-    }
-    .filter-group select, .filter-group input {
-      background: #18181b;
-      border: 1px solid #27272a;
-      color: #fafafa;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .filter-group select:focus, .filter-group input:focus {
-      outline: none;
-      border-color: #F6C84C;
-    }
-    .search-box {
-      flex: 1;
-      min-width: 250px;
-      position: relative;
-    }
-    .search-box input {
-      width: 100%;
-      background: #18181b;
-      border: 1px solid #27272a;
-      color: #fafafa;
-      padding: 12px 15px 12px 45px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .search-box i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #71717a;
-    }
-    
-    /* Table */
-    .table-container {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead {
-      background: #27272a;
-    }
-    th {
-      text-align: left;
-      padding: 15px 20px;
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #a1a1aa;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    td {
-      padding: 15px 20px;
-      border-bottom: 1px solid #27272a;
-      font-size: 14px;
-    }
-    tr:hover {
-      background: rgba(246,200,76,0.05);
-    }
-    .cliente-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .cliente-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #F6C84C, #f59e0b);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #09090b;
-      font-size: 14px;
-    }
-    .cliente-nome {
-      font-weight: 600;
-    }
-    .cliente-empresa {
-      font-size: 12px;
-      color: #71717a;
-    }
-    .valor {
-      font-weight: 700;
-      color: #F6C84C;
-    }
-    .dias-atraso {
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-    .dias-atraso.critico { background: rgba(239,68,68,0.2); color: #ef4444; }
-    .dias-atraso.atencao { background: rgba(245,158,11,0.2); color: #f59e0b; }
-    .dias-atraso.normal { background: rgba(34,197,94,0.2); color: #22c55e; }
-    
-    .prioridade {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .prioridade-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-    .prioridade-dot.alta { background: #ef4444; }
-    .prioridade-dot.media { background: #f59e0b; }
-    .prioridade-dot.baixa { background: #22c55e; }
-    
-    .acoes {
-      display: flex;
-      gap: 8px;
-    }
-    .btn-acao {
-      width: 35px;
-      height: 35px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .btn-acao.whatsapp { background: rgba(37,211,102,0.2); color: #25d366; }
-    .btn-acao.whatsapp:hover { background: #25d366; color: white; }
-    .btn-acao.telefone { background: rgba(59,130,246,0.2); color: #3b82f6; }
-    .btn-acao.telefone:hover { background: #3b82f6; color: white; }
-    .btn-acao.email { background: rgba(168,85,247,0.2); color: #a855f7; }
-    .btn-acao.email:hover { background: #a855f7; color: white; }
-    .btn-acao.acordo { background: rgba(246,200,76,0.2); color: #F6C84C; }
-    .btn-acao.acordo:hover { background: #F6C84C; color: #09090b; }
-    
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .empty-state i {
-      font-size: 60px;
-      color: #27272a;
-      margin-bottom: 20px;
-    }
-    .empty-state h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
-      color: #71717a;
-    }
-    .empty-state p {
-      color: #52525b;
-      font-size: 14px;
-    }
-    
-    /* Loading */
-    .loading {
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-    }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #27272a;
-      border-top-color: #F6C84C;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* Pagination */
-    .pagination {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-      border-top: 1px solid #27272a;
-    }
-    .pagination-info {
-      font-size: 13px;
-      color: #71717a;
-    }
-    .pagination-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    .pagination-buttons button {
-      padding: 8px 15px;
-      border-radius: 6px;
-      border: 1px solid #27272a;
-      background: #18181b;
-      color: #fafafa;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .pagination-buttons button:hover:not(:disabled) {
-      border-color: #F6C84C;
-      color: #F6C84C;
-    }
-    .pagination-buttons button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    /* User Section */
-    .user-section {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 15px;
-      background: #27272a;
-      border-radius: 10px;
-    }
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #F6C84C, #f59e0b);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #09090b;
-    }
-    .user-info {
-      flex: 1;
-    }
-    .user-name {
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .user-role {
-      font-size: 12px;
-      color: #71717a;
-    }
-    .user-logout {
-      color: #71717a;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-    .user-logout:hover {
-      background: #3f3f46;
-      color: #fafafa;
-    }
-    
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-    .modal {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 25px;
-      border-bottom: 1px solid #27272a;
-    }
-    .modal-header h2 {
-      font-size: 20px;
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      color: #71717a;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .modal-close:hover { color: #fafafa; }
-    .modal-body {
-      padding: 25px;
-    }
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 20px 25px;
-      border-top: 1px solid #27272a;
-    }
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+
+    /* SIDEBAR PADRÃO */
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;flex-wrap:wrap;gap:20px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .page-subtitle{color:var(--text-muted);font-size:14px;margin-top:4px}
+    .header-actions{display:flex;gap:12px}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;transition:all var(--transition-fast);border:none;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);border-color:var(--border-gold);color:var(--gold)}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+    .stat-card.highlight{border-color:var(--border-gold);background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow))}
+    .stat-icon{width:45px;height:45px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+    .stat-icon.yellow{background:var(--gold-glow);color:var(--gold)}
+    .stat-icon.red{background:var(--red-bg);color:var(--red)}
+    .stat-icon.green{background:var(--green-bg);color:var(--green)}
+    .stat-icon.blue{background:var(--blue-bg);color:var(--blue)}
+    .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+    .stat-value{font-size:28px;font-weight:800}
+    .stat-card.highlight .stat-value{color:var(--gold)}
+    .stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
+
+    /* FILTERS */
+    .filters{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+    .filter-group{display:flex;align-items:center;gap:8px}
+    .filter-group label{font-size:12px;color:var(--text-muted)}
+    .filter-group select,.filter-group input{background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-size:13px}
+    .filter-group select:focus,.filter-group input:focus{outline:none;border-color:var(--gold)}
+    .search-box{flex:1;min-width:250px;position:relative}
+    .search-box input{width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:12px 15px 12px 45px;border-radius:8px;font-size:14px}
+    .search-box input:focus{outline:none;border-color:var(--gold)}
+    .search-box i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+
+    /* TABLE */
+    .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    thead{background:rgba(0,0,0,0.3)}
+    th{text-align:left;padding:14px 16px;font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:700}
+    td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px}
+    tr:hover{background:var(--gold-glow)}
+    tr:last-child td{border-bottom:none}
+
+    .cliente-info{display:flex;align-items:center;gap:12px}
+    .cliente-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary);font-size:14px}
+    .cliente-nome{font-weight:600}
+    .cliente-telefone{font-size:12px;color:var(--text-muted)}
+
+    .valor{font-weight:700;color:var(--gold)}
+
+    .dias-atraso{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600}
+    .dias-atraso.critico{background:var(--red-bg);color:var(--red)}
+    .dias-atraso.atencao{background:var(--orange-bg);color:var(--orange)}
+    .dias-atraso.normal{background:var(--green-bg);color:var(--green)}
+
+    .prioridade{display:flex;align-items:center;gap:6px}
+    .prioridade-dot{width:8px;height:8px;border-radius:50%}
+    .prioridade-dot.alta{background:var(--red)}
+    .prioridade-dot.media{background:var(--orange)}
+    .prioridade-dot.baixa{background:var(--green)}
+
+    .acoes{display:flex;gap:8px}
+    .btn-acao{width:35px;height:35px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast)}
+    .btn-acao.whatsapp{background:rgba(37,211,102,0.2);color:#25d366}.btn-acao.whatsapp:hover{background:#25d366;color:white}
+    .btn-acao.telefone{background:var(--blue-bg);color:var(--blue)}.btn-acao.telefone:hover{background:var(--blue);color:white}
+    .btn-acao.email{background:var(--purple-bg);color:var(--purple)}.btn-acao.email:hover{background:var(--purple);color:white}
+    .btn-acao.acordo{background:var(--gold-glow);color:var(--gold)}.btn-acao.acordo:hover{background:var(--gold);color:var(--bg-primary)}
+
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+    .empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
+
+    .loading{display:flex;justify-content:center;padding:40px}
+    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .pagination{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border)}
+    .pagination-info{font-size:13px;color:var(--text-muted)}
+    .pagination-buttons{display:flex;gap:8px}
+    .pagination-buttons button{padding:8px 15px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);cursor:pointer;transition:all var(--transition-fast)}
+    .pagination-buttons button:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+    .pagination-buttons button:disabled{opacity:0.5;cursor:not-allowed}
+
+    @media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
+    @media(max-width:640px){.stats-grid{grid-template-columns:1fr}.filters{flex-direction:column}}
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-icon">A</div>
-      <div class="logo-text">ACERT<span>IVE</span></div>
-    </div>
-    
-    <nav>
+  <!-- SIDEBAR PADRÃO -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
       <div class="nav-section">
-        <div class="nav-title">Principal</div>
-        <a href="/dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/fila-cobranca" class="nav-item active"><i class="fas fa-layer-group"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila">0</span></a>
-        <a href="/atendimento" class="nav-item"><i class="fas fa-headset"></i> Atendimento</a>
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link active"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      
       <div class="nav-section">
-        <div class="nav-title">Cadastros</div>
-        <a href="/credores" class="nav-item"><i class="fas fa-building"></i> Credores</a>
-        <a href="/devedores" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
-        <a href="/dividas" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Dívidas</a>
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      
       <div class="nav-section">
-        <div class="nav-title">Negociação</div>
-        <a href="/acordos" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
-        <a href="/parcelas" class="nav-item"><i class="fas fa-calendar-check"></i> Parcelas</a>
-        <a href="/simulador" class="nav-item"><i class="fas fa-calculator"></i> Simulador</a>
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      
       <div class="nav-section">
-        <div class="nav-title">Financeiro</div>
-        <a href="/comissoes" class="nav-item"><i class="fas fa-percentage"></i> Comissões</a>
-        <a href="/repasses" class="nav-item"><i class="fas fa-exchange-alt"></i> Repasses</a>
-        <a href="/financeiro" class="nav-item"><i class="fas fa-chart-line"></i> Relatórios</a>
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      
       <div class="nav-section">
-        <div class="nav-title">Configurações</div>
-        <a href="/regua-cobranca" class="nav-item"><i class="fas fa-robot"></i> Régua de Cobrança</a>
-        <a href="/configuracoes" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-    
-    <div class="user-section">
-      <div class="user-avatar" id="userAvatar">A</div>
-      <div class="user-info">
-        <div class="user-name" id="userName">Administrador</div>
-        <div class="user-role" id="userRole">Admin</div>
-      </div>
-      <div class="user-logout" onclick="logout()" title="Sair">
-        <i class="fas fa-sign-out-alt"></i>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="main">
-    <div class="header">
-      <h1><i class="fas fa-layer-group" style="color: #F6C84C; margin-right: 12px;"></i>Fila de Cobrança</h1>
-      <div class="header-actions">
-        <button class="btn btn-secondary" onclick="exportarFila()">
-          <i class="fas fa-download"></i> Exportar
-        </button>
-        <button class="btn btn-primary" onclick="atualizarFila()">
-          <i class="fas fa-sync-alt"></i> Atualizar
-        </button>
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-headset"></i></div> Fila de Cobrança</h1>
+        <p class="page-subtitle">Cobranças vencidas e pendentes de acionamento</p>
       </div>
-    </div>
-    
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="exportarFila()"><i class="fas fa-download"></i> Exportar</button>
+        <button class="btn btn-primary" onclick="atualizarFila()"><i class="fas fa-sync-alt"></i> Atualizar</button>
+      </div>
+    </header>
+
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card highlight">
         <div class="stat-icon yellow"><i class="fas fa-list"></i></div>
         <div class="stat-label">Na Fila Hoje</div>
         <div class="stat-value" id="statNaFila">0</div>
-        <div class="stat-sub">clientes para contatar</div>
+        <div class="stat-sub">devedores para contatar</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
@@ -611,7 +211,7 @@
         <div class="stat-sub">contato com pessoa certa</div>
       </div>
     </div>
-    
+
     <!-- Filters -->
     <div class="filters">
       <div class="search-box">
@@ -620,9 +220,7 @@
       </div>
       <div class="filter-group">
         <label>Credor:</label>
-        <select id="filterCredor">
-          <option value="">Todos</option>
-        </select>
+        <select id="filterCredor"><option value="">Todos</option></select>
       </div>
       <div class="filter-group">
         <label>Prioridade:</label>
@@ -644,13 +242,13 @@
         </select>
       </div>
     </div>
-    
+
     <!-- Table -->
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Cliente / Devedor</th>
+            <th>Devedor</th>
             <th>Credor</th>
             <th>Valor Dívida</th>
             <th>Atraso</th>
@@ -660,16 +258,9 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr>
-            <td colspan="7">
-              <div class="loading">
-                <div class="spinner"></div>
-              </div>
-            </td>
-          </tr>
+          <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
         </tbody>
       </table>
-      
       <div class="pagination">
         <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0 registros</div>
         <div class="pagination-buttons">
@@ -681,105 +272,63 @@
   </main>
 
   <script>
-    const API_URL = '';
+    const API = window.location.origin;
     let token = localStorage.getItem('token');
     let filaData = [];
     let currentPage = 1;
     const perPage = 20;
-    
-    // Verificar autenticação
-    if (!token) {
-      window.location.href = '/login';
-    }
-    
-    // Carregar dados do usuário
-    function carregarUsuario() {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        document.getElementById('userName').textContent = payload.nome || 'Usuário';
-        document.getElementById('userRole').textContent = payload.nivel || 'Operador';
-        document.getElementById('userAvatar').textContent = (payload.nome || 'U')[0].toUpperCase();
-      } catch (e) {}
-    }
-    
-    // Logout
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    
-    // Fetch com auth
-    async function fetchAPI(url, options = {}) {
-      const res = await fetch(API_URL + url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          ...options.headers
-        }
-      });
-      if (res.status === 401) {
-        logout();
-        return null;
-      }
-      return res.json();
-    }
-    
-    // Formatar moeda
-    function formatMoney(value) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-    }
-    
-    // Formatar data
-    function formatDate(dateStr) {
-      if (!dateStr) return '—';
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('pt-BR');
-    }
-    
-    // Obter iniciais
+
+    if (!token) window.location.href = '/login';
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; }
+
     function getInitials(name) {
       if (!name) return '?';
       const parts = name.trim().split(' ');
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      }
+      if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
       return name.substring(0, 2).toUpperCase();
     }
-    
-    // Calcular classe de atraso
+
     function getAtrasoClass(dias) {
       if (dias > 90) return 'critico';
       if (dias > 30) return 'atencao';
       return 'normal';
     }
-    
-    // Carregar fila
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (e) { console.error(e); }
+    }
+
     async function carregarFila() {
       try {
-        // Buscar cobranças vencidas/pendentes
-        const data = await fetchAPI('/api/cobrancas?status=vencido');
-        if (!data || !data.success) {
-          mostrarVazio();
-          return;
-        }
-        
+        const res = await fetch(API + '/api/cobrancas?status=vencido', { headers: getHeaders() });
+        const data = await res.json();
+        if (!data || !data.success) { mostrarVazio(); return; }
         filaData = data.data || [];
         atualizarStats();
         renderizarTabela();
         carregarCredores();
-        
-        document.getElementById('badgeFila').textContent = filaData.length;
-      } catch (err) {
-        console.error('Erro ao carregar fila:', err);
+        const badge = document.getElementById('badgeFila');
+        if (badge) badge.textContent = filaData.length > 0 ? filaData.length : '';
+      } catch (e) {
+        console.error('Erro ao carregar fila:', e);
         mostrarVazio();
       }
     }
-    
-    // Atualizar estatísticas
+
     function atualizarStats() {
       document.getElementById('statNaFila').textContent = filaData.length;
-      
       const hoje = new Date();
       let criticos = 0;
       filaData.forEach(item => {
@@ -789,187 +338,119 @@
       });
       document.getElementById('statCriticos').textContent = criticos;
     }
-    
-    // Renderizar tabela
+
     function renderizarTabela() {
       const tbody = document.getElementById('tableBody');
-      
-      if (filaData.length === 0) {
-        mostrarVazio();
-        return;
-      }
-      
+      if (filaData.length === 0) { mostrarVazio(); return; }
+
       const start = (currentPage - 1) * perPage;
       const end = start + perPage;
       const pageData = filaData.slice(start, end);
-      
       const hoje = new Date();
-      
+
       tbody.innerHTML = pageData.map(item => {
         const venc = new Date(item.vencimento);
         const diasAtraso = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
         const atrasoClass = getAtrasoClass(diasAtraso);
         const prioridade = diasAtraso > 90 ? 'alta' : (diasAtraso > 30 ? 'media' : 'baixa');
-        
-        return `
-          <tr>
-            <td>
-              <div class="cliente-info">
-                <div class="cliente-avatar">${getInitials(item.cliente)}</div>
-                <div>
-                  <div class="cliente-nome">${item.cliente || 'Sem nome'}</div>
-                  <div class="cliente-empresa">${item.cliente_telefone || 'Sem telefone'}</div>
-                </div>
+
+        return `<tr>
+          <td>
+            <div class="cliente-info">
+              <div class="cliente-avatar">${getInitials(item.cliente)}</div>
+              <div>
+                <div class="cliente-nome">${item.cliente || 'Sem nome'}</div>
+                <div class="cliente-telefone">${item.cliente_telefone || 'Sem telefone'}</div>
               </div>
-            </td>
-            <td>${item.empresa_nome || 'Sem credor'}</td>
-            <td class="valor">${formatMoney(item.valorAtualizado)}</td>
-            <td><span class="dias-atraso ${atrasoClass}">${diasAtraso} dias</span></td>
-            <td>
-              <div class="prioridade">
-                <span class="prioridade-dot ${prioridade}"></span>
-                ${prioridade.charAt(0).toUpperCase() + prioridade.slice(1)}
-              </div>
-            </td>
-            <td>${formatDate(item.dataCompromisso) || '—'}</td>
-            <td>
-              <div class="acoes">
-                <button class="btn-acao whatsapp" onclick="abrirWhatsapp('${item.id}')" title="WhatsApp">
-                  <i class="fab fa-whatsapp"></i>
-                </button>
-                <button class="btn-acao telefone" onclick="registrarLigacao('${item.id}')" title="Registrar Ligação">
-                  <i class="fas fa-phone"></i>
-                </button>
-                <button class="btn-acao email" onclick="enviarEmail('${item.id}')" title="Enviar E-mail">
-                  <i class="fas fa-envelope"></i>
-                </button>
-                <button class="btn-acao acordo" onclick="novoAcordo('${item.id}')" title="Novo Acordo">
-                  <i class="fas fa-handshake"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      
-      atualizarPaginacao();
-    }
-    
-    // Mostrar estado vazio
-    function mostrarVazio() {
-      document.getElementById('tableBody').innerHTML = `
-        <tr>
-          <td colspan="7">
-            <div class="empty-state">
-              <i class="fas fa-inbox"></i>
-              <h3>Nenhuma cobrança na fila</h3>
-              <p>Não há cobranças vencidas ou pendentes de acionamento.</p>
             </div>
           </td>
-        </tr>
-      `;
+          <td>${item.empresa_nome || 'Sem credor'}</td>
+          <td class="valor">${fmtMoney(item.valorAtualizado || item.valor_atualizado)}</td>
+          <td><span class="dias-atraso ${atrasoClass}">${diasAtraso} dias</span></td>
+          <td>
+            <div class="prioridade">
+              <span class="prioridade-dot ${prioridade}"></span>
+              ${prioridade.charAt(0).toUpperCase() + prioridade.slice(1)}
+            </div>
+          </td>
+          <td>${fmtDate(item.dataCompromisso || item.data_compromisso)}</td>
+          <td>
+            <div class="acoes">
+              <button class="btn-acao whatsapp" onclick="abrirWhatsapp('${item.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+              <button class="btn-acao telefone" onclick="registrarLigacao('${item.id}')" title="Atendimento"><i class="fas fa-phone"></i></button>
+              <button class="btn-acao email" onclick="enviarEmail('${item.id}')" title="E-mail"><i class="fas fa-envelope"></i></button>
+              <button class="btn-acao acordo" onclick="novoAcordo('${item.id}')" title="Acordo"><i class="fas fa-handshake"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      atualizarPaginacao();
     }
-    
-    // Atualizar paginação
+
+    function mostrarVazio() {
+      document.getElementById('tableBody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Nenhuma cobrança na fila</h3><p>Não há cobranças vencidas ou pendentes de acionamento.</p></div></td></tr>`;
+    }
+
     function atualizarPaginacao() {
       const total = filaData.length;
       const totalPages = Math.ceil(total / perPage);
       const start = (currentPage - 1) * perPage + 1;
       const end = Math.min(currentPage * perPage, total);
-      
       document.getElementById('paginationInfo').textContent = `Mostrando ${start}-${end} de ${total} registros`;
       document.getElementById('btnPrev').disabled = currentPage === 1;
       document.getElementById('btnNext').disabled = currentPage >= totalPages;
     }
-    
-    // Carregar credores para filtro
+
     async function carregarCredores() {
       try {
-        const data = await fetchAPI('/api/credores');
+        const res = await fetch(API + '/api/credores', { headers: getHeaders() });
+        const data = await res.json();
         if (data && data.success) {
           const select = document.getElementById('filterCredor');
-          data.data.forEach(credor => {
-            const option = document.createElement('option');
-            option.value = credor.id;
-            option.textContent = credor.nome;
-            select.appendChild(option);
+          data.data.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nome;
+            select.appendChild(opt);
           });
         }
       } catch (e) {}
     }
-    
-    // Ações
+
     async function abrirWhatsapp(id) {
       try {
-        const data = await fetchAPI(`/api/cobrancas/${id}/whatsapp`);
-        if (data && data.success && data.link) {
-          window.open(data.link, '_blank');
-        } else {
-          alert('Não foi possível gerar o link do WhatsApp');
-        }
-      } catch (e) {
-        alert('Erro ao gerar WhatsApp');
-      }
+        const res = await fetch(API + '/api/cobrancas/' + id + '/whatsapp', { headers: getHeaders() });
+        const data = await res.json();
+        if (data && data.success && data.link) window.open(data.link, '_blank');
+        else alert('Não foi possível gerar o link do WhatsApp');
+      } catch (e) { alert('Erro ao gerar WhatsApp'); }
     }
-    
-    function registrarLigacao(id) {
-      window.location.href = `/atendimento?cobranca=${id}`;
-    }
-    
+
+    function registrarLigacao(id) { window.location.href = '/atendimento?cobranca=' + id; }
+
     async function enviarEmail(id) {
-      if (!confirm('Deseja enviar e-mail de cobrança para este cliente?')) return;
+      if (!confirm('Deseja enviar e-mail de cobrança?')) return;
       try {
-        const data = await fetchAPI(`/api/cobrancas/${id}/enviar-email`, { method: 'POST' });
-        if (data && data.success) {
-          alert('E-mail enviado com sucesso!');
-        } else {
-          alert(data?.message || 'Erro ao enviar e-mail');
-        }
-      } catch (e) {
-        alert('Erro ao enviar e-mail');
-      }
+        const res = await fetch(API + '/api/cobrancas/' + id + '/enviar-email', { method: 'POST', headers: getHeaders() });
+        const data = await res.json();
+        if (data && data.success) alert('E-mail enviado!');
+        else alert(data?.message || 'Erro ao enviar');
+      } catch (e) { alert('Erro ao enviar e-mail'); }
     }
-    
-    function novoAcordo(id) {
-      window.location.href = `/acordos?nova=true&cobranca=${id}`;
-    }
-    
-    function exportarFila() {
-      window.location.href = '/api/relatorios/export-csv?status=vencido';
-    }
-    
-    function atualizarFila() {
-      carregarFila();
-    }
-    
-    // Eventos de paginação
-    document.getElementById('btnPrev').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        renderizarTabela();
-      }
-    });
-    
-    document.getElementById('btnNext').addEventListener('click', () => {
-      const totalPages = Math.ceil(filaData.length / perPage);
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderizarTabela();
-      }
-    });
-    
-    // Busca
+
+    function novoAcordo(id) { window.location.href = '/acordos?nova=true&cobranca=' + id; }
+    function exportarFila() { window.location.href = '/api/relatorios/export-csv?status=vencido'; }
+    function atualizarFila() { carregarFila(); }
+
+    document.getElementById('btnPrev').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderizarTabela(); } });
+    document.getElementById('btnNext').addEventListener('click', () => { const totalPages = Math.ceil(filaData.length / perPage); if (currentPage < totalPages) { currentPage++; renderizarTabela(); } });
+
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const termo = e.target.value.toLowerCase();
-      // Filtrar dados (simplificado - idealmente seria no backend)
-      if (!termo) {
-        carregarFila();
-        return;
-      }
-      // Filtro local temporário
+      if (!termo) { carregarFila(); return; }
     });
-    
-    // Inicializar
+
     carregarUsuario();
     carregarFila();
   </script>

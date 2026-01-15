@@ -8,34 +8,51 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg-primary: #0a0a0b;
-      --bg-secondary: #111113;
-      --bg-card: #16161a;
-      --text-primary: #ffffff;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
-      --gold: #d4a853;
-      --gold-glow: rgba(212, 168, 83, 0.15);
-      --border: rgba(255, 255, 255, 0.06);
-      --green: #10b981;
-      --green-bg: rgba(16, 185, 129, 0.12);
-      --red: #ef4444;
-      --red-bg: rgba(239, 68, 68, 0.12);
-      --blue: #3b82f6;
-      --blue-bg: rgba(59, 130, 246, 0.12);
-      --orange: #f59e0b;
-      --orange-bg: rgba(245, 158, 11, 0.12);
-      --purple: #8b5cf6;
-      --purple-bg: rgba(139, 92, 246, 0.12);
+      --bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;
+      --text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;
+      --gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);
+      --border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);
+      --green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);
+      --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);
+      --purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);
+      --sidebar-width:260px;--radius-md:12px;--radius-lg:16px;
+      --shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
 
+    /* SIDEBAR NAVEGAÇÃO (OCULTA POR PADRÃO) */
+    .sidebar-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1999;display:none}
+    .sidebar-nav-overlay.active{display:block}
+    .sidebar-nav-panel{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:2000;transform:translateX(-100%);transition:transform 0.3s;display:flex;flex-direction:column}
+    .sidebar-nav-panel.open{transform:translateX(0)}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+
+    /* BOTÃO MENU */
+    .menu-toggle{position:fixed;top:16px;left:16px;z-index:1500;width:44px;height:44px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all var(--transition-fast)}
+    .menu-toggle:hover{background:var(--gold-glow);border-color:var(--gold)}
+
+    /* LAYOUT 3 COLUNAS */
     .container { display: grid; grid-template-columns: 300px 1fr 360px; height: 100vh; }
 
     /* PAINEL FILA */
     .panel-fila { background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .panel-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .panel-header { padding: 16px; padding-left: 70px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .panel-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .panel-title i { color: var(--gold); }
     .badge { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
@@ -58,13 +75,13 @@
 
     .header-atendimento { padding: 16px 24px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .devedor-header { display: flex; align-items: center; gap: 16px; }
-    .devedor-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #e8c068); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #000; }
+    .devedor-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #000; }
     .devedor-nome { font-size: 18px; font-weight: 700; }
     .devedor-cpf { font-size: 12px; color: var(--text-muted); }
     .header-actions { display: flex; gap: 8px; }
     .btn { padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
-    .btn-primary { background: var(--gold); color: #000; }
-    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg,var(--gold),var(--gold-light)); color: #000; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-gold); }
     .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--gold-glow); border-color: var(--gold); color: var(--gold); }
     .btn-success { background: var(--green); color: #fff; }
@@ -172,7 +189,7 @@
     .btn-block { width: 100%; justify-content: center; }
 
     /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
     .modal-overlay.show { display: flex; }
     .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow: hidden; }
     .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -184,71 +201,79 @@
     /* EMPTY */
     .empty { text-align: center; padding: 40px; color: var(--text-muted); }
     .empty i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+    @media(max-width:1200px){.info-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:1024px){.container{grid-template-columns:1fr}.panel-fila,.panel-acoes{display:none}}
   </style>
 </head>
 <body>
+  <!-- BOTÃO MENU -->
+  <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+  <!-- SIDEBAR NAVEGAÇÃO -->
+  <div class="sidebar-nav-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar-nav-panel" id="sidebarNav">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link active"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
+
   <div class="container">
     <!-- PAINEL FILA -->
     <div class="panel-fila">
       <div class="panel-header">
         <div class="panel-title"><i class="fas fa-list"></i> Fila de Cobrança</div>
-        <span class="badge" id="totalFila">15</span>
+        <span class="badge" id="totalFila">0</span>
       </div>
       <div class="search-box">
         <input type="text" placeholder="Buscar devedor..." id="searchFila">
       </div>
       <div class="fila-list" id="filaList">
-        <!-- Items da fila -->
-        <div class="fila-item active" onclick="selecionarDevedor(1)">
-          <div class="fila-nome">José da Silva</div>
-          <div class="fila-meta">
-            <span>Loja ABC</span>
-            <span class="fila-valor">R$ 2.450,00</span>
-          </div>
-          <div class="fila-meta">
-            <span class="fila-dias">45 dias atraso</span>
-          </div>
-        </div>
-        <div class="fila-item" onclick="selecionarDevedor(2)">
-          <div class="fila-nome">Maria Fernandes</div>
-          <div class="fila-meta">
-            <span>Banco XYZ</span>
-            <span class="fila-valor">R$ 5.800,00</span>
-          </div>
-          <div class="fila-meta">
-            <span class="fila-dias">32 dias atraso</span>
-          </div>
-        </div>
-        <div class="fila-item" onclick="selecionarDevedor(3)">
-          <div class="fila-nome">Pedro Santos</div>
-          <div class="fila-meta">
-            <span>Financeira 123</span>
-            <span class="fila-valor">R$ 1.200,00</span>
-          </div>
-          <div class="fila-meta">
-            <span class="fila-dias">15 dias atraso</span>
-          </div>
-        </div>
-        <div class="fila-item" onclick="selecionarDevedor(4)">
-          <div class="fila-nome">Ana Costa</div>
-          <div class="fila-meta">
-            <span>Loja ABC</span>
-            <span class="fila-valor">R$ 890,00</span>
-          </div>
-          <div class="fila-meta">
-            <span class="fila-dias">60 dias atraso</span>
-          </div>
-        </div>
-        <div class="fila-item" onclick="selecionarDevedor(5)">
-          <div class="fila-nome">Carlos Mendes</div>
-          <div class="fila-meta">
-            <span>Banco XYZ</span>
-            <span class="fila-valor">R$ 3.200,00</span>
-          </div>
-          <div class="fila-meta">
-            <span class="fila-dias">28 dias atraso</span>
-          </div>
-        </div>
+        <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
       </div>
     </div>
 
@@ -256,10 +281,10 @@
     <div class="panel-central">
       <div class="header-atendimento">
         <div class="devedor-header">
-          <div class="devedor-avatar">JS</div>
+          <div class="devedor-avatar" id="devedorAvatar">—</div>
           <div>
-            <div class="devedor-nome">José da Silva</div>
-            <div class="devedor-cpf">CPF: 123.456.789-00</div>
+            <div class="devedor-nome" id="devedorNome">Selecione um devedor</div>
+            <div class="devedor-cpf" id="devedorCpf">—</div>
           </div>
         </div>
         <div class="header-actions">
@@ -274,19 +299,19 @@
         <div class="info-grid">
           <div class="info-card">
             <div class="info-label">Valor Original</div>
-            <div class="info-value">R$ 2.000,00</div>
+            <div class="info-value" id="infoValorOriginal">R$ 0,00</div>
           </div>
           <div class="info-card">
             <div class="info-label">Valor Atualizado</div>
-            <div class="info-value gold">R$ 2.450,00</div>
+            <div class="info-value gold" id="infoValorAtualizado">R$ 0,00</div>
           </div>
           <div class="info-card">
             <div class="info-label">Dias em Atraso</div>
-            <div class="info-value danger">45 dias</div>
+            <div class="info-value danger" id="infoDiasAtraso">0 dias</div>
           </div>
           <div class="info-card">
             <div class="info-label">Acionamentos</div>
-            <div class="info-value">8</div>
+            <div class="info-value" id="infoAcionamentos">0</div>
           </div>
         </div>
 
@@ -300,149 +325,28 @@
 
         <!-- TAB CONTATOS -->
         <div class="tab-content active" id="tab-contatos">
-          <div class="contatos-grid">
-            <div class="contato-item">
-              <div class="contato-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-phone"></i></div>
-              <div class="contato-info">
-                <div class="contato-tipo">Celular Principal</div>
-                <div class="contato-numero">(92) 99123-4567</div>
-              </div>
-              <div class="contato-actions">
-                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
-                <button class="contato-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-              </div>
-            </div>
-            <div class="contato-item">
-              <div class="contato-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-phone-alt"></i></div>
-              <div class="contato-info">
-                <div class="contato-tipo">Telefone Fixo</div>
-                <div class="contato-numero">(92) 3234-5678</div>
-              </div>
-              <div class="contato-actions">
-                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
-                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
-              </div>
-            </div>
-            <div class="contato-item">
-              <div class="contato-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-briefcase"></i></div>
-              <div class="contato-info">
-                <div class="contato-tipo">Trabalho</div>
-                <div class="contato-numero">(92) 3456-7890</div>
-              </div>
-              <div class="contato-actions">
-                <button class="contato-btn ligar" title="Ligar"><i class="fas fa-phone"></i></button>
-                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
-              </div>
-            </div>
-            <div class="contato-item">
-              <div class="contato-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fas fa-envelope"></i></div>
-              <div class="contato-info">
-                <div class="contato-tipo">E-mail</div>
-                <div class="contato-numero">jose.silva@email.com</div>
-              </div>
-              <div class="contato-actions">
-                <button class="contato-btn copiar" title="Copiar"><i class="fas fa-copy"></i></button>
-              </div>
-            </div>
-          </div>
-
-          <h4 style="font-size:13px;margin-bottom:12px;color:var(--text-muted);">Endereço</h4>
-          <div class="contato-item" style="margin-bottom:0;">
-            <div class="contato-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-map-marker-alt"></i></div>
-            <div class="contato-info">
-              <div class="contato-numero">Rua das Flores, 123 - Centro</div>
-              <div class="contato-tipo">Manaus - AM, 69000-000</div>
-            </div>
+          <div class="contatos-grid" id="contatosGrid">
+            <div class="empty"><p>Selecione um devedor para ver os contatos</p></div>
           </div>
         </div>
 
         <!-- TAB DÍVIDA -->
         <div class="tab-content" id="tab-divida">
-          <div class="info-grid" style="grid-template-columns:repeat(2,1fr);">
-            <div class="info-card">
-              <div class="info-label">Credor</div>
-              <div class="info-value" style="font-size:16px;">Loja ABC</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Contrato</div>
-              <div class="info-value" style="font-size:16px;">#12345</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Vencimento Original</div>
-              <div class="info-value" style="font-size:16px;">15/11/2025</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Data Entrada</div>
-              <div class="info-value" style="font-size:16px;">01/12/2025</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Valor Original</div>
-              <div class="info-value" style="font-size:16px;">R$ 2.000,00</div>
-            </div>
-            <div class="info-card">
-              <div class="info-label">Juros + Multa</div>
-              <div class="info-value danger" style="font-size:16px;">R$ 450,00</div>
-            </div>
-          </div>
-          <div class="info-card" style="margin-top:16px;">
-            <div class="info-label">Descrição</div>
-            <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">Compra parcelada não paga - 3 parcelas em atraso referente a compra de eletrodomésticos.</p>
+          <div class="info-grid" style="grid-template-columns:repeat(2,1fr);" id="dividaInfo">
+            <div class="empty"><p>Selecione um devedor</p></div>
           </div>
         </div>
 
         <!-- TAB HISTÓRICO -->
         <div class="tab-content" id="tab-historico">
-          <div class="historico-list">
-            <div class="historico-item">
-              <div class="historico-icon" style="background:var(--orange-bg);color:var(--orange);"><i class="fas fa-phone"></i></div>
-              <div class="historico-content">
-                <div class="historico-header">
-                  <span class="historico-tipo">Ligação</span>
-                  <span class="historico-data">Hoje, 14:32</span>
-                </div>
-                <div class="historico-desc">Devedor atendeu, disse que está sem condições no momento. Pediu para ligar semana que vem.</div>
-                <span class="historico-resultado" style="background:var(--orange-bg);color:var(--orange);">Prometeu retornar</span>
-              </div>
-            </div>
-            <div class="historico-item">
-              <div class="historico-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-phone-slash"></i></div>
-              <div class="historico-content">
-                <div class="historico-header">
-                  <span class="historico-tipo">Ligação</span>
-                  <span class="historico-data">10/01, 10:15</span>
-                </div>
-                <div class="historico-desc">Não atendeu - Caixa postal</div>
-                <span class="historico-resultado" style="background:var(--red-bg);color:var(--red);">Não atendeu</span>
-              </div>
-            </div>
-            <div class="historico-item">
-              <div class="historico-icon" style="background:var(--purple-bg);color:var(--purple);"><i class="fab fa-whatsapp"></i></div>
-              <div class="historico-content">
-                <div class="historico-header">
-                  <span class="historico-tipo">WhatsApp</span>
-                  <span class="historico-data">08/01, 16:45</span>
-                </div>
-                <div class="historico-desc">Mensagem enviada com proposta de acordo. Visualizada mas não respondeu.</div>
-                <span class="historico-resultado" style="background:var(--blue-bg);color:var(--blue);">Visualizado</span>
-              </div>
-            </div>
-            <div class="historico-item">
-              <div class="historico-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-envelope"></i></div>
-              <div class="historico-content">
-                <div class="historico-header">
-                  <span class="historico-tipo">E-mail</span>
-                  <span class="historico-data">05/01, 09:00</span>
-                </div>
-                <div class="historico-desc">E-mail de cobrança enviado automaticamente pela régua.</div>
-                <span class="historico-resultado" style="background:var(--green-bg);color:var(--green);">Enviado</span>
-              </div>
-            </div>
+          <div class="historico-list" id="historicoList">
+            <div class="empty"><p>Sem histórico</p></div>
           </div>
         </div>
 
         <!-- TAB OBSERVAÇÕES -->
         <div class="tab-content" id="tab-observacoes">
-          <textarea class="form-textarea" style="min-height:150px;" placeholder="Observações sobre o devedor...">Cliente alega que perdeu o emprego em novembro. Demonstrou interesse em negociar, mas sem condições no momento. Sugerir parcelamento maior na próxima ligação.</textarea>
+          <textarea class="form-textarea" style="min-height:150px;" id="observacoesTexto" placeholder="Observações sobre o devedor..."></textarea>
           <button class="btn btn-primary" style="margin-top:12px;"><i class="fas fa-save"></i> Salvar Observações</button>
         </div>
       </div>
@@ -520,8 +424,8 @@
               <span class="desc">Pagamento único</span>
             </div>
             <div class="acordo-opcao-valor">
-              <span class="valor">R$ 1.960,00</span>
-              <span class="economia">Economia: R$ 490</span>
+              <span class="valor" id="acordoAvista">R$ 0,00</span>
+              <span class="economia">20% off</span>
             </div>
           </div>
           <div class="acordo-opcao" onclick="abrirAcordoRapido('3x')">
@@ -530,8 +434,8 @@
               <span class="desc">Entrada + 2 parcelas</span>
             </div>
             <div class="acordo-opcao-valor">
-              <span class="valor">3x R$ 735,00</span>
-              <span class="economia">Economia: R$ 245</span>
+              <span class="valor" id="acordo3x">3x R$ 0,00</span>
+              <span class="economia">10% off</span>
             </div>
           </div>
           <div class="acordo-opcao" onclick="abrirAcordoRapido('6x')">
@@ -540,7 +444,7 @@
               <span class="desc">Parcelas fixas</span>
             </div>
             <div class="acordo-opcao-valor">
-              <span class="valor">6x R$ 408,33</span>
+              <span class="valor" id="acordo6x">6x R$ 0,00</span>
               <span class="economia">Valor total</span>
             </div>
           </div>
@@ -569,7 +473,7 @@
         <div class="info-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px;">
           <div class="info-card">
             <div class="info-label">Valor da Dívida</div>
-            <div class="info-value">R$ 2.450,00</div>
+            <div class="info-value" id="simValorDivida">R$ 0,00</div>
           </div>
           <div class="info-card">
             <div class="info-label">Desconto Máximo</div>
@@ -601,27 +505,22 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Valor da Entrada</label>
-          <input type="text" class="form-input" id="valorEntrada" value="R$ 0,00" oninput="calcularAcordo()">
-        </div>
-
         <div style="background:var(--gold-glow);border:1px solid var(--gold);border-radius:10px;padding:20px;margin-top:20px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
             <span style="color:var(--text-secondary);">Valor Original:</span>
-            <span style="text-decoration:line-through;color:var(--text-muted);">R$ 2.450,00</span>
+            <span style="text-decoration:line-through;color:var(--text-muted);" id="simOriginal">R$ 0,00</span>
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
             <span style="color:var(--text-secondary);">Desconto:</span>
-            <span style="color:var(--green);" id="valorDesconto">- R$ 245,00</span>
+            <span style="color:var(--green);" id="valorDesconto">- R$ 0,00</span>
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border);">
             <span style="font-weight:700;">Valor Final:</span>
-            <span style="font-size:20px;font-weight:800;color:var(--gold);" id="valorFinal">R$ 2.205,00</span>
+            <span style="font-size:20px;font-weight:800;color:var(--gold);" id="valorFinal">R$ 0,00</span>
           </div>
           <div style="display:flex;justify-content:space-between;">
             <span style="color:var(--text-secondary);">Parcelas:</span>
-            <span style="font-weight:700;" id="valorParcela">3x de R$ 735,00</span>
+            <span style="font-weight:700;" id="valorParcela">1x de R$ 0,00</span>
           </div>
         </div>
       </div>
@@ -633,6 +532,21 @@
   </div>
 
   <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; }
+
+    // Toggle Sidebar
+    function toggleSidebar() {
+      document.getElementById('sidebarNav').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
     // Timer
     let segundos = 0;
     setInterval(() => {
@@ -642,19 +556,133 @@
       document.getElementById('timerValue').textContent = `${min}:${sec}`;
     }, 1000);
 
+    // Carregar usuário
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // Carregar badges
+    async function carregarBadges() {
+      try {
+        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const badge = document.getElementById('badgeFila');
+          const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
+          if (badge) badge.textContent = total > 0 ? total : '';
+        }
+      } catch (e) {}
+    }
+
+    // Variáveis globais
+    let filaData = [];
+    let devedorAtual = null;
+    let valorAtualDevedor = 0;
+
+    // Carregar fila
+    async function carregarFila() {
+      try {
+        const res = await fetch(API + '/api/cobrancas?status=vencido', { headers: getHeaders() });
+        const data = await res.json();
+        filaData = data.data || [];
+        document.getElementById('totalFila').textContent = filaData.length;
+        renderizarFila();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('filaList').innerHTML = '<div class="empty"><p>Erro ao carregar</p></div>';
+      }
+    }
+
+    function renderizarFila() {
+      const container = document.getElementById('filaList');
+      if (!filaData.length) {
+        container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i><p>Fila vazia</p></div>';
+        return;
+      }
+      const hoje = new Date();
+      container.innerHTML = filaData.map((item, idx) => {
+        const venc = new Date(item.vencimento);
+        const dias = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
+        return `<div class="fila-item ${idx === 0 ? 'active' : ''}" onclick="selecionarDevedor(${idx})">
+          <div class="fila-nome">${item.cliente || 'Sem nome'}</div>
+          <div class="fila-meta">
+            <span>${item.empresa_nome || '—'}</span>
+            <span class="fila-valor">${fmtMoney(item.valor_atualizado || item.valorAtualizado)}</span>
+          </div>
+          <div class="fila-meta">
+            <span class="fila-dias">${dias} dias atraso</span>
+          </div>
+        </div>`;
+      }).join('');
+      if (filaData.length > 0) selecionarDevedor(0);
+    }
+
+    function selecionarDevedor(idx) {
+      document.querySelectorAll('.fila-item').forEach((i, index) => {
+        i.classList.toggle('active', index === idx);
+      });
+      devedorAtual = filaData[idx];
+      segundos = 0;
+      atualizarPainelDevedor();
+    }
+
+    function atualizarPainelDevedor() {
+      if (!devedorAtual) return;
+      const nome = devedorAtual.cliente || 'Sem nome';
+      document.getElementById('devedorAvatar').textContent = nome.substring(0, 2).toUpperCase();
+      document.getElementById('devedorNome').textContent = nome;
+      document.getElementById('devedorCpf').textContent = devedorAtual.cliente_cpf ? 'CPF: ' + devedorAtual.cliente_cpf : '—';
+
+      const valorOriginal = parseFloat(devedorAtual.valor) || 0;
+      valorAtualDevedor = parseFloat(devedorAtual.valor_atualizado || devedorAtual.valorAtualizado) || valorOriginal;
+      const venc = new Date(devedorAtual.vencimento);
+      const dias = Math.floor((new Date() - venc) / (1000 * 60 * 60 * 24));
+
+      document.getElementById('infoValorOriginal').textContent = fmtMoney(valorOriginal);
+      document.getElementById('infoValorAtualizado').textContent = fmtMoney(valorAtualDevedor);
+      document.getElementById('infoDiasAtraso').textContent = dias + ' dias';
+      document.getElementById('infoAcionamentos').textContent = devedorAtual.acionamentos || 0;
+
+      // Acordos rápidos
+      document.getElementById('acordoAvista').textContent = fmtMoney(valorAtualDevedor * 0.8);
+      document.getElementById('acordo3x').textContent = '3x ' + fmtMoney(valorAtualDevedor * 0.9 / 3);
+      document.getElementById('acordo6x').textContent = '6x ' + fmtMoney(valorAtualDevedor / 6);
+
+      // Contatos
+      const tel = devedorAtual.cliente_telefone || '';
+      document.getElementById('contatosGrid').innerHTML = tel ? `
+        <div class="contato-item">
+          <div class="contato-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-phone"></i></div>
+          <div class="contato-info">
+            <div class="contato-tipo">Telefone</div>
+            <div class="contato-numero">${tel}</div>
+          </div>
+          <div class="contato-actions">
+            <button class="contato-btn whatsapp" onclick="abrirWhatsApp('${tel}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>` : '<div class="empty"><p>Sem telefone cadastrado</p></div>';
+    }
+
+    function abrirWhatsApp(tel) {
+      let t = tel.replace(/\D/g, '');
+      if (t.length === 10 || t.length === 11) t = '55' + t;
+      window.open('https://wa.me/' + t, '_blank');
+    }
+
     // Tabs
     function showTab(tabId) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
       document.getElementById('tab-' + tabId).classList.add('active');
-    }
-
-    // Selecionar devedor
-    function selecionarDevedor(id) {
-      document.querySelectorAll('.fila-item').forEach(i => i.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-      segundos = 0; // Reset timer
     }
 
     // Resultado
@@ -668,36 +696,30 @@
     // Modal
     function abrirSimulador() {
       document.getElementById('modalSimulador').classList.add('show');
+      document.getElementById('simValorDivida').textContent = fmtMoney(valorAtualDevedor);
+      document.getElementById('simOriginal').textContent = fmtMoney(valorAtualDevedor);
       calcularAcordo();
     }
-    function fecharModal(id) {
-      document.getElementById(id).classList.remove('show');
-    }
+    function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
     // Calcular acordo
     function calcularAcordo() {
-      const valorDivida = 2450;
+      const valorDivida = valorAtualDevedor || 0;
       const desconto = document.getElementById('descontoRange').value;
       const parcelas = document.getElementById('numParcelas').value;
-      
       document.getElementById('descontoValor').textContent = desconto + '%';
-      
       const valorDesconto = valorDivida * (desconto / 100);
       const valorFinal = valorDivida - valorDesconto;
       const valorParcela = valorFinal / parcelas;
-      
-      document.getElementById('valorDesconto').textContent = '- R$ ' + valorDesconto.toFixed(2).replace('.', ',');
-      document.getElementById('valorFinal').textContent = 'R$ ' + valorFinal.toFixed(2).replace('.', ',');
-      document.getElementById('valorParcela').textContent = parcelas + 'x de R$ ' + valorParcela.toFixed(2).replace('.', ',');
+      document.getElementById('valorDesconto').textContent = '- ' + fmtMoney(valorDesconto);
+      document.getElementById('valorFinal').textContent = fmtMoney(valorFinal);
+      document.getElementById('valorParcela').textContent = parcelas + 'x de ' + fmtMoney(valorParcela);
     }
 
     // Registrar acionamento
     function registrarAcionamento() {
-      if (!resultadoSelecionado) {
-        alert('Selecione o resultado do contato!');
-        return;
-      }
-      alert('Acionamento registrado com sucesso!');
+      if (!resultadoSelecionado) { alert('Selecione o resultado do contato!'); return; }
+      alert('Acionamento registrado!');
       proximoDevedor();
     }
 
@@ -705,14 +727,8 @@
     function proximoDevedor() {
       const items = document.querySelectorAll('.fila-item');
       let currentIndex = -1;
-      items.forEach((item, index) => {
-        if (item.classList.contains('active')) currentIndex = index;
-      });
-      if (currentIndex < items.length - 1) {
-        items[currentIndex].classList.remove('active');
-        items[currentIndex + 1].classList.add('active');
-      }
-      segundos = 0;
+      items.forEach((item, index) => { if (item.classList.contains('active')) currentIndex = index; });
+      if (currentIndex < items.length - 1) selecionarDevedor(currentIndex + 1);
       resultadoSelecionado = null;
       document.querySelectorAll('.resultado-btn').forEach(b => b.classList.remove('selected'));
       document.getElementById('obsAcionamento').value = '';
@@ -721,24 +737,20 @@
     // Acordo rápido
     function abrirAcordoRapido(tipo) {
       abrirSimulador();
-      if (tipo === 'avista') {
-        document.getElementById('descontoRange').value = 20;
-        document.getElementById('numParcelas').value = 1;
-      } else if (tipo === '3x') {
-        document.getElementById('descontoRange').value = 10;
-        document.getElementById('numParcelas').value = 3;
-      } else if (tipo === '6x') {
-        document.getElementById('descontoRange').value = 0;
-        document.getElementById('numParcelas').value = 6;
-      }
+      if (tipo === 'avista') { document.getElementById('descontoRange').value = 20; document.getElementById('numParcelas').value = 1; }
+      else if (tipo === '3x') { document.getElementById('descontoRange').value = 10; document.getElementById('numParcelas').value = 3; }
+      else if (tipo === '6x') { document.getElementById('descontoRange').value = 0; document.getElementById('numParcelas').value = 6; }
       calcularAcordo();
     }
 
-    // Fechar acordo
     function fecharAcordo() {
-      alert('Acordo fechado com sucesso! As parcelas foram geradas.');
+      alert('Acordo fechado! Parcelas geradas.');
       fecharModal('modalSimulador');
     }
+
+    carregarUsuario();
+    carregarBadges();
+    carregarFila();
   </script>
 </body>
 </html>

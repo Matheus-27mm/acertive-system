@@ -3,332 +3,322 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Importar Cobranças em Massa - ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Importar em Massa - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #09090b; color: #fafafa; min-height: 100vh; }
-    
-    .layout { display: flex; min-height: 100vh; }
-    
-    /* Sidebar */
-    .sidebar { width: 250px; background: #18181b; border-right: 1px solid #27272a; padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; }
-    .logo { padding: 0 20px 30px; display: flex; align-items: center; gap: 12px; }
-    .logo-icon { width: 40px; height: 40px; background: #F6C84C; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: #09090b; }
-    .logo-text { font-size: 20px; font-weight: 700; }
-    .logo-text span { color: #F6C84C; }
-    
-    .nav-section { padding: 0 12px; margin-bottom: 20px; }
-    .nav-title { font-size: 11px; text-transform: uppercase; color: #71717a; padding: 0 8px; margin-bottom: 8px; }
-    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: #a1a1aa; text-decoration: none; transition: all 0.2s; margin-bottom: 4px; }
-    .nav-item:hover { background: #27272a; color: #fafafa; }
-    .nav-item.active { background: linear-gradient(135deg, #F6C84C, #f59e0b); color: #09090b; }
-    .nav-item i { width: 20px; text-align: center; }
-    
-    /* Main */
-    .main { flex: 1; margin-left: 250px; padding: 30px; }
-    
-    .header { margin-bottom: 30px; }
-    .header h1 { font-size: 28px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .header h1 i { color: #F6C84C; }
-    .header p { color: #71717a; }
-    
-    /* Cards de status */
-    .status-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-    .status-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 20px; }
-    .status-card .icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-    .status-card .icon.green { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-    .status-card .icon.blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-    .status-card .icon.yellow { background: rgba(246, 200, 76, 0.2); color: #F6C84C; }
-    .status-card .icon.red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .status-card .value { font-size: 28px; font-weight: 700; }
-    .status-card .label { font-size: 12px; color: #71717a; margin-top: 4px; }
-    
-    /* Container principal */
-    .container { background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 30px; }
-    
-    /* Upload area */
-    .upload-area { border: 2px dashed #27272a; border-radius: 12px; padding: 50px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 25px; }
-    .upload-area:hover { border-color: #F6C84C; background: rgba(246, 200, 76, 0.05); }
-    .upload-area.dragover { border-color: #F6C84C; background: rgba(246, 200, 76, 0.1); }
-    .upload-area i { font-size: 48px; color: #F6C84C; margin-bottom: 15px; }
-    .upload-area h3 { font-size: 18px; margin-bottom: 8px; }
-    .upload-area p { color: #71717a; font-size: 14px; }
-    .upload-area input { display: none; }
-    
-    /* File info */
-    .file-info { background: #09090b; border: 1px solid #27272a; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none; }
-    .file-info.show { display: block; }
-    .file-info h3 { font-size: 16px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
-    .file-info h3 i { color: #22c55e; }
-    .file-info p { font-size: 14px; color: #71717a; }
-    
-    /* Buttons */
-    .btn { padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 10px; }
-    .btn-primary { background: linear-gradient(135deg, #F6C84C, #f59e0b); color: #09090b; }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(246, 200, 76, 0.4); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: #27272a; color: #fafafa; }
-    .btn-secondary:hover { background: #3f3f46; }
-    .btn-danger { background: #dc2626; color: #fff; }
-    .btn-danger:hover { background: #b91c1c; }
-    
-    .buttons { display: flex; gap: 15px; margin-bottom: 25px; }
-    
-    /* Progress */
-    .progress-container { margin: 25px 0; display: none; }
-    .progress-container.show { display: block; }
-    .progress-bar { height: 24px; background: #27272a; border-radius: 12px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #F6C84C, #22c55e); transition: width 0.3s; width: 0%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #09090b; }
-    .progress-text { text-align: center; margin-top: 12px; font-size: 14px; color: #a1a1aa; }
-    
-    /* Stats */
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; display: none; }
-    .stats.show { display: grid; }
-    .stat { background: #09090b; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #27272a; }
-    .stat-value { font-size: 32px; font-weight: 700; }
-    .stat-value.green { color: #22c55e; }
-    .stat-value.red { color: #ef4444; }
-    .stat-value.yellow { color: #F6C84C; }
-    .stat-label { font-size: 12px; color: #71717a; margin-top: 5px; }
-    
-    /* Log */
-    .log { background: #09090b; border: 1px solid #27272a; border-radius: 12px; padding: 20px; max-height: 300px; overflow-y: auto; font-family: 'Monaco', 'Consolas', monospace; font-size: 12px; color: #a1a1aa; display: none; }
-    .log.show { display: block; }
-    .log .success { color: #22c55e; }
-    .log .error { color: #ef4444; }
-    .log .info { color: #3b82f6; }
-    
-    /* Instruções */
-    .instructions { background: #09090b; border: 1px solid #27272a; border-radius: 12px; padding: 20px; margin-top: 25px; }
-    .instructions h3 { font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-    .instructions h3 i { color: #3b82f6; }
-    .instructions ol { padding-left: 20px; }
-    .instructions li { margin-bottom: 10px; color: #a1a1aa; line-height: 1.6; }
-    .instructions code { background: #27272a; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 13px; }
-    
-    /* Alerta */
-    .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .alert-warning { background: rgba(246, 200, 76, 0.1); border: 1px solid rgba(246, 200, 76, 0.3); color: #F6C84C; }
-    .alert-success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
-    .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; }
-    
-    @media (max-width: 1200px) {
-      .status-cards { grid-template-columns: repeat(2, 1fr); }
-      .stats { grid-template-columns: repeat(2, 1fr); }
-    }
-    
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .status-cards { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .buttons { flex-direction: column; }
-    }
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+
+    /* SIDEBAR PADRÃO */
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
+    .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+
+    /* MAIN */
+    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
+    .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+    .page-title{font-size:28px;font-weight:800;display:flex;align-items:center;gap:12px}
+    .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+    .page-subtitle{color:var(--text-muted);font-size:14px;margin-top:4px}
+
+    /* STATUS CARDS */
+    .status-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .status-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px}
+    .status-card .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px}
+    .status-card .icon.green{background:var(--green-bg);color:var(--green)}.status-card .icon.blue{background:var(--blue-bg);color:var(--blue)}
+    .status-card .icon.yellow{background:var(--gold-glow);color:var(--gold)}.status-card .icon.red{background:var(--red-bg);color:var(--red)}
+    .status-card .value{font-size:28px;font-weight:800}.status-card .label{font-size:12px;color:var(--text-muted);margin-top:4px}
+
+    /* CONTAINER */
+    .container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+
+    /* ALERT */
+    .alert{padding:15px 20px;border-radius:var(--radius-md);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+    .alert-warning{background:var(--orange-bg);border:1px solid rgba(245,158,11,0.3);color:var(--orange)}
+    .alert-success{background:var(--green-bg);border:1px solid rgba(34,197,94,0.3);color:var(--green)}
+
+    /* UPLOAD AREA */
+    .upload-area{border:2px dashed var(--border);border-radius:var(--radius-md);padding:50px;text-align:center;cursor:pointer;transition:all var(--transition-fast);margin-bottom:24px}
+    .upload-area:hover{border-color:var(--gold);background:var(--gold-glow)}
+    .upload-area.dragover{border-color:var(--gold);background:var(--gold-glow-strong)}
+    .upload-area i{font-size:48px;color:var(--gold);margin-bottom:15px}
+    .upload-area h3{font-size:18px;margin-bottom:8px}.upload-area p{color:var(--text-muted);font-size:14px}
+    .upload-area input{display:none}
+
+    /* FILE INFO */
+    .file-info{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin-bottom:24px;display:none}
+    .file-info.show{display:block}
+    .file-info h3{font-size:16px;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+    .file-info h3 i{color:var(--green)}.file-info p{font-size:14px;color:var(--text-muted)}
+
+    /* BUTTONS */
+    .btn{padding:14px 28px;border-radius:var(--radius-md);font-weight:600;font-size:15px;cursor:pointer;border:none;transition:all var(--transition-fast);display:inline-flex;align-items:center;gap:10px}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+    .buttons{display:flex;gap:15px;margin-bottom:24px;flex-wrap:wrap}
+
+    /* PROGRESS */
+    .progress-container{margin:24px 0;display:none}
+    .progress-container.show{display:block}
+    .progress-bar{height:24px;background:var(--border);border-radius:12px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));transition:width 0.3s;width:0%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--bg-primary)}
+    .progress-text{text-align:center;margin-top:12px;font-size:14px;color:var(--text-muted)}
+
+    /* STATS */
+    .stats{display:none;grid-template-columns:repeat(4,1fr);gap:15px;margin:24px 0}
+    .stats.show{display:grid}
+    .stat{background:var(--bg-secondary);padding:20px;border-radius:var(--radius-md);text-align:center;border:1px solid var(--border)}
+    .stat-value{font-size:32px;font-weight:800}.stat-value.green{color:var(--green)}.stat-value.red{color:var(--red)}.stat-value.yellow{color:var(--gold)}
+    .stat-label{font-size:12px;color:var(--text-muted);margin-top:5px}
+
+    /* LOG */
+    .log{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;max-height:300px;overflow-y:auto;font-family:'Monaco','Consolas',monospace;font-size:12px;color:var(--text-muted);display:none}
+    .log.show{display:block}
+    .log .success{color:var(--green)}.log .error{color:var(--red)}.log .info{color:var(--blue)}
+
+    /* INSTRUÇÕES */
+    .instructions{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin-top:24px}
+    .instructions h3{font-size:16px;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+    .instructions h3 i{color:var(--blue)}
+    .instructions ol{padding-left:20px}.instructions li{margin-bottom:10px;color:var(--text-muted);line-height:1.6}
+    .instructions code{background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:13px}
+
+    @media(max-width:1200px){.status-cards{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
+    @media(max-width:768px){.status-cards{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.buttons{flex-direction:column}}
   </style>
 </head>
 <body>
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="logo">
-        <div class="logo-icon">A</div>
-        <div class="logo-text">ACERT<span>IVE</span></div>
+  <!-- SIDEBAR PADRÃO -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      
-      <nav class="nav-section">
-        <div class="nav-title">Principal</div>
-        <a href="/dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/cobrancas" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-        <a href="/clientes" class="nav-item"><i class="fas fa-users"></i> Clientes</a>
-      </nav>
-      
-      <nav class="nav-section">
-        <div class="nav-title">Ações</div>
-        <a href="/nova-cobranca" class="nav-item"><i class="fas fa-plus"></i> Nova Cobrança</a>
-        <a href="/novo-cliente" class="nav-item"><i class="fas fa-user-plus"></i> Novo Cliente</a>
-        <a href="/importar-massa" class="nav-item active"><i class="fas fa-file-import"></i> Importar</a>
-      </nav>
-      
-      <nav class="nav-section">
-        <div class="nav-title">Sistema</div>
-        <a href="/configuracoes" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
-      </nav>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main">
-      <div class="header">
-        <h1><i class="fas fa-file-import"></i> Importar Cobranças em Massa</h1>
-        <p>Importe suas cobranças de forma organizada via arquivo JSON</p>
+      <div class="nav-section">
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      
-      <!-- Status Cards -->
-      <div class="status-cards">
-        <div class="status-card">
-          <div class="icon green"><i class="fas fa-users"></i></div>
-          <div class="value" id="totalClientes">-</div>
-          <div class="label">Clientes Cadastrados</div>
-        </div>
-        <div class="status-card">
-          <div class="icon blue"><i class="fas fa-file-invoice"></i></div>
-          <div class="value" id="totalCobrancas">-</div>
-          <div class="label">Cobranças no Sistema</div>
-        </div>
-        <div class="status-card">
-          <div class="icon yellow"><i class="fas fa-clock"></i></div>
-          <div class="value" id="cobrancasAtivas">-</div>
-          <div class="label">Cobranças Ativas</div>
-        </div>
-        <div class="status-card">
-          <div class="icon red"><i class="fas fa-dollar-sign"></i></div>
-          <div class="value" id="valorPendente">-</div>
-          <div class="label">Valor Pendente</div>
-        </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      
-      <div class="container">
-        <div class="alert alert-warning" id="alertaClientes" style="display: none;">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span>Atenção: Certifique-se de que os <strong>clientes já foram importados</strong> antes de importar as cobranças.</span>
-        </div>
-        
-        <div class="upload-area" id="uploadArea">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <h3>Clique para selecionar o arquivo JSON</h3>
-          <p>ou arraste e solte aqui</p>
-          <input type="file" id="fileInput" accept=".json">
-        </div>
-        
-        <div class="file-info" id="fileInfo">
-          <h3><i class="fas fa-check-circle"></i> <span id="fileName">arquivo.json</span></h3>
-          <p id="fileDetails">0 registros encontrados</p>
-        </div>
-        
-        <div class="buttons">
-          <button class="btn btn-primary" id="btnImportar" disabled>
-            <i class="fas fa-play"></i> Iniciar Importação
-          </button>
-          <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">
-            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
-          </button>
-        </div>
-        
-        <div class="progress-container" id="progressContainer">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill">0%</div>
-          </div>
-          <p class="progress-text" id="progressText">Preparando...</p>
-        </div>
-        
-        <div class="stats" id="stats">
-          <div class="stat">
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-label">Total Processados</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value green" id="statSucesso">0</div>
-            <div class="stat-label">Importados</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value red" id="statErros">0</div>
-            <div class="stat-label">Erros</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value yellow" id="statNaoEncontrados">0</div>
-            <div class="stat-label">Clientes não encontrados</div>
-          </div>
-        </div>
-        
-        <div class="log" id="log"></div>
-        
-        <div class="instructions">
-          <h3><i class="fas fa-info-circle"></i> Instruções</h3>
-          <ol>
-            <li>Primeiro, certifique-se de que os <strong>clientes já estão cadastrados</strong> no sistema (com CPF/CNPJ correto)</li>
-            <li>Selecione o arquivo <code>cobrancas_import.json</code> que foi gerado</li>
-            <li>Clique em <strong>"Iniciar Importação"</strong></li>
-            <li>Aguarde o processamento (pode levar alguns minutos dependendo da quantidade)</li>
-            <li>As cobranças serão vinculadas aos clientes pelo <strong>CPF/CNPJ</strong></li>
-          </ol>
-        </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-    </main>
-  </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link active"><i class="fas fa-file-import"></i> Importar</a>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-file-import"></i></div> Importar em Massa</h1>
+        <p class="page-subtitle">Importe cobranças e devedores de forma organizada via arquivo JSON</p>
+      </div>
+    </header>
+
+    <!-- STATUS CARDS -->
+    <div class="status-cards">
+      <div class="status-card">
+        <div class="icon green"><i class="fas fa-users"></i></div>
+        <div class="value" id="totalDevedores">-</div>
+        <div class="label">Devedores Cadastrados</div>
+      </div>
+      <div class="status-card">
+        <div class="icon blue"><i class="fas fa-file-invoice"></i></div>
+        <div class="value" id="totalCobrancas">-</div>
+        <div class="label">Cobranças no Sistema</div>
+      </div>
+      <div class="status-card">
+        <div class="icon yellow"><i class="fas fa-clock"></i></div>
+        <div class="value" id="cobrancasAtivas">-</div>
+        <div class="label">Cobranças Ativas</div>
+      </div>
+      <div class="status-card">
+        <div class="icon red"><i class="fas fa-dollar-sign"></i></div>
+        <div class="value" id="valorPendente">-</div>
+        <div class="label">Valor Pendente</div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="alert alert-warning" id="alertaDevedores" style="display:none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Atenção: Certifique-se de que os <strong>devedores já foram importados</strong> antes de importar as cobranças.</span>
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h3>Clique para selecionar o arquivo JSON</h3>
+        <p>ou arraste e solte aqui</p>
+        <input type="file" id="fileInput" accept=".json">
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <h3><i class="fas fa-check-circle"></i> <span id="fileName">arquivo.json</span></h3>
+        <p id="fileDetails">0 registros encontrados</p>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-primary" id="btnImportar" disabled>
+          <i class="fas fa-play"></i> Iniciar Importação
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">
+          <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+        </button>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill">0%</div></div>
+        <p class="progress-text" id="progressText">Preparando...</p>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Processados</div></div>
+        <div class="stat"><div class="stat-value green" id="statSucesso">0</div><div class="stat-label">Importados</div></div>
+        <div class="stat"><div class="stat-value red" id="statErros">0</div><div class="stat-label">Erros</div></div>
+        <div class="stat"><div class="stat-value yellow" id="statNaoEncontrados">0</div><div class="stat-label">Devedores não encontrados</div></div>
+      </div>
+
+      <div class="log" id="log"></div>
+
+      <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i> Instruções</h3>
+        <ol>
+          <li>Primeiro, certifique-se de que os <strong>devedores já estão cadastrados</strong> no sistema (com CPF/CNPJ correto)</li>
+          <li>Selecione o arquivo <code>cobrancas_import.json</code> que foi gerado</li>
+          <li>Clique em <strong>"Iniciar Importação"</strong></li>
+          <li>Aguarde o processamento (pode levar alguns minutos dependendo da quantidade)</li>
+          <li>As cobranças serão vinculadas aos devedores pelo <strong>CPF/CNPJ</strong></li>
+        </ol>
+      </div>
+    </div>
+  </main>
 
   <script>
-    const token = localStorage.getItem('token');
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
     if (!token) window.location.href = '/login';
-    
+
     let dadosImportacao = [];
     const LOTE_SIZE = 100;
-    
-    // Carregar status inicial
+
+    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+
+    async function carregarUsuario() {
+      try {
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
+          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function carregarBadges() {
+      try {
+        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const badge = document.getElementById('badgeFila');
+          const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
+          if (badge) badge.textContent = total > 0 ? total : '';
+        }
+      } catch (e) {}
+    }
+
     async function carregarStatus() {
       try {
-        const response = await fetch('/api/importacao/status', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const data = await response.json();
-        
+        const res = await fetch(API + '/api/importacao/status', { headers: getHeaders() });
+        const data = await res.json();
         if (data.success) {
-          document.getElementById('totalClientes').textContent = data.data.clientes.toLocaleString();
-          document.getElementById('totalCobrancas').textContent = data.data.cobrancas.toLocaleString();
-          document.getElementById('cobrancasAtivas').textContent = data.data.cobrancasAtivas.toLocaleString();
-          document.getElementById('valorPendente').textContent = 'R$ ' + data.data.valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-          
-          // Mostrar alerta se não tem clientes
+          document.getElementById('totalDevedores').textContent = (data.data.clientes || 0).toLocaleString();
+          document.getElementById('totalCobrancas').textContent = (data.data.cobrancas || 0).toLocaleString();
+          document.getElementById('cobrancasAtivas').textContent = (data.data.cobrancasAtivas || 0).toLocaleString();
+          document.getElementById('valorPendente').textContent = 'R$ ' + (data.data.valorPendente || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
           if (data.data.clientes === 0) {
-            document.getElementById('alertaClientes').style.display = 'flex';
+            document.getElementById('alertaDevedores').style.display = 'flex';
           }
         }
-      } catch (err) {
-        console.error('Erro ao carregar status:', err);
+      } catch (e) {
+        document.getElementById('totalDevedores').textContent = '0';
+        document.getElementById('totalCobrancas').textContent = '0';
+        document.getElementById('cobrancasAtivas').textContent = '0';
+        document.getElementById('valorPendente').textContent = 'R$ 0,00';
       }
     }
-    
-    carregarStatus();
-    
+
     // Upload area
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
-    
+
     uploadArea.addEventListener('click', () => fileInput.click());
-    
-    uploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadArea.classList.add('dragover');
-    });
-    
-    uploadArea.addEventListener('dragleave', () => {
-      uploadArea.classList.remove('dragover');
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file) processarArquivo(file);
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) processarArquivo(file);
-    });
-    
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); if (e.dataTransfer.files[0]) processarArquivo(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) processarArquivo(e.target.files[0]); });
+
     function processarArquivo(file) {
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           dadosImportacao = JSON.parse(e.target.result);
-          
           document.getElementById('fileInfo').classList.add('show');
           document.getElementById('fileName').textContent = file.name;
-          document.getElementById('fileDetails').textContent = `${dadosImportacao.length.toLocaleString()} cobranças encontradas`;
+          document.getElementById('fileDetails').textContent = `${dadosImportacao.length.toLocaleString()} registros encontrados`;
           document.getElementById('btnImportar').disabled = false;
-          
-          log(`✅ Arquivo carregado: ${dadosImportacao.length.toLocaleString()} cobranças`, 'success');
+          log(`✅ Arquivo carregado: ${dadosImportacao.length.toLocaleString()} registros`, 'success');
         } catch (err) {
           alert('Erro ao ler o arquivo JSON. Verifique se o arquivo está correto.');
           log('❌ Erro: arquivo JSON inválido', 'error');
@@ -336,58 +326,35 @@
       };
       reader.readAsText(file);
     }
-    
-    // Botão importar
+
     document.getElementById('btnImportar').addEventListener('click', iniciarImportacao);
-    
+
     async function iniciarImportacao() {
-      if (dadosImportacao.length === 0) {
-        alert('Nenhum dado para importar');
-        return;
-      }
-      
-      if (!confirm(`Você está prestes a importar ${dadosImportacao.length.toLocaleString()} cobranças. Deseja continuar?`)) {
-        return;
-      }
-      
+      if (dadosImportacao.length === 0) { alert('Nenhum dado para importar'); return; }
+      if (!confirm(`Você está prestes a importar ${dadosImportacao.length.toLocaleString()} registros. Deseja continuar?`)) return;
+
       document.getElementById('btnImportar').disabled = true;
       document.getElementById('progressContainer').classList.add('show');
       document.getElementById('stats').classList.add('show');
       document.getElementById('log').classList.add('show');
-      
+
       const total = dadosImportacao.length;
-      let importados = 0;
-      let erros = 0;
-      let naoEncontrados = 0;
-      
+      let importados = 0, erros = 0, naoEncontrados = 0;
       document.getElementById('statTotal').textContent = total.toLocaleString();
-      
-      // Dividir em lotes
+
       const lotes = [];
-      for (let i = 0; i < total; i += LOTE_SIZE) {
-        lotes.push(dadosImportacao.slice(i, i + LOTE_SIZE));
-      }
-      
+      for (let i = 0; i < total; i += LOTE_SIZE) lotes.push(dadosImportacao.slice(i, i + LOTE_SIZE));
+
       log(`🚀 Iniciando importação em ${lotes.length} lotes...`, 'info');
-      
+
       for (let i = 0; i < lotes.length; i++) {
         const lote = lotes[i];
-        
         try {
-          const response = await fetch('/api/importar-cobrancas-massa', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ cobrancas: lote })
-          });
-          
-          const data = await response.json();
-          
+          const res = await fetch(API + '/api/importar-cobrancas-massa', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ cobrancas: lote }) });
+          const data = await res.json();
           if (data.success) {
-            importados += data.importados;
-            erros += data.erros;
+            importados += data.importados || 0;
+            erros += data.erros || 0;
             naoEncontrados += data.clientesNaoEncontrados || 0;
             log(`Lote ${i + 1}/${lotes.length}: ${data.importados} importados, ${data.erros} erros`, data.erros > 0 ? 'error' : 'success');
           } else {
@@ -398,8 +365,7 @@
           erros += lote.length;
           log(`Lote ${i + 1}/${lotes.length}: ERRO - ${err.message}`, 'error');
         }
-        
-        // Atualizar progresso
+
         const progresso = Math.round(((i + 1) / lotes.length) * 100);
         document.getElementById('progressFill').style.width = progresso + '%';
         document.getElementById('progressFill').textContent = progresso + '%';
@@ -407,26 +373,23 @@
         document.getElementById('statSucesso').textContent = importados.toLocaleString();
         document.getElementById('statErros').textContent = erros.toLocaleString();
         document.getElementById('statNaoEncontrados').textContent = naoEncontrados.toLocaleString();
-        
-        // Pequena pausa entre lotes
+
         await new Promise(r => setTimeout(r, 100));
       }
-      
+
       document.getElementById('progressText').textContent = 'Importação concluída!';
       log(`\n========================================`, 'info');
       log(`✅ IMPORTAÇÃO CONCLUÍDA!`, 'success');
       log(`📊 Total: ${total.toLocaleString()}`, 'info');
       log(`✅ Importados: ${importados.toLocaleString()}`, 'success');
       log(`❌ Erros: ${erros.toLocaleString()}`, erros > 0 ? 'error' : 'info');
-      log(`⚠️ Clientes não encontrados: ${naoEncontrados.toLocaleString()}`, naoEncontrados > 0 ? 'error' : 'info');
+      log(`⚠️ Devedores não encontrados: ${naoEncontrados.toLocaleString()}`, naoEncontrados > 0 ? 'error' : 'info');
       log(`========================================`, 'info');
-      
+
       document.getElementById('btnImportar').innerHTML = '<i class="fas fa-check"></i> Concluído!';
-      
-      // Atualizar status
       carregarStatus();
     }
-    
+
     function log(msg, type = 'info') {
       const logEl = document.getElementById('log');
       const time = new Date().toLocaleTimeString();
@@ -434,6 +397,10 @@
       logEl.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
       logEl.scrollTop = logEl.scrollHeight;
     }
+
+    carregarUsuario();
+    carregarBadges();
+    carregarStatus();
   </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,90 +8,137 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2)}
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+
+    /* SIDEBAR PADRÃO */
     .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
     .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
     .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
     .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
     .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
     .nav-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}
-    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all 0.2s;margin-bottom:2px;position:relative}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
     .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
     .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
-    .nav-link i{width:20px;text-align:center}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
     .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
     .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
     .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
     .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
     .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
+
+    /* MAIN */
     .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
-    .page-header{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+    .page-header{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
     .page-title{display:flex;align-items:center;gap:16px}
     .page-title-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center}
     .page-title-icon i{font-size:22px;color:var(--gold)}.page-title h1{font-size:24px;font-weight:800;margin-bottom:4px}.page-title p{color:var(--text-muted);font-size:14px}
+
+    /* FORM CARDS */
     .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
     .form-card h3{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)}
     .form-card h3 i{color:var(--gold)}
     .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}.form-group.full{grid-column:1/-1}
-    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px}.form-group label .required{color:var(--red)}
-    .form-control{width:100%;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px;transition:all 0.2s}
+    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase}.form-group label .required{color:var(--red)}
+    .form-control{width:100%;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px;transition:all var(--transition-fast)}
     .form-control:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
     select.form-control{cursor:pointer}select.form-control option{background:var(--bg-secondary)}textarea.form-control{resize:vertical;min-height:80px}
     .input-group{position:relative}.input-group .prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600}.input-group input{padding-left:44px}
+
+    /* CLIENTE SEARCH */
     .cliente-search{position:relative}.cliente-search i.ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}.cliente-search input{padding-left:42px}
     .cliente-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;display:none;margin-top:4px}
-    .cliente-results.active{display:block}.cliente-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border)}.cliente-item:hover{background:var(--gold-glow)}
+    .cliente-results.active{display:block}.cliente-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border)}.cliente-item:hover{background:var(--gold-glow)}.cliente-item:last-child{border-bottom:none}
     .cliente-item-name{font-weight:600}.cliente-item-info{font-size:12px;color:var(--text-muted)}
     .cliente-selected{display:none;background:var(--green-bg);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:14px;margin-top:12px}
     .cliente-selected.active{display:flex;align-items:center;gap:12px}
     .cliente-avatar{width:44px;height:44px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
-    .cliente-info{flex:1}.cliente-nome{font-weight:700}.cliente-cpf{font-size:12px;color:var(--text-muted)}
+    .cliente-info-box{flex:1}.cliente-nome{font-weight:700}.cliente-cpf{font-size:12px;color:var(--text-muted)}
     .cliente-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.cliente-remove:hover{background:var(--red-bg);color:var(--red)}
+
+    /* OPÇÕES AVANÇADAS */
     .opcoes-avancadas{border-top:1px solid var(--border);margin-top:16px;padding-top:16px}
     .btn-toggle-opcoes{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:8px 0;width:100%}
     .btn-toggle-opcoes:hover{color:var(--gold)}.btn-toggle-opcoes i{transition:transform 0.3s}.btn-toggle-opcoes.expanded i{transform:rotate(180deg)}
     .opcoes-conteudo{display:none;margin-top:16px}.opcoes-conteudo.active{display:block}
+
+    /* RESUMO */
     .resumo-card{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border:1px solid var(--border-gold);border-radius:var(--radius-lg);padding:24px;position:sticky;top:32px}
     .resumo-card h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--gold);display:flex;align-items:center;gap:10px}
     .resumo-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}.resumo-item:last-child{border-bottom:none}
     .resumo-label{color:var(--text-secondary);font-size:13px}.resumo-value{font-weight:600;font-size:14px}
     .resumo-total{background:var(--bg-primary);border-radius:8px;padding:16px;margin-top:16px;text-align:center}
     .resumo-total-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.resumo-total-value{font-size:28px;font-weight:800;color:var(--gold)}
+
+    /* BUTTONS */
     .form-actions{display:flex;gap:12px;margin-top:20px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;border:none;flex:1}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;transition:all var(--transition-fast);border:none;flex:1}
     .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{box-shadow:var(--shadow-gold);transform:translateY(-2px)}
     .btn-secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--border-gold);color:var(--gold)}
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0}}
+
+    /* LAYOUT */
+    .form-layout{display:grid;grid-template-columns:1fr 340px;gap:24px}
+
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.form-layout{grid-template-columns:1fr}}
     @media(max-width:768px){.form-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
+  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
         <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
-        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Ações</div>
-        <a href="/nova-cobranca" class="nav-link active"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
-        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
-        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Automação</div>
-        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
         <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
   </aside>
 
+  <!-- MAIN -->
   <main class="main-content">
     <div class="page-header">
       <div class="page-title">
@@ -100,22 +148,22 @@
     </div>
 
     <form id="formCobranca">
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;">
+      <div class="form-layout">
         <div>
-          <!-- Cliente -->
+          <!-- Devedor -->
           <div class="form-card">
-            <h3><i class="fas fa-user"></i> Cliente</h3>
+            <h3><i class="fas fa-user"></i> Devedor</h3>
             <div class="form-group">
-              <label>Buscar Cliente <span class="required">*</span></label>
+              <label>Buscar Devedor <span class="required">*</span></label>
               <div class="cliente-search">
                 <i class="fas fa-search ico"></i>
                 <input type="text" class="form-control" id="buscarCliente" placeholder="Digite nome, CPF ou CNPJ..." autocomplete="off">
                 <div class="cliente-results" id="clienteResults"></div>
               </div>
               <div class="cliente-selected" id="clienteSelected">
-                <div class="cliente-avatar" id="clienteAvatar">C</div>
-                <div class="cliente-info">
-                  <div class="cliente-nome" id="clienteNome">Cliente</div>
+                <div class="cliente-avatar" id="clienteAvatar">D</div>
+                <div class="cliente-info-box">
+                  <div class="cliente-nome" id="clienteNome">Devedor</div>
                   <div class="cliente-cpf" id="clienteCpf">CPF/CNPJ</div>
                 </div>
                 <button type="button" class="cliente-remove" onclick="removerCliente()"><i class="fas fa-times"></i></button>
@@ -235,12 +283,23 @@
           document.getElementById('userName').textContent = data.data.nome || 'Usuário';
           document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
           document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
         }
       } catch (e) { console.error(e); }
     }
 
-    // Busca cliente
+    async function carregarBadges() {
+      try {
+        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const badge = document.getElementById('badgeFila');
+          const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
+          if (badge) badge.textContent = total > 0 ? total : '';
+        }
+      } catch (e) {}
+    }
+
+    // Busca devedor
     let searchTimeout;
     document.getElementById('buscarCliente').addEventListener('input', function() {
       clearTimeout(searchTimeout);
@@ -255,10 +314,15 @@
         const data = await res.json();
         const container = document.getElementById('clienteResults');
         if (data.success && data.data && data.data.length > 0) {
-          container.innerHTML = data.data.map(c => '<div class="cliente-item" onclick="selecionarCliente(\'' + c.id + '\',\'' + (c.nome || '').replace(/'/g, "\\'") + '\',\'' + (c.cpf_cnpj || '') + '\')"><div class="cliente-item-name">' + c.nome + '</div><div class="cliente-item-info">' + (c.cpf_cnpj || 'Sem CPF') + '</div></div>').join('');
+          container.innerHTML = data.data.map(c => `
+            <div class="cliente-item" onclick="selecionarCliente('${c.id}','${(c.nome || '').replace(/'/g, "\\'")}','${c.cpf_cnpj || ''}')">
+              <div class="cliente-item-name">${c.nome}</div>
+              <div class="cliente-item-info">${c.cpf_cnpj || 'Sem CPF'}</div>
+            </div>
+          `).join('');
           container.classList.add('active');
         } else {
-          container.innerHTML = '<div class="cliente-item"><div class="cliente-item-name">Nenhum cliente encontrado</div></div>';
+          container.innerHTML = '<div class="cliente-item"><div class="cliente-item-name">Nenhum devedor encontrado</div></div>';
           container.classList.add('active');
         }
       } catch (e) { console.error(e); }
@@ -269,7 +333,7 @@
       document.getElementById('clienteId').value = id;
       document.getElementById('clienteNome').textContent = nome;
       document.getElementById('clienteCpf').textContent = cpf || 'Sem CPF/CNPJ';
-      document.getElementById('clienteAvatar').textContent = (nome || 'C').charAt(0).toUpperCase();
+      document.getElementById('clienteAvatar').textContent = (nome || 'D').charAt(0).toUpperCase();
       document.getElementById('clienteSelected').classList.add('active');
       document.getElementById('clienteResults').classList.remove('active');
       document.getElementById('buscarCliente').value = '';
@@ -300,7 +364,7 @@
     // Submeter
     document.getElementById('formCobranca').addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (!clienteSelecionado) { alert('Selecione um cliente'); return; }
+      if (!clienteSelecionado) { alert('Selecione um devedor'); return; }
 
       const dados = {
         cliente_id: clienteSelecionado.id,
@@ -352,6 +416,7 @@
     }
 
     carregarUsuario();
+    carregarBadges();
   </script>
 </body>
 </html>

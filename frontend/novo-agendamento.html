@@ -6,9 +6,8 @@
   <title>Novo Agendamento - ACERTIVE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
-    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
 
     /* SIDEBAR PADRÃO */
@@ -21,7 +20,9 @@
     .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;color:var(--text-secondary);text-decoration:none;border-radius:var(--radius-md);font-weight:500;font-size:14px;transition:all var(--transition-fast);margin-bottom:2px;position:relative}
     .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
     .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
-    .nav-link i{width:20px;text-align:center}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
     .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
     .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
     .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
@@ -35,46 +36,63 @@
     .page-title-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gold)}
     .page-subtitle{color:var(--text-muted);font-size:14px;margin-top:4px}
 
+    /* BUTTONS */
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all var(--transition-fast);text-decoration:none}
     .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary);box-shadow:var(--shadow-gold)}.btn-primary:hover{transform:translateY(-2px)}
     .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:var(--gold-glow);border-color:var(--border-gold);color:var(--gold)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
 
-    /* Form Container */
+    /* FORM */
     .form-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;max-width:800px}
     .form-header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
     .form-header h2{font-size:18px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:10px}
 
-    .form-group{margin-bottom:20px}.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}.form-label .required{color:var(--red)}
+    .form-group{margin-bottom:20px}
+    .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}.form-label .required{color:var(--red)}
     .form-input,.form-select,.form-textarea{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px;transition:all var(--transition-fast)}
-    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}.form-select option{background:var(--bg-primary)}.form-textarea{min-height:120px;resize:vertical}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:var(--gold-glow)}
+    .form-select option{background:var(--bg-primary)}
+    .form-textarea{min-height:120px;resize:vertical}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-    /* Cliente Select */
-    .cliente-select-container{position:relative}
-    .cliente-search{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}.cliente-search:focus{outline:none;border-color:var(--gold)}
-    .cliente-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);max-height:250px;overflow-y:auto;z-index:100;display:none;margin-top:5px}.cliente-dropdown.active{display:block}
-    .cliente-option{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:all 0.2s}.cliente-option:hover{background:var(--gold-glow)}.cliente-option:last-child{border-bottom:none}
-    .cliente-option .nome{font-weight:600}.cliente-option .info{font-size:12px;color:var(--text-muted);margin-top:3px}
-    .cliente-selecionado{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--gold-glow);border:1px solid var(--border-gold);border-radius:var(--radius-md)}
-    .cliente-selecionado .nome{font-weight:600;color:var(--gold)}.cliente-selecionado .detalhes{font-size:12px;color:var(--text-muted)}
-    .cliente-selecionado .remover{background:var(--red-bg);border:none;color:var(--red);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600}
+    /* DEVEDOR SELECT */
+    .devedor-select-container{position:relative}
+    .devedor-search{width:100%;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:14px}
+    .devedor-search:focus{outline:none;border-color:var(--gold)}
+    .devedor-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);max-height:250px;overflow-y:auto;z-index:100;display:none;margin-top:5px}
+    .devedor-dropdown.active{display:block}
+    .devedor-option{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:all 0.2s}
+    .devedor-option:hover{background:var(--gold-glow)}
+    .devedor-option:last-child{border-bottom:none}
+    .devedor-option .nome{font-weight:600}
+    .devedor-option .info{font-size:12px;color:var(--text-muted);margin-top:3px}
+    .devedor-selecionado{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--gold-glow);border:1px solid var(--border-gold);border-radius:var(--radius-md)}
+    .devedor-selecionado .nome{font-weight:600;color:var(--gold)}
+    .devedor-selecionado .detalhes{font-size:12px;color:var(--text-muted)}
+    .devedor-selecionado .remover{background:var(--red-bg);border:none;color:var(--red);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600}
 
-    /* Tipo Cards */
+    /* TIPO CARDS */
     .tipo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
-    .tipo-card{padding:14px 10px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;transition:all 0.2s}.tipo-card:hover{border-color:#555}.tipo-card.selected{border-color:var(--gold);background:var(--gold-glow)}
-    .tipo-card .icon{font-size:22px;margin-bottom:6px}.tipo-card .label{font-size:11px;font-weight:600;color:var(--text-muted)}.tipo-card.selected .label{color:var(--gold)}
+    .tipo-card{padding:14px 10px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;transition:all 0.2s}
+    .tipo-card:hover{border-color:#555}
+    .tipo-card.selected{border-color:var(--gold);background:var(--gold-glow)}
+    .tipo-card .icon{font-size:22px;margin-bottom:6px}
+    .tipo-card .label{font-size:11px;font-weight:600;color:var(--text-muted)}
+    .tipo-card.selected .label{color:var(--gold)}
 
-    /* Prioridade */
+    /* PRIORIDADE */
     .prioridade-grid{display:flex;gap:12px}
-    .prioridade-option{flex:1;padding:12px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.2s}.prioridade-option:hover{border-color:#555}
+    .prioridade-option{flex:1;padding:12px;background:rgba(255,255,255,0.03);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.2s}
+    .prioridade-option:hover{border-color:#555}
     .prioridade-option.baixa.selected{border-color:#9ca3af;background:rgba(156,163,175,0.1);color:#9ca3af}
     .prioridade-option.normal.selected{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
     .prioridade-option.alta.selected{border-color:var(--red);background:var(--red-bg);color:var(--red)}
 
-    .form-actions{display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}.form-actions .btn{flex:1}
+    .form-actions{display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+    .form-actions .btn{flex:1}
 
     @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
-    @media(max-width:768px){.form-row{grid-template-columns:1fr}.tipo-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:768px){.form-row{grid-template-columns:1fr}.tipo-grid{grid-template-columns:repeat(3,1fr)}.prioridade-grid{flex-direction:column}}
   </style>
 </head>
 <body>
@@ -82,47 +100,82 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
         <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
-        <a href="/agendamentos" class="nav-link active"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Ações</div>
-        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
-        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
-        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Automação</div>
-        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link active"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
         <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
   </aside>
 
   <!-- MAIN -->
   <main class="main-content">
     <header class="page-header">
-      <div><h1 class="page-title"><div class="page-title-icon"><i class="fas fa-calendar-plus"></i></div> Novo Agendamento</h1><p class="page-subtitle">Agende um contato, renegociação ou liquidação</p></div>
+      <div>
+        <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-calendar-plus"></i></div> Novo Agendamento</h1>
+        <p class="page-subtitle">Agende um contato, renegociação ou liquidação</p>
+      </div>
       <a href="/agendamentos" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
     </header>
 
     <div class="form-container">
       <div class="form-header"><h2><i class="fas fa-clipboard-list"></i> Informações do Agendamento</h2></div>
+      
       <form id="formAgendamento">
-        <!-- Cliente -->
+        <!-- Devedor -->
         <div class="form-group">
-          <label class="form-label">Cliente <span class="required">*</span></label>
-          <div class="cliente-select-container" id="clienteContainer">
-            <input type="text" class="cliente-search" id="clienteSearch" placeholder="Digite para buscar..." autocomplete="off">
-            <div class="cliente-dropdown" id="clienteDropdown"></div>
+          <label class="form-label">Devedor <span class="required">*</span></label>
+          <div class="devedor-select-container" id="devedorContainer">
+            <input type="text" class="devedor-search" id="devedorSearch" placeholder="Digite para buscar devedor..." autocomplete="off">
+            <div class="devedor-dropdown" id="devedorDropdown"></div>
           </div>
-          <div class="cliente-selecionado" id="clienteSelecionado" style="display:none"><div><div class="nome" id="clienteNome"></div><div class="detalhes" id="clienteDetalhes"></div></div><button type="button" class="remover" onclick="removerCliente()">✕ Remover</button></div>
-          <input type="hidden" id="clienteId" required>
+          <div class="devedor-selecionado" id="devedorSelecionado" style="display:none">
+            <div>
+              <div class="nome" id="devedorNome"></div>
+              <div class="detalhes" id="devedorDetalhes"></div>
+            </div>
+            <button type="button" class="remover" onclick="removerDevedor()">✕ Remover</button>
+          </div>
+          <input type="hidden" id="devedorId" required>
         </div>
 
         <!-- Tipo -->
@@ -142,8 +195,14 @@
 
         <!-- Data/Hora -->
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Data <span class="required">*</span></label><input type="date" class="form-input" id="dataAgendamento" required></div>
-          <div class="form-group"><label class="form-label">Hora <span class="required">*</span></label><input type="time" class="form-input" id="horaAgendamento" required></div>
+          <div class="form-group">
+            <label class="form-label">Data <span class="required">*</span></label>
+            <input type="date" class="form-input" id="dataAgendamento" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora <span class="required">*</span></label>
+            <input type="time" class="form-input" id="horaAgendamento" required>
+          </div>
         </div>
 
         <!-- Prioridade -->
@@ -158,24 +217,28 @@
         </div>
 
         <!-- Descrição -->
-        <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-textarea" id="descricaoAgendamento" placeholder="Detalhes do agendamento..."></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-textarea" id="descricaoAgendamento" placeholder="Detalhes do agendamento..."></textarea>
+        </div>
 
-        <div class="form-actions"><a href="/agendamentos" class="btn btn-secondary">Cancelar</a><button type="submit" class="btn btn-primary" id="btnSalvar"><i class="fas fa-check"></i> Criar Agendamento</button></div>
+        <div class="form-actions">
+          <a href="/agendamentos" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary" id="btnSalvar"><i class="fas fa-check"></i> Criar Agendamento</button>
+        </div>
       </form>
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
   <script>
     const API = window.location.origin;
     let token = localStorage.getItem('token');
-    let clientes = [];
-    let clienteSelecionadoId = null;
+    let devedores = [];
+    let devedorSelecionadoId = null;
     if (!token) window.location.href = '/login';
 
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
-    function showToast(msg, type = 'success') { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : '#ef4444', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
 
     async function carregarUsuario() {
       try {
@@ -185,76 +248,109 @@
           document.getElementById('userName').textContent = data.data.nome || 'Usuário';
           document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
           document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
         }
       } catch (e) { console.error(e); }
     }
 
-    async function carregarClientes() {
+    async function carregarBadges() {
+      try {
+        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const badge = document.getElementById('badgeFila');
+          const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
+          if (badge) badge.textContent = total > 0 ? total : '';
+        }
+      } catch (e) {}
+    }
+
+    async function carregarDevedores() {
       try {
         const res = await fetch(API + '/api/clientes-ativos', { headers: getHeaders() });
         const data = await res.json();
-        if (data.success) clientes = data.data || [];
+        if (data.success) devedores = data.data || [];
       } catch (e) { console.error(e); }
     }
 
-    function setupClienteSearch() {
-      const searchInput = document.getElementById('clienteSearch');
-      const dropdown = document.getElementById('clienteDropdown');
+    function setupDevedorSearch() {
+      const searchInput = document.getElementById('devedorSearch');
+      const dropdown = document.getElementById('devedorDropdown');
+      
       searchInput.addEventListener('input', function() {
         const termo = this.value.toLowerCase().trim();
         if (termo.length < 2) { dropdown.classList.remove('active'); return; }
-        const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(termo) || (c.cpf_cnpj && c.cpf_cnpj.includes(termo)) || (c.telefone && c.telefone.includes(termo))).slice(0, 10);
-        if (!filtrados.length) dropdown.innerHTML = '<div class="cliente-option"><span class="nome">Nenhum cliente encontrado</span></div>';
-        else dropdown.innerHTML = filtrados.map(c => '<div class="cliente-option" onclick="selecionarCliente(\'' + c.id + '\', \'' + c.nome + '\', \'' + (c.telefone || '') + '\', \'' + (c.email || '') + '\')"><div class="nome">' + c.nome + '</div><div class="info">' + (c.telefone || '') + (c.email ? ' • ' + c.email : '') + '</div></div>').join('');
+        
+        const filtrados = devedores.filter(d => 
+          d.nome.toLowerCase().includes(termo) || 
+          (d.cpf_cnpj && d.cpf_cnpj.includes(termo)) || 
+          (d.telefone && d.telefone.includes(termo))
+        ).slice(0, 10);
+        
+        if (!filtrados.length) {
+          dropdown.innerHTML = '<div class="devedor-option"><span class="nome">Nenhum devedor encontrado</span></div>';
+        } else {
+          dropdown.innerHTML = filtrados.map(d => `
+            <div class="devedor-option" onclick="selecionarDevedor('${d.id}', '${d.nome}', '${d.telefone || ''}', '${d.email || ''}')">
+              <div class="nome">${d.nome}</div>
+              <div class="info">${d.telefone || ''}${d.email ? ' • ' + d.email : ''}</div>
+            </div>
+          `).join('');
+        }
         dropdown.classList.add('active');
       });
-      searchInput.addEventListener('focus', function() { if (this.value.length >= 2) dropdown.classList.add('active'); });
-      document.addEventListener('click', function(e) { if (!e.target.closest('.cliente-select-container')) dropdown.classList.remove('active'); });
+      
+      searchInput.addEventListener('focus', function() { 
+        if (this.value.length >= 2) dropdown.classList.add('active'); 
+      });
+      
+      document.addEventListener('click', function(e) { 
+        if (!e.target.closest('.devedor-select-container')) dropdown.classList.remove('active'); 
+      });
     }
 
-    function selecionarCliente(id, nome, telefone, email) {
-      clienteSelecionadoId = id;
-      document.getElementById('clienteId').value = id;
-      document.getElementById('clienteNome').textContent = nome;
-      document.getElementById('clienteDetalhes').textContent = telefone + (email ? ' • ' + email : '');
-      document.getElementById('clienteContainer').style.display = 'none';
-      document.getElementById('clienteSelecionado').style.display = 'flex';
-      document.getElementById('clienteDropdown').classList.remove('active');
+    function selecionarDevedor(id, nome, telefone, email) {
+      devedorSelecionadoId = id;
+      document.getElementById('devedorId').value = id;
+      document.getElementById('devedorNome').textContent = nome;
+      document.getElementById('devedorDetalhes').textContent = telefone + (email ? ' • ' + email : '');
+      document.getElementById('devedorContainer').style.display = 'none';
+      document.getElementById('devedorSelecionado').style.display = 'flex';
+      document.getElementById('devedorDropdown').classList.remove('active');
     }
 
-    function removerCliente() {
-      clienteSelecionadoId = null;
-      document.getElementById('clienteId').value = '';
-      document.getElementById('clienteSearch').value = '';
-      document.getElementById('clienteContainer').style.display = 'block';
-      document.getElementById('clienteSelecionado').style.display = 'none';
+    function removerDevedor() {
+      devedorSelecionadoId = null;
+      document.getElementById('devedorId').value = '';
+      document.getElementById('devedorSearch').value = '';
+      document.getElementById('devedorContainer').style.display = 'block';
+      document.getElementById('devedorSelecionado').style.display = 'none';
     }
 
     function selecionarTipo(tipo) {
       document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
-      document.querySelector('.tipo-card[data-tipo="' + tipo + '"]').classList.add('selected');
+      document.querySelector(`.tipo-card[data-tipo="${tipo}"]`).classList.add('selected');
       document.getElementById('tipoAgendamento').value = tipo;
     }
 
     function selecionarPrioridade(prioridade) {
       document.querySelectorAll('.prioridade-option').forEach(o => o.classList.remove('selected'));
-      document.querySelector('.prioridade-option[data-prioridade="' + prioridade + '"]').classList.add('selected');
+      document.querySelector(`.prioridade-option[data-prioridade="${prioridade}"]`).classList.add('selected');
       document.getElementById('prioridadeAgendamento').value = prioridade;
     }
 
     document.getElementById('formAgendamento').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const clienteId = document.getElementById('clienteId').value;
+      
+      const devedorId = document.getElementById('devedorId').value;
       const tipo = document.getElementById('tipoAgendamento').value;
       const data = document.getElementById('dataAgendamento').value;
       const hora = document.getElementById('horaAgendamento').value;
       const prioridade = document.getElementById('prioridadeAgendamento').value;
       const descricao = document.getElementById('descricaoAgendamento').value;
 
-      if (!clienteId) { showToast('Selecione um cliente', 'error'); return; }
-      if (!tipo) { showToast('Selecione o tipo', 'error'); return; }
-      if (!data || !hora) { showToast('Preencha data e hora', 'error'); return; }
+      if (!devedorId) { alert('Selecione um devedor'); return; }
+      if (!tipo) { alert('Selecione o tipo'); return; }
+      if (!data || !hora) { alert('Preencha data e hora'); return; }
 
       const btn = document.getElementById('btnSalvar');
       btn.disabled = true;
@@ -264,14 +360,20 @@
         const res = await fetch(API + '/api/agendamentos', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ cliente_id: clienteId, tipo, data_agendamento: data + 'T' + hora + ':00', prioridade, descricao })
+          body: JSON.stringify({ 
+            cliente_id: devedorId, 
+            tipo, 
+            data_agendamento: data + 'T' + hora + ':00', 
+            prioridade, 
+            descricao 
+          })
         });
         const result = await res.json();
         if (!result.success) throw new Error(result.message || 'Erro');
-        showToast('Agendamento criado!', 'success');
-        setTimeout(() => window.location.href = '/agendamentos', 1500);
+        alert('Agendamento criado com sucesso!');
+        setTimeout(() => window.location.href = '/agendamentos', 500);
       } catch (err) {
-        showToast(err.message || 'Erro ao criar', 'error');
+        alert(err.message || 'Erro ao criar agendamento');
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-check"></i> Criar Agendamento';
       }
@@ -279,8 +381,11 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       await carregarUsuario();
-      await carregarClientes();
-      setupClienteSearch();
+      await carregarBadges();
+      await carregarDevedores();
+      setupDevedorSearch();
+      
+      // Data padrão: hoje
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('dataAgendamento').value = hoje;
       document.getElementById('dataAgendamento').min = hoje;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ACERTIVE • Clientes</title>
+  <title>ACERTIVE • Devedores</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -31,6 +31,8 @@
     .nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
     .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
     .nav-link i{width:20px;text-align:center;font-size:15px}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
+    .nav-badge:not(:empty){display:inline-block}
     .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
     .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
     .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
@@ -128,44 +130,69 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section"><div class="nav-section-title">Principal</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Cadastros</div>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link active"><i class="fas fa-users"></i> Devedores</a>
         <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-        <a href="/clientes" class="nav-link active"><i class="fas fa-users"></i> Clientes</a>
-        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-check"></i> Agendamentos</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Ações</div>
-        <a href="/nova-cobranca" class="nav-link"><i class="fas fa-plus-circle"></i> Nova Cobrança</a>
-        <a href="/novo-cliente" class="nav-link"><i class="fas fa-user-plus"></i> Novo Cliente</a>
-        <a href="/importar-cobrancas" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Negociação</div>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section"><div class="nav-section-title">Automação</div>
-        <a href="/lembretes" class="nav-link"><i class="fas fa-envelope"></i> Lembretes E-mail</a>
+      <div class="nav-section">
+        <div class="nav-section-title">Financeiro</div>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      <div class="nav-section" id="adminSection"><div class="nav-section-title">Administração</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Automação</div>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Administração</div>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
         <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link"><i class="fas fa-gear"></i> Configurações</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button></div></div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
   </aside>
 
   <div class="main-wrapper">
     <header class="header">
       <div class="header-left">
         <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-        <div class="breadcrumb">ACERTIVE / <span class="active">Clientes</span></div>
+        <div class="breadcrumb">ACERTIVE / <span class="active">Devedores</span></div>
       </div>
     </header>
     <main class="page-content">
       <div class="page-header">
         <div>
-          <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-users"></i></div> Clientes</h1>
-          <p class="page-subtitle">Gerencie sua base de clientes e consulte dívidas</p>
+          <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-users"></i></div> Devedores</h1>
+          <p class="page-subtitle">Gerencie sua base de devedores e consulte dívidas</p>
         </div>
         <div style="display:flex;gap:12px;">
           <button class="btn btn-secondary" id="btnExportar"><i class="fas fa-download"></i> Exportar</button>
-          <a href="/novo-cliente" class="btn btn-primary"><i class="fas fa-user-plus"></i> Novo Cliente</a>
+          <a href="/novo-cliente" class="btn btn-primary"><i class="fas fa-user-plus"></i> Novo Devedor</a>
         </div>
       </div>
       <div class="search-section">
@@ -177,15 +204,15 @@
       <div class="stats-row">
         <div class="stat-card"><div class="stat-icon" style="background:var(--green-bg);color:var(--green);"><i class="fas fa-user-check"></i></div><div><div class="stat-value" id="statAtivos">0</div><div class="stat-label">Em Dia</div></div></div>
         <div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red);"><i class="fas fa-user-xmark"></i></div><div><div class="stat-value" id="statInadimplentes">0</div><div class="stat-label">Devendo</div></div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-users"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Clientes</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="fas fa-users"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Devedores</div></div></div>
         <div class="stat-card"><div class="stat-icon" style="background:var(--gold-glow);color:var(--gold);"><i class="fas fa-coins"></i></div><div><div class="stat-value" id="statDivida">R$ 0</div><div class="stat-label">Dívida Total</div></div></div>
       </div>
       <div class="table-card">
         <div class="table-wrapper">
-          <table><thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Cobranças</th><th>Dívida</th><th>Situação</th><th>Ações</th></tr></thead>
+          <table><thead><tr><th>Devedor</th><th>Telefone</th><th>E-mail</th><th>Cobranças</th><th>Dívida</th><th>Situação</th><th>Ações</th></tr></thead>
           <tbody id="tbody"><tr><td colspan="7" class="loading-cell"><i class="fas fa-spinner fa-spin"></i><p style="margin-top:12px;color:var(--text-muted);">Carregando...</p></td></tr></tbody></table>
         </div>
-        <div class="table-footer"><span id="clientCount">0 clientes</span></div>
+        <div class="table-footer"><span id="clientCount">0 devedores</span></div>
       </div>
     </main>
   </div>
@@ -193,7 +220,7 @@
   <div class="modal-overlay" id="modalDetalhes">
     <div class="modal">
       <div class="modal-header">
-        <div class="modal-title"><div class="modal-avatar" id="modalAvatar">C</div><div><div class="modal-client-name" id="modalClientName">Cliente</div><div class="modal-client-cpf" id="modalClientCpf">CPF/CNPJ</div></div></div>
+        <div class="modal-title"><div class="modal-avatar" id="modalAvatar">D</div><div><div class="modal-client-name" id="modalClientName">Devedor</div><div class="modal-client-cpf" id="modalClientCpf">CPF/CNPJ</div></div></div>
         <button class="modal-close" onclick="fecharModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
@@ -205,7 +232,7 @@
           <button class="btn-action danger" onclick="confirmarExclusaoModal()"><i class="fas fa-trash"></i> Excluir</button>
         </div>
         <div class="cobrancas-section">
-          <h3><i class="fas fa-file-invoice-dollar"></i> Cobranças do Cliente</h3>
+          <h3><i class="fas fa-file-invoice-dollar"></i> Cobranças do Devedor</h3>
           <table class="cobrancas-table"><thead><tr><th>Vencimento</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead><tbody id="modalCobrancasBody"></tbody></table>
         </div>
       </div>
@@ -216,8 +243,8 @@
     <div class="modal modal-confirm">
       <div class="modal-body">
         <div class="confirm-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3>Excluir Cliente?</h3>
-        <p id="confirmMsg">Tem certeza que deseja excluir este cliente?</p>
+        <h3>Excluir Devedor?</h3>
+        <p id="confirmMsg">Tem certeza que deseja excluir este devedor?</p>
         <div class="confirm-actions">
           <button class="btn-cancel" onclick="fecharConfirmar()">Cancelar</button>
           <button class="btn-delete" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button>
@@ -252,7 +279,20 @@
           document.getElementById('userName').textContent = data.data.nome || 'Usuário';
           document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
           document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-          if (data.data.nivel !== 'admin') document.getElementById('adminSection').style.display = 'none';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function carregarBadges() {
+      try {
+        const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const badgeFila = document.getElementById('badgeFila');
+          if (badgeFila) {
+            const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
+            badgeFila.textContent = total > 0 ? total : '';
+          }
         }
       } catch (e) { console.error(e); }
     }
@@ -266,7 +306,6 @@
         if (q.length >= 2) url = API + '/api/clientes/buscar?q=' + encodeURIComponent(q);
         const res = await fetch(url, { headers: getHeaders() });
         const data = await res.json();
-        // Filtra duplicados por CPF/CNPJ
         const clientesMap = new Map();
         (data.data || []).forEach(c => {
           const key = (c.cpf_cnpj || '').replace(/\D/g, '') || c.id;
@@ -295,13 +334,13 @@
       document.getElementById('statInadimplentes').textContent = devendo;
       document.getElementById('statTotal').textContent = clientesData.length;
       document.getElementById('statDivida').textContent = fmtMoney(dividaTotal);
-      document.getElementById('clientCount').textContent = clientesData.length + ' cliente(s)';
+      document.getElementById('clientCount').textContent = clientesData.length + ' devedor(es)';
     }
 
     function renderizarTabela() {
       const tbody = document.getElementById('tbody');
       if (!clientesData.length) {
-        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-users-slash"></i><p>Nenhum cliente encontrado</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-users-slash"></i><p>Nenhum devedor encontrado</p></div></td></tr>';
         return;
       }
       tbody.innerHTML = clientesData.map(c => {
@@ -322,7 +361,7 @@
     }
 
     function abrirWhatsApp(tel) {
-      if (!tel) { showToast('Cliente sem telefone', 'error'); return; }
+      if (!tel) { showToast('Devedor sem telefone', 'error'); return; }
       let t = tel.replace(/\D/g, '');
       if (t.length === 10 || t.length === 11) t = '55' + t;
       window.open('https://wa.me/' + t, '_blank');
@@ -333,7 +372,7 @@
     function confirmarExclusao(id, nome, totalCobrancas) {
       clienteParaExcluir = id;
       let msg = `Tem certeza que deseja excluir <strong>${nome}</strong>?`;
-      if (totalCobrancas > 0) msg += `<br><br><span style="color:var(--red)">⚠️ Este cliente possui ${totalCobrancas} cobrança(s) que serão excluídas!</span>`;
+      if (totalCobrancas > 0) msg += `<br><br><span style="color:var(--red)">⚠️ Este devedor possui ${totalCobrancas} cobrança(s) que serão excluídas!</span>`;
       document.getElementById('confirmMsg').innerHTML = msg;
       document.getElementById('modalConfirmar').classList.add('active');
     }
@@ -349,7 +388,7 @@
       try {
         const res = await fetch(API + '/api/clientes/' + clienteParaExcluir, { method: 'DELETE', headers: getHeaders() });
         const data = await res.json();
-        if (data.success) { showToast('Cliente excluído!', 'success'); fecharConfirmar(); fecharModal(); buscarClientes(); }
+        if (data.success) { showToast('Devedor excluído!', 'success'); fecharConfirmar(); fecharModal(); buscarClientes(); }
         else showToast(data.message || 'Erro ao excluir', 'error');
       } catch (e) { console.error(e); showToast('Erro ao excluir', 'error'); }
     }
@@ -362,7 +401,7 @@
           clienteAtual = data.data.cliente;
           cobrancasCliente = data.data.cobrancas || [];
           const stats = data.data.estatisticas;
-          document.getElementById('modalAvatar').textContent = (clienteAtual.nome || 'C').charAt(0).toUpperCase();
+          document.getElementById('modalAvatar').textContent = (clienteAtual.nome || 'D').charAt(0).toUpperCase();
           document.getElementById('modalClientName').textContent = clienteAtual.nome;
           document.getElementById('modalClientCpf').textContent = clienteAtual.cpf_cnpj || 'CPF/CNPJ não informado';
           document.getElementById('modalStats').innerHTML = `
@@ -390,7 +429,7 @@
         let t = clienteAtual.telefone.replace(/\D/g, '');
         if (t.length === 10 || t.length === 11) t = '55' + t;
         window.open('https://wa.me/' + t, '_blank');
-      } else showToast('Cliente sem telefone', 'error');
+      } else showToast('Devedor sem telefone', 'error');
     }
 
     document.getElementById('btnExportar').onclick = async () => {
@@ -400,9 +439,9 @@
         const blob = await res.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'clientes_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.download = 'devedores_' + new Date().toISOString().slice(0,10) + '.csv';
         a.click();
-        showToast('Exportado!');
+        showToast('Exportado!', 'success');
       } catch (e) { showToast('Erro ao exportar', 'error'); }
     };
 
@@ -411,6 +450,7 @@
     document.getElementById('modalConfirmar').onclick = e => { if (e.target.id === 'modalConfirmar') fecharConfirmar(); };
 
     carregarUsuario();
+    carregarBadges();
     buscarClientes();
   </script>
 </body>
