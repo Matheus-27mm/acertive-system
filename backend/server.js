@@ -3890,6 +3890,32 @@ app.post('/api/importar-cobrancas-massa', auth, async (req, res) => {
 });
 
 console.log('[IMPORTAÇÃO] ✅ Rota de importação em massa carregada');
+// GET /api/importacao/status - Verificar status da base
+app.get('/api/importacao/status', auth, async (req, res) => {
+  try {
+    const clientes = await pool.query('SELECT COUNT(*)::int as total FROM clientes');
+    const cobrancas = await pool.query('SELECT COUNT(*)::int as total FROM cobrancas');
+    const cobrancasAtivas = await pool.query("SELECT COUNT(*)::int as total FROM cobrancas WHERE status != 'arquivado'");
+    
+    const valorTotal = await pool.query(`
+      SELECT COALESCE(SUM(valor_atualizado), 0)::numeric as total 
+      FROM cobrancas 
+      WHERE status IN ('pendente', 'vencido')
+    `);
+    
+    res.json({
+      success: true,
+      data: {
+        clientes: clientes.rows[0].total,
+        cobrancas: cobrancas.rows[0].total,
+        cobrancasAtivas: cobrancasAtivas.rows[0].total,
+        valorPendente: parseFloat(valorTotal.rows[0].total) || 0
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 // =====================
 // 404
 // =====================
