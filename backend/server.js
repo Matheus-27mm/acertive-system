@@ -3936,7 +3936,7 @@ const ASAAS_CONFIG = {
   }
 };
 
-const ASAAS_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox';
+const ASAAS_ENV = process.env.NODE_ENV ='sandbox';
 const ASAAS_BASE_URL = ASAAS_CONFIG[ASAAS_ENV].baseUrl;
 const ASAAS_API_KEY = ASAAS_CONFIG[ASAAS_ENV].apiKey;
 
