@@ -1087,7 +1087,157 @@ ${r.status === 'pendente' ? '<div class="aviso" style="background:#fff8e1;border
     return res.status(500).json({ success: false, message: "Erro ao gerar PDF.", error: err.message });
   }
 });
+// =====================================================
+// ROTA: LISTAR TODOS OS CLIENTES (DEVEDORES)
+// ADICIONE ESTA ROTA ANTES DO app.post("/api/clientes")
+// =====================================================
+app.get("/api/clientes", auth, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = '', status = '', credor_id = '' } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
 
+    let whereConditions = [];
+    let params = [];
+    let paramIndex = 1;
+
+    // Filtro de busca (nome, cpf_cnpj, telefone, email)
+    if (search) {
+      const searchLimpo = search.replace(/[.\-\/]/g, "");
+      whereConditions.push(`(
+        LOWER(c.nome) LIKE LOWER($${paramIndex})
+        OR REPLACE(REPLACE(REPLACE(c.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE $${paramIndex + 1}
+        OR c.telefone LIKE $${paramIndex}
+        OR LOWER(c.email) LIKE LOWER($${paramIndex})
+      )`);
+      params.push(`%${search}%`, `%${searchLimpo}%`);
+      paramIndex += 2;
+    }
+
+    // Filtro de status
+    if (status) {
+      whereConditions.push(`c.status = $${paramIndex}`);
+      params.push(status);
+      paramIndex++;
+    }
+
+    // Filtro de credor (se tiver relação)
+    if (credor_id) {
+      whereConditions.push(`EXISTS (SELECT 1 FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.credor_id = $${paramIndex})`);
+      params.push(credor_id);
+      paramIndex++;
+    }
+
+    const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+
+    // Query principal
+    const query = `
+      SELECT 
+        c.id,
+        c.nome,
+        c.cpf_cnpj,
+        c.telefone,
+        c.celular,
+        c.email,
+        c.endereco,
+        c.cidade,
+        c.estado,
+        c.cep,
+        c.status,
+        c.status_cliente,
+        c.observacoes,
+        c.created_at,
+        c.updated_at,
+        COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS divida_total,
+        COUNT(cob.id)::int AS total_cobrancas,
+        MAX(cob.updated_at) AS ultima_acao
+      FROM clientes c
+      LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
+      ${whereClause}
+      GROUP BY c.id
+      ORDER BY c.nome ASC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    params.push(parseInt(limit), offset);
+
+    const resultado = await pool.query(query, params);
+
+    // Contar total para paginação
+    const countQuery = `
+      SELECT COUNT(DISTINCT c.id) as total
+      FROM clientes c
+      ${whereClause}
+    `;
+    const countParams = params.slice(0, -2); // Remove limit e offset
+    const countResult = await pool.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Estatísticas gerais
+    const statsQuery = `
+      SELECT 
+        COUNT(DISTINCT c.id)::int AS total,
+        COUNT(DISTINCT CASE WHEN c.status = 'ativo' THEN c.id END)::int AS ativos,
+        COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS "totalDivida",
+        COUNT(DISTINCT CASE WHEN EXISTS (SELECT 1 FROM acordos a WHERE a.cliente_id = c.id AND a.status = 'ativo') THEN c.id END)::int AS "comAcordo"
+      FROM clientes c
+      LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
+    `;
+    const statsResult = await pool.query(statsQuery);
+
+    return res.json({
+      success: true,
+      data: resultado.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      },
+      stats: statsResult.rows[0]
+    });
+
+  } catch (err) {
+    console.error("[GET /api/clientes] erro:", err.message);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Erro ao listar clientes.", 
+      error: err.message 
+    });
+  }
+});
+
+// =====================================================
+// ROTA: OBTER UM CLIENTE POR ID
+// =====================================================
+app.get("/api/clientes/:id", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const resultado = await pool.query(`
+      SELECT 
+        c.*,
+        COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS divida_total
+      FROM clientes c
+      LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
+      WHERE c.id = $1
+      GROUP BY c.id
+    `, [id]);
+
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Cliente não encontrado." });
+    }
+
+    return res.json({ success: true, data: resultado.rows[0] });
+
+  } catch (err) {
+    console.error("[GET /api/clientes/:id] erro:", err.message);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Erro ao buscar cliente.", 
+      error: err.message 
+    });
+  }
+});
 // =====================================================
 // CLIENTES - POST
 // =====================================================
