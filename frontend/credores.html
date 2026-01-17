@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ACERTIVE • Credores</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
@@ -17,6 +17,7 @@
       --text-muted: #71717a;
       --gold: #d4a853;
       --gold-light: #e8c068;
+      --gold-dark: #b8923f;
       --gold-glow: rgba(212, 168, 83, 0.15);
       --border: rgba(255, 255, 255, 0.06);
       --border-gold: rgba(212, 168, 83, 0.3);
@@ -33,7 +34,7 @@
       --sidebar-width: 260px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 
     /* SIDEBAR */
     .sidebar {
@@ -49,6 +50,7 @@
       width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light));
       border-radius: 10px; display: flex; align-items: center; justify-content: center;
       font-weight: 900; font-size: 18px; color: var(--bg-primary);
+      box-shadow: 0 4px 15px rgba(212, 168, 83, 0.3);
     }
     .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
     .logo-text span { color: var(--gold); }
@@ -61,9 +63,13 @@
     .nav-link {
       display: flex; align-items: center; gap: 12px; padding: 10px 12px;
       color: var(--text-secondary); text-decoration: none; border-radius: 8px;
-      font-weight: 500; font-size: 13px; transition: all 0.15s; margin-bottom: 2px;
+      font-weight: 500; font-size: 13px; transition: all 0.2s; margin-bottom: 2px;
     }
-    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-link:hover { 
+      background: rgba(255,255,255,0.04); 
+      color: var(--text-primary); 
+      transform: translateX(4px);
+    }
     .nav-link.active {
       background: var(--gold-glow); color: var(--gold);
       border-left: 3px solid var(--gold); margin-left: -3px; padding-left: 15px;
@@ -75,20 +81,22 @@
       background: rgba(255,255,255,0.02); border-radius: 8px;
     }
     .user-avatar {
-      width: 36px; height: 36px; background: var(--gold-glow); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px; color: var(--gold);
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: var(--bg-primary);
+      box-shadow: 0 2px 8px rgba(212, 168, 83, 0.3);
     }
     .user-details { flex: 1; }
     .user-name { font-weight: 600; font-size: 13px; }
-    .user-role { font-size: 11px; color: var(--text-muted); }
-    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; }
+    .user-role { font-size: 11px; color: var(--gold); }
+    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
     .btn-logout:hover { background: var(--red-bg); color: var(--red); }
 
     /* MAIN */
     .main { margin-left: var(--sidebar-width); min-height: 100vh; }
     .header {
-      height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+      height: 64px; background: rgba(17, 17, 19, 0.8); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
       position: sticky; top: 0; z-index: 50;
     }
@@ -102,22 +110,36 @@
     .btn {
       display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
       border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
-      border: none; transition: all 0.15s; text-decoration: none;
+      border: none; transition: all 0.2s; text-decoration: none;
     }
-    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.3); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
+      color: var(--bg-primary); 
+      box-shadow: 0 2px 8px rgba(212, 168, 83, 0.25);
+    }
+    .btn-primary:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(212,168,83,0.4); 
+    }
     .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--gold-glow); border-color: var(--border-gold); color: var(--gold); }
+    .btn-secondary:hover { 
+      background: var(--gold-glow); 
+      border-color: var(--border-gold); 
+      color: var(--gold); 
+      transform: translateY(-1px);
+    }
     .btn-sm { padding: 6px 12px; font-size: 12px; }
     .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
     .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid transparent; }
     .btn-danger:hover { border-color: var(--red); background: var(--red); color: white; }
+    .btn-success { background: var(--green-bg); color: var(--green); border: 1px solid transparent; }
+    .btn-success:hover { border-color: var(--green); background: var(--green); color: white; }
 
     /* BULK ACTIONS */
     .bulk-actions {
       display: none; align-items: center; gap: 12px; padding: 12px 16px;
       background: var(--red-bg); border: 1px solid var(--red); border-radius: 8px;
-      margin-bottom: 16px; animation: slideIn 0.2s ease;
+      margin-bottom: 16px; animation: slideIn 0.3s ease;
     }
     .bulk-actions.show { display: flex; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -128,15 +150,31 @@
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 20px; transition: all 0.2s;
+      padding: 20px; transition: all 0.3s; position: relative; overflow: hidden;
     }
-    .stat-card:hover { border-color: var(--border-gold); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .stat-card:hover { 
+      border-color: var(--border-gold); 
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .stat-card:hover::before { opacity: 1; }
     .stat-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px;
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px;
     }
-    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-    .stat-value { font-size: 24px; font-weight: 800; }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
 
     /* FILTERS */
     .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
@@ -144,13 +182,14 @@
     .search-box input {
       width: 100%; padding: 10px 12px 10px 40px; background: var(--bg-card);
       border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text-primary); font-size: 13px;
+      color: var(--text-primary); font-size: 13px; transition: all 0.2s;
     }
-    .search-box input:focus { outline: none; border-color: var(--gold); }
+    .search-box input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1); }
     .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
     .filter-select {
       padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 8px; color: var(--text-primary); font-size: 13px; min-width: 150px;
+      transition: all 0.2s;
     }
     .filter-select:focus { outline: none; border-color: var(--gold); }
 
@@ -167,7 +206,8 @@
     th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     td { padding: 16px; border-bottom: 1px solid var(--border); }
     tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.02); }
+    tr { transition: all 0.2s; }
+    tr:hover { background: rgba(212, 168, 83, 0.05); }
     tr.selected { background: var(--gold-glow); }
 
     /* CHECKBOX */
@@ -175,7 +215,7 @@
     .checkbox {
       width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
       background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
     .checkbox:hover { border-color: var(--gold); }
     .checkbox.checked { background: var(--gold); border-color: var(--gold); }
@@ -183,31 +223,59 @@
 
     .credor-info { display: flex; align-items: center; gap: 12px; }
     .credor-avatar {
-      width: 40px; height: 40px; border-radius: 10px; background: var(--gold-glow);
+      width: 44px; height: 44px; border-radius: 10px; 
+      background: linear-gradient(135deg, var(--gold-glow), rgba(212, 168, 83, 0.25));
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px; color: var(--gold);
+      font-weight: 700; font-size: 15px; color: var(--gold);
+      border: 1px solid var(--border-gold);
+      transition: all 0.2s;
+    }
+    tr:hover .credor-avatar {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--bg-primary);
     }
     .credor-nome { font-weight: 600; font-size: 14px; }
     .credor-cnpj { font-size: 11px; color: var(--text-muted); }
 
     .status-badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
-      border-radius: 6px; font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border-radius: 20px; font-size: 11px; font-weight: 600;
     }
     .status-badge.ativo { background: var(--green-bg); color: var(--green); }
     .status-badge.inativo { background: var(--red-bg); color: var(--red); }
     .status-badge.suspenso { background: var(--orange-bg); color: var(--orange); }
-    .comissao-badge { background: var(--purple-bg); color: var(--purple); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-    .progress-bar { width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; border-radius: 3px; }
+    
+    .comissao-badge { 
+      background: linear-gradient(135deg, var(--purple-bg), rgba(139, 92, 246, 0.2)); 
+      color: var(--purple); 
+      padding: 5px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 700; 
+    }
+    
+    .valor-repassar {
+      background: linear-gradient(135deg, var(--orange-bg), rgba(245, 158, 11, 0.2));
+      color: var(--orange);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    
+    .progress-container { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .progress-text { font-size: 13px; font-weight: 700; min-width: 40px; }
+    
     .actions { display: flex; gap: 6px; }
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: var(--gold); }
     .empty-state p { font-size: 14px; margin-bottom: 20px; }
 
     /* MODAL */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
       z-index: 1000; display: none; align-items: center; justify-content: center;
     }
     .modal-overlay.show { display: flex; }
@@ -215,6 +283,11 @@
       background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
       width: 90%; max-width: 700px; max-height: 90vh; overflow: hidden;
       display: flex; flex-direction: column;
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal.modal-sm { max-width: 450px; }
     .modal-header {
@@ -224,8 +297,8 @@
     .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .modal-title i { color: var(--gold); }
     .modal-title.danger i { color: var(--red); }
-    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; }
-    .modal-close:hover { color: var(--red); }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; transition: all 0.2s; }
+    .modal-close:hover { color: var(--red); transform: rotate(90deg); }
     .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
     .modal-footer {
       padding: 16px 24px; border-top: 1px solid var(--border);
@@ -242,9 +315,13 @@
     .form-input, .form-select, .form-textarea {
       width: 100%; padding: 10px 14px; background: var(--bg-primary);
       border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text-primary); font-size: 13px; transition: border-color 0.15s;
+      color: var(--text-primary); font-size: 13px; transition: all 0.2s;
     }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--gold); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { 
+      outline: none; 
+      border-color: var(--gold); 
+      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+    }
     .form-textarea { min-height: 80px; resize: vertical; }
     .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
     .form-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
@@ -256,10 +333,10 @@
     .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-primary); padding: 4px; border-radius: 10px; }
     .tab {
       flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
-      border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+      border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: all 0.2s;
     }
     .tab:hover { color: var(--text-primary); }
-    .tab.active { background: var(--gold); color: var(--bg-primary); }
+    .tab.active { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
     .tab-content-credor { display: none; }
     .tab-content-credor.active { display: block; }
 
@@ -275,6 +352,7 @@
     .delete-item-avatar { width: 32px; height: 32px; background: var(--gold-glow); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold); }
     .delete-item-name { font-size: 13px; font-weight: 600; }
 
+    /* Responsividade */
     @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 768px) {
       .sidebar { display: none; }
@@ -312,6 +390,7 @@
       </div>
       <div class="nav-section">
         <div class="nav-title">Financeiro</div>
+        <a href="/financeiro" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
         <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
         <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
         <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
@@ -418,6 +497,7 @@
               <th>Comissão</th>
               <th>Carteira</th>
               <th>Recuperação</th>
+              <th>A Repassar</th>
               <th>Status</th>
               <th>Ações</th>
             </tr>
@@ -523,7 +603,7 @@
             <div class="form-group">
               <label class="form-label">Percentual de Comissão (%)</label>
               <input type="number" class="form-input" id="credorComissao" value="10" min="0" max="100" step="0.5">
-              <div class="form-hint">Percentual sobre o valor recuperado</div>
+              <div class="form-hint">Percentual sobre o valor recuperado que fica com a empresa de cobrança</div>
             </div>
           </div>
         </div>
@@ -627,11 +707,18 @@
     if (!token) window.location.href = '/login';
 
     let credores = [];
+    let credoresOriginal = []; // Para manter a lista original ao filtrar
     let selectedIds = [];
     let deleteIds = [];
 
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
-    function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    
+    function fmtMoney(v) { 
+      const valor = parseFloat(v);
+      if (isNaN(valor)) return 'R$ 0,00';
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor); 
+    }
+    
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
 
     // =====================================================
@@ -643,7 +730,8 @@
         const data = await res.json();
         
         if (data.success) {
-          credores = data.data || [];
+          credoresOriginal = data.data || [];
+          credores = [...credoresOriginal];
           renderizarCredores();
           atualizarStats();
         }
@@ -669,8 +757,21 @@
       tbody.innerHTML = credores.map(c => {
         const iniciais = (c.nome || 'CR').substring(0, 2).toUpperCase();
         const isSelected = selectedIds.includes(c.id);
-        const recuperacao = c.total_carteira > 0 ? ((c.total_recuperado || 0) / c.total_carteira * 100).toFixed(0) : 0;
+        
+        // Cálculo seguro de recuperação
+        const totalCarteira = parseFloat(c.total_carteira) || 0;
+        const totalRecuperado = parseFloat(c.total_recuperado) || 0;
+        const recuperacao = totalCarteira > 0 ? ((totalRecuperado / totalCarteira) * 100) : 0;
+        const recuperacaoFormatada = recuperacao.toFixed(0);
         const corRecuperacao = recuperacao >= 20 ? 'var(--green)' : recuperacao >= 10 ? 'var(--orange)' : 'var(--red)';
+        
+        // Cálculo do valor a repassar (recuperado - comissão)
+        const comissao = parseFloat(c.comissao_percentual) || 10;
+        const valorComissao = totalRecuperado * (comissao / 100);
+        const valorRepassar = totalRecuperado - valorComissao;
+        
+        // Total de cobranças
+        const totalCobrancas = parseInt(c.total_cobrancas) || 0;
         
         return `
           <tr class="${isSelected ? 'selected' : ''}" data-id="${c.id}">
@@ -689,19 +790,25 @@
               </div>
             </td>
             <td>
-              <div style="font-size:13px;">${c.contato_nome || '-'}</div>
+              <div style="font-size:13px;font-weight:500;">${c.contato_nome || '-'}</div>
               <div style="font-size:11px;color:var(--text-muted);">${c.telefone || '-'}</div>
             </td>
-            <td><span class="comissao-badge">${c.comissao_percentual || 10}%</span></td>
+            <td><span class="comissao-badge">${comissao}%</span></td>
             <td>
-              <div style="font-weight:600;">${fmtMoney(c.total_carteira || 0)}</div>
-              <div style="font-size:11px;color:var(--text-muted);">${c.total_cobrancas || 0} cobranças</div>
+              <div style="font-weight:700;font-size:14px;">${fmtMoney(totalCarteira)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${totalCobrancas} cobrança${totalCobrancas !== 1 ? 's' : ''}</div>
             </td>
             <td>
-              <div style="font-weight:600;color:${corRecuperacao};">${recuperacao}%</div>
-              <div class="progress-bar">
-                <div class="progress-bar-fill" style="width:${Math.min(recuperacao, 100)}%;background:${corRecuperacao};"></div>
+              <div class="progress-container">
+                <span class="progress-text" style="color:${corRecuperacao};">${recuperacaoFormatada}%</span>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:${Math.min(recuperacao, 100)}%;background:${corRecuperacao};"></div>
+                </div>
               </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${fmtMoney(totalRecuperado)}</div>
+            </td>
+            <td>
+              <span class="valor-repassar">${fmtMoney(valorRepassar)}</span>
             </td>
             <td>
               <span class="status-badge ${c.status || 'ativo'}">
@@ -711,7 +818,7 @@
             <td>
               <div class="actions">
                 <button class="btn btn-secondary btn-sm btn-icon" title="Editar" onclick="editarCredor('${c.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-secondary btn-sm btn-icon" title="Ver Cobranças" onclick="verCobrancas('${c.id}')"><i class="fas fa-file-invoice"></i></button>
+                <button class="btn btn-success btn-sm btn-icon" title="Ver Cobranças" onclick="verCobrancas('${c.id}')"><i class="fas fa-file-invoice"></i></button>
                 <button class="btn btn-danger btn-sm btn-icon" title="Excluir" onclick="confirmarExclusao('${c.id}')"><i class="fas fa-trash"></i></button>
               </div>
             </td>
@@ -721,10 +828,12 @@
     }
 
     function atualizarStats() {
-      const total = credores.length;
-      const ativos = credores.filter(c => c.status === 'ativo' || !c.status).length;
-      const carteira = credores.reduce((sum, c) => sum + (c.total_carteira || 0), 0);
-      const recuperado = credores.reduce((sum, c) => sum + (c.total_recuperado || 0), 0);
+      const total = credoresOriginal.length;
+      const ativos = credoresOriginal.filter(c => c.status === 'ativo' || !c.status).length;
+      
+      // Cálculos seguros
+      const carteira = credoresOriginal.reduce((sum, c) => sum + (parseFloat(c.total_carteira) || 0), 0);
+      const recuperado = credoresOriginal.reduce((sum, c) => sum + (parseFloat(c.total_recuperado) || 0), 0);
       
       document.getElementById('totalCredores').textContent = total;
       document.getElementById('credoresAtivos').textContent = ativos;
@@ -797,7 +906,7 @@
 
     function mostrarModalExclusao() {
       const lista = document.getElementById('deleteItemsList');
-      const itens = credores.filter(c => deleteIds.includes(c.id));
+      const itens = credoresOriginal.filter(c => deleteIds.includes(c.id));
       
       lista.innerHTML = itens.map(c => {
         const iniciais = (c.nome || 'CR').substring(0, 2).toUpperCase();
@@ -840,11 +949,14 @@
       document.getElementById('modalCredorTitulo').textContent = 'Novo Credor';
       document.getElementById('credorId').value = '';
       limparFormulario();
+      // Resetar tabs
+      document.querySelectorAll('.tabs .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+      document.querySelectorAll('.tab-content-credor').forEach((t, i) => t.classList.toggle('active', i === 0));
       document.getElementById('modalCredor').classList.add('show');
     }
 
     async function editarCredor(id) {
-      const credor = credores.find(c => c.id === id);
+      const credor = credoresOriginal.find(c => c.id === id);
       if (!credor) return;
       
       document.getElementById('modalCredorTitulo').textContent = 'Editar Credor';
@@ -864,6 +976,15 @@
       document.getElementById('parcelasMax').value = credor.parcelas_maximas || 12;
       document.getElementById('jurosParcelamento').value = credor.juros_parcelamento || 1;
       document.getElementById('entradaMinima').value = credor.entrada_minima || 0;
+      document.getElementById('credorBanco').value = credor.banco || '';
+      document.getElementById('credorPix').value = credor.pix || '';
+      document.getElementById('credorAgencia').value = credor.agencia || '';
+      document.getElementById('credorConta').value = credor.conta || '';
+      document.getElementById('credorTipoConta').value = credor.tipo_conta || 'corrente';
+      
+      // Resetar tabs
+      document.querySelectorAll('.tabs .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+      document.querySelectorAll('.tab-content-credor').forEach((t, i) => t.classList.toggle('active', i === 0));
       
       document.getElementById('modalCredor').classList.add('show');
     }
@@ -883,6 +1004,11 @@
       document.getElementById('parcelasMax').value = 12;
       document.getElementById('jurosParcelamento').value = 1;
       document.getElementById('entradaMinima').value = 0;
+      document.getElementById('credorBanco').value = '';
+      document.getElementById('credorPix').value = '';
+      document.getElementById('credorAgencia').value = '';
+      document.getElementById('credorConta').value = '';
+      document.getElementById('credorTipoConta').value = 'corrente';
     }
 
     async function salvarCredor() {
@@ -908,7 +1034,12 @@
         desconto_maximo: parseFloat(document.getElementById('descontoMax').value) || 30,
         parcelas_maximas: parseInt(document.getElementById('parcelasMax').value) || 12,
         juros_parcelamento: parseFloat(document.getElementById('jurosParcelamento').value) || 1,
-        entrada_minima: parseFloat(document.getElementById('entradaMinima').value) || 0
+        entrada_minima: parseFloat(document.getElementById('entradaMinima').value) || 0,
+        banco: document.getElementById('credorBanco').value.trim(),
+        pix: document.getElementById('credorPix').value.trim(),
+        agencia: document.getElementById('credorAgencia').value.trim(),
+        conta: document.getElementById('credorConta').value.trim(),
+        tipo_conta: document.getElementById('credorTipoConta').value
       };
       
       try {
@@ -953,25 +1084,35 @@
     function filtrarCredores() {
       const busca = document.getElementById('searchCredor').value.toLowerCase();
       const status = document.getElementById('filterStatus').value;
+      const ordem = document.getElementById('filterOrdem').value;
       
-      let filtrados = credores;
+      // Começar com a lista original
+      let filtrados = [...credoresOriginal];
       
+      // Filtrar por busca
       if (busca) {
         filtrados = filtrados.filter(c => 
           (c.nome || '').toLowerCase().includes(busca) ||
-          (c.cnpj || '').includes(busca)
+          (c.cnpj || '').includes(busca) ||
+          (c.contato_nome || '').toLowerCase().includes(busca)
         );
       }
       
+      // Filtrar por status
       if (status) {
-        filtrados = filtrados.filter(c => c.status === status);
+        filtrados = filtrados.filter(c => (c.status || 'ativo') === status);
       }
       
-      // Temporário: atualiza a lista
-      const ordem = document.getElementById('filterOrdem').value;
-      if (ordem === 'carteira') filtrados.sort((a, b) => (b.total_carteira || 0) - (a.total_carteira || 0));
-      else if (ordem === 'recuperacao') filtrados.sort((a, b) => (b.total_recuperado || 0) - (a.total_recuperado || 0));
-      else filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      // Ordenar
+      if (ordem === 'carteira') {
+        filtrados.sort((a, b) => (parseFloat(b.total_carteira) || 0) - (parseFloat(a.total_carteira) || 0));
+      } else if (ordem === 'recuperacao') {
+        filtrados.sort((a, b) => (parseFloat(b.total_recuperado) || 0) - (parseFloat(a.total_recuperado) || 0));
+      } else if (ordem === 'recente') {
+        filtrados.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      } else {
+        filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      }
       
       credores = filtrados;
       renderizarCredores();
@@ -982,8 +1123,26 @@
     }
 
     function exportarCredores() {
-      alert('Exportando credores para Excel...');
-      // Implementar exportação
+      // Criar CSV
+      const headers = ['Nome', 'CNPJ', 'Telefone', 'Email', 'Status', 'Comissão', 'Carteira', 'Recuperado'];
+      const rows = credoresOriginal.map(c => [
+        c.nome || '',
+        c.cnpj || '',
+        c.telefone || '',
+        c.email || '',
+        c.status || 'ativo',
+        (c.comissao_percentual || 10) + '%',
+        fmtMoney(c.total_carteira || 0),
+        fmtMoney(c.total_recuperado || 0)
+      ]);
+      
+      const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'credores_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.click();
     }
 
     async function carregarUsuario() {
@@ -997,6 +1156,15 @@
         }
       } catch (e) { console.error(e); }
     }
+
+    // Fechar modal ao clicar fora
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.remove('show');
+        }
+      });
+    });
 
     // Inicialização
     carregarUsuario();
