@@ -4832,6 +4832,237 @@ app.post("/api/asaas/cobrancas/gerar-massa", auth, async (req, res) => {
 
 console.log('[ASAAS] ✅ Rotas de integração Asaas carregadas');
 console.log('[ASAAS] 📍 Webhook URL: /api/asaas/webhook');
+// =====================================================
+// ROTAS ADICIONAIS PARA FINANCEIRO.HTML
+// Cole ANTES da linha: app.use((req, res) => res.status(404)...)
+// =====================================================
+
+// =====================================================
+// ROTA: ESTATÍSTICAS PARA O DASHBOARD FINANCEIRO
+// =====================================================
+app.get("/api/financeiro/estatisticas", auth, async (req, res) => {
+  try {
+    const hoje = new Date();
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0];
+
+    // Recebido no mês (de cobrancas)
+    const recebido = await pool.query(`
+      SELECT 
+        COALESCE(SUM(valor_pago), 0)::numeric as total,
+        COUNT(*)::int as quantidade
+      FROM cobrancas 
+      WHERE status = 'pago' 
+        AND data_pagamento >= $1 
+        AND data_pagamento <= $2
+    `, [primeiroDiaMes, ultimoDiaMes]);
+
+    // A receber (pendentes não vencidos)
+    const aReceber = await pool.query(`
+      SELECT 
+        COALESCE(SUM(valor_atualizado), 0)::numeric as total,
+        COUNT(*)::int as quantidade
+      FROM cobrancas 
+      WHERE status = 'pendente' 
+        AND data_vencimento >= CURRENT_DATE
+    `);
+
+    // Vencidos
+    const vencidos = await pool.query(`
+      SELECT 
+        COALESCE(SUM(valor_atualizado), 0)::numeric as total,
+        COUNT(*)::int as quantidade
+      FROM cobrancas 
+      WHERE status IN ('pendente', 'vencido') 
+        AND data_vencimento < CURRENT_DATE
+    `);
+
+    // Comissões do mês
+    const comissoes = await pool.query(`
+      SELECT 
+        COALESCE(SUM(c.valor_pago * COALESCE(cr.comissao, cr.comissao_percentual, 0) / 100), 0)::numeric as total,
+        COUNT(DISTINCT c.credor_id)::int as qtd_credores
+      FROM cobrancas c
+      LEFT JOIN credores cr ON cr.id = c.credor_id
+      WHERE c.status = 'pago' 
+        AND c.data_pagamento >= $1 
+        AND c.data_pagamento <= $2
+    `, [primeiroDiaMes, ultimoDiaMes]);
+
+    res.json({
+      success: true,
+      data: {
+        recebido_mes: parseFloat(recebido.rows[0].total) || 0,
+        qtd_recebido: parseInt(recebido.rows[0].quantidade) || 0,
+        a_receber: parseFloat(aReceber.rows[0].total) || 0,
+        qtd_a_receber: parseInt(aReceber.rows[0].quantidade) || 0,
+        vencido: parseFloat(vencidos.rows[0].total) || 0,
+        qtd_vencido: parseInt(vencidos.rows[0].quantidade) || 0,
+        comissoes_mes: parseFloat(comissoes.rows[0].total) || 0,
+        qtd_credores: parseInt(comissoes.rows[0].qtd_credores) || 0
+      }
+    });
+
+  } catch (err) {
+    console.error("[GET /api/financeiro/estatisticas] erro:", err.message);
+    res.status(500).json({ success: false, message: "Erro ao buscar estatísticas", error: err.message });
+  }
+});
+
+// =====================================================
+// ROTA: MOVIMENTAÇÕES FINANCEIRAS (COBRANÇAS)
+// =====================================================
+app.get("/api/financeiro/movimentacoes", auth, async (req, res) => {
+  try {
+    const { status, credor_id, data_inicio, data_fim, limit = 50 } = req.query;
+
+    let whereConditions = [];
+    let params = [];
+    let paramIndex = 1;
+
+    if (status) {
+      if (status === 'vencido') {
+        whereConditions.push(`(c.status IN ('pendente', 'vencido') AND c.data_vencimento < CURRENT_DATE)`);
+      } else {
+        whereConditions.push(`c.status = $${paramIndex}`);
+        params.push(status);
+        paramIndex++;
+      }
+    }
+
+    if (credor_id) {
+      whereConditions.push(`c.credor_id = $${paramIndex}`);
+      params.push(credor_id);
+      paramIndex++;
+    }
+
+    if (data_inicio) {
+      whereConditions.push(`c.data_vencimento >= $${paramIndex}`);
+      params.push(data_inicio);
+      paramIndex++;
+    }
+
+    if (data_fim) {
+      whereConditions.push(`c.data_vencimento <= $${paramIndex}`);
+      params.push(data_fim);
+      paramIndex++;
+    }
+
+    const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+
+    const query = `
+      SELECT 
+        c.id,
+        c.descricao,
+        c.valor,
+        c.valor_atualizado,
+        c.valor_pago,
+        c.data_vencimento,
+        c.data_pagamento,
+        c.status,
+        c.forma_pagamento,
+        cl.nome as cliente_nome,
+        cl.cpf_cnpj as cliente_cpf,
+        cr.nome as credor_nome
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      LEFT JOIN credores cr ON cr.id = c.credor_id
+      ${whereClause}
+      ORDER BY 
+        CASE WHEN c.status = 'pago' THEN c.data_pagamento ELSE c.data_vencimento END DESC
+      LIMIT $${paramIndex}
+    `;
+
+    params.push(parseInt(limit));
+
+    const result = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (err) {
+    console.error("[GET /api/financeiro/movimentacoes] erro:", err.message);
+    res.status(500).json({ success: false, message: "Erro ao buscar movimentações", error: err.message });
+  }
+});
+
+// =====================================================
+// ROTA: ÚLTIMOS PAGAMENTOS RECEBIDOS
+// =====================================================
+app.get("/api/financeiro/ultimos-pagamentos", auth, async (req, res) => {
+  try {
+    const { limit = 5 } = req.query;
+
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.valor_pago,
+        c.valor,
+        c.data_pagamento,
+        c.forma_pagamento,
+        cl.nome as cliente_nome
+      FROM cobrancas c
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id
+      WHERE c.status = 'pago' AND c.data_pagamento IS NOT NULL
+      ORDER BY c.data_pagamento DESC
+      LIMIT $1
+    `, [parseInt(limit)]);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (err) {
+    console.error("[GET /api/financeiro/ultimos-pagamentos] erro:", err.message);
+    res.status(500).json({ success: false, message: "Erro ao buscar últimos pagamentos", error: err.message });
+  }
+});
+
+// =====================================================
+// ROTA: REGISTRAR PAGAMENTO MANUAL EM COBRANÇA
+// =====================================================
+app.post("/api/cobrancas/:id/pagar", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data_pagamento, valor_pago, forma_pagamento = 'manual' } = req.body;
+
+    // Buscar cobrança
+    const cobranca = await pool.query("SELECT * FROM cobrancas WHERE id = $1", [id]);
+    if (cobranca.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Cobrança não encontrada" });
+    }
+
+    const cob = cobranca.rows[0];
+    const valorFinal = valor_pago || cob.valor_atualizado || cob.valor;
+
+    // Atualizar cobrança
+    await pool.query(`
+      UPDATE cobrancas SET 
+        status = 'pago',
+        data_pagamento = $1,
+        valor_pago = $2,
+        forma_pagamento = $3,
+        updated_at = NOW()
+      WHERE id = $4
+    `, [data_pagamento || new Date().toISOString().split('T')[0], valorFinal, forma_pagamento, id]);
+
+    // Registrar log se a função existir
+    if (typeof registrarLog === 'function') {
+      await registrarLog(req, 'PAGAMENTO', 'cobrancas', id, { valor: valorFinal, forma: forma_pagamento });
+    }
+
+    res.json({ success: true, message: "Pagamento registrado com sucesso!" });
+
+  } catch (err) {
+    console.error("[POST /api/cobrancas/:id/pagar] erro:", err.message);
+    res.status(500).json({ success: false, message: "Erro ao registrar pagamento", error: err.message });
+  }
+});
+
+console.log('[FINANCEIRO] ✅ Rotas adicionais carregadas');
 // =====================
 // 404
 // =====================
