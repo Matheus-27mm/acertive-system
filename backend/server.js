@@ -1823,7 +1823,6 @@ app.get("/api/backup/exportar", authAdmin, async (req, res) => {
 // app.use((req, res) => res.status(404).send("Página não encontrada."));
 // =====================================================
 
-// Buscar clientes por nome ou CPF/CNPJ (para autocomplete e consulta)
 app.get("/api/clientes/buscar", auth, async (req, res) => {
   try {
     const q = String(req.query.q || "").trim();
@@ -1841,18 +1840,16 @@ app.get("/api/clientes/buscar", auth, async (req, res) => {
         c.cpf_cnpj,
         c.telefone,
         c.email,
-        c.status_cliente,
+        COALESCE(c.status_cliente, 'regular') AS status_cliente,
         COUNT(cob.id)::int AS total_cobrancas,
         COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS divida_total,
         COALESCE(SUM(CASE WHEN cob.status = 'pago' THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS total_pago
       FROM clientes c
       LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
-      WHERE c.status = 'ativo'
-        AND (
-          LOWER(c.nome) LIKE LOWER($1)
-          OR REPLACE(REPLACE(REPLACE(c.cpf_cnpj, '.', ''), '-', ''), '/', '') LIKE $2
-        )
-      GROUP BY c.id
+      WHERE 
+        LOWER(c.nome) LIKE LOWER($1)
+        OR REPLACE(REPLACE(REPLACE(COALESCE(c.cpf_cnpj, ''), '.', ''), '-', ''), '/', '') LIKE $2
+      GROUP BY c.id, c.nome, c.cpf_cnpj, c.telefone, c.email, c.status_cliente
       ORDER BY c.nome ASC
       LIMIT 50
     `, [`%${q}%`, `%${qLimpo}%`]);
