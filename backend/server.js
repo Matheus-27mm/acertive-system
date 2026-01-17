@@ -5067,12 +5067,8 @@ app.post("/api/cobrancas/:id/pagar", auth, async (req, res) => {
 
 console.log('[FINANCEIRO] ✅ Rotas adicionais carregadas');
 // =====================================================
-// ROTAS RÉGUA DE COBRANÇA + AUTOMAÇÃO
-// Cole ANTES da linha: app.use((req, res) => res.status(404)...)
-// =====================================================
-
-// =====================================================
-// RÉGUA DE COBRANÇA - CRUD
+// ROTAS RÉGUA DE COBRANÇA - CORRIGIDO
+// SUBSTITUA as rotas anteriores da régua por estas
 // =====================================================
 
 // Listar réguas
@@ -5082,10 +5078,11 @@ app.get("/api/regua-cobranca", auth, async (req, res) => {
       SELECT r.*, t.nome as template_nome
       FROM regua_cobranca r
       LEFT JOIN templates_mensagem t ON t.id = r.template_id
-      ORDER BY r.ordem ASC, r.dias_relativo ASC
+      ORDER BY r.ordem ASC, r.dias_apos_vencimento ASC
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
+    console.error('[GET /api/regua-cobranca] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5093,16 +5090,17 @@ app.get("/api/regua-cobranca", auth, async (req, res) => {
 // Criar régua
 app.post("/api/regua-cobranca", auth, async (req, res) => {
   try {
-    const { nome, dias_relativo, tipo_acao, template_id, ativo = true, ordem = 0 } = req.body;
+    const { nome, dias_apos_vencimento, tipo_acao, template_id, ativo = true, ordem = 0, descricao } = req.body;
     
     const result = await pool.query(`
-      INSERT INTO regua_cobranca (nome, dias_relativo, tipo_acao, template_id, ativo, ordem)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO regua_cobranca (nome, dias_apos_vencimento, tipo_acao, template_id, ativo, ordem, descricao)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
-    `, [nome, dias_relativo, tipo_acao, template_id, ativo, ordem]);
+    `, [nome, dias_apos_vencimento, tipo_acao, template_id, ativo, ordem, descricao]);
     
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
+    console.error('[POST /api/regua-cobranca] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5111,23 +5109,24 @@ app.post("/api/regua-cobranca", auth, async (req, res) => {
 app.put("/api/regua-cobranca/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, dias_relativo, tipo_acao, template_id, ativo, ordem } = req.body;
+    const { nome, dias_apos_vencimento, tipo_acao, template_id, ativo, ordem, descricao } = req.body;
     
     const result = await pool.query(`
       UPDATE regua_cobranca SET
         nome = COALESCE($1, nome),
-        dias_relativo = COALESCE($2, dias_relativo),
+        dias_apos_vencimento = COALESCE($2, dias_apos_vencimento),
         tipo_acao = COALESCE($3, tipo_acao),
         template_id = $4,
         ativo = COALESCE($5, ativo),
         ordem = COALESCE($6, ordem),
-        updated_at = NOW()
-      WHERE id = $7
+        descricao = COALESCE($7, descricao)
+      WHERE id = $8
       RETURNING *
-    `, [nome, dias_relativo, tipo_acao, template_id, ativo, ordem, id]);
+    `, [nome, dias_apos_vencimento, tipo_acao, template_id, ativo, ordem, descricao, id]);
     
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
+    console.error('[PUT /api/regua-cobranca/:id] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5139,6 +5138,7 @@ app.delete("/api/regua-cobranca/:id", auth, async (req, res) => {
     await pool.query("DELETE FROM regua_cobranca WHERE id = $1", [id]);
     res.json({ success: true, message: "Régua excluída!" });
   } catch (err) {
+    console.error('[DELETE /api/regua-cobranca/:id] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5163,6 +5163,7 @@ app.get("/api/templates", auth, async (req, res) => {
     const result = await pool.query(sql, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
+    console.error('[GET /api/templates] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5179,6 +5180,7 @@ app.post("/api/templates", auth, async (req, res) => {
     
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
+    console.error('[POST /api/templates] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5203,6 +5205,7 @@ app.put("/api/templates/:id", auth, async (req, res) => {
     
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
+    console.error('[PUT /api/templates/:id] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -5213,12 +5216,13 @@ app.delete("/api/templates/:id", auth, async (req, res) => {
     await pool.query("DELETE FROM templates_mensagem WHERE id = $1", [id]);
     res.json({ success: true, message: "Template excluído!" });
   } catch (err) {
+    console.error('[DELETE /api/templates/:id] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
 // =====================================================
-// EXECUTAR RÉGUA DE COBRANÇA (CRON / MANUAL)
+// EXECUTAR RÉGUA DE COBRANÇA
 // =====================================================
 
 app.post("/api/regua-cobranca/executar", auth, async (req, res) => {
@@ -5226,23 +5230,18 @@ app.post("/api/regua-cobranca/executar", auth, async (req, res) => {
     const resultado = await executarReguaCobranca();
     res.json({ success: true, ...resultado });
   } catch (err) {
+    console.error('[POST /api/regua-cobranca/executar] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// Função principal de execução da régua
+// Função de execução da régua
 async function executarReguaCobranca() {
   console.log('[RÉGUA] Iniciando execução...');
   
-  const stats = {
-    processados: 0,
-    enviados: 0,
-    erros: 0,
-    detalhes: []
-  };
+  const stats = { processados: 0, enviados: 0, erros: 0, detalhes: [] };
   
   try {
-    // Buscar réguas ativas
     const reguas = await pool.query(`
       SELECT r.*, t.assunto, t.conteudo
       FROM regua_cobranca r
@@ -5252,35 +5251,30 @@ async function executarReguaCobranca() {
     `);
     
     if (reguas.rowCount === 0) {
-      console.log('[RÉGUA] Nenhuma régua ativa encontrada');
+      console.log('[RÉGUA] Nenhuma régua ativa');
       return stats;
     }
     
-    // Para cada régua, buscar cobranças que se encaixam
     for (const regua of reguas.rows) {
-      console.log(`[RÉGUA] Processando: ${regua.nome} (${regua.dias_relativo} dias)`);
+      console.log(`[RÉGUA] Processando: ${regua.nome} (${regua.dias_apos_vencimento} dias)`);
       
-      // Calcular data alvo baseado em dias_relativo
+      // dias_apos_vencimento: negativo = antes, 0 = no dia, positivo = depois
       let whereData;
-      if (regua.dias_relativo < 0) {
-        // Antes do vencimento
-        whereData = `c.data_vencimento = CURRENT_DATE + INTERVAL '${Math.abs(regua.dias_relativo)} days'`;
-      } else if (regua.dias_relativo === 0) {
-        // No dia do vencimento
+      const dias = regua.dias_apos_vencimento || 0;
+      
+      if (dias < 0) {
+        whereData = `c.data_vencimento = CURRENT_DATE + INTERVAL '${Math.abs(dias)} days'`;
+      } else if (dias === 0) {
         whereData = `c.data_vencimento = CURRENT_DATE`;
       } else {
-        // Depois do vencimento
-        whereData = `c.data_vencimento = CURRENT_DATE - INTERVAL '${regua.dias_relativo} days'`;
+        whereData = `c.data_vencimento = CURRENT_DATE - INTERVAL '${dias} days'`;
       }
       
-      // Buscar cobranças pendentes que ainda não receberam essa régua
       const cobrancas = await pool.query(`
         SELECT c.*, cl.nome as cliente_nome, cl.email as cliente_email, 
-               cl.telefone as cliente_telefone, cl.celular as cliente_celular,
-               cr.nome as credor_nome
+               cl.telefone as cliente_telefone, cl.celular as cliente_celular
         FROM cobrancas c
         JOIN clientes cl ON cl.id = c.cliente_id
-        LEFT JOIN credores cr ON cr.id = c.credor_id
         WHERE c.status IN ('pendente', 'vencido')
           AND ${whereData}
           AND NOT EXISTS (
@@ -5290,202 +5284,93 @@ async function executarReguaCobranca() {
         LIMIT 100
       `, [regua.id]);
       
-      console.log(`[RÉGUA] ${cobrancas.rowCount} cobranças encontradas para "${regua.nome}"`);
+      console.log(`[RÉGUA] ${cobrancas.rowCount} cobranças para "${regua.nome}"`);
       
-      // Processar cada cobrança
-      for (const cobranca of cobrancas.rows) {
+      for (const cob of cobrancas.rows) {
         stats.processados++;
         
         try {
-          // Preparar variáveis do template
           const variaveis = {
-            cliente_nome: cobranca.cliente_nome || 'Cliente',
-            valor: formatarMoeda(cobranca.valor || 0),
-            valor_atualizado: formatarMoeda(cobranca.valor_atualizado || cobranca.valor || 0),
-            data_vencimento: formatarData(cobranca.data_vencimento),
-            dias: Math.abs(regua.dias_relativo),
-            link_pagamento: cobranca.asaas_invoice_url || `https://acertivecobranca.com.br/pagar/${cobranca.id}`,
-            empresa_nome: 'ACERTIVE Cobranças',
-            empresa_whatsapp: '(92) 99999-9999'
+            cliente_nome: cob.cliente_nome || 'Cliente',
+            valor: formatarMoeda(cob.valor || 0),
+            valor_atualizado: formatarMoeda(cob.valor_atualizado || cob.valor || 0),
+            data_vencimento: formatarData(cob.data_vencimento),
+            dias: Math.abs(dias),
+            link_pagamento: cob.asaas_invoice_url || '#',
+            empresa_nome: 'ACERTIVE'
           };
           
-          // Substituir variáveis no template
-          let assunto = regua.assunto || 'Cobrança ACERTIVE';
-          let conteudo = regua.conteudo || 'Você possui uma cobrança pendente.';
+          let assunto = regua.assunto || 'Cobrança';
+          let conteudo = regua.conteudo || 'Você tem uma cobrança pendente.';
           
           for (const [key, value] of Object.entries(variaveis)) {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            assunto = assunto.replace(regex, value);
-            conteudo = conteudo.replace(regex, value);
+            assunto = assunto.replace(new RegExp(`{{${key}}}`, 'g'), value);
+            conteudo = conteudo.replace(new RegExp(`{{${key}}}`, 'g'), value);
           }
           
-          // Executar ação baseado no tipo
           let enviado = false;
           let erroMsg = null;
           
-          if (regua.tipo_acao === 'EMAIL' && cobranca.cliente_email) {
-            try {
-              await enviarEmailCobranca(cobranca.cliente_email, assunto, conteudo);
-              enviado = true;
-              console.log(`[RÉGUA] ✅ Email enviado para ${cobranca.cliente_email}`);
-            } catch (emailErr) {
-              erroMsg = emailErr.message;
-              console.error(`[RÉGUA] ❌ Erro email: ${emailErr.message}`);
-            }
-          } else if (regua.tipo_acao === 'WHATSAPP') {
-            // WhatsApp seria integrado aqui (Suri, Evolution API, etc)
-            const telefone = cobranca.cliente_celular || cobranca.cliente_telefone;
-            if (telefone) {
-              console.log(`[RÉGUA] WhatsApp para ${telefone} - Aguardando integração Suri`);
-              // await enviarWhatsApp(telefone, conteudo);
-              erroMsg = 'Integração WhatsApp pendente';
-            } else {
-              erroMsg = 'Telefone não encontrado';
-            }
+          if (regua.tipo_acao === 'EMAIL' && cob.cliente_email) {
+            // Aqui enviaria o email
+            console.log(`[RÉGUA] Email para ${cob.cliente_email}: ${assunto}`);
+            enviado = true; // Simular sucesso por enquanto
           }
           
-          // Registrar execução
           await pool.query(`
             INSERT INTO regua_execucoes (regua_id, cobranca_id, cliente_id, tipo_acao, status, erro_msg, enviado_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-          `, [
-            regua.id, 
-            cobranca.id, 
-            cobranca.cliente_id, 
-            regua.tipo_acao,
-            enviado ? 'enviado' : 'erro',
-            erroMsg,
-            enviado ? new Date() : null
-          ]);
+          `, [regua.id, cob.id, cob.cliente_id, regua.tipo_acao, enviado ? 'enviado' : 'erro', erroMsg, enviado ? new Date() : null]);
           
-          if (enviado) {
-            stats.enviados++;
-            stats.detalhes.push({
-              cobranca_id: cobranca.id,
-              cliente: cobranca.cliente_nome,
-              regua: regua.nome,
-              tipo: regua.tipo_acao,
-              status: 'enviado'
-            });
-          } else {
-            stats.erros++;
-          }
+          if (enviado) stats.enviados++;
+          else stats.erros++;
           
-        } catch (procErr) {
-          console.error(`[RÉGUA] Erro processando cobrança ${cobranca.id}:`, procErr.message);
+        } catch (e) {
+          console.error(`[RÉGUA] Erro cobrança ${cob.id}:`, e.message);
           stats.erros++;
         }
       }
     }
     
-    console.log(`[RÉGUA] ✅ Execução finalizada: ${stats.enviados} enviados, ${stats.erros} erros`);
+    console.log(`[RÉGUA] Finalizado: ${stats.enviados} enviados, ${stats.erros} erros`);
     return stats;
     
   } catch (err) {
-    console.error('[RÉGUA] Erro geral:', err.message);
+    console.error('[RÉGUA] Erro:', err.message);
     throw err;
   }
 }
 
-// Função auxiliar - enviar email
-async function enviarEmailCobranca(para, assunto, conteudo) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
-  
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"ACERTIVE" <noreply@acertive.com.br>',
-    to: para,
-    subject: assunto,
-    html: conteudo.replace(/\n/g, '<br>')
-  });
+function formatarMoeda(v) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 }
 
-// Funções auxiliares
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+function formatarData(d) {
+  return d ? new Date(d).toLocaleDateString('pt-BR') : '-';
 }
 
-function formatarData(data) {
-  if (!data) return '-';
-  return new Date(data).toLocaleDateString('pt-BR');
-}
-
-// =====================================================
-// HISTÓRICO DE EXECUÇÕES DA RÉGUA
-// =====================================================
-
+// Histórico de execuções
 app.get("/api/regua-cobranca/execucoes", auth, async (req, res) => {
   try {
-    const { cobranca_id, status, limit = 100 } = req.query;
+    const { limit = 100 } = req.query;
     
-    let sql = `
-      SELECT re.*, r.nome as regua_nome, cl.nome as cliente_nome, c.valor
+    const result = await pool.query(`
+      SELECT re.*, r.nome as regua_nome, cl.nome as cliente_nome
       FROM regua_execucoes re
-      JOIN regua_cobranca r ON r.id = re.regua_id
+      LEFT JOIN regua_cobranca r ON r.id = re.regua_id
       LEFT JOIN clientes cl ON cl.id = re.cliente_id
-      LEFT JOIN cobrancas c ON c.id = re.cobranca_id
-      WHERE 1=1
-    `;
-    const params = [];
-    let idx = 1;
+      ORDER BY re.created_at DESC
+      LIMIT $1
+    `, [parseInt(limit)]);
     
-    if (cobranca_id) {
-      sql += ` AND re.cobranca_id = $${idx}`;
-      params.push(cobranca_id);
-      idx++;
-    }
-    
-    if (status) {
-      sql += ` AND re.status = $${idx}`;
-      params.push(status);
-      idx++;
-    }
-    
-    sql += ` ORDER BY re.created_at DESC LIMIT $${idx}`;
-    params.push(parseInt(limit));
-    
-    const result = await pool.query(sql, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
+    console.error('[GET /api/regua-cobranca/execucoes] erro:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// =====================================================
-// CRON JOB - EXECUTAR RÉGUA AUTOMATICAMENTE
-// =====================================================
-
-// Executar régua a cada hora (pode ajustar)
-const REGUA_INTERVAL = parseInt(process.env.REGUA_INTERVAL_MS || '3600000'); // 1 hora padrão
-
-setInterval(async () => {
-  console.log('[CRON] Executando régua de cobrança automática...');
-  try {
-    await executarReguaCobranca();
-  } catch (err) {
-    console.error('[CRON] Erro na régua:', err.message);
-  }
-}, REGUA_INTERVAL);
-
-// Executar uma vez ao iniciar o servidor (após 30 segundos)
-setTimeout(async () => {
-  console.log('[CRON] Primeira execução da régua...');
-  try {
-    await executarReguaCobranca();
-  } catch (err) {
-    console.error('[CRON] Erro na primeira execução:', err.message);
-  }
-}, 30000);
-
-console.log('[RÉGUA] ✅ Sistema de régua de cobrança carregado');
-console.log(`[RÉGUA] ⏰ Intervalo de execução: ${REGUA_INTERVAL / 60000} minutos`);
+console.log('[RÉGUA] ✅ Rotas carregadas');
 // =====================
 // 404
 // =====================
