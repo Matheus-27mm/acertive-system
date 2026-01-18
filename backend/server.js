@@ -289,7 +289,7 @@ pool.connect().then(() => {
 // =====================================================
 app.use('/api/credores', credoresRoutes(pool, auth, registrarLog));
 // app.use('/api/acordos', acordosRoutes(pool, auth, registrarLog)); // MOVIDO PARA DEPOIS DO ASAAS
-app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog)); // MOVIDO PARA DEPOIS DO ASAAS
+//app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog)); // MOVIDO PARA DEPOIS DO ASAAS
 app.use('/api/financeiro', financeiroRoutes(pool, auth, registrarLog));
 // =====================================================
 // FUNÇÃO DE REGISTRO DE LOG (AUDITORIA)
