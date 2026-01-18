@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
 
     /* SIDEBAR PADRÃO */
@@ -41,12 +40,14 @@
     .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
     .form-card h3{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)}
     .form-card h3 i{color:var(--gold)}
-    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}.form-group.full{grid-column:1/-1}
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}.form-grid.cols-4{grid-template-columns:repeat(4,1fr)}.form-group.full{grid-column:1/-1}
     .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase}.form-group label .required{color:var(--red)}
     .form-control{width:100%;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px;transition:all var(--transition-fast)}
     .form-control:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+    .form-control:disabled{opacity:0.5;cursor:not-allowed}
     select.form-control{cursor:pointer}select.form-control option{background:var(--bg-secondary)}textarea.form-control{resize:vertical;min-height:80px}
     .input-group{position:relative}.input-group .prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600}.input-group input{padding-left:44px}
+    .input-group .suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600}.input-group input.has-suffix{padding-right:44px}
 
     /* CLIENTE SEARCH */
     .cliente-search{position:relative}.cliente-search i.ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}.cliente-search input{padding-left:42px}
@@ -59,19 +60,61 @@
     .cliente-info-box{flex:1}.cliente-nome{font-weight:700}.cliente-cpf{font-size:12px;color:var(--text-muted)}
     .cliente-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.cliente-remove:hover{background:var(--red-bg);color:var(--red)}
 
+    /* TOGGLE SWITCH */
+    .toggle-group{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-secondary);border-radius:8px;margin-bottom:16px}
+    .toggle-group label{margin-bottom:0;text-transform:none;font-size:14px;font-weight:500;color:var(--text-primary);flex:1}
+    .toggle-switch{position:relative;width:48px;height:26px;flex-shrink:0}
+    .toggle-switch input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:26px;transition:0.3s}
+    .toggle-slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:var(--text-muted);border-radius:50%;transition:0.3s}
+    .toggle-switch input:checked + .toggle-slider{background:var(--gold)}
+    .toggle-switch input:checked + .toggle-slider:before{transform:translateX(22px);background:var(--bg-primary)}
+    .toggle-hint{font-size:11px;color:var(--text-muted);margin-top:4px}
+
+    /* TAXAS SECTION */
+    .taxas-section{display:none;padding:16px;background:var(--bg-secondary);border-radius:8px;margin-bottom:16px;border:1px solid var(--border-gold)}
+    .taxas-section.active{display:block}
+    .taxas-section h4{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .taxas-section h4 i{font-size:12px}
+
     /* OPÇÕES AVANÇADAS */
     .opcoes-avancadas{border-top:1px solid var(--border);margin-top:16px;padding-top:16px}
     .btn-toggle-opcoes{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:8px 0;width:100%}
     .btn-toggle-opcoes:hover{color:var(--gold)}.btn-toggle-opcoes i{transition:transform 0.3s}.btn-toggle-opcoes.expanded i{transform:rotate(180deg)}
     .opcoes-conteudo{display:none;margin-top:16px}.opcoes-conteudo.active{display:block}
 
+    /* CHECKBOX CUSTOM */
+    .checkbox-group{display:flex;align-items:center;gap:10px;padding:14px;background:var(--blue-bg);border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s}
+    .checkbox-group:hover{background:rgba(59,130,246,0.2)}
+    .checkbox-group.checked{background:var(--blue-bg);border-color:var(--blue)}
+    .checkbox-group input{display:none}
+    .checkbox-custom{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
+    .checkbox-group.checked .checkbox-custom{background:var(--blue);border-color:var(--blue)}
+    .checkbox-custom i{display:none;color:white;font-size:12px}
+    .checkbox-group.checked .checkbox-custom i{display:block}
+    .checkbox-label{flex:1}
+    .checkbox-label span{display:block;font-weight:600;font-size:14px}
+    .checkbox-label small{font-size:11px;color:var(--text-muted)}
+
     /* RESUMO */
     .resumo-card{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border:1px solid var(--border-gold);border-radius:var(--radius-lg);padding:24px;position:sticky;top:32px}
     .resumo-card h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--gold);display:flex;align-items:center;gap:10px}
-    .resumo-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}.resumo-item:last-child{border-bottom:none}
+    .resumo-section{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+    .resumo-section:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .resumo-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
+    .resumo-item{display:flex;justify-content:space-between;padding:8px 0}
     .resumo-label{color:var(--text-secondary);font-size:13px}.resumo-value{font-weight:600;font-size:14px}
+    .resumo-credor{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg-primary);border-radius:8px;margin-bottom:12px}
+    .resumo-credor-icon{width:32px;height:32px;background:var(--purple-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--purple)}
+    .resumo-credor-info{flex:1}
+    .resumo-credor-nome{font-weight:600;font-size:13px}
+    .resumo-credor-comissao{font-size:11px;color:var(--text-muted)}
     .resumo-total{background:var(--bg-primary);border-radius:8px;padding:16px;margin-top:16px;text-align:center}
     .resumo-total-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.resumo-total-value{font-size:28px;font-weight:800;color:var(--gold)}
+    .resumo-parcelas{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .resumo-gerar-boleto{display:flex;align-items:center;gap:8px;padding:12px;background:var(--green-bg);border-radius:8px;margin-top:12px;font-size:13px;color:var(--green)}
+    .resumo-gerar-boleto i{font-size:16px}
+    .resumo-gerar-boleto.inactive{background:var(--bg-primary);color:var(--text-muted)}
 
     /* BUTTONS */
     .form-actions{display:flex;gap:12px;margin-top:20px}
@@ -80,10 +123,10 @@
     .btn-secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--border-gold);color:var(--gold)}
 
     /* LAYOUT */
-    .form-layout{display:grid;grid-template-columns:1fr 340px;gap:24px}
+    .form-layout{display:grid;grid-template-columns:1fr 380px;gap:24px}
 
     @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.form-layout{grid-template-columns:1fr}}
-    @media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+    @media(max-width:768px){.form-grid{grid-template-columns:1fr}.form-grid.cols-3,.form-grid.cols-4{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -101,7 +144,7 @@
         <div class="nav-section-title">Cadastros</div>
         <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
         <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
-        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/cobrancas" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Negociação</div>
@@ -111,16 +154,10 @@
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Financeiro</div>
+        <a href="/financeiro" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
         <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
         <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
         <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Automação</div>
-        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
-        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
-        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
-        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Administração</div>
@@ -150,6 +187,18 @@
     <form id="formCobranca">
       <div class="form-layout">
         <div>
+          <!-- Credor -->
+          <div class="form-card">
+            <h3><i class="fas fa-building"></i> Credor</h3>
+            <div class="form-group">
+              <label>Selecione o Credor <span class="required">*</span></label>
+              <select class="form-control" id="credorId" name="credor_id" required>
+                <option value="">Selecione um credor...</option>
+              </select>
+              <div class="toggle-hint">O credor é o dono da dívida (empresa que contratou a cobrança)</div>
+            </div>
+          </div>
+
           <!-- Devedor -->
           <div class="form-card">
             <h3><i class="fas fa-user"></i> Devedor</h3>
@@ -189,16 +238,78 @@
                 <input type="date" class="form-control" id="vencimento" name="vencimento" required>
               </div>
               <div class="form-group">
+                <label>Parcelas</label>
+                <select class="form-control" id="parcelas" name="parcelas">
+                  <option value="1">À vista (1x)</option>
+                  <option value="2">2x</option>
+                  <option value="3">3x</option>
+                  <option value="4">4x</option>
+                  <option value="5">5x</option>
+                  <option value="6">6x</option>
+                  <option value="7">7x</option>
+                  <option value="8">8x</option>
+                  <option value="9">9x</option>
+                  <option value="10">10x</option>
+                  <option value="11">11x</option>
+                  <option value="12">12x</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label>Desconto</label>
                 <div class="input-group"><span class="prefix">R$</span><input type="text" class="form-control" id="desconto" name="desconto" placeholder="0,00"></div>
               </div>
-              <div class="form-group">
-                <label>Acréscimos</label>
-                <div class="input-group"><span class="prefix">R$</span><input type="text" class="form-control" id="acrescimos" name="acrescimos" placeholder="0,00"></div>
+            </div>
+
+            <!-- Toggle Multa/Juros -->
+            <div class="toggle-group">
+              <label><i class="fas fa-percentage"></i> Aplicar multa e juros automaticamente</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="aplicarTaxas" onchange="toggleTaxas()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-hint" style="margin-top:-12px;margin-bottom:16px;">Quando ativado, multa e juros serão calculados automaticamente após o vencimento</div>
+
+            <!-- Taxas Section -->
+            <div class="taxas-section" id="taxasSection">
+              <h4><i class="fas fa-calculator"></i> Configuração de Taxas</h4>
+              <div class="form-grid cols-3">
+                <div class="form-group">
+                  <label>Multa por Atraso</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control has-suffix" id="multa" name="multa" placeholder="2">
+                    <span class="suffix">%</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Juros ao Mês</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control has-suffix" id="juros" name="juros" placeholder="1">
+                    <span class="suffix">%</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Tipo de Juros</label>
+                  <select class="form-control" id="tipoJuros" name="tipo_juros">
+                    <option value="simples">Simples</option>
+                    <option value="composto">Composto</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group full">
-                <label>Observações</label>
-                <textarea class="form-control" id="observacoes" name="observacoes" rows="2" placeholder="Observações opcionais..."></textarea>
+            </div>
+
+            <div class="form-group full">
+              <label>Observações</label>
+              <textarea class="form-control" id="observacoes" name="observacoes" rows="2" placeholder="Observações opcionais..."></textarea>
+            </div>
+
+            <!-- Gerar Boleto/PIX -->
+            <div class="checkbox-group" id="checkboxBoleto" onclick="toggleCheckbox(this)">
+              <input type="checkbox" id="gerarBoleto" name="gerar_boleto">
+              <div class="checkbox-custom"><i class="fas fa-check"></i></div>
+              <div class="checkbox-label">
+                <span><i class="fas fa-barcode"></i> Gerar Boleto/PIX automaticamente</span>
+                <small>Será gerado via Asaas após salvar a cobrança</small>
               </div>
             </div>
 
@@ -210,7 +321,7 @@
               <div class="opcoes-conteudo">
                 <div class="form-grid">
                   <div class="form-group">
-                    <label>Tipo</label>
+                    <label>Tipo de Pagamento</label>
                     <select class="form-control" id="tipo" name="tipo">
                       <option value="boleto">Boleto</option>
                       <option value="pix">PIX</option>
@@ -225,6 +336,7 @@
                       <option value="mensalidade">Mensalidade</option>
                       <option value="servico">Serviço</option>
                       <option value="produto">Produto</option>
+                      <option value="emprestimo">Empréstimo</option>
                       <option value="outros">Outros</option>
                     </select>
                   </div>
@@ -246,13 +358,39 @@
         <div>
           <div class="resumo-card">
             <h3><i class="fas fa-receipt"></i> Resumo</h3>
-            <div class="resumo-item"><span class="resumo-label">Valor Original</span><span class="resumo-value" id="resumoValor">R$ 0,00</span></div>
-            <div class="resumo-item"><span class="resumo-label">Desconto</span><span class="resumo-value" style="color:var(--green)">- <span id="resumoDesconto">R$ 0,00</span></span></div>
-            <div class="resumo-item"><span class="resumo-label">Acréscimos</span><span class="resumo-value" style="color:var(--red)">+ <span id="resumoAcrescimos">R$ 0,00</span></span></div>
+            
+            <!-- Credor selecionado -->
+            <div class="resumo-section">
+              <div class="resumo-section-title">Credor</div>
+              <div class="resumo-credor" id="resumoCredor" style="display:none;">
+                <div class="resumo-credor-icon"><i class="fas fa-building"></i></div>
+                <div class="resumo-credor-info">
+                  <div class="resumo-credor-nome" id="resumoCredorNome">-</div>
+                  <div class="resumo-credor-comissao">Comissão: <span id="resumoCredorComissao">0%</span></div>
+                </div>
+              </div>
+              <div id="resumoCredorVazio" style="color:var(--text-muted);font-size:13px;">Nenhum credor selecionado</div>
+            </div>
+
+            <!-- Valores -->
+            <div class="resumo-section">
+              <div class="resumo-section-title">Valores</div>
+              <div class="resumo-item"><span class="resumo-label">Valor Original</span><span class="resumo-value" id="resumoValor">R$ 0,00</span></div>
+              <div class="resumo-item"><span class="resumo-label">Desconto</span><span class="resumo-value" style="color:var(--green)">- <span id="resumoDesconto">R$ 0,00</span></span></div>
+              <div class="resumo-item" id="resumoTaxasRow" style="display:none;"><span class="resumo-label">Multa/Juros</span><span class="resumo-value" id="resumoTaxasInfo" style="color:var(--orange)">-</span></div>
+            </div>
+
             <div class="resumo-total">
               <div class="resumo-total-label">VALOR FINAL</div>
               <div class="resumo-total-value" id="resumoTotal">R$ 0,00</div>
+              <div class="resumo-parcelas" id="resumoParcelas"></div>
             </div>
+
+            <div class="resumo-gerar-boleto inactive" id="resumoGerarBoleto">
+              <i class="fas fa-barcode"></i>
+              <span>Boleto/PIX não será gerado</span>
+            </div>
+
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
               <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Salvar</button>
@@ -267,13 +405,99 @@
     const API = window.location.origin;
     let token = localStorage.getItem('token');
     let clienteSelecionado = null;
+    let credores = [];
+    let credorSelecionado = null;
     if (!token) window.location.href = '/login';
 
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
     function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
     function parseMoney(s) { if (!s) return 0; return parseFloat(s.replace(/[^\d,]/g, '').replace(',', '.')) || 0; }
+    function parsePercent(s) { if (!s) return 0; return parseFloat(s.replace(/[^\d,]/g, '').replace(',', '.')) || 0; }
     function toggleOpcoes(btn) { btn.classList.toggle('expanded'); btn.nextElementSibling.classList.toggle('active'); }
+
+    // Toggle taxas
+    function toggleTaxas() {
+      const checked = document.getElementById('aplicarTaxas').checked;
+      const section = document.getElementById('taxasSection');
+      const taxasRow = document.getElementById('resumoTaxasRow');
+      
+      if (checked) {
+        section.classList.add('active');
+        taxasRow.style.display = 'flex';
+        // Se tiver credor selecionado, preenche com valores do credor
+        if (credorSelecionado) {
+          document.getElementById('multa').value = credorSelecionado.multa_padrao || '2';
+          document.getElementById('juros').value = credorSelecionado.juros_padrao || '1';
+        }
+      } else {
+        section.classList.remove('active');
+        taxasRow.style.display = 'none';
+      }
+      atualizarResumo();
+    }
+
+    // Toggle checkbox boleto
+    function toggleCheckbox(el) {
+      el.classList.toggle('checked');
+      const input = el.querySelector('input');
+      input.checked = !input.checked;
+      atualizarResumoBoleto();
+    }
+
+    function atualizarResumoBoleto() {
+      const checked = document.getElementById('gerarBoleto').checked;
+      const el = document.getElementById('resumoGerarBoleto');
+      if (checked) {
+        el.classList.remove('inactive');
+        el.innerHTML = '<i class="fas fa-check-circle"></i><span>Boleto/PIX será gerado automaticamente</span>';
+      } else {
+        el.classList.add('inactive');
+        el.innerHTML = '<i class="fas fa-barcode"></i><span>Boleto/PIX não será gerado</span>';
+      }
+    }
+
+    // Carregar credores
+    async function carregarCredores() {
+      try {
+        const res = await fetch(API + '/api/credores', { headers: getHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          credores = data.data || [];
+          const select = document.getElementById('credorId');
+          select.innerHTML = '<option value="">Selecione um credor...</option>';
+          credores.forEach(c => {
+            select.innerHTML += `<option value="${c.id}" data-comissao="${c.comissao_percentual || 10}" data-multa="${c.multa_padrao || 2}" data-juros="${c.juros_padrao || 1}">${c.nome}</option>`;
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // Ao selecionar credor
+    document.getElementById('credorId').addEventListener('change', function() {
+      const id = this.value;
+      credorSelecionado = credores.find(c => c.id === id) || null;
+      
+      const resumoCredor = document.getElementById('resumoCredor');
+      const resumoVazio = document.getElementById('resumoCredorVazio');
+      
+      if (credorSelecionado) {
+        document.getElementById('resumoCredorNome').textContent = credorSelecionado.nome;
+        document.getElementById('resumoCredorComissao').textContent = (credorSelecionado.comissao_percentual || 10) + '%';
+        resumoCredor.style.display = 'flex';
+        resumoVazio.style.display = 'none';
+        
+        // Se taxas estiver ativo, preenche com valores do credor
+        if (document.getElementById('aplicarTaxas').checked) {
+          document.getElementById('multa').value = credorSelecionado.multa_padrao || '2';
+          document.getElementById('juros').value = credorSelecionado.juros_padrao || '1';
+        }
+      } else {
+        resumoCredor.style.display = 'none';
+        resumoVazio.style.display = 'block';
+      }
+      atualizarResumo();
+    });
 
     async function carregarUsuario() {
       try {
@@ -299,7 +523,7 @@
       } catch (e) {}
     }
 
-    // Busca devedor
+    // Buscar clientes
     let searchTimeout;
     document.getElementById('buscarCliente').addEventListener('input', function() {
       clearTimeout(searchTimeout);
@@ -317,7 +541,7 @@
           container.innerHTML = data.data.map(c => `
             <div class="cliente-item" onclick="selecionarCliente('${c.id}','${(c.nome || '').replace(/'/g, "\\'")}','${c.cpf_cnpj || ''}')">
               <div class="cliente-item-name">${c.nome}</div>
-              <div class="cliente-item-info">${c.cpf_cnpj || 'Sem CPF'}</div>
+              <div class="cliente-item-info">${c.cpf_cnpj || 'Sem CPF'} • ${c.total_cobrancas || 0} cobranças</div>
             </div>
           `).join('');
           container.classList.add('active');
@@ -349,42 +573,95 @@
     function atualizarResumo() {
       const valor = parseMoney(document.getElementById('valor').value);
       const desconto = parseMoney(document.getElementById('desconto').value);
-      const acrescimos = parseMoney(document.getElementById('acrescimos').value);
-      const total = valor - desconto + acrescimos;
+      const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
+      const aplicarTaxas = document.getElementById('aplicarTaxas').checked;
+      
+      const total = valor - desconto;
+      const valorParcela = parcelas > 1 ? total / parcelas : total;
+      
       document.getElementById('resumoValor').textContent = fmtMoney(valor);
       document.getElementById('resumoDesconto').textContent = fmtMoney(desconto);
-      document.getElementById('resumoAcrescimos').textContent = fmtMoney(acrescimos);
       document.getElementById('resumoTotal').textContent = fmtMoney(total);
+      
+      // Parcelas
+      const parcelasEl = document.getElementById('resumoParcelas');
+      if (parcelas > 1) {
+        parcelasEl.textContent = `${parcelas}x de ${fmtMoney(valorParcela)}`;
+        parcelasEl.style.display = 'block';
+      } else {
+        parcelasEl.style.display = 'none';
+      }
+      
+      // Taxas
+      if (aplicarTaxas) {
+        const multa = parsePercent(document.getElementById('multa').value);
+        const juros = parsePercent(document.getElementById('juros').value);
+        document.getElementById('resumoTaxasInfo').textContent = `${multa}% + ${juros}% a.m.`;
+      }
     }
 
-    document.getElementById('valor').addEventListener('input', atualizarResumo);
-    document.getElementById('desconto').addEventListener('input', atualizarResumo);
-    document.getElementById('acrescimos').addEventListener('input', atualizarResumo);
+    // Eventos para atualizar resumo
+    ['valor', 'desconto', 'parcelas', 'multa', 'juros'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', atualizarResumo);
+      if (el) el.addEventListener('change', atualizarResumo);
+    });
 
-    // Submeter
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.cliente-search')) {
+        document.getElementById('clienteResults').classList.remove('active');
+      }
+    });
+
+    // Submit form
     document.getElementById('formCobranca').addEventListener('submit', async function(e) {
       e.preventDefault();
+      
+      const credorId = document.getElementById('credorId').value;
+      if (!credorId) { alert('Selecione um credor'); return; }
       if (!clienteSelecionado) { alert('Selecione um devedor'); return; }
 
+      const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
+      const aplicarTaxas = document.getElementById('aplicarTaxas').checked;
+      const gerarBoleto = document.getElementById('gerarBoleto').checked;
+
       const dados = {
+        credor_id: credorId,
         cliente_id: clienteSelecionado.id,
         descricao: document.getElementById('descricao').value,
         valor_original: parseMoney(document.getElementById('valor').value),
         desconto: parseMoney(document.getElementById('desconto').value),
-        acrescimos: parseMoney(document.getElementById('acrescimos').value),
         vencimento: document.getElementById('vencimento').value,
+        parcelas: parcelas,
+        aplicar_multa_juros: aplicarTaxas,
+        multa: aplicarTaxas ? parsePercent(document.getElementById('multa').value) : 0,
+        juros: aplicarTaxas ? parsePercent(document.getElementById('juros').value) : 0,
+        tipo_juros: document.getElementById('tipoJuros').value,
         tipo: document.getElementById('tipo').value,
         categoria: document.getElementById('categoria').value,
         numero_documento: document.getElementById('numero_documento').value,
         referencia: document.getElementById('referencia').value,
-        observacoes: document.getElementById('observacoes').value
+        observacoes: document.getElementById('observacoes').value,
+        gerar_boleto: gerarBoleto
       };
 
       try {
         const res = await fetch(API + '/api/cobrancas', { method: 'POST', headers: getHeaders(), body: JSON.stringify(dados) });
         const data = await res.json();
         if (data.success) {
-          alert('Cobrança criada com sucesso!');
+          // Se marcou gerar boleto, chama a API do Asaas
+          if (gerarBoleto && data.data && data.data.id) {
+            try {
+              await fetch(API + '/api/asaas/cobrancas/gerar/' + data.data.id, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ tipo_pagamento: 'UNDEFINED' })
+              });
+            } catch (e) { console.error('Erro ao gerar boleto:', e); }
+          }
+          
+          alert(parcelas > 1 ? `${parcelas} cobranças criadas com sucesso!` : 'Cobrança criada com sucesso!');
           window.location.href = '/cobrancas';
         } else {
           alert(data.message || 'Erro ao criar cobrança');
@@ -392,13 +669,6 @@
       } catch (e) {
         console.error(e);
         alert('Erro ao criar cobrança');
-      }
-    });
-
-    // Fechar resultados ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.cliente-search')) {
-        document.getElementById('clienteResults').classList.remove('active');
       }
     });
 
@@ -415,8 +685,11 @@
         });
     }
 
+    // Inicialização
     carregarUsuario();
     carregarBadges();
+    carregarCredores();
+    atualizarResumo();
   </script>
 </body>
 </html>
