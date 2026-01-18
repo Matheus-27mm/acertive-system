@@ -537,7 +537,7 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
         };
         
         try {
-          const customerRes = await asaasRequest('POST', '/customers', customerPayload);
+          const customerRes = await asaasRequest('/customers', 'POST', customerPayload);
           customerId = customerRes.id;
           
           // Salvar no banco
@@ -575,7 +575,7 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
       
       console.log(`[PARCELA-ASAAS] Criando cobrança:`, cobrancaPayload);
       
-      const asaasRes = await asaasRequest('POST', '/payments', cobrancaPayload);
+     const asaasRes = await asaasRequest('/payments', 'POST', cobrancaPayload);
       
       // Atualizar parcela com dados do Asaas
       await pool.query(`
