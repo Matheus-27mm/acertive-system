@@ -1,8 +1,8 @@
 /**
- * ROTAS DE PARCELAS - ACERTIVE
- * Gerenciamento de parcelas de acordos com integração Asaas
+ * ROTAS DE PARCELAS - ACERTIVE v2.2
+ * Controle de pagamentos dos acordos
  * 
- * ATUALIZADO: Inclui rota para gerar cobrança individual no Asaas
+ * ATUALIZADO: Adicionada rota para gerar cobrança no Asaas
  */
 
 const express = require('express');
@@ -11,102 +11,86 @@ const router = express.Router();
 module.exports = (pool, auth, registrarLog, asaasRequest) => {
 
   // =====================================================
-  // GET /api/parcelas - Listar parcelas com filtros
+  // GET /api/parcelas - Listar parcelas (com filtros avançados)
   // =====================================================
   router.get('/', auth, async (req, res) => {
     try {
-      const { status, periodo, credor_id, acordo_id, cliente_id } = req.query;
-      const empresaId = req.user.empresa_id;
+      const { status, periodo, credor_id, acordo_id, cliente_id, page = 1, limit = 50 } = req.query;
       
-      let query = `
+      let sql = `
         SELECT 
           p.*,
+          a.id as acordo_id,
           a.valor_acordo,
-          a.valor_original,
+          a.numero_parcelas as total_parcelas,
           a.status as acordo_status,
-          a.cobranca_id,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          c.email as cliente_email,
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cl.email as cliente_email,
           cr.nome as credor_nome,
-          cr.id as credor_id,
-          (SELECT COUNT(*) FROM parcelas WHERE acordo_id = p.acordo_id) as total_parcelas
+          cr.id as credor_id
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
-        WHERE a.empresa_id = $1
+        WHERE a.status IN ('ativo', 'quitado')
       `;
       
-      const params = [empresaId];
-      let paramCount = 1;
+      const params = [];
+      let idx = 1;
       
-      // Filtro por status
-      if (status && status !== 'todas') {
-        paramCount++;
-        query += ` AND p.status = $${paramCount}`;
+      // Filtro por status da parcela
+      if (status) {
+        sql += ` AND p.status = $${idx}`;
         params.push(status);
-      }
-      
-      // Filtro por período
-      if (periodo) {
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        
-        if (periodo === 'hoje') {
-          paramCount++;
-          query += ` AND DATE(p.data_vencimento) = $${paramCount}`;
-          params.push(hoje.toISOString().split('T')[0]);
-        } else if (periodo === 'semana') {
-          const fimSemana = new Date(hoje);
-          fimSemana.setDate(fimSemana.getDate() + 7);
-          paramCount++;
-          query += ` AND p.data_vencimento BETWEEN $${paramCount}`;
-          params.push(hoje.toISOString().split('T')[0]);
-          paramCount++;
-          query += ` AND $${paramCount}`;
-          params.push(fimSemana.toISOString().split('T')[0]);
-        } else if (periodo === 'mes') {
-          const fimMes = new Date(hoje);
-          fimMes.setDate(fimMes.getDate() + 30);
-          paramCount++;
-          query += ` AND p.data_vencimento BETWEEN $${paramCount}`;
-          params.push(hoje.toISOString().split('T')[0]);
-          paramCount++;
-          query += ` AND $${paramCount}`;
-          params.push(fimMes.toISOString().split('T')[0]);
-        }
+        idx++;
       }
       
       // Filtro por credor
       if (credor_id) {
-        paramCount++;
-        query += ` AND a.credor_id = $${paramCount}`;
+        sql += ` AND a.credor_id = $${idx}`;
         params.push(credor_id);
+        idx++;
       }
       
-      // Filtro por acordo
+      // Filtro por acordo específico
       if (acordo_id) {
-        paramCount++;
-        query += ` AND p.acordo_id = $${paramCount}`;
+        sql += ` AND p.acordo_id = $${idx}`;
         params.push(acordo_id);
+        idx++;
       }
       
       // Filtro por cliente
       if (cliente_id) {
-        paramCount++;
-        query += ` AND a.cliente_id = $${paramCount}`;
+        sql += ` AND a.cliente_id = $${idx}`;
         params.push(cliente_id);
+        idx++;
       }
       
-      query += ' ORDER BY p.data_vencimento ASC';
+      // Filtros de período
+      if (periodo === 'hoje') {
+        sql += ` AND DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente'`;
+      } else if (periodo === 'semana') {
+        sql += ` AND p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days' AND p.status = 'pendente'`;
+      } else if (periodo === 'vencidas') {
+        sql += ` AND p.data_vencimento < CURRENT_DATE AND p.status = 'pendente'`;
+      } else if (periodo === 'futuras') {
+        sql += ` AND p.data_vencimento > CURRENT_DATE AND p.status = 'pendente'`;
+      } else if (periodo === 'mes') {
+        sql += ` AND EXTRACT(MONTH FROM p.data_vencimento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_vencimento) = EXTRACT(YEAR FROM CURRENT_DATE)`;
+      }
       
-      const result = await pool.query(query, params);
-      res.json(result.rows);
+      sql += ` ORDER BY p.data_vencimento ASC LIMIT $${idx} OFFSET $${idx + 1}`;
+      params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
+      
+      const resultado = await pool.query(sql, params);
+      
+      return res.json({ success: true, data: resultado.rows });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao listar:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcelas' });
+      console.error('[GET /api/parcelas] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao listar parcelas.' });
     }
   });
 
@@ -115,168 +99,205 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
   // =====================================================
   router.get('/stats', auth, async (req, res) => {
     try {
-      const empresaId = req.user.empresa_id;
-      const hoje = new Date().toISOString().split('T')[0];
-      
-      // Início do mês atual
-      const inicioMes = new Date();
-      inicioMes.setDate(1);
-      const inicioMesStr = inicioMes.toISOString().split('T')[0];
-      
       const stats = await pool.query(`
-        SELECT
-          COUNT(*) FILTER (WHERE DATE(p.data_vencimento) = $2 AND p.status = 'pendente') as vence_hoje,
-          COALESCE(SUM(p.valor) FILTER (WHERE DATE(p.data_vencimento) = $2 AND p.status = 'pendente'), 0) as valor_hoje,
-          COUNT(*) FILTER (WHERE p.data_vencimento > $2 AND p.status = 'pendente') as futuras,
-          COALESCE(SUM(p.valor) FILTER (WHERE p.data_vencimento > $2 AND p.status = 'pendente'), 0) as valor_futuras,
-          COUNT(*) FILTER (WHERE p.data_vencimento < $2 AND p.status = 'pendente') as vencidas,
-          COALESCE(SUM(p.valor) FILTER (WHERE p.data_vencimento < $2 AND p.status = 'pendente'), 0) as valor_vencidas,
-          COUNT(*) FILTER (WHERE p.status = 'pago') as pagas_total,
-          COALESCE(SUM(p.valor_pago) FILTER (WHERE p.status = 'pago'), 0) as valor_pago_total,
-          COUNT(*) FILTER (WHERE p.status = 'pago' AND p.data_pagamento >= $3) as pagas_mes,
-          COALESCE(SUM(p.valor_pago) FILTER (WHERE p.status = 'pago' AND p.data_pagamento >= $3), 0) as valor_pago_mes
+        SELECT 
+          -- Vencendo hoje
+          COUNT(CASE WHEN DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as vencendo_hoje,
+          COALESCE(SUM(CASE WHEN DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_hoje,
+          
+          -- Vencendo na semana
+          COUNT(CASE WHEN p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND p.status = 'pendente' THEN 1 END)::int as vencendo_semana,
+          COALESCE(SUM(CASE WHEN p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_semana,
+          
+          -- Futuras (após hoje)
+          COUNT(CASE WHEN p.data_vencimento > CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as futuras,
+          COALESCE(SUM(CASE WHEN p.data_vencimento > CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_futuras,
+          
+          -- Vencidas
+          COUNT(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as vencidas,
+          COALESCE(SUM(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_vencidas,
+          
+          -- Pagas no mês
+          COUNT(CASE WHEN p.status = 'pago' AND EXTRACT(MONTH FROM p.data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_pagamento) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 END)::int as pagas_mes,
+          COALESCE(SUM(CASE WHEN p.status = 'pago' AND EXTRACT(MONTH FROM p.data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_pagamento) = EXTRACT(YEAR FROM CURRENT_DATE) THEN COALESCE(p.valor_pago, p.valor) ELSE 0 END), 0)::numeric as valor_pago_mes,
+          
+          -- Total pagas (geral)
+          COUNT(CASE WHEN p.status = 'pago' THEN 1 END)::int as total_pagas,
+          COALESCE(SUM(CASE WHEN p.status = 'pago' THEN COALESCE(p.valor_pago, p.valor) ELSE 0 END), 0)::numeric as valor_total_pago
+          
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        WHERE a.empresa_id = $1
-      `, [empresaId, hoje, inicioMesStr]);
+        WHERE a.status IN ('ativo', 'quitado')
+      `);
       
-      res.json(stats.rows[0]);
+      const row = stats.rows[0];
+      
+      // Taxa de pagamento
+      const totalParcelas = await pool.query(`
+        SELECT COUNT(*)::int as total 
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        WHERE p.data_vencimento <= CURRENT_DATE AND a.status IN ('ativo', 'quitado')
+      `);
+      
+      const taxaPagamento = totalParcelas.rows[0].total > 0
+        ? ((row.total_pagas / totalParcelas.rows[0].total) * 100).toFixed(1)
+        : 0;
+      
+      return res.json({
+        success: true,
+        data: {
+          vencendoHoje: { quantidade: row.vencendo_hoje, valor: parseFloat(row.valor_hoje) },
+          vencendoSemana: { quantidade: row.vencendo_semana, valor: parseFloat(row.valor_semana) },
+          futuras: { quantidade: row.futuras, valor: parseFloat(row.valor_futuras) },
+          vencidas: { quantidade: row.vencidas, valor: parseFloat(row.valor_vencidas) },
+          pagasMes: { quantidade: row.pagas_mes, valor: parseFloat(row.valor_pago_mes) },
+          totalPagas: { quantidade: row.total_pagas, valor: parseFloat(row.valor_total_pago) },
+          taxaPagamento: parseFloat(taxaPagamento)
+        }
+      });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar stats:', err);
-      res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+      console.error('[GET /api/parcelas/stats] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas.' });
     }
   });
 
   // =====================================================
-  // GET /api/parcelas/futuras - Parcelas futuras
+  // GET /api/parcelas/futuras - Listar parcelas futuras
   // =====================================================
   router.get('/futuras', auth, async (req, res) => {
     try {
-      const empresaId = req.user.empresa_id;
-      const hoje = new Date().toISOString().split('T')[0];
+      const { limit = 100 } = req.query;
       
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          cr.nome as credor_nome,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
           a.status as acordo_status,
-          (SELECT COUNT(*) FROM parcelas WHERE acordo_id = p.acordo_id) as total_parcelas
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cr.nome as credor_nome
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
-        WHERE a.empresa_id = $1
-          AND p.data_vencimento > $2
-          AND p.status = 'pendente'
+        WHERE p.status = 'pendente'
+          AND p.data_vencimento > CURRENT_DATE
           AND a.status = 'ativo'
         ORDER BY p.data_vencimento ASC
-      `, [empresaId, hoje]);
+        LIMIT $1
+      `, [parseInt(limit)]);
       
-      res.json(result.rows);
+      return res.json({ success: true, data: resultado.rows });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar futuras:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcelas futuras' });
+      console.error('[GET /api/parcelas/futuras] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas futuras.' });
     }
   });
 
   // =====================================================
-  // GET /api/parcelas/vencidas - Parcelas vencidas
+  // GET /api/parcelas/vencidas - Listar parcelas vencidas
   // =====================================================
   router.get('/vencidas', auth, async (req, res) => {
     try {
-      const empresaId = req.user.empresa_id;
-      const hoje = new Date().toISOString().split('T')[0];
+      const { limit = 100 } = req.query;
       
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          cr.nome as credor_nome,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
           a.status as acordo_status,
-          (SELECT COUNT(*) FROM parcelas WHERE acordo_id = p.acordo_id) as total_parcelas,
-          ($2::date - p.data_vencimento::date) as dias_atraso
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cr.nome as credor_nome,
+          CURRENT_DATE - DATE(p.data_vencimento) as dias_atraso
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
-        WHERE a.empresa_id = $1
-          AND p.data_vencimento < $2
-          AND p.status = 'pendente'
+        WHERE p.status = 'pendente'
+          AND p.data_vencimento < CURRENT_DATE
+          AND a.status = 'ativo'
         ORDER BY p.data_vencimento ASC
-      `, [empresaId, hoje]);
+        LIMIT $1
+      `, [parseInt(limit)]);
       
-      res.json(result.rows);
+      return res.json({ success: true, data: resultado.rows });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar vencidas:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcelas vencidas' });
+      console.error('[GET /api/parcelas/vencidas] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas vencidas.' });
     }
   });
 
   // =====================================================
-  // GET /api/parcelas/hoje - Parcelas que vencem hoje
+  // GET /api/parcelas/hoje - Listar parcelas vencendo hoje
   // =====================================================
   router.get('/hoje', auth, async (req, res) => {
     try {
-      const empresaId = req.user.empresa_id;
-      const hoje = new Date().toISOString().split('T')[0];
-      
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          cr.nome as credor_nome,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
           a.status as acordo_status,
-          (SELECT COUNT(*) FROM parcelas WHERE acordo_id = p.acordo_id) as total_parcelas
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cl.email as cliente_email,
+          cr.nome as credor_nome
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
-        WHERE a.empresa_id = $1
-          AND DATE(p.data_vencimento) = $2
-          AND p.status = 'pendente'
-        ORDER BY p.data_vencimento ASC
-      `, [empresaId, hoje]);
+        WHERE p.status = 'pendente'
+          AND DATE(p.data_vencimento) = CURRENT_DATE
+          AND a.status = 'ativo'
+        ORDER BY cl.nome ASC
+      `);
       
-      res.json(result.rows);
+      return res.json({ success: true, data: resultado.rows });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar hoje:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcelas de hoje' });
+      console.error('[GET /api/parcelas/hoje] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas de hoje.' });
     }
   });
 
   // =====================================================
   // GET /api/parcelas/por-acordo/:acordoId - Parcelas de um acordo
+  // (DEVE VIR ANTES DE /:id para não conflitar)
   // =====================================================
   router.get('/por-acordo/:acordoId', auth, async (req, res) => {
     try {
       const { acordoId } = req.params;
       
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
-          c.nome as cliente_nome,
-          cr.nome as credor_nome
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
+          a.status as acordo_status
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
-        LEFT JOIN credores cr ON cr.id = a.credor_id
         WHERE p.acordo_id = $1
-        ORDER BY p.numero_parcela ASC
+        ORDER BY p.numero ASC
       `, [acordoId]);
       
-      res.json(result.rows);
+      return res.json({ success: true, data: resultado.rows });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar por acordo:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcelas do acordo' });
+      console.error('[GET /api/parcelas/por-acordo/:acordoId] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas do acordo.' });
     }
   });
 
@@ -287,34 +308,36 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
     try {
       const { id } = req.params;
       
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
+          a.id as acordo_id,
           a.valor_acordo,
-          a.valor_original,
+          a.numero_parcelas as total_parcelas,
           a.status as acordo_status,
           a.cobranca_id,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          c.email as cliente_email,
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cl.email as cliente_email,
           cr.nome as credor_nome,
-          (SELECT COUNT(*) FROM parcelas WHERE acordo_id = p.acordo_id) as total_parcelas
+          cr.id as credor_id
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
         WHERE p.id = $1
       `, [id]);
       
-      if (result.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
+      if (!resultado.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
       }
       
-      res.json(result.rows[0]);
+      return res.json({ success: true, data: resultado.rows[0] });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao buscar:', err);
-      res.status(500).json({ error: 'Erro ao buscar parcela' });
+      console.error('[GET /api/parcelas/:id] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcela.' });
     }
   });
 
@@ -322,197 +345,139 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
   // POST /api/parcelas/:id/pagar - Registrar pagamento
   // =====================================================
   router.post('/:id/pagar', auth, async (req, res) => {
+    const client = await pool.connect();
+    
     try {
       const { id } = req.params;
-      const { valor_pago, data_pagamento, forma_pagamento, observacao } = req.body;
+      const { valor_pago, data_pagamento, forma_pagamento, observacoes } = req.body || {};
       
-      // Buscar parcela
-      const parcelaResult = await pool.query(`
-        SELECT p.*, a.id as acordo_id, a.cobranca_id, a.credor_id, a.cliente_id
+      await client.query('BEGIN');
+      
+      // Buscar parcela com dados do acordo
+      const parcela = await client.query(`
+        SELECT p.*, a.id as acordo_id, a.credor_id, a.cobranca_id, a.cliente_id
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
         WHERE p.id = $1
       `, [id]);
       
-      if (parcelaResult.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
+      if (!parcela.rowCount) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
       }
       
-      const parcela = parcelaResult.rows[0];
+      const p = parcela.rows[0];
+      
+      // Verificar se já está paga
+      if (p.status === 'pago') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ success: false, message: 'Esta parcela já está paga.' });
+      }
+      
+      const valorPago = parseFloat(valor_pago) || p.valor;
+      const dataPagamento = data_pagamento || new Date().toISOString().split('T')[0];
+      const formaPag = forma_pagamento || 'pix';
       
       // Atualizar parcela
-      await pool.query(`
-        UPDATE parcelas SET 
+      await client.query(`
+        UPDATE parcelas SET
           status = 'pago',
           valor_pago = $1,
           data_pagamento = $2,
           forma_pagamento = $3,
-          observacao = COALESCE($4, observacao),
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $4
+            ELSE CONCAT(observacoes, ' | ', $4)
+          END,
           updated_at = NOW()
         WHERE id = $5
-      `, [
-        valor_pago || parcela.valor,
-        data_pagamento || new Date().toISOString().split('T')[0],
-        forma_pagamento || 'manual',
-        observacao,
-        id
-      ]);
+      `, [valorPago, dataPagamento, formaPag, observacoes || '', id]);
       
       // Verificar se todas as parcelas foram pagas
-      const parcelasPendentes = await pool.query(`
+      const parcelasPendentes = await client.query(`
         SELECT COUNT(*)::int as total 
         FROM parcelas 
         WHERE acordo_id = $1 AND status != 'pago'
-      `, [parcela.acordo_id]);
+      `, [p.acordo_id]);
       
       const acordoQuitado = parseInt(parcelasPendentes.rows[0].total) === 0;
       
       if (acordoQuitado) {
-        // Atualizar acordo para quitado
-        await pool.query(`
-          UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1
-        `, [parcela.acordo_id]);
+        // Acordo quitado! Atualizar status
+        await client.query(
+          'UPDATE acordos SET status = $1, updated_at = NOW() WHERE id = $2',
+          ['quitado', p.acordo_id]
+        );
         
-        // Atualizar cobrança original para pago
-        if (parcela.cobranca_id) {
-          await pool.query(`
-            UPDATE cobrancas SET 
-              status = 'pago', 
-              data_pagamento = $1,
-              updated_at = NOW() 
-            WHERE id = $2
-          `, [data_pagamento || new Date().toISOString().split('T')[0], parcela.cobranca_id]);
+        // Atualizar cobrança original para PAGO
+        if (p.cobranca_id) {
+          await client.query(
+            'UPDATE cobrancas SET status = $1, data_pagamento = $2, updated_at = NOW() WHERE id = $3',
+            ['pago', dataPagamento, p.cobranca_id]
+          );
         }
       }
       
       // Registrar comissão (se tiver credor)
-      if (parcela.credor_id) {
-        try {
-          const credorResult = await pool.query(
-            'SELECT comissao_percentual FROM credores WHERE id = $1',
-            [parcela.credor_id]
-          );
+      if (p.credor_id) {
+        const credor = await client.query(
+          'SELECT comissao_percentual FROM credores WHERE id = $1',
+          [p.credor_id]
+        );
+        
+        if (credor.rowCount > 0) {
+          const comissaoPerc = parseFloat(credor.rows[0].comissao_percentual) || 10;
+          const comissaoValor = (valorPago * comissaoPerc) / 100;
           
-          if (credorResult.rowCount > 0) {
-            const comissaoPerc = parseFloat(credorResult.rows[0].comissao_percentual) || 10;
-            const valorBase = parseFloat(valor_pago || parcela.valor);
-            const valorComissao = (valorBase * comissaoPerc) / 100;
-            
-            await pool.query(`
+          try {
+            await client.query(`
               INSERT INTO comissoes (
                 credor_id, parcela_id, acordo_id, cliente_id,
                 valor_base, percentual, valor_comissao,
                 status, created_at
               ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pendente', NOW())
-            `, [
-              parcela.credor_id,
-              id,
-              parcela.acordo_id,
-              parcela.cliente_id,
-              valorBase,
-              comissaoPerc,
-              valorComissao
-            ]);
+            `, [p.credor_id, id, p.acordo_id, p.cliente_id, valorPago, comissaoPerc, comissaoValor]);
+          } catch (comissaoErr) {
+            console.warn('[PARCELAS] Aviso ao registrar comissão:', comissaoErr.message);
           }
-        } catch (comErr) {
-          console.warn('[PARCELAS] Aviso ao registrar comissão:', comErr.message);
         }
       }
       
-      // Registrar log
+      await client.query('COMMIT');
+      
       if (registrarLog) {
-        await registrarLog(
-          req.user.id,
-          req.user.empresa_id,
-          'parcela_paga',
-          'parcelas',
-          id,
-          { valor_pago, forma_pagamento, acordo_quitado: acordoQuitado }
-        );
+        await registrarLog(req, 'PAGAR', 'parcelas', id, { 
+          valor_pago: valorPago, 
+          forma: formaPag,
+          acordo_id: p.acordo_id,
+          acordo_quitado: acordoQuitado
+        });
       }
       
-      res.json({
+      return res.json({
         success: true,
-        message: acordoQuitado ? 'Parcela paga! Acordo quitado!' : 'Pagamento registrado',
-        acordoQuitado
-      });
-      
-    } catch (err) {
-      console.error('[PARCELAS] Erro ao pagar:', err);
-      res.status(500).json({ error: 'Erro ao registrar pagamento' });
-    }
-  });
-
-  // =====================================================
-  // POST /api/parcelas/pagar-massa - Pagar múltiplas parcelas
-  // =====================================================
-  router.post('/pagar-massa', auth, async (req, res) => {
-    try {
-      const { ids, data_pagamento, forma_pagamento } = req.body;
-      
-      if (!ids || !Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ error: 'IDs das parcelas são obrigatórios' });
-      }
-      
-      const dataPag = data_pagamento || new Date().toISOString().split('T')[0];
-      const forma = forma_pagamento || 'manual';
-      
-      // Atualizar todas as parcelas
-      await pool.query(`
-        UPDATE parcelas SET 
-          status = 'pago',
-          valor_pago = valor,
-          data_pagamento = $1,
-          forma_pagamento = $2,
-          updated_at = NOW()
-        WHERE id = ANY($3)
-      `, [dataPag, forma, ids]);
-      
-      // Verificar acordos que podem ter sido quitados
-      const acordosAfetados = await pool.query(`
-        SELECT DISTINCT acordo_id FROM parcelas WHERE id = ANY($1)
-      `, [ids]);
-      
-      let acordosQuitados = 0;
-      
-      for (const row of acordosAfetados.rows) {
-        const pendentes = await pool.query(`
-          SELECT COUNT(*)::int as total 
-          FROM parcelas 
-          WHERE acordo_id = $1 AND status != 'pago'
-        `, [row.acordo_id]);
-        
-        if (parseInt(pendentes.rows[0].total) === 0) {
-          await pool.query(`
-            UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1
-          `, [row.acordo_id]);
-          
-          // Atualizar cobrança original
-          const acordo = await pool.query('SELECT cobranca_id FROM acordos WHERE id = $1', [row.acordo_id]);
-          if (acordo.rows[0]?.cobranca_id) {
-            await pool.query(`
-              UPDATE cobrancas SET status = 'pago', data_pagamento = $1, updated_at = NOW() WHERE id = $2
-            `, [dataPag, acordo.rows[0].cobranca_id]);
-          }
-          
-          acordosQuitados++;
+        message: acordoQuitado 
+          ? '🎉 Pagamento registrado! Acordo QUITADO!'
+          : '✅ Pagamento registrado com sucesso!',
+        acordoQuitado,
+        data: {
+          parcela_id: id,
+          acordo_id: p.acordo_id,
+          valor_pago: valorPago
         }
-      }
-      
-      res.json({
-        success: true,
-        message: `${ids.length} parcela(s) paga(s)`,
-        acordosQuitados
       });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao pagar em massa:', err);
-      res.status(500).json({ error: 'Erro ao registrar pagamentos' });
+      await client.query('ROLLBACK');
+      console.error('[POST /api/parcelas/:id/pagar] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao registrar pagamento.' });
+    } finally {
+      client.release();
     }
   });
 
   // =====================================================
-  // POST /api/parcelas/:id/gerar-asaas - Gerar cobrança no Asaas
+  // POST /api/parcelas/:id/gerar-asaas - NOVO: Gerar cobrança no Asaas
   // =====================================================
   router.post('/:id/gerar-asaas', auth, async (req, res) => {
     try {
@@ -520,7 +485,7 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
       
       // Verificar se asaasRequest está disponível
       if (!asaasRequest) {
-        return res.status(500).json({ error: 'Integração Asaas não configurada' });
+        return res.status(500).json({ success: false, message: 'Integração Asaas não configurada.' });
       }
       
       // Buscar parcela com dados do acordo e cliente
@@ -529,19 +494,19 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
           p.*,
           a.id as acordo_id,
           a.cliente_id,
-          c.nome as cliente_nome,
-          c.cpf_cnpj as cliente_documento,
-          c.email as cliente_email,
-          c.telefone as cliente_telefone,
-          c.asaas_customer_id
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_documento,
+          cl.email as cliente_email,
+          cl.telefone as cliente_telefone,
+          cl.asaas_customer_id
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        JOIN clientes cl ON cl.id = a.cliente_id
         WHERE p.id = $1
       `, [id]);
       
       if (parcelaResult.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
       }
       
       const parcela = parcelaResult.rows[0];
@@ -549,7 +514,8 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
       // Verificar se já tem cobrança no Asaas
       if (parcela.asaas_id) {
         return res.status(400).json({ 
-          error: 'Parcela já tem cobrança no Asaas',
+          success: false,
+          message: 'Parcela já tem cobrança no Asaas.',
           asaasId: parcela.asaas_id,
           invoiceUrl: parcela.asaas_invoice_url
         });
@@ -581,7 +547,7 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
           );
         } catch (custErr) {
           console.error('[PARCELA-ASAAS] Erro ao criar cliente:', custErr);
-          return res.status(500).json({ error: 'Erro ao sincronizar cliente no Asaas: ' + custErr.message });
+          return res.status(500).json({ success: false, message: 'Erro ao sincronizar cliente no Asaas: ' + custErr.message });
         }
       }
       
@@ -603,7 +569,7 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
         billingType: 'UNDEFINED', // Cliente escolhe PIX ou Boleto
         value: parseFloat(parcela.valor),
         dueDate: dueDate,
-        description: `Parcela ${parcela.numero_parcela} - Acordo #${(parcela.acordo_id || '').substring(0, 8)}`,
+        description: `Parcela ${parcela.numero} - Acordo #${(parcela.acordo_id || '').toString().substring(0, 8)}`,
         externalReference: `PARCELA:${parcela.id}`
       };
       
@@ -622,21 +588,13 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
       
       console.log(`[PARCELA-ASAAS] ✅ Cobrança criada: ${asaasRes.id}`);
       
-      // Registrar log
       if (registrarLog) {
-        await registrarLog(
-          req.user.id,
-          req.user.empresa_id,
-          'parcela_asaas_gerada',
-          'parcelas',
-          id,
-          { asaas_id: asaasRes.id }
-        );
+        await registrarLog(req, 'GERAR_ASAAS', 'parcelas', id, { asaas_id: asaasRes.id });
       }
       
-      res.json({
+      return res.json({
         success: true,
-        message: 'Cobrança criada no Asaas',
+        message: 'Cobrança criada no Asaas!',
         asaasId: asaasRes.id,
         invoiceUrl: asaasRes.invoiceUrl,
         bankSlipUrl: asaasRes.bankSlipUrl,
@@ -645,7 +603,97 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
       
     } catch (err) {
       console.error('[PARCELA-ASAAS] Erro:', err);
-      res.status(500).json({ error: err.message || 'Erro ao gerar cobrança' });
+      return res.status(500).json({ success: false, message: err.message || 'Erro ao gerar cobrança.' });
+    }
+  });
+
+  // =====================================================
+  // POST /api/parcelas/pagar-massa - Pagar múltiplas parcelas
+  // =====================================================
+  router.post('/pagar-massa', auth, async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+      const { ids, forma_pagamento = 'pix' } = req.body || {};
+      
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, message: 'Nenhuma parcela selecionada.' });
+      }
+      
+      await client.query('BEGIN');
+      
+      let pagasCount = 0;
+      let acordosQuitados = [];
+      
+      for (const id of ids) {
+        const parcela = await client.query(`
+          SELECT p.*, a.id as acordo_id, a.cobranca_id
+          FROM parcelas p
+          JOIN acordos a ON a.id = p.acordo_id
+          WHERE p.id = $1 AND p.status = 'pendente'
+        `, [id]);
+        
+        if (parcela.rowCount === 0) continue;
+        
+        const p = parcela.rows[0];
+        
+        await client.query(`
+          UPDATE parcelas SET
+            status = 'pago',
+            valor_pago = valor,
+            data_pagamento = CURRENT_DATE,
+            forma_pagamento = $1,
+            updated_at = NOW()
+          WHERE id = $2
+        `, [forma_pagamento, id]);
+        
+        pagasCount++;
+        
+        const pendentes = await client.query(`
+          SELECT COUNT(*)::int as total 
+          FROM parcelas 
+          WHERE acordo_id = $1 AND status != 'pago'
+        `, [p.acordo_id]);
+        
+        if (parseInt(pendentes.rows[0].total) === 0) {
+          await client.query(
+            'UPDATE acordos SET status = $1, updated_at = NOW() WHERE id = $2',
+            ['quitado', p.acordo_id]
+          );
+          
+          if (p.cobranca_id) {
+            await client.query(
+              'UPDATE cobrancas SET status = $1, data_pagamento = CURRENT_DATE, updated_at = NOW() WHERE id = $2',
+              ['pago', p.cobranca_id]
+            );
+          }
+          
+          acordosQuitados.push(p.acordo_id);
+        }
+      }
+      
+      await client.query('COMMIT');
+      
+      if (registrarLog) {
+        await registrarLog(req, 'PAGAR_MASSA', 'parcelas', null, { 
+          quantidade: pagasCount,
+          acordos_quitados: acordosQuitados.length
+        });
+      }
+      
+      return res.json({
+        success: true,
+        message: `${pagasCount} parcela(s) paga(s)${acordosQuitados.length > 0 ? `. ${acordosQuitados.length} acordo(s) quitado(s)!` : ''}`,
+        pagas: pagasCount,
+        acordosQuitados: acordosQuitados.length
+      });
+      
+    } catch (err) {
+      await client.query('ROLLBACK');
+      console.error('[POST /api/parcelas/pagar-massa] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao registrar pagamentos.' });
+    } finally {
+      client.release();
     }
   });
 
@@ -655,69 +703,50 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
   router.put('/:id/reagendar', auth, async (req, res) => {
     try {
       const { id } = req.params;
-      const { nova_data, motivo } = req.body;
+      const { nova_data, motivo } = req.body || {};
       
       if (!nova_data) {
-        return res.status(400).json({ error: 'Nova data é obrigatória' });
+        return res.status(400).json({ success: false, message: 'Nova data é obrigatória.' });
       }
       
-      // Buscar parcela atual
-      const parcelaResult = await pool.query('SELECT * FROM parcelas WHERE id = $1', [id]);
+      const check = await pool.query(
+        'SELECT id, status FROM parcelas WHERE id = $1',
+        [id]
+      );
       
-      if (parcelaResult.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
+      if (!check.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
       }
       
-      const parcela = parcelaResult.rows[0];
-      const dataAnterior = parcela.data_vencimento;
+      if (check.rows[0].status === 'pago') {
+        return res.status(400).json({ success: false, message: 'Não é possível reagendar parcela já paga.' });
+      }
       
-      // Atualizar parcela
-      await pool.query(`
-        UPDATE parcelas SET 
+      const resultado = await pool.query(`
+        UPDATE parcelas SET
           data_vencimento = $1,
-          observacao = COALESCE(observacao, '') || $2,
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $2
+            ELSE CONCAT(observacoes, ' | Reagendado: ', $2)
+          END,
           updated_at = NOW()
         WHERE id = $3
-      `, [
-        nova_data,
-        `\n[Reagendada de ${new Date(dataAnterior).toLocaleDateString('pt-BR')} para ${new Date(nova_data).toLocaleDateString('pt-BR')}${motivo ? ': ' + motivo : ''}]`,
-        id
-      ]);
+        RETURNING *
+      `, [nova_data, motivo || 'Solicitação do devedor', id]);
       
-      // Se tiver cobrança no Asaas, atualizar lá também
-      if (parcela.asaas_id && asaasRequest) {
-        try {
-          await asaasRequest('POST', `/payments/${parcela.asaas_id}`, {
-            dueDate: nova_data
-          });
-          console.log(`[PARCELA] Atualizada no Asaas: ${parcela.asaas_id}`);
-        } catch (asaasErr) {
-          console.warn('[PARCELA] Não foi possível atualizar no Asaas:', asaasErr.message);
-        }
-      }
-      
-      // Registrar log
       if (registrarLog) {
-        await registrarLog(
-          req.user.id,
-          req.user.empresa_id,
-          'parcela_reagendada',
-          'parcelas',
-          id,
-          { data_anterior: dataAnterior, nova_data, motivo }
-        );
+        await registrarLog(req, 'REAGENDAR', 'parcelas', id, { nova_data, motivo });
       }
       
-      res.json({ 
+      return res.json({ 
         success: true, 
-        message: 'Parcela reagendada',
-        data_anterior: dataAnterior,
-        nova_data
+        data: resultado.rows[0], 
+        message: '✅ Parcela reagendada com sucesso!' 
       });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao reagendar:', err);
-      res.status(500).json({ error: 'Erro ao reagendar parcela' });
+      console.error('[PUT /api/parcelas/:id/reagendar] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao reagendar parcela.' });
     }
   });
 
@@ -727,56 +756,37 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
   router.put('/:id/cancelar', auth, async (req, res) => {
     try {
       const { id } = req.params;
-      const { motivo } = req.body;
+      const { motivo } = req.body || {};
       
-      // Buscar parcela
-      const parcelaResult = await pool.query('SELECT * FROM parcelas WHERE id = $1', [id]);
-      
-      if (parcelaResult.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
-      }
-      
-      const parcela = parcelaResult.rows[0];
-      
-      // Atualizar parcela
-      await pool.query(`
-        UPDATE parcelas SET 
+      const resultado = await pool.query(`
+        UPDATE parcelas SET
           status = 'cancelado',
-          observacao = COALESCE(observacao, '') || $1,
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $1
+            ELSE CONCAT(observacoes, ' | CANCELADO: ', $1)
+          END,
           updated_at = NOW()
-        WHERE id = $2
-      `, [
-        `\n[Cancelada${motivo ? ': ' + motivo : ''}]`,
-        id
-      ]);
+        WHERE id = $2 AND status = 'pendente'
+        RETURNING *
+      `, [motivo || 'Cancelado pelo operador', id]);
       
-      // Se tiver cobrança no Asaas, cancelar lá também
-      if (parcela.asaas_id && asaasRequest) {
-        try {
-          await asaasRequest('DELETE', `/payments/${parcela.asaas_id}`);
-          console.log(`[PARCELA] Cancelada no Asaas: ${parcela.asaas_id}`);
-        } catch (asaasErr) {
-          console.warn('[PARCELA] Não foi possível cancelar no Asaas:', asaasErr.message);
-        }
+      if (!resultado.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada ou já processada.' });
       }
       
-      // Registrar log
       if (registrarLog) {
-        await registrarLog(
-          req.user.id,
-          req.user.empresa_id,
-          'parcela_cancelada',
-          'parcelas',
-          id,
-          { motivo }
-        );
+        await registrarLog(req, 'CANCELAR', 'parcelas', id, { motivo });
       }
       
-      res.json({ success: true, message: 'Parcela cancelada' });
+      return res.json({ 
+        success: true, 
+        data: resultado.rows[0], 
+        message: 'Parcela cancelada.' 
+      });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao cancelar:', err);
-      res.status(500).json({ error: 'Erro ao cancelar parcela' });
+      console.error('[PUT /api/parcelas/:id/cancelar] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao cancelar parcela.' });
     }
   });
 
@@ -787,64 +797,77 @@ module.exports = (pool, auth, registrarLog, asaasRequest) => {
     try {
       const { id } = req.params;
       
-      const result = await pool.query(`
+      const resultado = await pool.query(`
         SELECT 
           p.*,
-          c.nome as cliente_nome,
-          c.telefone as cliente_telefone,
-          a.id as acordo_id
+          cl.nome as cliente_nome,
+          cl.telefone as cliente_telefone,
+          a.valor_acordo,
+          a.numero_parcelas,
+          cr.nome as credor_nome
         FROM parcelas p
         JOIN acordos a ON a.id = p.acordo_id
-        JOIN clientes c ON c.id = a.cliente_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
+        LEFT JOIN credores cr ON cr.id = a.credor_id
         WHERE p.id = $1
       `, [id]);
       
-      if (result.rowCount === 0) {
-        return res.status(404).json({ error: 'Parcela não encontrada' });
+      if (!resultado.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
       }
       
-      const parcela = result.rows[0];
-      const telefone = (parcela.cliente_telefone || '').replace(/\D/g, '');
+      const p = resultado.rows[0];
       
-      if (!telefone) {
-        return res.status(400).json({ error: 'Cliente sem telefone cadastrado' });
+      if (!p.cliente_telefone) {
+        return res.status(400).json({ success: false, message: 'Cliente não possui telefone cadastrado.' });
       }
       
-      const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor);
-      const vencimento = new Date(parcela.data_vencimento).toLocaleDateString('pt-BR');
+      let telefone = String(p.cliente_telefone).replace(/\D/g, '');
+      if (telefone.length === 11 || telefone.length === 10) {
+        telefone = '55' + telefone;
+      }
+      
+      const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor);
+      const vencimento = new Date(p.data_vencimento).toLocaleDateString('pt-BR');
+      
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-      const venc = new Date(parcela.data_vencimento);
-      venc.setHours(0, 0, 0, 0);
-      const vencida = venc < hoje;
+      const dataVenc = new Date(p.data_vencimento);
+      dataVenc.setHours(0, 0, 0, 0);
+      const vencida = dataVenc < hoje;
       
       let mensagem;
+      
       if (vencida) {
-        mensagem = `Olá ${parcela.cliente_nome}! 👋\n\nIdentificamos que a parcela ${parcela.numero_parcela} no valor de ${valor} com vencimento em ${vencimento} está em aberto.\n\n`;
-        if (parcela.asaas_invoice_url) {
-          mensagem += `Para regularizar, acesse o link abaixo:\n${parcela.asaas_invoice_url}\n\n`;
+        const diasAtraso = Math.floor((hoje - dataVenc) / (1000 * 60 * 60 * 24));
+        mensagem = `Olá, *${p.cliente_nome}*! 👋\n\n⚠️ *PARCELA EM ATRASO*\n\n📌 *Parcela:* ${p.numero}/${p.numero_parcelas}\n💰 *Valor:* ${valor}\n📅 *Vencimento:* ${vencimento}\n⏰ *Dias em atraso:* ${diasAtraso} dia(s)`;
+        
+        if (p.asaas_invoice_url) {
+          mensagem += `\n\n🔗 *Link para pagamento:*\n${p.asaas_invoice_url}`;
         }
-        mensagem += `Qualquer dúvida, estamos à disposição! 🙏`;
+        
+        mensagem += `\n\nPor favor, regularize o quanto antes.`;
       } else {
-        mensagem = `Olá ${parcela.cliente_nome}! 👋\n\nSegue o lembrete da parcela ${parcela.numero_parcela}:\n\n💰 Valor: ${valor}\n📅 Vencimento: ${vencimento}\n\n`;
-        if (parcela.asaas_invoice_url) {
-          mensagem += `🔗 Link para pagamento:\n${parcela.asaas_invoice_url}\n\n`;
+        mensagem = `Olá, *${p.cliente_nome}*! 👋\n\n📄 *LEMBRETE DE PARCELA*\n\n📌 *Parcela:* ${p.numero}/${p.numero_parcelas}\n💰 *Valor:* ${valor}\n📅 *Vencimento:* ${vencimento}`;
+        
+        if (p.asaas_invoice_url) {
+          mensagem += `\n\n🔗 *Link para pagamento:*\n${p.asaas_invoice_url}`;
         }
-        mensagem += `Qualquer dúvida, estamos à disposição! 🙏`;
+        
+        mensagem += `\n\n⚠️ Evite juros! Efetue o pagamento até a data.`;
+      }
+
+      const link = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+      
+      if (registrarLog) {
+        await registrarLog(req, 'WHATSAPP', 'parcelas', id, { telefone });
       }
       
-      const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-      
-      res.json({ 
-        url, 
-        telefone, 
-        mensagem,
-        vencida
-      });
+      return res.json({ success: true, link, telefone, mensagem });
       
     } catch (err) {
-      console.error('[PARCELAS] Erro ao gerar WhatsApp:', err);
-      res.status(500).json({ error: 'Erro ao gerar link WhatsApp' });
+      console.error('[GET /api/parcelas/:id/whatsapp] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao gerar link.' });
     }
   });
 
