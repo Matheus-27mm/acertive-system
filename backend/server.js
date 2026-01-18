@@ -288,8 +288,8 @@ pool.connect().then(() => {
 // ROTAS MODULARES - B2B (CREDORES, ACORDOS, PARCELAS)
 // =====================================================
 app.use('/api/credores', credoresRoutes(pool, auth, registrarLog));
-app.use('/api/acordos', acordosRoutes(pool, auth, registrarLog));
-app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog));
+// app.use('/api/acordos', acordosRoutes(pool, auth, registrarLog)); // MOVIDO PARA DEPOIS DO ASAAS
+app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog)); // MOVIDO PARA DEPOIS DO ASAAS
 app.use('/api/financeiro', financeiroRoutes(pool, auth, registrarLog));
 // =====================================================
 // FUNÇÃO DE REGISTRO DE LOG (AUDITORIA)
@@ -4364,7 +4364,11 @@ async function asaasRequest(endpoint, method = 'GET', data = null) {
     throw error;
   }
 }
-
+// =====================================================
+// REGISTRO DE ROTAS DE ACORDOS (com asaasRequest)
+// =====================================================
+app.use('/api/acordos', acordosRoutes(pool, auth, registrarLog, asaasRequest));
+app.use('/api/parcelas', parcelasRoutes(pool, auth, registrarLog, asaasRequest));
 // =====================================================
 // ROTA: STATUS DA INTEGRAÇÃO ASAAS
 // =====================================================
@@ -4876,7 +4880,8 @@ app.post("/api/asaas/cobrancas/:id/notificar", auth, async (req, res) => {
 });
 
 // =====================================================
-// WEBHOOK: RECEBER NOTIFICAÇÕES DO ASAAS
+// WEBHOOK: RECEBER NOTIFICAÇÕES DO ASAAS (ATUALIZADO)
+// Processa pagamentos de COBRANÇAS e PARCELAS
 // =====================================================
 app.post("/api/asaas/webhook", async (req, res) => {
   try {
@@ -4886,6 +4891,7 @@ app.post("/api/asaas/webhook", async (req, res) => {
     
     console.log('[ASAAS WEBHOOK] Evento recebido:', evento);
     console.log('[ASAAS WEBHOOK] Payment ID:', payment?.id);
+    console.log('[ASAAS WEBHOOK] External Reference:', payment?.externalReference);
     
     // Registrar no log
     await pool.query(`
@@ -4895,54 +4901,195 @@ app.post("/api/asaas/webhook", async (req, res) => {
     
     // Processar evento
     if (payment && payment.externalReference) {
-      const cobrancaId = payment.externalReference;
+      const externalRef = payment.externalReference;
       
-      // Verificar se a cobrança existe
-      const cobranca = await pool.query("SELECT id, status FROM cobrancas WHERE id = $1", [cobrancaId]);
+      // =========================================================
+      // VERIFICAR SE É PARCELA OU COBRANÇA
+      // =========================================================
+      const isParcela = externalRef.startsWith('PARCELA:');
       
-      if (cobranca.rowCount > 0) {
-        let novoStatus = null;
-        let dataPagamento = null;
-        let valorPago = null;
-        let formaPagamento = null;
+      if (isParcela) {
+        // =========================================================
+        // PROCESSAR PAGAMENTO DE PARCELA
+        // =========================================================
+        const parcelaId = externalRef.replace('PARCELA:', '');
+        console.log(`[ASAAS WEBHOOK] Processando PARCELA: ${parcelaId}`);
         
-        switch (evento) {
-          case 'PAYMENT_CONFIRMED':
-          case 'PAYMENT_RECEIVED':
-            novoStatus = 'pago';
-            dataPagamento = payment.paymentDate || payment.confirmedDate;
-            valorPago = payment.value;
-            formaPagamento = payment.billingType;
-            console.log(`[ASAAS WEBHOOK] ✅ Cobrança ${cobrancaId} PAGA!`);
-            break;
-            
-          case 'PAYMENT_OVERDUE':
-            novoStatus = 'vencido';
-            console.log(`[ASAAS WEBHOOK] ⚠️ Cobrança ${cobrancaId} VENCIDA`);
-            break;
-            
-          case 'PAYMENT_DELETED':
-          case 'PAYMENT_REFUNDED':
-            novoStatus = evento === 'PAYMENT_REFUNDED' ? 'estornado' : 'cancelado';
-            console.log(`[ASAAS WEBHOOK] ❌ Cobrança ${cobrancaId} ${novoStatus.toUpperCase()}`);
-            break;
-        }
+        // Buscar parcela com dados do acordo
+        const parcelaResult = await pool.query(`
+          SELECT p.*, a.id as acordo_id, a.cobranca_id, a.cliente_id
+          FROM parcelas p
+          JOIN acordos a ON a.id = p.acordo_id
+          WHERE p.id = $1
+        `, [parcelaId]);
         
-        if (novoStatus) {
-          await pool.query(`
-            UPDATE cobrancas SET 
-              status = $1,
-              data_pagamento = COALESCE($2, data_pagamento),
-              valor_pago = COALESCE($3, valor_pago),
-              forma_pagamento = COALESCE($4, forma_pagamento)
-            WHERE id = $5
-          `, [novoStatus, dataPagamento, valorPago, formaPagamento, cobrancaId]);
+        if (parcelaResult.rowCount > 0) {
+          const parcela = parcelaResult.rows[0];
+          
+          switch (evento) {
+            case 'PAYMENT_CONFIRMED':
+            case 'PAYMENT_RECEIVED':
+              const dataPagamento = payment.paymentDate || payment.confirmedDate || new Date().toISOString().split('T')[0];
+              const valorPago = payment.value;
+              const formaPagamento = payment.billingType;
+              
+              // Atualizar parcela para PAGO
+              await pool.query(`
+                UPDATE parcelas SET 
+                  status = 'pago',
+                  data_pagamento = $1,
+                  valor_pago = $2,
+                  forma_pagamento = $3,
+                  updated_at = NOW()
+                WHERE id = $4
+              `, [dataPagamento, valorPago, formaPagamento, parcelaId]);
+              
+              console.log(`[ASAAS WEBHOOK] ✅ Parcela ${parcelaId} PAGA!`);
+              
+              // Verificar se todas as parcelas do acordo foram pagas
+              const parcelasPendentes = await pool.query(`
+                SELECT COUNT(*)::int as total 
+                FROM parcelas 
+                WHERE acordo_id = $1 AND status != 'pago'
+              `, [parcela.acordo_id]);
+              
+              if (parseInt(parcelasPendentes.rows[0].total) === 0) {
+                // ACORDO QUITADO!
+                console.log(`[ASAAS WEBHOOK] 🎉 Acordo ${parcela.acordo_id} QUITADO!`);
+                
+                await pool.query(`
+                  UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1
+                `, [parcela.acordo_id]);
+                
+                // Atualizar cobrança original para PAGO
+                if (parcela.cobranca_id) {
+                  await pool.query(`
+                    UPDATE cobrancas SET 
+                      status = 'pago', 
+                      data_pagamento = $1,
+                      updated_at = NOW() 
+                    WHERE id = $2
+                  `, [dataPagamento, parcela.cobranca_id]);
+                  
+                  console.log(`[ASAAS WEBHOOK] ✅ Cobrança ${parcela.cobranca_id} marcada como PAGA`);
+                }
+              }
+              
+              // Registrar comissão (se configurado)
+              try {
+                const acordoData = await pool.query(`
+                  SELECT a.credor_id, cr.comissao_percentual
+                  FROM acordos a
+                  LEFT JOIN credores cr ON cr.id = a.credor_id
+                  WHERE a.id = $1
+                `, [parcela.acordo_id]);
+                
+                if (acordoData.rowCount > 0 && acordoData.rows[0].credor_id) {
+                  const comissaoPerc = parseFloat(acordoData.rows[0].comissao_percentual) || 10;
+                  const comissaoValor = (valorPago * comissaoPerc) / 100;
+                  
+                  await pool.query(`
+                    INSERT INTO comissoes (
+                      credor_id, parcela_id, acordo_id, cliente_id,
+                      valor_base, percentual, valor_comissao,
+                      status, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pendente', NOW())
+                  `, [
+                    acordoData.rows[0].credor_id,
+                    parcelaId,
+                    parcela.acordo_id,
+                    parcela.cliente_id,
+                    valorPago,
+                    comissaoPerc,
+                    comissaoValor
+                  ]);
+                  
+                  console.log(`[ASAAS WEBHOOK] 💰 Comissão registrada: R$ ${comissaoValor.toFixed(2)}`);
+                }
+              } catch (comissaoErr) {
+                console.warn('[ASAAS WEBHOOK] Aviso ao registrar comissão:', comissaoErr.message);
+              }
+              break;
+              
+            case 'PAYMENT_OVERDUE':
+              console.log(`[ASAAS WEBHOOK] ⚠️ Parcela ${parcelaId} VENCIDA`);
+              break;
+              
+            case 'PAYMENT_DELETED':
+            case 'PAYMENT_REFUNDED':
+              const novoStatusParcela = evento === 'PAYMENT_REFUNDED' ? 'estornado' : 'cancelado';
+              await pool.query(`
+                UPDATE parcelas SET status = $1, updated_at = NOW() WHERE id = $2
+              `, [novoStatusParcela, parcelaId]);
+              console.log(`[ASAAS WEBHOOK] ❌ Parcela ${parcelaId} ${novoStatusParcela.toUpperCase()}`);
+              break;
+          }
           
           // Marcar webhook como processado
           await pool.query(`
-            UPDATE asaas_webhooks_log SET processado = true, cobranca_id = $1 
+            UPDATE asaas_webhooks_log SET processado = true, parcela_id = $1 
             WHERE payment_id = $2 AND evento = $3
-          `, [cobrancaId, payment.id, evento]);
+          `, [parcelaId, payment.id, evento]);
+        } else {
+          console.warn(`[ASAAS WEBHOOK] Parcela não encontrada: ${parcelaId}`);
+        }
+        
+      } else {
+        // =========================================================
+        // PROCESSAR PAGAMENTO DE COBRANÇA (código original)
+        // =========================================================
+        const cobrancaId = externalRef;
+        console.log(`[ASAAS WEBHOOK] Processando COBRANÇA: ${cobrancaId}`);
+        
+        const cobranca = await pool.query("SELECT id, status FROM cobrancas WHERE id = $1", [cobrancaId]);
+        
+        if (cobranca.rowCount > 0) {
+          let novoStatus = null;
+          let dataPagamento = null;
+          let valorPago = null;
+          let formaPagamento = null;
+          
+          switch (evento) {
+            case 'PAYMENT_CONFIRMED':
+            case 'PAYMENT_RECEIVED':
+              novoStatus = 'pago';
+              dataPagamento = payment.paymentDate || payment.confirmedDate;
+              valorPago = payment.value;
+              formaPagamento = payment.billingType;
+              console.log(`[ASAAS WEBHOOK] ✅ Cobrança ${cobrancaId} PAGA!`);
+              break;
+              
+            case 'PAYMENT_OVERDUE':
+              novoStatus = 'vencido';
+              console.log(`[ASAAS WEBHOOK] ⚠️ Cobrança ${cobrancaId} VENCIDA`);
+              break;
+              
+            case 'PAYMENT_DELETED':
+            case 'PAYMENT_REFUNDED':
+              novoStatus = evento === 'PAYMENT_REFUNDED' ? 'estornado' : 'cancelado';
+              console.log(`[ASAAS WEBHOOK] ❌ Cobrança ${cobrancaId} ${novoStatus.toUpperCase()}`);
+              break;
+          }
+          
+          if (novoStatus) {
+            await pool.query(`
+              UPDATE cobrancas SET 
+                status = $1,
+                data_pagamento = COALESCE($2, data_pagamento),
+                valor_pago = COALESCE($3, valor_pago),
+                forma_pagamento = COALESCE($4, forma_pagamento),
+                updated_at = NOW()
+              WHERE id = $5
+            `, [novoStatus, dataPagamento, valorPago, formaPagamento, cobrancaId]);
+            
+            // Marcar webhook como processado
+            await pool.query(`
+              UPDATE asaas_webhooks_log SET processado = true, cobranca_id = $1 
+              WHERE payment_id = $2 AND evento = $3
+            `, [cobrancaId, payment.id, evento]);
+          }
+        } else {
+          console.warn(`[ASAAS WEBHOOK] Cobrança não encontrada: ${cobrancaId}`);
         }
       }
     }
