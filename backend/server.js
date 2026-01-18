@@ -1206,6 +1206,45 @@ app.get("/api/clientes", auth, async (req, res) => {
   }
 });
 
+// ROTA: BUSCAR CLIENTES (DEVE VIR ANTES DE /:id)
+// =====================================================
+app.get("/api/clientes/buscar", auth, async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (q.length < 2) {
+      return res.status(400).json({ success: false, message: "Digite pelo menos 2 caracteres." });
+    }
+
+    // Remove caracteres especiais para buscar CPF/CNPJ
+    const qLimpo = q.replace(/[.\-\/]/g, "");
+    
+    const resultado = await pool.query(`
+      SELECT 
+        c.id,
+        c.nome,
+        c.cpf_cnpj,
+        c.telefone,
+        c.email,
+        COALESCE(c.status_cliente, 'regular') AS status_cliente,
+        COUNT(cob.id)::int AS total_cobrancas,
+        COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS divida_total,
+        COALESCE(SUM(CASE WHEN cob.status = 'pago' THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS total_pago
+      FROM clientes c
+      LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
+      WHERE 
+        LOWER(c.nome) LIKE LOWER($1)
+        OR REPLACE(REPLACE(REPLACE(COALESCE(c.cpf_cnpj, ''), '.', ''), '-', ''), '/', '') LIKE $2
+      GROUP BY c.id, c.nome, c.cpf_cnpj, c.telefone, c.email, c.status_cliente
+      ORDER BY c.nome ASC
+      LIMIT 50
+    `, [`%${q}%`, `%${qLimpo}%`]);
+
+    return res.json({ success: true, data: resultado.rows });
+  } catch (err) {
+    console.error("[GET /api/clientes/buscar] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar clientes.", error: err.message });
+  }
+});
 // =====================================================
 // ROTA: OBTER UM CLIENTE POR ID
 // =====================================================
@@ -1819,47 +1858,6 @@ app.get("/api/backup/exportar", authAdmin, async (req, res) => {
 });
 // =====================================================
 // ROTAS PARA IMPORTAÇÃO E CONSULTA DE CLIENTES
-// Cole este conteúdo no server.js ANTES da linha:
-// app.use((req, res) => res.status(404).send("Página não encontrada."));
-// =====================================================
-
-app.get("/api/clientes/buscar", auth, async (req, res) => {
-  try {
-    const q = String(req.query.q || "").trim();
-    if (q.length < 2) {
-      return res.status(400).json({ success: false, message: "Digite pelo menos 2 caracteres." });
-    }
-
-    // Remove caracteres especiais para buscar CPF/CNPJ
-    const qLimpo = q.replace(/[.\-\/]/g, "");
-    
-    const resultado = await pool.query(`
-      SELECT 
-        c.id,
-        c.nome,
-        c.cpf_cnpj,
-        c.telefone,
-        c.email,
-        COALESCE(c.status_cliente, 'regular') AS status_cliente,
-        COUNT(cob.id)::int AS total_cobrancas,
-        COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS divida_total,
-        COALESCE(SUM(CASE WHEN cob.status = 'pago' THEN cob.valor_atualizado ELSE 0 END), 0)::numeric AS total_pago
-      FROM clientes c
-      LEFT JOIN cobrancas cob ON cob.cliente_id = c.id
-      WHERE 
-        LOWER(c.nome) LIKE LOWER($1)
-        OR REPLACE(REPLACE(REPLACE(COALESCE(c.cpf_cnpj, ''), '.', ''), '-', ''), '/', '') LIKE $2
-      GROUP BY c.id, c.nome, c.cpf_cnpj, c.telefone, c.email, c.status_cliente
-      ORDER BY c.nome ASC
-      LIMIT 50
-    `, [`%${q}%`, `%${qLimpo}%`]);
-
-    return res.json({ success: true, data: resultado.rows });
-  } catch (err) {
-    console.error("[GET /api/clientes/buscar] erro:", err.message);
-    return res.status(500).json({ success: false, message: "Erro ao buscar clientes.", error: err.message });
-  }
-});
 
 // Obter cliente completo com todas as cobranças
 app.get("/api/clientes/:id/completo", auth, async (req, res) => {
