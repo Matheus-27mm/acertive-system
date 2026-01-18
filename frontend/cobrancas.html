@@ -11,7 +11,6 @@
     :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--cyan:#06b6d4;--cyan-bg:rgba(6,182,212,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
     
-    /* SIDEBAR PADRÃO */
     .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
     .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
     .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
@@ -39,13 +38,17 @@
     .btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
     .btn-danger{background:var(--red-bg);color:var(--red)}.btn-success{background:var(--green-bg);color:var(--green)}.btn-sm{padding:8px 12px;font-size:12px}
     
-    /* TABS - 5 abas */
+    /* Info box */
+    .info-box{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--radius-md);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+    .info-box i{font-size:20px;color:var(--blue)}
+    .info-box-text{font-size:13px;color:var(--text-secondary)}
+    .info-box a{color:var(--gold);font-weight:600;text-decoration:underline}
+    
     .tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
     .tab{padding:12px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-secondary);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all var(--transition-fast)}
     .tab:hover{border-color:var(--gold);color:var(--gold)}.tab.active{background:var(--gold);color:var(--bg-primary);border-color:var(--gold)}.tab .count{padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(0,0,0,0.2)}
     
-    /* STATS - 6 cards em 2 linhas */
-    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
     .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;display:flex;align-items:center;gap:12px}
     .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
     .stat-icon.gold{background:var(--gold-glow);color:var(--gold)}
@@ -53,7 +56,6 @@
     .stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
     .stat-icon.red{background:var(--red-bg);color:var(--red)}
     .stat-icon.blue{background:var(--blue-bg);color:var(--blue)}
-    .stat-icon.cyan{background:var(--cyan-bg);color:var(--cyan)}
     .stat-icon.orange{background:var(--orange-bg);color:var(--orange)}
     .stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase}.stat-value{font-size:20px;font-weight:800}
     
@@ -83,8 +85,7 @@
     .status-badge.pendente{background:var(--orange-bg);color:var(--orange)}
     .status-badge.pago{background:var(--green-bg);color:var(--green)}
     .status-badge.vencido{background:var(--red-bg);color:var(--red)}
-    .status-badge.futuro{background:var(--blue-bg);color:var(--blue)}
-    .status-badge.parcial{background:var(--purple-bg);color:var(--purple)}
+    .status-badge.acordo{background:var(--purple-bg);color:var(--purple)}
     .list-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted)}
     .empty-state{padding:60px 20px;text-align:center;color:var(--text-muted)}.empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
     .loading{display:flex;justify-content:center;padding:40px}.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
@@ -95,58 +96,54 @@
     .modal-close{width:32px;height:32px;border-radius:8px;border:none;background:rgba(255,255,255,0.05);color:var(--text-muted);cursor:pointer}.modal-close:hover{background:var(--red-bg);color:var(--red)}
     .modal-text{color:var(--text-secondary);margin-bottom:20px}.modal-actions{display:flex;gap:12px;justify-content:flex-end}
     
+    .link-acordo{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--purple-bg);border-radius:4px;color:var(--purple);font-size:10px;font-weight:600;text-decoration:none;margin-left:8px}
+    .link-acordo:hover{background:var(--purple);color:white}
+    
     @media(max-width:1200px){.stats-row{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-wrapper{margin-left:0}}
     @media(max-width:768px){.stats-row{grid-template-columns:1fr}.client-stats{display:none}.toolbar{flex-direction:column}.search-box{width:100%}.tabs{overflow-x:auto;flex-wrap:nowrap}.tab{white-space:nowrap;flex-shrink:0}}
   </style>
 </head>
 <body>
-  <!-- SIDEBAR PADRÃO -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <!-- PRINCIPAL -->
       <div class="nav-section">
         <div class="nav-section-title">Principal</div>
-        <a href="/dashboard" class="nav-link" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="/fila-cobranca" class="nav-link" data-page="fila-cobranca"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
-        <a href="/atendimento" class="nav-link" data-page="atendimento"><i class="fas fa-phone-volume"></i> Atendimento</a>
+        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
+        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      <!-- CADASTROS -->
       <div class="nav-section">
         <div class="nav-section-title">Cadastros</div>
-        <a href="/credores" class="nav-link" data-page="credores"><i class="fas fa-building"></i> Credores</a>
-        <a href="/clientes" class="nav-link" data-page="clientes devedores"><i class="fas fa-users"></i> Devedores</a>
-        <a href="/cobrancas" class="nav-link active" data-page="cobrancas dividas"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+        <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
+        <a href="/cobrancas" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      <!-- NEGOCIAÇÃO -->
       <div class="nav-section">
         <div class="nav-section-title">Negociação</div>
-        <a href="/acordos" class="nav-link" data-page="acordos"><i class="fas fa-handshake"></i> Acordos</a>
-        <a href="/parcelas" class="nav-link" data-page="parcelas"><i class="fas fa-calendar-check"></i> Parcelas</a>
-        <a href="/simulador" class="nav-link" data-page="simulador"><i class="fas fa-calculator"></i> Simulador</a>
+        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
+        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
+        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <!-- FINANCEIRO -->
       <div class="nav-section">
         <div class="nav-section-title">Financeiro</div>
-        <a href="/comissoes" class="nav-link" data-page="comissoes"><i class="fas fa-coins"></i> Comissões</a>
-        <a href="/repasses" class="nav-link" data-page="repasses"><i class="fas fa-exchange-alt"></i> Repasses</a>
-        <a href="/relatorios" class="nav-link" data-page="relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a>
+        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
+        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
+        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
       </div>
-      <!-- AUTOMAÇÃO -->
       <div class="nav-section">
         <div class="nav-section-title">Automação</div>
-        <a href="/templates" class="nav-link" data-page="templates"><i class="fas fa-file-alt"></i> Templates</a>
-        <a href="/regua-cobranca" class="nav-link" data-page="regua-cobranca regua"><i class="fas fa-robot"></i> Régua de Cobrança</a>
-        <a href="/lembretes" class="nav-link" data-page="lembretes"><i class="fas fa-bell"></i> Lembretes E-mail</a>
-        <a href="/agendamentos" class="nav-link" data-page="agendamentos"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
+        <a href="/templates" class="nav-link"><i class="fas fa-file-alt"></i> Templates</a>
+        <a href="/regua-cobranca" class="nav-link"><i class="fas fa-robot"></i> Régua de Cobrança</a>
+        <a href="/lembretes" class="nav-link"><i class="fas fa-bell"></i> Lembretes E-mail</a>
+        <a href="/agendamentos" class="nav-link"><i class="fas fa-calendar-alt"></i> Agendamentos</a>
       </div>
-      <!-- ADMINISTRAÇÃO -->
       <div class="nav-section">
         <div class="nav-section-title">Administração</div>
-        <a href="/importar-massa" class="nav-link" data-page="importar-massa importar"><i class="fas fa-file-import"></i> Importar</a>
-        <a href="/usuarios" class="nav-link" data-page="usuarios"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link" data-page="configuracoes config"><i class="fas fa-cog"></i> Configurações</a>
+        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
+        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
+        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -162,53 +159,57 @@
     <main class="page-content">
       <div class="page-header">
         <h1 class="page-title"><div class="page-title-icon"><i class="fas fa-file-invoice-dollar"></i></div> Cobranças</h1>
-        <a href="/nova-cobranca" class="btn btn-primary"><i class="fas fa-plus"></i> Nova Cobrança</a>
+        <div style="display:flex;gap:12px">
+          <a href="/parcelas" class="btn btn-secondary"><i class="fas fa-calendar-check"></i> Ver Parcelas</a>
+          <a href="/nova-cobranca" class="btn btn-primary"><i class="fas fa-plus"></i> Nova Cobrança</a>
+        </div>
       </div>
 
-      <!-- TABS - 5 abas -->
+      <!-- Info box explicativo -->
+      <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <div class="info-box-text">
+          Esta tela mostra <strong>cobranças avulsas</strong> (dívidas originais). Cobranças com acordo aparecem na aba "Em Acordo". 
+          Para ver parcelas de acordos negociados, acesse <a href="/parcelas">Parcelas</a>.
+        </div>
+      </div>
+
+      <!-- TABS - 5 abas (sem Parcelas Futuras, com Em Acordo) -->
       <div class="tabs">
         <button class="tab active" data-tab="pendentes" onclick="switchTab('pendentes')">
           <i class="fas fa-clock"></i> Pendentes <span class="count" id="countPendentes">0</span>
         </button>
+        <button class="tab" data-tab="vencidas" onclick="switchTab('vencidas')">
+          <i class="fas fa-exclamation-triangle"></i> Vencidas <span class="count" id="countVencidas">0</span>
+        </button>
         <button class="tab" data-tab="pagas" onclick="switchTab('pagas')">
           <i class="fas fa-check-circle"></i> Pagas <span class="count" id="countPagas">0</span>
         </button>
-        <button class="tab" data-tab="futuras" onclick="switchTab('futuras')">
-          <i class="fas fa-calendar-alt"></i> Parcelas Futuras <span class="count" id="countFuturas">0</span>
-        </button>
-        <button class="tab" data-tab="vencidas" onclick="switchTab('vencidas')">
-          <i class="fas fa-exclamation-triangle"></i> Vencidas <span class="count" id="countVencidas">0</span>
+        <button class="tab" data-tab="acordo" onclick="switchTab('acordo')">
+          <i class="fas fa-handshake"></i> Em Acordo <span class="count" id="countAcordo">0</span>
         </button>
         <button class="tab" data-tab="arquivadas" onclick="switchTab('arquivadas')">
           <i class="fas fa-archive"></i> Arquivadas <span class="count" id="countArquivadas">0</span>
         </button>
       </div>
 
-      <!-- STATS - 6 cards -->
-      <div class="stats-row" id="statsCobrancas">
+      <!-- STATS - 4 cards -->
+      <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
           <div><div class="stat-label">Pendentes</div><div class="stat-value" id="statPendentes">0</div></div>
         </div>
         <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+          <div><div class="stat-label">Vencidas</div><div class="stat-value" id="statVencidas">0</div></div>
+        </div>
+        <div class="stat-card">
           <div class="stat-icon gold"><i class="fas fa-money-bill-wave"></i></div>
-          <div><div class="stat-label">Valor Pendente</div><div class="stat-value" id="statValorPendentes">R$ 0</div></div>
+          <div><div class="stat-label">Valor a Receber</div><div class="stat-value" id="statValorPendente">R$ 0</div></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-          <div><div class="stat-label">Total Pago</div><div class="stat-value" id="statPagas">0</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-hand-holding-dollar"></i></div>
-          <div><div class="stat-label">Valor Pago</div><div class="stat-value" id="statValorPagas">R$ 0</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon blue"><i class="fas fa-calendar-alt"></i></div>
-          <div><div class="stat-label">Parcelas Futuras</div><div class="stat-value" id="statFuturas">0</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon cyan"><i class="fas fa-piggy-bank"></i></div>
-          <div><div class="stat-label">Valor Futuro</div><div class="stat-value" id="statValorFuturas">R$ 0</div></div>
+          <div><div class="stat-label">Valor Recebido</div><div class="stat-value" id="statValorPago">R$ 0</div></div>
         </div>
       </div>
 
@@ -221,7 +222,6 @@
             <option value="nome-asc">🔤 A-Z</option>
             <option value="nome-desc">🔤 Z-A</option>
             <option value="venc-asc">📅 Vencimento (próximo)</option>
-            <option value="venc-desc">📅 Vencimento (distante)</option>
           </select>
         </div>
         <div class="toolbar-right">
@@ -235,9 +235,9 @@
         <div><i class="fas fa-check-circle" style="color:var(--gold)"></i> <span class="selection-count"><span id="selectedCount">0</span> selecionada(s)</span></div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-secondary btn-sm" onclick="clearSelection()"><i class="fas fa-times"></i> Limpar</button>
+          <button class="btn btn-success btn-sm" id="btnMarcarPago" onclick="confirmarMarcarPagas()"><i class="fas fa-check"></i> Marcar Pago</button>
           <button class="btn btn-danger btn-sm" id="btnArquivarSel" onclick="confirmarArquivarSelecionadas()"><i class="fas fa-archive"></i> Arquivar</button>
           <button class="btn btn-success btn-sm" id="btnDesarquivarSel" onclick="confirmarDesarquivarSelecionadas()" style="display:none"><i class="fas fa-box-open"></i> Desarquivar</button>
-          <button class="btn btn-success btn-sm" id="btnMarcarPago" onclick="confirmarMarcarPagas()" style="display:none"><i class="fas fa-check"></i> Marcar Pago</button>
         </div>
       </div>
 
@@ -269,18 +269,6 @@
     let acaoConfirmada = null;
     let searchTimeout = null;
 
-    // Estatísticas globais
-    let stats = {
-      pendentes: 0,
-      valorPendentes: 0,
-      pagas: 0,
-      valorPagas: 0,
-      futuras: 0,
-      valorFuturas: 0,
-      vencidas: 0,
-      arquivadas: 0
-    };
-
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
     function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
     function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
@@ -288,29 +276,26 @@
     function showToast(msg, type) { Toastify({ text: msg, duration: 3000, gravity: 'top', position: 'right', style: { background: type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#F6C84C', borderRadius: '12px', fontWeight: '600' } }).showToast(); }
 
     // Determina status real da cobrança
-    function getStatusReal(cobranca) {
-      // Se já está marcado como pago, retorna pago
-      if (cobranca.status === 'pago' || cobranca.pago === true) {
+    function getStatusReal(c) {
+      // Se tem acordo vinculado
+      if (c.tem_acordo === true || c.acordo_id) {
+        return 'acordo';
+      }
+      // Se pago
+      if (c.status === 'pago') {
         return 'pago';
       }
       
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
+      const venc = new Date(c.vencimento);
+      venc.setHours(0, 0, 0, 0);
       
-      const vencimento = new Date(cobranca.vencimento);
-      vencimento.setHours(0, 0, 0, 0);
-      
-      // Parcela futura (vencimento > hoje)
-      if (vencimento > hoje) {
-        return 'futuro';
-      }
-      
-      // Vencida (vencimento < hoje e não pago)
-      if (vencimento < hoje) {
+      // Vencida
+      if (venc < hoje) {
         return 'vencido';
       }
       
-      // Pendente (vence hoje)
       return 'pendente';
     }
 
@@ -321,11 +306,11 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
       
-      // Controle de botões por aba
-      document.getElementById('btnArquivarSel').style.display = ['pendentes', 'pagas', 'vencidas', 'futuras'].includes(tab) ? 'inline-flex' : 'none';
+      // Controle de botões
+      document.getElementById('btnArquivarSel').style.display = tab !== 'arquivadas' && tab !== 'acordo' ? 'inline-flex' : 'none';
       document.getElementById('btnDesarquivarSel').style.display = tab === 'arquivadas' ? 'inline-flex' : 'none';
       document.getElementById('btnMarcarPago').style.display = ['pendentes', 'vencidas'].includes(tab) ? 'inline-flex' : 'none';
-      document.getElementById('btnArquivarTodas').style.display = tab !== 'arquivadas' ? 'inline-flex' : 'none';
+      document.getElementById('btnArquivarTodas').style.display = tab !== 'arquivadas' && tab !== 'acordo' ? 'inline-flex' : 'none';
       
       document.getElementById('searchInput').value = '';
       carregarCobrancas();
@@ -333,73 +318,66 @@
 
     async function carregarEstatisticas() {
       try {
-        // Carregar todas as cobranças para calcular estatísticas
+        // Usar a nova rota de estatísticas completas
+        const res = await fetch(API + '/api/cobrancas/estatisticas-completas', { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          const s = data.data;
+          
+          document.getElementById('countPendentes').textContent = s.pendentes || 0;
+          document.getElementById('countVencidas').textContent = s.vencidas || 0;
+          document.getElementById('countPagas').textContent = s.pagas || 0;
+          document.getElementById('countAcordo').textContent = s.emAcordo || 0;
+          document.getElementById('countArquivadas').textContent = s.arquivadas || 0;
+          
+          document.getElementById('statPendentes').textContent = s.pendentes || 0;
+          document.getElementById('statVencidas').textContent = s.vencidas || 0;
+          document.getElementById('statValorPendente').textContent = fmtMoney(s.valorPendente || 0);
+          document.getElementById('statValorPago').textContent = fmtMoney(s.valorPago || 0);
+        }
+      } catch (e) { 
+        console.error('Erro ao carregar estatísticas:', e); 
+        // Fallback: calcular localmente
+        carregarEstatisticasFallback();
+      }
+    }
+    
+    async function carregarEstatisticasFallback() {
+      try {
         const res = await fetch(API + '/api/cobrancas?page=1&limit=10000', { headers: getHeaders() });
         const data = await res.json();
         
         if (data.success) {
           const cobrancas = data.data || [];
-          const hoje = new Date();
-          hoje.setHours(0, 0, 0, 0);
-          
-          // Resetar stats
-          stats = {
-            pendentes: 0,
-            valorPendentes: 0,
-            pagas: 0,
-            valorPagas: 0,
-            futuras: 0,
-            valorFuturas: 0,
-            vencidas: 0,
-            arquivadas: 0
-          };
+          let pend = 0, venc = 0, pago = 0, acordo = 0, valorPend = 0, valorPago = 0;
           
           cobrancas.forEach(c => {
             const valor = parseFloat(c.valorAtualizado || c.valor_atualizado || c.valor || 0);
-            const statusReal = getStatusReal(c);
+            const st = getStatusReal(c);
             
-            switch(statusReal) {
-              case 'pago':
-                stats.pagas++;
-                stats.valorPagas += valor;
-                break;
-              case 'futuro':
-                stats.futuras++;
-                stats.valorFuturas += valor;
-                break;
-              case 'vencido':
-                stats.vencidas++;
-                stats.valorPendentes += valor;
-                stats.pendentes++;
-                break;
-              default: // pendente
-                stats.pendentes++;
-                stats.valorPendentes += valor;
-            }
+            if (st === 'pago') { pago++; valorPago += valor; }
+            else if (st === 'vencido') { venc++; valorPend += valor; }
+            else if (st === 'acordo') { acordo++; }
+            else { pend++; valorPend += valor; }
           });
           
-          // Carregar arquivadas
-          const resArq = await fetch(API + '/api/cobrancas/arquivadas?page=1&limit=10000', { headers: getHeaders() });
+          document.getElementById('countPendentes').textContent = pend;
+          document.getElementById('countVencidas').textContent = venc;
+          document.getElementById('countPagas').textContent = pago;
+          document.getElementById('countAcordo').textContent = acordo;
+          
+          document.getElementById('statPendentes').textContent = pend;
+          document.getElementById('statVencidas').textContent = venc;
+          document.getElementById('statValorPendente').textContent = fmtMoney(valorPend);
+          document.getElementById('statValorPago').textContent = fmtMoney(valorPago);
+          
+          // Arquivadas
+          const resArq = await fetch(API + '/api/cobrancas/arquivadas?page=1&limit=1', { headers: getHeaders() });
           const dataArq = await resArq.json();
-          if (dataArq.success) {
-            stats.arquivadas = (dataArq.data || []).length;
-          }
-          
-          // Atualizar UI
-          document.getElementById('countPendentes').textContent = stats.pendentes + stats.vencidas;
-          document.getElementById('countPagas').textContent = stats.pagas;
-          document.getElementById('countFuturas').textContent = stats.futuras;
-          document.getElementById('countVencidas').textContent = stats.vencidas;
-          document.getElementById('countArquivadas').textContent = stats.arquivadas;
-          
-          document.getElementById('statPendentes').textContent = (stats.pendentes + stats.vencidas).toLocaleString('pt-BR');
-          document.getElementById('statValorPendentes').textContent = fmtMoney(stats.valorPendentes);
-          document.getElementById('statPagas').textContent = stats.pagas.toLocaleString('pt-BR');
-          document.getElementById('statValorPagas').textContent = fmtMoney(stats.valorPagas);
-          document.getElementById('statFuturas').textContent = stats.futuras.toLocaleString('pt-BR');
-          document.getElementById('statValorFuturas').textContent = fmtMoney(stats.valorFuturas);
+          document.getElementById('countArquivadas').textContent = dataArq.total || (dataArq.data || []).length || 0;
         }
-      } catch (e) { console.error('Erro ao carregar estatísticas:', e); }
+      } catch (e) { console.error(e); }
     }
 
     async function carregarCobrancas() {
@@ -407,8 +385,16 @@
       container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
       
       try {
-        const endpoint = currentTab === 'arquivadas' ? '/api/cobrancas/arquivadas' : '/api/cobrancas';
-        const res = await fetch(API + endpoint + '?page=1&limit=10000', { headers: getHeaders() });
+        let endpoint;
+        
+        if (currentTab === 'arquivadas') {
+          endpoint = '/api/cobrancas/arquivadas?page=1&limit=10000';
+        } else {
+          // Usar sem_acordo=true para não trazer cobranças que já têm acordo (exceto na aba acordo)
+          endpoint = '/api/cobrancas?page=1&limit=10000';
+        }
+        
+        const res = await fetch(API + endpoint, { headers: getHeaders() });
         const data = await res.json();
         
         if (data.success) {
@@ -416,21 +402,18 @@
           
           // Filtrar por aba
           if (currentTab !== 'arquivadas') {
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            
             cobrancas = cobrancas.filter(c => {
-              const statusReal = getStatusReal(c);
+              const st = getStatusReal(c);
               
               switch(currentTab) {
                 case 'pendentes':
-                  return statusReal === 'pendente' || statusReal === 'vencido';
-                case 'pagas':
-                  return statusReal === 'pago';
-                case 'futuras':
-                  return statusReal === 'futuro';
+                  return st === 'pendente';
                 case 'vencidas':
-                  return statusReal === 'vencido';
+                  return st === 'vencido';
+                case 'pagas':
+                  return st === 'pago';
+                case 'acordo':
+                  return st === 'acordo';
                 default:
                   return true;
               }
@@ -480,16 +463,12 @@
       const [campo, direcao] = ordem.split('-');
       
       clientesAgrupados.sort((a, b) => {
-        if (campo === 'valor') {
-          return direcao === 'asc' ? a.totalValor - b.totalValor : b.totalValor - a.totalValor;
-        }
-        if (campo === 'nome') {
-          return direcao === 'asc' ? a.clienteNome.localeCompare(b.clienteNome) : b.clienteNome.localeCompare(a.clienteNome);
-        }
+        if (campo === 'valor') return direcao === 'asc' ? a.totalValor - b.totalValor : b.totalValor - a.totalValor;
+        if (campo === 'nome') return direcao === 'asc' ? a.clienteNome.localeCompare(b.clienteNome) : b.clienteNome.localeCompare(a.clienteNome);
         if (campo === 'venc') {
-          const vencA = a.cobrancas[0]?.vencimento || '';
-          const vencB = b.cobrancas[0]?.vencimento || '';
-          return direcao === 'asc' ? vencA.localeCompare(vencB) : vencB.localeCompare(vencA);
+          const vA = a.cobrancas[0]?.vencimento || '';
+          const vB = b.cobrancas[0]?.vencimento || '';
+          return direcao === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
         }
         return 0;
       });
@@ -497,26 +476,23 @@
       renderAccordion(clientesAgrupados);
     }
 
-    function debounceSearch() { 
-      clearTimeout(searchTimeout); 
-      searchTimeout = setTimeout(aplicarFiltro, 300); 
-    }
+    function debounceSearch() { clearTimeout(searchTimeout); searchTimeout = setTimeout(aplicarFiltro, 300); }
 
     function renderAccordion(clientes) {
       const container = document.getElementById('accordionContainer');
       const busca = document.getElementById('searchInput').value.trim();
       
       if (!clientes.length) {
-        const mensagens = {
+        const msgs = {
           pendentes: 'Nenhuma cobrança pendente',
-          pagas: 'Nenhuma cobrança paga',
-          futuras: 'Nenhuma parcela futura',
           vencidas: 'Nenhuma cobrança vencida',
+          pagas: 'Nenhuma cobrança paga',
+          acordo: 'Nenhuma cobrança em acordo',
           arquivadas: 'Nenhuma cobrança arquivada'
         };
         container.innerHTML = busca 
           ? '<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum resultado para "' + busca + '"</h3></div>' 
-          : '<div class="empty-state"><i class="fas fa-inbox"></i><h3>' + mensagens[currentTab] + '</h3></div>';
+          : '<div class="empty-state"><i class="fas fa-inbox"></i><h3>' + msgs[currentTab] + '</h3></div>';
         document.getElementById('infoCobrancas').textContent = '0 clientes';
         return;
       }
@@ -530,27 +506,34 @@
         html += '<button class="client-toggle"><i class="fas fa-chevron-right"></i></button>';
         html += '<div class="client-info"><div class="client-name">' + cl.clienteNome + '</div><div class="client-meta"><i class="fas fa-file-invoice"></i> ' + cl.cobrancas.length + ' cobrança(s)</div></div>';
         html += '<div class="client-stats"><div class="client-stat"><div class="client-stat-label">Qtd</div><div class="client-stat-value">' + cl.cobrancas.length + '</div></div><div class="client-stat"><div class="client-stat-label">Total</div><div class="client-stat-value gold">' + fmtMoney(cl.totalValor) + '</div></div></div>';
-        html += '<div style="display:flex;gap:6px">';
         
-        if (currentTab === 'arquivadas') {
-          html += '<button class="action-btn success" title="Desarquivar" onclick="desarquivarCliente(' + i + ',event)"><i class="fas fa-box-open"></i></button>';
-        } else {
-          html += '<button class="action-btn danger" title="Arquivar todas" onclick="arquivarCliente(' + i + ',event)"><i class="fas fa-archive"></i></button>';
+        if (currentTab !== 'acordo') {
+          html += '<div style="display:flex;gap:6px">';
+          if (currentTab === 'arquivadas') {
+            html += '<button class="action-btn success" title="Desarquivar" onclick="desarquivarCliente(' + i + ',event)"><i class="fas fa-box-open"></i></button>';
+          } else {
+            html += '<button class="action-btn danger" title="Arquivar" onclick="arquivarCliente(' + i + ',event)"><i class="fas fa-archive"></i></button>';
+          }
+          html += '</div>';
         }
         
-        html += '</div></div><div class="cobrancas-list">';
+        html += '</div><div class="cobrancas-list">';
         
         cl.cobrancas.forEach(c => {
-          const statusReal = getStatusReal(c);
-          const statusClass = statusReal;
-          const statusLabel = statusReal === 'futuro' ? 'futuro' : statusReal;
+          const st = getStatusReal(c);
           
           html += '<div class="cobranca-item" data-id="' + c.id + '">';
           html += '<div class="cobranca-checkbox ' + (selectedIds.has(c.id) ? 'checked' : '') + '" onclick="toggleCobrancaSelection(\'' + c.id + '\',event)"></div>';
           html += '<div class="cobranca-info"><div class="cobranca-desc">' + (c.descricao || '-') + '</div></div>';
           html += '<div class="cobranca-valor">' + fmtMoney(c.valorAtualizado || c.valor_atualizado || c.valor) + '</div>';
           html += '<div class="cobranca-venc">' + fmtDate(c.vencimento) + '</div>';
-          html += '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>';
+          html += '<span class="status-badge ' + st + '">' + st + '</span>';
+          
+          // Se está em acordo, mostrar link para o acordo
+          if (st === 'acordo' && c.acordo_id) {
+            html += '<a href="/acordos?id=' + c.acordo_id + '" class="link-acordo"><i class="fas fa-eye"></i> Ver Acordo</a>';
+          }
+          
           html += '</div>';
         });
         
@@ -593,11 +576,7 @@
       updateSelectionBar(); 
     }
     
-    function clearSelection() { 
-      selectedIds.clear(); 
-      updateCheckboxes(); 
-      updateSelectionBar(); 
-    }
+    function clearSelection() { selectedIds.clear(); updateCheckboxes(); updateSelectionBar(); }
     
     function updateCheckboxes() { 
       document.querySelectorAll('.cobranca-checkbox').forEach(cb => { 
@@ -627,46 +606,20 @@
       document.getElementById('modalConfirm').classList.add('active'); 
     }
     
-    function fecharModal() { 
-      document.getElementById('modalConfirm').classList.remove('active'); 
-      acaoConfirmada = null; 
-    }
+    function fecharModal() { document.getElementById('modalConfirm').classList.remove('active'); acaoConfirmada = null; }
+    function executarAcao() { if (acaoConfirmada) acaoConfirmada(); fecharModal(); }
     
-    function executarAcao() { 
-      if (acaoConfirmada) acaoConfirmada(); 
-      fecharModal(); 
-    }
-    
-    function confirmarArquivarSelecionadas() { 
-      if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); 
-      abrirModal('Arquivar', 'Arquivar ' + selectedIds.size + ' cobrança(s)?', arquivarSelecionadas); 
-    }
-    
-    function confirmarDesarquivarSelecionadas() { 
-      if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); 
-      abrirModal('Desarquivar', 'Desarquivar ' + selectedIds.size + ' cobrança(s)?', desarquivarSelecionadas, 'btn-success'); 
-    }
-    
-    function confirmarMarcarPagas() { 
-      if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); 
-      abrirModal('Marcar como Pago', 'Marcar ' + selectedIds.size + ' cobrança(s) como paga(s)?', marcarPagas, 'btn-success'); 
-    }
-    
-    function confirmarArquivarTodas() { 
-      abrirModal('Arquivar Todas', 'Arquivar TODAS as cobranças desta aba?', arquivarTodas); 
-    }
+    function confirmarArquivarSelecionadas() { if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); abrirModal('Arquivar', 'Arquivar ' + selectedIds.size + ' cobrança(s)?', arquivarSelecionadas); }
+    function confirmarDesarquivarSelecionadas() { if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); abrirModal('Desarquivar', 'Desarquivar ' + selectedIds.size + ' cobrança(s)?', desarquivarSelecionadas, 'btn-success'); }
+    function confirmarMarcarPagas() { if (!selectedIds.size) return showToast('Selecione cobranças', 'error'); abrirModal('Marcar como Pago', 'Marcar ' + selectedIds.size + ' cobrança(s) como paga(s)?', marcarPagas, 'btn-success'); }
+    function confirmarArquivarTodas() { abrirModal('Arquivar Todas', 'Arquivar TODAS as cobranças desta aba?', arquivarTodas); }
 
     async function arquivarSelecionadas() { 
       try { 
         const r = await fetch(API + '/api/cobrancas/arquivar-massa', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: [...selectedIds] }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.message || 'Arquivadas com sucesso', 'success'); 
-          selectedIds.clear(); 
-          updateSelectionBar(); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } else showToast(d.message, 'error'); 
+        if (d.success) { showToast(d.message || 'Arquivadas!', 'success'); selectedIds.clear(); updateSelectionBar(); carregarCobrancas(); carregarEstatisticas(); } 
+        else showToast(d.message, 'error'); 
       } catch (e) { showToast('Erro', 'error'); } 
     }
     
@@ -674,43 +627,26 @@
       try { 
         const r = await fetch(API + '/api/cobrancas/desarquivar-massa', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: [...selectedIds] }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.message || 'Desarquivadas com sucesso', 'success'); 
-          selectedIds.clear(); 
-          updateSelectionBar(); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } else showToast(d.message, 'error'); 
+        if (d.success) { showToast(d.message || 'Desarquivadas!', 'success'); selectedIds.clear(); updateSelectionBar(); carregarCobrancas(); carregarEstatisticas(); } 
+        else showToast(d.message, 'error'); 
       } catch (e) { showToast('Erro', 'error'); } 
     }
     
     async function marcarPagas() { 
       try { 
-        const r = await fetch(API + '/api/cobrancas/marcar-pagas', { 
-          method: 'POST', 
-          headers: getHeaders(), 
-          body: JSON.stringify({ ids: [...selectedIds] }) 
-        }); 
+        const r = await fetch(API + '/api/cobrancas/marcar-pagas', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: [...selectedIds] }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.message || 'Marcadas como pagas', 'success'); 
-          selectedIds.clear(); 
-          updateSelectionBar(); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } else showToast(d.message, 'error'); 
-      } catch (e) { showToast('Erro ao marcar como pago', 'error'); } 
+        if (d.success) { showToast(d.message || 'Marcadas como pagas!', 'success'); selectedIds.clear(); updateSelectionBar(); carregarCobrancas(); carregarEstatisticas(); } 
+        else showToast(d.message, 'error'); 
+      } catch (e) { showToast('Erro', 'error'); } 
     }
     
     async function arquivarTodas() { 
       try { 
         const r = await fetch(API + '/api/cobrancas/arquivar-todas', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ filtros: {} }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.message, 'success'); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } else showToast(d.message, 'error'); 
+        if (d.success) { showToast(d.message, 'success'); carregarCobrancas(); carregarEstatisticas(); } 
+        else showToast(d.message, 'error'); 
       } catch (e) { showToast('Erro', 'error'); } 
     }
     
@@ -720,11 +656,7 @@
       try { 
         const r = await fetch(API + '/api/cobrancas/arquivar-massa', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.arquivadas + ' arquivada(s)', 'success'); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } 
+        if (d.success) { showToast((d.arquivadas || ids.length) + ' arquivada(s)', 'success'); carregarCobrancas(); carregarEstatisticas(); } 
       } catch (e) { showToast('Erro', 'error'); } 
     }
     
@@ -734,11 +666,7 @@
       try { 
         const r = await fetch(API + '/api/cobrancas/desarquivar-massa', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids }) }); 
         const d = await r.json(); 
-        if (d.success) { 
-          showToast(d.desarquivadas + ' desarquivada(s)', 'success'); 
-          carregarCobrancas(); 
-          carregarEstatisticas(); 
-        } 
+        if (d.success) { showToast((d.desarquivadas || ids.length) + ' desarquivada(s)', 'success'); carregarCobrancas(); carregarEstatisticas(); } 
       } catch (e) { showToast('Erro', 'error'); } 
     }
 
@@ -754,22 +682,21 @@
       } catch (e) { console.error(e); }
     }
 
-    // Carregar badges
     async function carregarBadges() {
       try {
         const res = await fetch(API + '/api/alertas/contador', { headers: getHeaders() });
         const data = await res.json();
         if (data.success) {
-          const badgeFila = document.getElementById('badgeFila');
-          if (badgeFila) {
+          const badge = document.getElementById('badgeFila');
+          if (badge) {
             const total = (data.vencidas || 0) + (data.vencendoHoje || 0);
-            badgeFila.textContent = total > 0 ? total : '';
+            badge.textContent = total > 0 ? total : '';
           }
         }
       } catch (e) { console.error('Erro badges:', e); }
     }
 
-    // Inicialização
+    // Init
     carregarUsuario();
     carregarEstatisticas();
     carregarCobrancas();
