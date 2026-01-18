@@ -1,6 +1,8 @@
 /**
- * ROTAS DE PARCELAS - ACERTIVE
+ * ROTAS DE PARCELAS - ACERTIVE v2.1
  * Controle de pagamentos dos acordos
+ * 
+ * ATUALIZADO: Separação completa entre cobranças e parcelas
  */
 
 const express = require('express');
@@ -9,11 +11,11 @@ const router = express.Router();
 module.exports = (pool, auth, registrarLog) => {
 
   // =====================================================
-  // GET /api/parcelas - Listar parcelas
+  // GET /api/parcelas - Listar parcelas (com filtros avançados)
   // =====================================================
   router.get('/', auth, async (req, res) => {
     try {
-      const { status, periodo, credor_id, acordo_id, page = 1, limit = 50 } = req.query;
+      const { status, periodo, credor_id, acordo_id, cliente_id, page = 1, limit = 50 } = req.query;
       
       let sql = `
         SELECT 
@@ -21,45 +23,60 @@ module.exports = (pool, auth, registrarLog) => {
           a.id as acordo_id,
           a.valor_acordo,
           a.numero_parcelas as total_parcelas,
+          a.status as acordo_status,
           cl.nome as cliente_nome,
           cl.cpf_cnpj as cliente_cpf,
           cl.telefone as cliente_telefone,
-          cr.nome as credor_nome
+          cl.email as cliente_email,
+          cr.nome as credor_nome,
+          cr.id as credor_id
         FROM parcelas p
-        LEFT JOIN acordos a ON a.id = p.acordo_id
+        JOIN acordos a ON a.id = p.acordo_id
         LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
-        WHERE 1=1
+        WHERE a.status IN ('ativo', 'quitado')
       `;
       
       const params = [];
       let idx = 1;
       
+      // Filtro por status da parcela
       if (status) {
         sql += ` AND p.status = $${idx}`;
         params.push(status);
         idx++;
       }
       
+      // Filtro por credor
       if (credor_id) {
         sql += ` AND a.credor_id = $${idx}`;
         params.push(credor_id);
         idx++;
       }
       
+      // Filtro por acordo específico
       if (acordo_id) {
         sql += ` AND p.acordo_id = $${idx}`;
         params.push(acordo_id);
         idx++;
       }
       
+      // Filtro por cliente
+      if (cliente_id) {
+        sql += ` AND a.cliente_id = $${idx}`;
+        params.push(cliente_id);
+        idx++;
+      }
+      
       // Filtros de período
       if (periodo === 'hoje') {
-        sql += ` AND DATE(p.data_vencimento) = CURRENT_DATE`;
+        sql += ` AND DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente'`;
       } else if (periodo === 'semana') {
-        sql += ` AND p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'`;
+        sql += ` AND p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days' AND p.status = 'pendente'`;
       } else if (periodo === 'vencidas') {
         sql += ` AND p.data_vencimento < CURRENT_DATE AND p.status = 'pendente'`;
+      } else if (periodo === 'futuras') {
+        sql += ` AND p.data_vencimento > CURRENT_DATE AND p.status = 'pendente'`;
       } else if (periodo === 'mes') {
         sql += ` AND EXTRACT(MONTH FROM p.data_vencimento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_vencimento) = EXTRACT(YEAR FROM CURRENT_DATE)`;
       }
@@ -84,28 +101,47 @@ module.exports = (pool, auth, registrarLog) => {
     try {
       const stats = await pool.query(`
         SELECT 
-          COUNT(CASE WHEN DATE(data_vencimento) = CURRENT_DATE AND status = 'pendente' THEN 1 END)::int as vencendo_hoje,
-          COALESCE(SUM(CASE WHEN DATE(data_vencimento) = CURRENT_DATE AND status = 'pendente' THEN valor ELSE 0 END), 0)::numeric as valor_hoje,
+          -- Vencendo hoje
+          COUNT(CASE WHEN DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as vencendo_hoje,
+          COALESCE(SUM(CASE WHEN DATE(p.data_vencimento) = CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_hoje,
           
-          COUNT(CASE WHEN data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND status = 'pendente' THEN 1 END)::int as vencendo_semana,
-          COALESCE(SUM(CASE WHEN data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND status = 'pendente' THEN valor ELSE 0 END), 0)::numeric as valor_semana,
+          -- Vencendo na semana
+          COUNT(CASE WHEN p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND p.status = 'pendente' THEN 1 END)::int as vencendo_semana,
+          COALESCE(SUM(CASE WHEN p.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7 AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_semana,
           
-          COUNT(CASE WHEN data_vencimento < CURRENT_DATE AND status = 'pendente' THEN 1 END)::int as vencidas,
-          COALESCE(SUM(CASE WHEN data_vencimento < CURRENT_DATE AND status = 'pendente' THEN valor ELSE 0 END), 0)::numeric as valor_vencidas,
+          -- Futuras (após hoje)
+          COUNT(CASE WHEN p.data_vencimento > CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as futuras,
+          COALESCE(SUM(CASE WHEN p.data_vencimento > CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_futuras,
           
-          COUNT(CASE WHEN status = 'pago' AND EXTRACT(MONTH FROM data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) THEN 1 END)::int as pagas_mes,
-          COALESCE(SUM(CASE WHEN status = 'pago' AND EXTRACT(MONTH FROM data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) THEN valor_pago ELSE 0 END), 0)::numeric as valor_pago_mes
-        FROM parcelas
+          -- Vencidas
+          COUNT(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as vencidas,
+          COALESCE(SUM(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_vencidas,
+          
+          -- Pagas no mês
+          COUNT(CASE WHEN p.status = 'pago' AND EXTRACT(MONTH FROM p.data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_pagamento) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 END)::int as pagas_mes,
+          COALESCE(SUM(CASE WHEN p.status = 'pago' AND EXTRACT(MONTH FROM p.data_pagamento) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM p.data_pagamento) = EXTRACT(YEAR FROM CURRENT_DATE) THEN COALESCE(p.valor_pago, p.valor) ELSE 0 END), 0)::numeric as valor_pago_mes,
+          
+          -- Total pagas (geral)
+          COUNT(CASE WHEN p.status = 'pago' THEN 1 END)::int as total_pagas,
+          COALESCE(SUM(CASE WHEN p.status = 'pago' THEN COALESCE(p.valor_pago, p.valor) ELSE 0 END), 0)::numeric as valor_total_pago
+          
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        WHERE a.status IN ('ativo', 'quitado')
       `);
       
       const row = stats.rows[0];
       
       // Taxa de pagamento
-      const totalParcelas = await pool.query(`SELECT COUNT(*)::int as total FROM parcelas WHERE data_vencimento <= CURRENT_DATE`);
-      const totalPagas = await pool.query(`SELECT COUNT(*)::int as total FROM parcelas WHERE status = 'pago'`);
+      const totalParcelas = await pool.query(`
+        SELECT COUNT(*)::int as total 
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        WHERE p.data_vencimento <= CURRENT_DATE AND a.status IN ('ativo', 'quitado')
+      `);
       
       const taxaPagamento = totalParcelas.rows[0].total > 0
-        ? ((totalPagas.rows[0].total / totalParcelas.rows[0].total) * 100).toFixed(1)
+        ? ((row.total_pagas / totalParcelas.rows[0].total) * 100).toFixed(1)
         : 0;
       
       return res.json({
@@ -113,8 +149,10 @@ module.exports = (pool, auth, registrarLog) => {
         data: {
           vencendoHoje: { quantidade: row.vencendo_hoje, valor: parseFloat(row.valor_hoje) },
           vencendoSemana: { quantidade: row.vencendo_semana, valor: parseFloat(row.valor_semana) },
+          futuras: { quantidade: row.futuras, valor: parseFloat(row.valor_futuras) },
           vencidas: { quantidade: row.vencidas, valor: parseFloat(row.valor_vencidas) },
           pagasMes: { quantidade: row.pagas_mes, valor: parseFloat(row.valor_pago_mes) },
+          totalPagas: { quantidade: row.total_pagas, valor: parseFloat(row.valor_total_pago) },
           taxaPagamento: parseFloat(taxaPagamento)
         }
       });
@@ -122,6 +160,116 @@ module.exports = (pool, auth, registrarLog) => {
     } catch (err) {
       console.error('[GET /api/parcelas/stats] erro:', err.message);
       return res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas.' });
+    }
+  });
+
+  // =====================================================
+  // GET /api/parcelas/futuras - Listar parcelas futuras
+  // =====================================================
+  router.get('/futuras', auth, async (req, res) => {
+    try {
+      const { limit = 100 } = req.query;
+      
+      const resultado = await pool.query(`
+        SELECT 
+          p.*,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
+          a.status as acordo_status,
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cr.nome as credor_nome
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
+        LEFT JOIN credores cr ON cr.id = a.credor_id
+        WHERE p.status = 'pendente'
+          AND p.data_vencimento > CURRENT_DATE
+          AND a.status = 'ativo'
+        ORDER BY p.data_vencimento ASC
+        LIMIT $1
+      `, [parseInt(limit)]);
+      
+      return res.json({ success: true, data: resultado.rows });
+      
+    } catch (err) {
+      console.error('[GET /api/parcelas/futuras] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas futuras.' });
+    }
+  });
+
+  // =====================================================
+  // GET /api/parcelas/vencidas - Listar parcelas vencidas
+  // =====================================================
+  router.get('/vencidas', auth, async (req, res) => {
+    try {
+      const { limit = 100 } = req.query;
+      
+      const resultado = await pool.query(`
+        SELECT 
+          p.*,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
+          a.status as acordo_status,
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cr.nome as credor_nome,
+          CURRENT_DATE - DATE(p.data_vencimento) as dias_atraso
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
+        LEFT JOIN credores cr ON cr.id = a.credor_id
+        WHERE p.status = 'pendente'
+          AND p.data_vencimento < CURRENT_DATE
+          AND a.status = 'ativo'
+        ORDER BY p.data_vencimento ASC
+        LIMIT $1
+      `, [parseInt(limit)]);
+      
+      return res.json({ success: true, data: resultado.rows });
+      
+    } catch (err) {
+      console.error('[GET /api/parcelas/vencidas] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas vencidas.' });
+    }
+  });
+
+  // =====================================================
+  // GET /api/parcelas/hoje - Listar parcelas vencendo hoje
+  // =====================================================
+  router.get('/hoje', auth, async (req, res) => {
+    try {
+      const resultado = await pool.query(`
+        SELECT 
+          p.*,
+          a.id as acordo_id,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
+          a.status as acordo_status,
+          cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
+          cl.telefone as cliente_telefone,
+          cl.email as cliente_email,
+          cr.nome as credor_nome
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        LEFT JOIN clientes cl ON cl.id = a.cliente_id
+        LEFT JOIN credores cr ON cr.id = a.credor_id
+        WHERE p.status = 'pendente'
+          AND DATE(p.data_vencimento) = CURRENT_DATE
+          AND a.status = 'ativo'
+        ORDER BY cl.nome ASC
+      `);
+      
+      return res.json({ success: true, data: resultado.rows });
+      
+    } catch (err) {
+      console.error('[GET /api/parcelas/hoje] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas de hoje.' });
     }
   });
 
@@ -135,13 +283,19 @@ module.exports = (pool, auth, registrarLog) => {
       const resultado = await pool.query(`
         SELECT 
           p.*,
+          a.id as acordo_id,
           a.valor_acordo,
           a.numero_parcelas as total_parcelas,
+          a.status as acordo_status,
+          a.cobranca_id,
           cl.nome as cliente_nome,
+          cl.cpf_cnpj as cliente_cpf,
           cl.telefone as cliente_telefone,
-          cr.nome as credor_nome
+          cl.email as cliente_email,
+          cr.nome as credor_nome,
+          cr.id as credor_id
         FROM parcelas p
-        LEFT JOIN acordos a ON a.id = p.acordo_id
+        JOIN acordos a ON a.id = p.acordo_id
         LEFT JOIN clientes cl ON cl.id = a.cliente_id
         LEFT JOIN credores cr ON cr.id = a.credor_id
         WHERE p.id = $1
@@ -171,11 +325,11 @@ module.exports = (pool, auth, registrarLog) => {
       
       await client.query('BEGIN');
       
-      // Buscar parcela
+      // Buscar parcela com dados do acordo
       const parcela = await client.query(`
-        SELECT p.*, a.id as acordo_id, a.credor_id, a.cobranca_id
+        SELECT p.*, a.id as acordo_id, a.credor_id, a.cobranca_id, a.cliente_id
         FROM parcelas p
-        LEFT JOIN acordos a ON a.id = p.acordo_id
+        JOIN acordos a ON a.id = p.acordo_id
         WHERE p.id = $1
       `, [id]);
       
@@ -185,7 +339,16 @@ module.exports = (pool, auth, registrarLog) => {
       }
       
       const p = parcela.rows[0];
+      
+      // Verificar se já está paga
+      if (p.status === 'pago') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ success: false, message: 'Esta parcela já está paga.' });
+      }
+      
       const valorPago = parseFloat(valor_pago) || p.valor;
+      const dataPagamento = data_pagamento || new Date().toISOString().split('T')[0];
+      const formaPag = forma_pagamento || 'pix';
       
       // Atualizar parcela
       await client.query(`
@@ -194,10 +357,13 @@ module.exports = (pool, auth, registrarLog) => {
           valor_pago = $1,
           data_pagamento = $2,
           forma_pagamento = $3,
-          observacoes = $4,
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $4
+            ELSE CONCAT(observacoes, ' | ', $4)
+          END,
           updated_at = NOW()
         WHERE id = $5
-      `, [valorPago, data_pagamento || new Date(), forma_pagamento || 'pix', observacoes, id]);
+      `, [valorPago, dataPagamento, formaPag, observacoes || '', id]);
       
       // Verificar se todas as parcelas foram pagas
       const parcelasPendentes = await client.query(`
@@ -206,18 +372,20 @@ module.exports = (pool, auth, registrarLog) => {
         WHERE acordo_id = $1 AND status != 'pago'
       `, [p.acordo_id]);
       
-      if (parseInt(parcelasPendentes.rows[0].total) === 0) {
-        // Acordo quitado!
+      const acordoQuitado = parseInt(parcelasPendentes.rows[0].total) === 0;
+      
+      if (acordoQuitado) {
+        // Acordo quitado! Atualizar status
         await client.query(
           'UPDATE acordos SET status = $1, updated_at = NOW() WHERE id = $2',
           ['quitado', p.acordo_id]
         );
         
-        // Atualizar cobrança original
+        // Atualizar cobrança original para PAGO
         if (p.cobranca_id) {
           await client.query(
-            'UPDATE cobrancas SET status = $1, updated_at = NOW() WHERE id = $2',
-            ['pago', p.cobranca_id]
+            'UPDATE cobrancas SET status = $1, data_pagamento = $2, updated_at = NOW() WHERE id = $3',
+            ['pago', dataPagamento, p.cobranca_id]
           );
         }
       }
@@ -233,34 +401,139 @@ module.exports = (pool, auth, registrarLog) => {
           const comissaoPerc = parseFloat(credor.rows[0].comissao_percentual) || 10;
           const comissaoValor = (valorPago * comissaoPerc) / 100;
           
-          await client.query(`
-            INSERT INTO comissoes (
-              credor_id, parcela_id, acordo_id,
-              valor_base, percentual, valor_comissao,
-              status, created_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW())
-          `, [p.credor_id, id, p.acordo_id, valorPago, comissaoPerc, comissaoValor]);
+          // Verificar se tabela comissoes existe antes de inserir
+          try {
+            await client.query(`
+              INSERT INTO comissoes (
+                credor_id, parcela_id, acordo_id, cliente_id,
+                valor_base, percentual, valor_comissao,
+                status, created_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pendente', NOW())
+            `, [p.credor_id, id, p.acordo_id, p.cliente_id, valorPago, comissaoPerc, comissaoValor]);
+          } catch (comissaoErr) {
+            console.warn('[PARCELAS] Aviso ao registrar comissão:', comissaoErr.message);
+            // Não falha a transação se comissão falhar
+          }
         }
       }
       
       await client.query('COMMIT');
       
-      await registrarLog(req, 'PAGAR', 'parcelas', id, { valor_pago: valorPago, forma: forma_pagamento });
-      
-      const acordoQuitado = parseInt(parcelasPendentes.rows[0].total) === 0;
+      await registrarLog(req, 'PAGAR', 'parcelas', id, { 
+        valor_pago: valorPago, 
+        forma: formaPag,
+        acordo_id: p.acordo_id,
+        acordo_quitado: acordoQuitado
+      });
       
       return res.json({
         success: true,
         message: acordoQuitado 
           ? '🎉 Pagamento registrado! Acordo QUITADO!'
-          : 'Pagamento registrado com sucesso!',
-        acordoQuitado
+          : '✅ Pagamento registrado com sucesso!',
+        acordoQuitado,
+        data: {
+          parcela_id: id,
+          acordo_id: p.acordo_id,
+          valor_pago: valorPago
+        }
       });
       
     } catch (err) {
       await client.query('ROLLBACK');
       console.error('[POST /api/parcelas/:id/pagar] erro:', err.message);
       return res.status(500).json({ success: false, message: 'Erro ao registrar pagamento.' });
+    } finally {
+      client.release();
+    }
+  });
+
+  // =====================================================
+  // POST /api/parcelas/pagar-massa - Pagar múltiplas parcelas
+  // =====================================================
+  router.post('/pagar-massa', auth, async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+      const { ids, forma_pagamento = 'pix' } = req.body || {};
+      
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, message: 'Nenhuma parcela selecionada.' });
+      }
+      
+      await client.query('BEGIN');
+      
+      let pagasCount = 0;
+      let acordosQuitados = [];
+      
+      for (const id of ids) {
+        // Buscar parcela
+        const parcela = await client.query(`
+          SELECT p.*, a.id as acordo_id, a.cobranca_id
+          FROM parcelas p
+          JOIN acordos a ON a.id = p.acordo_id
+          WHERE p.id = $1 AND p.status = 'pendente'
+        `, [id]);
+        
+        if (parcela.rowCount === 0) continue;
+        
+        const p = parcela.rows[0];
+        
+        // Atualizar parcela
+        await client.query(`
+          UPDATE parcelas SET
+            status = 'pago',
+            valor_pago = valor,
+            data_pagamento = CURRENT_DATE,
+            forma_pagamento = $1,
+            updated_at = NOW()
+          WHERE id = $2
+        `, [forma_pagamento, id]);
+        
+        pagasCount++;
+        
+        // Verificar se acordo foi quitado
+        const pendentes = await client.query(`
+          SELECT COUNT(*)::int as total 
+          FROM parcelas 
+          WHERE acordo_id = $1 AND status != 'pago'
+        `, [p.acordo_id]);
+        
+        if (parseInt(pendentes.rows[0].total) === 0) {
+          await client.query(
+            'UPDATE acordos SET status = $1, updated_at = NOW() WHERE id = $2',
+            ['quitado', p.acordo_id]
+          );
+          
+          if (p.cobranca_id) {
+            await client.query(
+              'UPDATE cobrancas SET status = $1, data_pagamento = CURRENT_DATE, updated_at = NOW() WHERE id = $2',
+              ['pago', p.cobranca_id]
+            );
+          }
+          
+          acordosQuitados.push(p.acordo_id);
+        }
+      }
+      
+      await client.query('COMMIT');
+      
+      await registrarLog(req, 'PAGAR_MASSA', 'parcelas', null, { 
+        quantidade: pagasCount,
+        acordos_quitados: acordosQuitados.length
+      });
+      
+      return res.json({
+        success: true,
+        message: `${pagasCount} parcela(s) paga(s)${acordosQuitados.length > 0 ? `. ${acordosQuitados.length} acordo(s) quitado(s)!` : ''}`,
+        pagas: pagasCount,
+        acordosQuitados: acordosQuitados.length
+      });
+      
+    } catch (err) {
+      await client.query('ROLLBACK');
+      console.error('[POST /api/parcelas/pagar-massa] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao registrar pagamentos.' });
     } finally {
       client.release();
     }
@@ -278,26 +551,81 @@ module.exports = (pool, auth, registrarLog) => {
         return res.status(400).json({ success: false, message: 'Nova data é obrigatória.' });
       }
       
+      // Verificar se parcela existe e está pendente
+      const check = await pool.query(
+        'SELECT id, status FROM parcelas WHERE id = $1',
+        [id]
+      );
+      
+      if (!check.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada.' });
+      }
+      
+      if (check.rows[0].status === 'pago') {
+        return res.status(400).json({ success: false, message: 'Não é possível reagendar parcela já paga.' });
+      }
+      
       const resultado = await pool.query(`
         UPDATE parcelas SET
           data_vencimento = $1,
-          observacoes = CONCAT(COALESCE(observacoes, ''), ' | Reagendado: ', $2),
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $2
+            ELSE CONCAT(observacoes, ' | Reagendado: ', $2)
+          END,
           updated_at = NOW()
-        WHERE id = $3 AND status = 'pendente'
+        WHERE id = $3
         RETURNING *
       `, [nova_data, motivo || 'Solicitação do devedor', id]);
       
-      if (!resultado.rowCount) {
-        return res.status(404).json({ success: false, message: 'Parcela não encontrada ou já paga.' });
-      }
-      
       await registrarLog(req, 'REAGENDAR', 'parcelas', id, { nova_data, motivo });
       
-      return res.json({ success: true, data: resultado.rows[0], message: 'Parcela reagendada!' });
+      return res.json({ 
+        success: true, 
+        data: resultado.rows[0], 
+        message: '✅ Parcela reagendada com sucesso!' 
+      });
       
     } catch (err) {
       console.error('[PUT /api/parcelas/:id/reagendar] erro:', err.message);
       return res.status(500).json({ success: false, message: 'Erro ao reagendar parcela.' });
+    }
+  });
+
+  // =====================================================
+  // PUT /api/parcelas/:id/cancelar - Cancelar parcela
+  // =====================================================
+  router.put('/:id/cancelar', auth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { motivo } = req.body || {};
+      
+      const resultado = await pool.query(`
+        UPDATE parcelas SET
+          status = 'cancelado',
+          observacoes = CASE 
+            WHEN observacoes IS NULL OR observacoes = '' THEN $1
+            ELSE CONCAT(observacoes, ' | CANCELADO: ', $1)
+          END,
+          updated_at = NOW()
+        WHERE id = $2 AND status = 'pendente'
+        RETURNING *
+      `, [motivo || 'Cancelado pelo operador', id]);
+      
+      if (!resultado.rowCount) {
+        return res.status(404).json({ success: false, message: 'Parcela não encontrada ou já processada.' });
+      }
+      
+      await registrarLog(req, 'CANCELAR', 'parcelas', id, { motivo });
+      
+      return res.json({ 
+        success: true, 
+        data: resultado.rows[0], 
+        message: 'Parcela cancelada.' 
+      });
+      
+    } catch (err) {
+      console.error('[PUT /api/parcelas/:id/cancelar] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao cancelar parcela.' });
     }
   });
 
@@ -314,10 +642,12 @@ module.exports = (pool, auth, registrarLog) => {
           cl.nome as cliente_nome,
           cl.telefone as cliente_telefone,
           a.valor_acordo,
-          a.numero_parcelas
+          a.numero_parcelas,
+          cr.nome as credor_nome
         FROM parcelas p
-        LEFT JOIN acordos a ON a.id = p.acordo_id
+        JOIN acordos a ON a.id = p.acordo_id
         LEFT JOIN clientes cl ON cl.id = a.cliente_id
+        LEFT JOIN credores cr ON cr.id = a.credor_id
         WHERE p.id = $1
       `, [id]);
       
@@ -339,7 +669,32 @@ module.exports = (pool, auth, registrarLog) => {
       const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor);
       const vencimento = new Date(p.data_vencimento).toLocaleDateString('pt-BR');
       
-      const mensagem = `Olá, *${p.cliente_nome}*! 👋
+      // Verificar se está vencida
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const dataVenc = new Date(p.data_vencimento);
+      dataVenc.setHours(0, 0, 0, 0);
+      const vencida = dataVenc < hoje;
+      
+      let mensagem;
+      
+      if (vencida) {
+        const diasAtraso = Math.floor((hoje - dataVenc) / (1000 * 60 * 60 * 24));
+        mensagem = `Olá, *${p.cliente_nome}*! 👋
+
+⚠️ *PARCELA EM ATRASO*
+━━━━━━━━━━━━━━━━━
+
+📌 *Parcela:* ${p.numero}/${p.numero_parcelas}
+💰 *Valor:* ${valor}
+📅 *Vencimento:* ${vencimento}
+⏰ *Dias em atraso:* ${diasAtraso} dia(s)
+
+Por favor, regularize o quanto antes para evitar maiores encargos.
+
+_Mensagem enviada pelo sistema ACERTIVE_`;
+      } else {
+        mensagem = `Olá, *${p.cliente_nome}*! 👋
 
 📄 *LEMBRETE DE PARCELA*
 ━━━━━━━━━━━━━━━━━
@@ -351,14 +706,44 @@ module.exports = (pool, auth, registrarLog) => {
 ⚠️ Evite juros! Efetue o pagamento até a data.
 
 _Mensagem enviada pelo sistema ACERTIVE_`;
+      }
 
       const link = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+      
+      await registrarLog(req, 'WHATSAPP', 'parcelas', id, { telefone });
       
       return res.json({ success: true, link, telefone, mensagem });
       
     } catch (err) {
       console.error('[GET /api/parcelas/:id/whatsapp] erro:', err.message);
       return res.status(500).json({ success: false, message: 'Erro ao gerar link.' });
+    }
+  });
+
+  // =====================================================
+  // GET /api/parcelas/por-acordo/:acordoId - Parcelas de um acordo
+  // =====================================================
+  router.get('/por-acordo/:acordoId', auth, async (req, res) => {
+    try {
+      const { acordoId } = req.params;
+      
+      const resultado = await pool.query(`
+        SELECT 
+          p.*,
+          a.valor_acordo,
+          a.numero_parcelas as total_parcelas,
+          a.status as acordo_status
+        FROM parcelas p
+        JOIN acordos a ON a.id = p.acordo_id
+        WHERE p.acordo_id = $1
+        ORDER BY p.numero ASC
+      `, [acordoId]);
+      
+      return res.json({ success: true, data: resultado.rows });
+      
+    } catch (err) {
+      console.error('[GET /api/parcelas/por-acordo/:acordoId] erro:', err.message);
+      return res.status(500).json({ success: false, message: 'Erro ao buscar parcelas do acordo.' });
     }
   });
 

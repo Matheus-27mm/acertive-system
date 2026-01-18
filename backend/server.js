@@ -642,22 +642,255 @@ app.get("/api/empresas-padrao", auth, async (req, res) => {
 });
 
 // =====================================================
-// COBRANÇAS - GET
+// COBRANÇAS - GET (ATUALIZADO - com filtro de acordos)
 // =====================================================
 app.get("/api/cobrancas", auth, async (req, res) => {
   try {
     const status = String(req.query.status || "").trim().toLowerCase();
     const q = String(req.query.q || "").trim();
+    const semAcordo = req.query.sem_acordo === 'true'; // NOVO: filtrar cobranças sem acordo
+    
     const params = [];
     const where = [];
-    if (status) { params.push(status); where.push(`LOWER(c.status) = $${params.length}`); }
-    if (q) { params.push(`%${q}%`); where.push(`LOWER(cl.nome) LIKE LOWER($${params.length})`); }
-    const sql = `SELECT c.id, COALESCE(cl.nome,'') AS cliente, COALESCE(cl.email,'') AS cliente_email, COALESCE(cl.telefone,'') AS cliente_telefone, COALESCE(cl.status_cliente,'regular') AS cliente_status, c.cliente_id, c.empresa_id, COALESCE(e.nome,'') AS empresa_nome, c.descricao, c.valor_original AS "valorOriginal", c.multa, c.juros, c.desconto, c.valor_atualizado AS "valorAtualizado", c.status, c.vencimento, c.data_compromisso AS "dataCompromisso", c.aplicar_multa_juros AS "aplicarMultaJuros", c.observacoes, c.created_at AS "createdAt" FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id LEFT JOIN empresas e ON e.id = c.empresa_id ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY c.created_at DESC`;
+    
+    if (status) { 
+      params.push(status); 
+      where.push(`LOWER(c.status) = $${params.length}`); 
+    }
+    
+    if (q) { 
+      params.push(`%${q}%`); 
+      where.push(`LOWER(cl.nome) LIKE LOWER($${params.length})`); 
+    }
+    
+    // NOVO: Filtrar cobranças que NÃO têm acordo vinculado
+    if (semAcordo) {
+      where.push(`ac.id IS NULL`);
+    }
+    
+    const sql = `
+      SELECT 
+        c.id, 
+        COALESCE(cl.nome,'') AS cliente, 
+        COALESCE(cl.email,'') AS cliente_email, 
+        COALESCE(cl.telefone,'') AS cliente_telefone, 
+        COALESCE(cl.status_cliente,'regular') AS cliente_status, 
+        c.cliente_id, 
+        c.empresa_id, 
+        COALESCE(e.nome,'') AS empresa_nome, 
+        c.descricao, 
+        c.valor_original AS "valorOriginal", 
+        c.multa, 
+        c.juros, 
+        c.desconto, 
+        c.valor_atualizado AS "valorAtualizado", 
+        c.status, 
+        c.vencimento, 
+        c.data_compromisso AS "dataCompromisso", 
+        c.aplicar_multa_juros AS "aplicarMultaJuros", 
+        c.observacoes, 
+        c.created_at AS "createdAt",
+        CASE WHEN ac.id IS NOT NULL THEN true ELSE false END as tem_acordo,
+        ac.id as acordo_id,
+        ac.status as acordo_status
+      FROM cobrancas c 
+      LEFT JOIN clientes cl ON cl.id = c.cliente_id 
+      LEFT JOIN empresas e ON e.id = c.empresa_id
+      LEFT JOIN acordos ac ON ac.cobranca_id = c.id
+      ${where.length ? `WHERE ${where.join(" AND ")}` : ""} 
+      ORDER BY c.created_at DESC
+    `;
+    
     const resultado = await pool.query(sql, params);
     return res.json({ success: true, data: resultado.rows });
   } catch (err) {
     console.error("[GET /api/cobrancas] erro:", err.message);
     return res.status(500).json({ success: false, message: "Erro ao buscar cobranças.", error: err.message });
+  }
+});
+
+
+// =====================================================
+// SEÇÃO 2: ADICIONAR APÓS GET /api/cobrancas
+// Cole estas rotas ANTES do "// COBRANÇAS - POST"
+// =====================================================
+
+// =====================================================
+// COBRANÇAS - MARCAR COMO PAGAS (MÚLTIPLAS)
+// =====================================================
+app.post("/api/cobrancas/marcar-pagas", auth, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Nenhuma cobrança selecionada." });
+    }
+    
+    const result = await pool.query(`
+      UPDATE cobrancas 
+      SET status = 'pago', 
+          updated_at = NOW()
+      WHERE id = ANY($1::uuid[])
+      RETURNING id
+    `, [ids]);
+    
+    await registrarLog(req, 'MARCAR_PAGO_MASSA', 'cobrancas', null, { 
+      quantidade: result.rowCount,
+      ids: ids 
+    });
+    
+    return res.json({ 
+      success: true, 
+      message: `${result.rowCount} cobrança(s) marcada(s) como paga(s)`,
+      atualizadas: result.rowCount
+    });
+    
+  } catch (err) {
+    console.error("[POST /api/cobrancas/marcar-pagas] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao marcar como pago." });
+  }
+});
+
+// =====================================================
+// COBRANÇAS - ESTATÍSTICAS COMPLETAS (separando acordos)
+// =====================================================
+app.get("/api/cobrancas/estatisticas-completas", auth, async (req, res) => {
+  try {
+    const stats = await pool.query(`
+      SELECT 
+        -- Cobranças SEM acordo (avulsas) - pendentes
+        COUNT(CASE 
+          WHEN ac.id IS NULL 
+          AND c.status NOT IN ('pago', 'arquivado') 
+          AND c.vencimento >= CURRENT_DATE 
+          THEN 1 
+        END)::int as pendentes,
+        
+        -- Cobranças SEM acordo - vencidas
+        COUNT(CASE 
+          WHEN ac.id IS NULL 
+          AND c.status NOT IN ('pago', 'arquivado') 
+          AND c.vencimento < CURRENT_DATE 
+          THEN 1 
+        END)::int as vencidas,
+        
+        -- Cobranças SEM acordo - pagas
+        COUNT(CASE 
+          WHEN ac.id IS NULL 
+          AND c.status = 'pago' 
+          THEN 1 
+        END)::int as pagas,
+        
+        -- Cobranças COM acordo ativo (em negociação)
+        COUNT(CASE 
+          WHEN ac.id IS NOT NULL 
+          AND ac.status = 'ativo' 
+          THEN 1 
+        END)::int as em_acordo,
+        
+        -- Valores das cobranças SEM acordo pendentes
+        COALESCE(SUM(CASE 
+          WHEN ac.id IS NULL 
+          AND c.status NOT IN ('pago', 'arquivado') 
+          THEN c.valor_atualizado 
+          ELSE 0 
+        END), 0)::numeric as valor_pendente,
+        
+        -- Valores das cobranças SEM acordo pagas
+        COALESCE(SUM(CASE 
+          WHEN ac.id IS NULL 
+          AND c.status = 'pago' 
+          THEN c.valor_atualizado 
+          ELSE 0 
+        END), 0)::numeric as valor_pago,
+        
+        -- Arquivadas
+        COUNT(CASE WHEN c.status = 'arquivado' THEN 1 END)::int as arquivadas
+        
+      FROM cobrancas c
+      LEFT JOIN acordos ac ON ac.cobranca_id = c.id
+    `);
+    
+    const row = stats.rows[0];
+    
+    return res.json({
+      success: true,
+      data: {
+        pendentes: row.pendentes || 0,
+        vencidas: row.vencidas || 0,
+        pagas: row.pagas || 0,
+        emAcordo: row.em_acordo || 0,
+        arquivadas: row.arquivadas || 0,
+        valorPendente: parseFloat(row.valor_pendente) || 0,
+        valorPago: parseFloat(row.valor_pago) || 0
+      }
+    });
+    
+  } catch (err) {
+    console.error("[GET /api/cobrancas/estatisticas-completas] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar estatísticas." });
+  }
+});
+
+// =====================================================
+// ALERTAS - CONTADOR (para badges na sidebar)
+// =====================================================
+app.get("/api/alertas/contador", auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        -- Cobranças vencidas (sem acordo)
+        COUNT(CASE 
+          WHEN c.vencimento < CURRENT_DATE 
+          AND c.status NOT IN ('pago', 'arquivado') 
+          AND ac.id IS NULL 
+          THEN 1 
+        END)::int as vencidas,
+        
+        -- Cobranças vencendo hoje (sem acordo)
+        COUNT(CASE 
+          WHEN c.vencimento = CURRENT_DATE 
+          AND c.status NOT IN ('pago', 'arquivado') 
+          AND ac.id IS NULL 
+          THEN 1 
+        END)::int as vencendo_hoje,
+        
+        -- Parcelas vencidas
+        (SELECT COUNT(*)::int 
+         FROM parcelas p 
+         JOIN acordos a ON a.id = p.acordo_id 
+         WHERE p.status = 'pendente' 
+         AND p.data_vencimento < CURRENT_DATE 
+         AND a.status = 'ativo'
+        ) as parcelas_vencidas,
+        
+        -- Parcelas vencendo hoje
+        (SELECT COUNT(*)::int 
+         FROM parcelas p 
+         JOIN acordos a ON a.id = p.acordo_id 
+         WHERE p.status = 'pendente' 
+         AND DATE(p.data_vencimento) = CURRENT_DATE 
+         AND a.status = 'ativo'
+        ) as parcelas_hoje
+        
+      FROM cobrancas c
+      LEFT JOIN acordos ac ON ac.cobranca_id = c.id
+    `);
+    
+    const row = result.rows[0];
+    
+    return res.json({
+      success: true,
+      vencidas: row.vencidas || 0,
+      vencendoHoje: row.vencendo_hoje || 0,
+      parcelasVencidas: row.parcelas_vencidas || 0,
+      parcelasHoje: row.parcelas_hoje || 0,
+      totalUrgente: (row.vencidas || 0) + (row.vencendo_hoje || 0) + (row.parcelas_vencidas || 0) + (row.parcelas_hoje || 0)
+    });
+    
+  } catch (err) {
+    console.error("[GET /api/alertas/contador] erro:", err.message);
+    return res.status(500).json({ success: false, message: "Erro ao buscar alertas." });
   }
 });
 
