@@ -282,7 +282,7 @@
         const key = id + '-' + nome;
         if (!grupos[key]) grupos[key] = { clienteId: id, clienteNome: nome, cobrancas: [], totalValor: 0 };
         grupos[key].cobrancas.push(c);
-        grupos[key].totalValor += parseFloat(c.valor_atualizado || 0);
+        grupos[key].totalValor += parseFloat(c.valorAtualizado || c.valor_atualizado || 0);
       });
       return Object.values(grupos);
     }
@@ -323,7 +323,7 @@
         cl.cobrancas.forEach(c => {
           html += '<div class="cobranca-item" data-id="' + c.id + '"><div class="cobranca-checkbox ' + (selectedIds.has(c.id) ? 'checked' : '') + '" onclick="toggleCobrancaSelection(\'' + c.id + '\',event)"></div>';
           html += '<div class="cobranca-info"><div class="cobranca-desc">' + (c.descricao || '-') + '</div></div>';
-          html += '<div class="cobranca-valor">' + fmtMoney(c.valor_atualizado) + '</div>';
+          html += '<div class="cobranca-valor">' + fmtMoney(c.valorAtualizado || c.valor_atualizado) + '</div>';
           html += '<div class="cobranca-venc">' + fmtDate(c.vencimento) + '</div>';
           html += '<span class="status-badge ' + c.status + '">' + c.status + '</span></div>';
         });
