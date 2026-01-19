@@ -3860,7 +3860,7 @@ app.get('/api/alertas', auth, async (req, res) => {
 const CRON_CONFIG = {
   atualizarStatus: {
     ativo: true,
-    intervalo: 60 * 60 * 1000, // 1 hora
+    intervalo: 5 * 60 * 1000, // 5 minutos
   },
   lembretes: {
     ativo: false, // Mude para true quando quiser ativar
