@@ -9,8 +9,6 @@
   <style>
     :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:rgba(17,17,21,0.95);--bg-sidebar:#0c0c0f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.3);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.2);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-md:12px;--radius-lg:16px;--shadow-gold:0 8px 32px rgba(246,200,76,0.2);--transition-fast:0.15s ease}
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-
-    /* SIDEBAR PADRÃO */
     .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
     .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
     .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
@@ -21,333 +19,258 @@
     .nav-link:hover{background:var(--gold-glow);color:var(--gold)}.nav-link.active{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));color:var(--gold)}
     .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold);border-radius:0 3px 3px 0}
     .nav-link i{width:20px;text-align:center;font-size:15px}
-    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white;display:none}
-    .nav-badge:not(:empty){display:inline-block}
+    .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:var(--red);color:white}
     .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
     .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md)}
     .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
     .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--text-muted)}
     .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
-
-    /* MAIN */
-    .main-content{margin-left:var(--sidebar-width);padding:32px;min-height:100vh}
-    .page-header{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-    .page-title{display:flex;align-items:center;gap:16px}
-    .page-title-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center}
-    .page-title-icon i{font-size:22px;color:var(--gold)}.page-title h1{font-size:24px;font-weight:800;margin-bottom:4px}.page-title p{color:var(--text-muted);font-size:14px}
-
-    /* FORM CARDS */
-    .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
-    .form-card h3{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-    .form-card h3 i{color:var(--gold)}
-    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}.form-grid.cols-4{grid-template-columns:repeat(4,1fr)}.form-group.full{grid-column:1/-1}
-    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase}.form-group label .required{color:var(--red)}
+    .main-content{margin-left:var(--sidebar-width);padding:24px;min-height:100vh}
+    .page-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .page-header-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bg-primary)}
+    .page-header h1{font-size:24px;font-weight:800}.page-header p{color:var(--text-muted);font-size:13px}
+    .form-layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px}
+    .card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .card-header i{color:var(--gold);font-size:16px}.card-header h3{font-size:14px;font-weight:700;flex:1}
+    .card-header .badge{font-size:10px;padding:4px 8px;border-radius:6px;background:var(--gold-glow);color:var(--gold)}
+    .form-row{display:grid;gap:16px;margin-bottom:16px}.form-row.cols-2{grid-template-columns:1fr 1fr}.form-row:last-child{margin-bottom:0}
+    .form-group{position:relative}
+    .form-group label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
+    .form-group label i{font-size:12px;color:var(--gold)}.form-group label .required{color:var(--red)}
     .form-control{width:100%;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px;transition:all var(--transition-fast)}
     .form-control:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
-    .form-control:disabled{opacity:0.5;cursor:not-allowed}
-    select.form-control{cursor:pointer}select.form-control option{background:var(--bg-secondary)}textarea.form-control{resize:vertical;min-height:80px}
-    .input-group{position:relative}.input-group .prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600}.input-group input{padding-left:44px}
-    .input-group .suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600}.input-group input.has-suffix{padding-right:44px}
-    .form-hint{font-size:11px;color:var(--text-muted);margin-top:6px}
-
-    /* CLIENTE SEARCH */
-    .cliente-search{position:relative}.cliente-search i.ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted)}.cliente-search input{padding-left:42px}
-    .cliente-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;display:none;margin-top:4px}
-    .cliente-results.active{display:block}.cliente-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border)}.cliente-item:hover{background:var(--gold-glow)}.cliente-item:last-child{border-bottom:none}
-    .cliente-item-name{font-weight:600}.cliente-item-info{font-size:12px;color:var(--text-muted)}
-    .cliente-selected{display:none;background:var(--green-bg);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:14px;margin-top:12px}
-    .cliente-selected.active{display:flex;align-items:center;gap:12px}
-    .cliente-avatar{width:44px;height:44px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
-    .cliente-info-box{flex:1}.cliente-nome{font-weight:700}.cliente-cpf{font-size:12px;color:var(--text-muted)}
-    .cliente-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.cliente-remove:hover{background:var(--red-bg);color:var(--red)}
-
-    /* TAXAS INLINE */
-    .taxas-inline{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);margin-top:16px}
-    .taxas-inline .form-group{margin-bottom:0}
-    .taxas-inline .form-group label{font-size:11px;margin-bottom:6px}
-    .taxas-title{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--orange);margin-bottom:4px;display:flex;align-items:center;gap:8px}
-    .taxas-title i{font-size:11px}
-
-    /* CHECKBOX CUSTOM */
-    .checkbox-group{display:flex;align-items:center;gap:10px;padding:14px;background:var(--blue-bg);border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;margin-top:16px}
-    .checkbox-group:hover{background:rgba(59,130,246,0.2)}
-    .checkbox-group.checked{background:var(--blue-bg);border-color:var(--blue)}
-    .checkbox-group input{display:none}
-    .checkbox-custom{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
-    .checkbox-group.checked .checkbox-custom{background:var(--blue);border-color:var(--blue)}
-    .checkbox-custom i{display:none;color:white;font-size:12px}
-    .checkbox-group.checked .checkbox-custom i{display:block}
-    .checkbox-label{flex:1}
-    .checkbox-label span{display:block;font-weight:600;font-size:14px}
-    .checkbox-label small{font-size:11px;color:var(--text-muted)}
-
-    /* RESUMO */
-    .resumo-card{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border:1px solid var(--border-gold);border-radius:var(--radius-lg);padding:24px;position:sticky;top:32px}
-    .resumo-card h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--gold);display:flex;align-items:center;gap:10px}
-    .resumo-section{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-    .resumo-section:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
-    .resumo-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
-    .resumo-item{display:flex;justify-content:space-between;padding:8px 0}
-    .resumo-label{color:var(--text-secondary);font-size:13px}.resumo-value{font-weight:600;font-size:14px}
-    .resumo-credor{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg-primary);border-radius:8px;margin-bottom:12px}
-    .resumo-credor-icon{width:32px;height:32px;background:var(--purple-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--purple)}
-    .resumo-credor-info{flex:1}
-    .resumo-credor-nome{font-weight:600;font-size:13px}
-    .resumo-credor-comissao{font-size:11px;color:var(--text-muted)}
-    .resumo-total{background:var(--bg-primary);border-radius:8px;padding:16px;margin-top:16px;text-align:center}
-    .resumo-total-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}.resumo-total-value{font-size:28px;font-weight:800;color:var(--gold)}
-    .resumo-parcelas{font-size:12px;color:var(--text-muted);margin-top:4px}
-    .resumo-entrada{font-size:12px;color:var(--green);margin-top:4px}
-    .resumo-gerar-boleto{display:flex;align-items:center;gap:8px;padding:12px;background:var(--green-bg);border-radius:8px;margin-top:12px;font-size:13px;color:var(--green)}
-    .resumo-gerar-boleto i{font-size:16px}
-    .resumo-gerar-boleto.inactive{background:var(--bg-primary);color:var(--text-muted)}
-
-    /* BUTTONS */
-    .form-actions{display:flex;gap:12px;margin-top:20px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius-md);font-weight:600;font-size:14px;cursor:pointer;transition:all var(--transition-fast);border:none;flex:1}
-    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{box-shadow:var(--shadow-gold);transform:translateY(-2px)}
-    .btn-secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--border-gold);color:var(--gold)}
-
-    /* LAYOUT */
-    .form-layout{display:grid;grid-template-columns:1fr 380px;gap:24px}
-
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.form-layout{grid-template-columns:1fr}}
-    @media(max-width:768px){.form-grid{grid-template-columns:1fr}.form-grid.cols-3,.form-grid.cols-4{grid-template-columns:1fr}.taxas-inline{grid-template-columns:1fr}}
+    .form-control::placeholder{color:var(--text-muted)}
+    select.form-control{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+    select.form-control option{background:var(--bg-secondary)}
+    .input-icon{position:relative}
+    .input-icon i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+    .input-icon input{padding-left:42px}
+    .input-icon .prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600;font-size:14px}
+    .input-icon input.has-prefix{padding-left:50px}
+    .search-container{position:relative}
+    .search-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;max-height:280px;overflow-y:auto;z-index:100;display:none;margin-top:4px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+    .search-results.active{display:block}
+    .search-result-item{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:all var(--transition-fast)}
+    .search-result-item:hover{background:var(--gold-glow)}
+    .search-result-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white}
+    .search-result-info{flex:1}.search-result-info h4{font-size:14px;font-weight:600;margin-bottom:2px}.search-result-info p{font-size:12px;color:var(--text-muted)}
+    .search-result-divida{text-align:right}.search-result-divida span{font-size:12px;color:var(--red);font-weight:600}.search-result-divida small{display:block;font-size:10px;color:var(--text-muted)}
+    .btn-novo-devedor{display:flex;align-items:center;gap:8px;padding:12px 14px;color:var(--gold);font-weight:600;font-size:13px;cursor:pointer;border-top:1px solid var(--border);background:var(--gold-glow)}
+    .btn-novo-devedor:hover{background:var(--gold-glow-strong)}
+    .devedor-selecionado{display:none;background:var(--bg-secondary);border:1px solid var(--border-gold);border-radius:10px;padding:14px;margin-top:12px}
+    .devedor-selecionado.active{display:flex;align-items:center;gap:14px}
+    .devedor-avatar{width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:var(--bg-primary)}
+    .devedor-info{flex:1}.devedor-info h4{font-size:15px;font-weight:700;margin-bottom:4px}
+    .devedor-info p{font-size:12px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:12px}
+    .devedor-info p span{display:flex;align-items:center;gap:4px}.devedor-info p i{font-size:11px;color:var(--gold)}
+    .devedor-stats{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+    .devedor-stats .divida{font-size:14px;font-weight:700;color:var(--red)}.devedor-stats small{font-size:10px;color:var(--text-muted)}
+    .btn-trocar{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;font-size:12px;display:flex;align-items:center;gap:4px}.btn-trocar:hover{color:var(--gold)}
+    .taxas-row{display:flex;gap:12px;align-items:center;padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);margin-top:16px}
+    .taxas-row .taxa-item{display:flex;align-items:center;gap:8px}
+    .taxas-row .taxa-item label{font-size:11px;color:var(--text-muted);white-space:nowrap}
+    .taxas-row .taxa-item input{width:70px;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;text-align:center}
+    .taxas-row .taxa-item input:focus{outline:none;border-color:var(--gold)}
+    .taxas-row .taxa-item .suffix{color:var(--text-muted);font-size:12px}
+    .taxas-row select{padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px}
+    .resumo-container{position:sticky;top:24px}
+    .resumo-card{background:linear-gradient(135deg,var(--bg-card),rgba(17,17,21,0.98));border:1px solid var(--border-gold);border-radius:var(--radius-lg);overflow:hidden}
+    .resumo-header{background:var(--gold);padding:16px 20px;display:flex;align-items:center;gap:10px}
+    .resumo-header i{font-size:18px;color:var(--bg-primary)}.resumo-header h3{font-size:16px;font-weight:800;color:var(--bg-primary)}
+    .resumo-body{padding:20px}
+    .resumo-credor{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:10px;margin-bottom:16px}
+    .resumo-credor-icon{width:40px;height:40px;background:var(--purple-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--purple)}
+    .resumo-credor-info{flex:1}.resumo-credor-info h4{font-size:13px;font-weight:600}.resumo-credor-info p{font-size:11px;color:var(--text-muted)}
+    .resumo-credor.empty{opacity:0.5}.resumo-credor.empty h4{color:var(--text-muted)}
+    .resumo-section{margin-bottom:16px}
+    .resumo-section-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;letter-spacing:1px}
+    .resumo-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+    .resumo-item:last-child{border-bottom:none}
+    .resumo-item span:first-child{font-size:13px;color:var(--text-secondary)}.resumo-item span:last-child{font-size:13px;font-weight:600}
+    .resumo-item.desconto span:last-child{color:var(--green)}.resumo-item.entrada span:last-child{color:var(--blue)}.resumo-item.taxas span:last-child{color:var(--orange)}
+    .resumo-total{background:linear-gradient(135deg,var(--gold-glow-strong),var(--gold-glow));border-radius:12px;padding:20px;text-align:center;margin:16px 0}
+    .resumo-total-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
+    .resumo-total-value{font-size:32px;font-weight:900;color:var(--gold)}
+    .resumo-parcelas{font-size:13px;color:var(--text-secondary);margin-top:8px}.resumo-parcelas strong{color:var(--gold)}
+    .resumo-detalhes{background:var(--bg-secondary);border-radius:10px;padding:14px;margin-bottom:16px}
+    .resumo-detalhes-title{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .resumo-detalhes-title i{color:var(--gold)}
+    .resumo-detalhe-item{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--border)}
+    .resumo-detalhe-item:last-child{border-bottom:none}
+    .resumo-detalhe-item span:first-child{color:var(--text-muted)}.resumo-detalhe-item span:last-child{color:var(--text-primary)}
+    .resumo-pix{display:flex;align-items:center;gap:10px;padding:12px;background:var(--green-bg);border:1px solid rgba(34,197,94,0.3);border-radius:10px;margin-bottom:16px}
+    .resumo-pix.inactive{background:var(--bg-secondary);border-color:var(--border)}
+    .resumo-pix i{font-size:18px;color:var(--green)}.resumo-pix.inactive i{color:var(--text-muted)}
+    .resumo-pix span{font-size:12px;font-weight:500;color:var(--green)}.resumo-pix.inactive span{color:var(--text-muted)}
+    .resumo-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;transition:all var(--transition-fast);border:none}
+    .btn-secondary{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.active{display:flex}
+    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:500px}
+    .modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-header h3{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-header h3 i{color:var(--gold)}
+    .modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer}.modal-close:hover{color:var(--red)}
+    .modal-body{padding:20px}.modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
+    @media(max-width:1200px){.form-layout{grid-template-columns:1fr}.resumo-container{position:static}}
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0}}
+    @media(max-width:768px){.form-row.cols-2{grid-template-columns:1fr}.taxas-row{flex-direction:column;align-items:stretch}.taxas-row .taxa-item{justify-content:space-between}}
   </style>
 </head>
 <body>
-  <!-- SIDEBAR PADRÃO -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar">
     <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-title">Principal</div>
+      <div class="nav-section"><div class="nav-section-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
         <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança <span class="nav-badge" id="badgeFila"></span></a>
         <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Cadastros</div>
+      <div class="nav-section"><div class="nav-section-title">Cadastros</div>
         <a href="/credores" class="nav-link"><i class="fas fa-building"></i> Credores</a>
         <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
         <a href="/cobrancas" class="nav-link active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Negociação</div>
+      <div class="nav-section"><div class="nav-section-title">Negociação</div>
         <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
         <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
         <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Financeiro</div>
+      <div class="nav-section"><div class="nav-section-title">Financeiro</div>
         <a href="/financeiro" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
-        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
-        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
         <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Administração</div>
-        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
-        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-card">
         <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-info"><div class="user-name" id="userName">Carregando...</div><div class="user-role" id="userRole">-</div></div>
+        <div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div>
         <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main-content">
     <div class="page-header">
-      <div class="page-title">
-        <div class="page-title-icon"><i class="fas fa-plus-circle"></i></div>
-        <div><h1>Nova Cobrança</h1><p>Cadastre uma nova cobrança</p></div>
-      </div>
+      <div class="page-header-icon"><i class="fas fa-plus"></i></div>
+      <div><h1>Nova Cobrança</h1><p>Cadastre uma nova cobrança de forma rápida</p></div>
     </div>
 
-    <form id="formCobranca">
+    <form id="formCobranca" onsubmit="salvarCobranca(event)">
       <div class="form-layout">
-        <div>
-          <!-- Credor e Empresa -->
-          <div class="form-card">
-            <h3><i class="fas fa-building"></i> Credor</h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Selecione o Credor <span class="required">*</span></label>
-                <select class="form-control" id="credorId" name="credor_id" required>
-                  <option value="">Selecione um credor...</option>
-                </select>
-                <div class="form-hint">O credor é o dono da dívida (empresa que contratou)</div>
-              </div>
-              <div class="form-group">
-                <label>Empresa/Conta</label>
-                <select class="form-control" id="empresaId" name="empresa_id">
-                  <option value="">Conta padrão</option>
-                </select>
-                <div class="form-hint">Conta bancária que receberá o pagamento</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Devedor -->
-          <div class="form-card">
-            <h3><i class="fas fa-user"></i> Devedor</h3>
+        <div class="form-column">
+          <div class="card">
+            <div class="card-header"><i class="fas fa-building"></i><h3>Credor</h3><span class="badge">Quem vai receber</span></div>
             <div class="form-group">
-              <label>Buscar Devedor <span class="required">*</span></label>
-              <div class="cliente-search">
-                <i class="fas fa-search ico"></i>
-                <input type="text" class="form-control" id="buscarCliente" placeholder="Digite nome, CPF ou CNPJ..." autocomplete="off">
-                <div class="cliente-results" id="clienteResults"></div>
-              </div>
-              <div class="cliente-selected" id="clienteSelected">
-                <div class="cliente-avatar" id="clienteAvatar">D</div>
-                <div class="cliente-info-box">
-                  <div class="cliente-nome" id="clienteNome">Devedor</div>
-                  <div class="cliente-cpf" id="clienteCpf">CPF/CNPJ</div>
-                </div>
-                <button type="button" class="cliente-remove" onclick="removerCliente()"><i class="fas fa-times"></i></button>
-              </div>
-              <input type="hidden" id="clienteId" name="cliente_id">
+              <label><i class="fas fa-briefcase"></i> Selecione o Credor <span class="required">*</span></label>
+              <select class="form-control" id="credorId" required onchange="selecionarCredor()"><option value="">Escolha o credor...</option></select>
             </div>
           </div>
 
-          <!-- Cobrança -->
-          <div class="form-card">
-            <h3><i class="fas fa-file-invoice-dollar"></i> Dados da Cobrança</h3>
-            <div class="form-grid">
-              <div class="form-group full">
-                <label>Descrição <span class="required">*</span></label>
-                <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Ex: Compra de notebook, Mensalidade Janeiro/2024" required>
+          <div class="card">
+            <div class="card-header"><i class="fas fa-user"></i><h3>Devedor</h3><span class="badge">Quem vai pagar</span></div>
+            <div class="form-group">
+              <label><i class="fas fa-search"></i> Buscar Devedor <span class="required">*</span></label>
+              <div class="search-container">
+                <div class="input-icon">
+                  <i class="fas fa-search"></i>
+                  <input type="text" class="form-control" id="buscaDevedor" placeholder="Digite nome, CPF ou CNPJ..." autocomplete="off" oninput="buscarDevedor(this.value)" onfocus="mostrarResultados()">
+                </div>
+                <div class="search-results" id="searchResults"></div>
+              </div>
+              <div class="devedor-selecionado" id="devedorSelecionado">
+                <div class="devedor-avatar" id="devedorAvatar">MM</div>
+                <div class="devedor-info">
+                  <h4 id="devedorNome">Nome do Devedor</h4>
+                  <p><span><i class="fas fa-phone"></i> <span id="devedorTelefone">-</span></span><span><i class="fas fa-envelope"></i> <span id="devedorEmail">-</span></span><span><i class="fas fa-id-card"></i> <span id="devedorCpf">-</span></span></p>
+                </div>
+                <div class="devedor-stats">
+                  <span class="divida" id="devedorDivida">R$ 0,00</span><small>dívida atual</small>
+                  <button type="button" class="btn-trocar" onclick="trocarDevedor()"><i class="fas fa-sync-alt"></i> Trocar</button>
+                </div>
+              </div>
+              <input type="hidden" id="clienteId" required>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><i class="fas fa-file-invoice-dollar"></i><h3>Dados da Cobrança</h3></div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label><i class="fas fa-tag"></i> Descrição <span class="required">*</span></label>
+              <input type="text" class="form-control" id="descricao" placeholder="Ex: Compra de notebook, Parcela atrasada..." required>
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label><i class="fas fa-dollar-sign"></i> Valor Total <span class="required">*</span></label>
+                <div class="input-icon"><span class="prefix">R$</span><input type="text" class="form-control has-prefix" id="valorTotal" placeholder="0,00" required oninput="formatarMoeda(this); atualizarResumo()"></div>
               </div>
               <div class="form-group">
-                <label>Valor Total <span class="required">*</span></label>
-                <div class="input-group"><span class="prefix">R$</span><input type="text" class="form-control" id="valor" name="valor" placeholder="0,00" required></div>
+                <label><i class="fas fa-calendar"></i> Vencimento <span class="required">*</span></label>
+                <input type="date" class="form-control" id="vencimento" required onchange="atualizarResumo()">
               </div>
+            </div>
+            <div class="form-row cols-2">
               <div class="form-group">
-                <label>Vencimento <span class="required">*</span></label>
-                <input type="date" class="form-control" id="vencimento" name="vencimento" required>
-              </div>
-              <div class="form-group">
-                <label>Parcelas</label>
-                <select class="form-control" id="parcelas" name="parcelas">
-                  <option value="1">À vista (1x)</option>
-                  <option value="2">2x</option>
-                  <option value="3">3x</option>
-                  <option value="4">4x</option>
-                  <option value="5">5x</option>
-                  <option value="6">6x</option>
-                  <option value="7">7x</option>
-                  <option value="8">8x</option>
-                  <option value="9">9x</option>
-                  <option value="10">10x</option>
-                  <option value="11">11x</option>
-                  <option value="12">12x</option>
-                  <option value="18">18x</option>
-                  <option value="24">24x</option>
-                  <option value="36">36x</option>
+                <label><i class="fas fa-layer-group"></i> Parcelas</label>
+                <select class="form-control" id="parcelas" onchange="atualizarResumo()">
+                  <option value="1">À vista (1x)</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option><option value="18">18x</option><option value="24">24x</option><option value="36">36x</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>Entrada</label>
-                <div class="input-group"><span class="prefix">R$</span><input type="text" class="form-control" id="entrada" name="entrada" placeholder="0,00"></div>
-                <div class="form-hint">Valor pago na hora do acordo</div>
-              </div>
-              <div class="form-group">
-                <label>Desconto</label>
-                <div class="input-group"><span class="prefix">R$</span><input type="text" class="form-control" id="desconto" name="desconto" placeholder="0,00"></div>
+                <label><i class="fas fa-hand-holding-dollar"></i> Entrada</label>
+                <div class="input-icon"><span class="prefix">R$</span><input type="text" class="form-control has-prefix" id="entrada" placeholder="0,00" oninput="formatarMoeda(this); atualizarResumo()"></div>
               </div>
             </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fas fa-percent"></i> Desconto</label>
+                <div class="input-icon"><span class="prefix">R$</span><input type="text" class="form-control has-prefix" id="desconto" placeholder="0,00" oninput="formatarMoeda(this); atualizarResumo()"></div>
+              </div>
+            </div>
+            <div class="taxas-row">
+              <div class="taxa-item"><label>Multa:</label><input type="text" id="multa" value="2" oninput="atualizarResumo()"><span class="suffix">%</span></div>
+              <div class="taxa-item"><label>Juros/mês:</label><input type="text" id="juros" value="1" oninput="atualizarResumo()"><span class="suffix">%</span></div>
+              <div class="taxa-item"><label>Tipo:</label><select id="tipoJuros"><option value="simples">Simples</option><option value="composto">Composto</option></select></div>
+            </div>
+          </div>
 
-            <!-- Taxas de Multa e Juros -->
-            <div class="taxas-inline">
-              <div class="taxas-title"><i class="fas fa-percentage"></i> Multa e Juros (aplicados após vencimento)</div>
-              <div class="form-group">
-                <label>Multa por Atraso</label>
-                <div class="input-group">
-                  <input type="text" class="form-control has-suffix" id="multa" name="multa" placeholder="2" value="2">
-                  <span class="suffix">%</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Juros ao Mês</label>
-                <div class="input-group">
-                  <input type="text" class="form-control has-suffix" id="juros" name="juros" placeholder="1" value="1">
-                  <span class="suffix">%</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Tipo de Juros</label>
-                <select class="form-control" id="tipoJuros" name="tipo_juros">
-                  <option value="simples">Simples</option>
-                  <option value="composto">Composto</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group full" style="margin-top:16px">
-              <label>Observações</label>
-              <textarea class="form-control" id="observacoes" name="observacoes" rows="2" placeholder="Observações opcionais..."></textarea>
-            </div>
-
-            <!-- Gerar Boleto/PIX -->
-            <div class="checkbox-group" id="checkboxBoleto" onclick="toggleCheckbox(this)">
-              <input type="checkbox" id="gerarBoleto" name="gerar_boleto">
-              <div class="checkbox-custom"><i class="fas fa-check"></i></div>
-              <div class="checkbox-label">
-                <span><i class="fas fa-barcode"></i> Gerar Boleto/PIX automaticamente</span>
-                <small>Será gerado via Asaas após salvar a cobrança</small>
-              </div>
-            </div>
+          <div class="card">
+            <div class="card-header"><i class="fas fa-sticky-note"></i><h3>Observações</h3><span class="badge">Opcional</span></div>
+            <div class="form-group"><textarea class="form-control" id="observacoes" rows="3" placeholder="Anotações internas sobre esta cobrança..."></textarea></div>
           </div>
         </div>
 
-        <!-- Resumo -->
-        <div>
+        <div class="resumo-container">
           <div class="resumo-card">
-            <h3><i class="fas fa-receipt"></i> Resumo</h3>
-            
-            <!-- Credor selecionado -->
-            <div class="resumo-section">
-              <div class="resumo-section-title">Credor</div>
-              <div class="resumo-credor" id="resumoCredor" style="display:none;">
+            <div class="resumo-header"><i class="fas fa-receipt"></i><h3>Resumo</h3></div>
+            <div class="resumo-body">
+              <div class="resumo-credor empty" id="resumoCredor">
                 <div class="resumo-credor-icon"><i class="fas fa-building"></i></div>
-                <div class="resumo-credor-info">
-                  <div class="resumo-credor-nome" id="resumoCredorNome">-</div>
-                  <div class="resumo-credor-comissao">Comissão: <span id="resumoCredorComissao">0%</span></div>
-                </div>
+                <div class="resumo-credor-info"><h4 id="resumoCredorNome">Nenhum credor selecionado</h4><p id="resumoCredorComissao">-</p></div>
               </div>
-              <div id="resumoCredorVazio" style="color:var(--text-muted);font-size:13px;">Nenhum credor selecionado</div>
-            </div>
-
-            <!-- Valores -->
-            <div class="resumo-section">
-              <div class="resumo-section-title">Valores</div>
-              <div class="resumo-item"><span class="resumo-label">Valor Original</span><span class="resumo-value" id="resumoValor">R$ 0,00</span></div>
-              <div class="resumo-item"><span class="resumo-label">Desconto</span><span class="resumo-value" style="color:var(--green)">- <span id="resumoDesconto">R$ 0,00</span></span></div>
-              <div class="resumo-item" id="resumoEntradaRow" style="display:none;"><span class="resumo-label">Entrada</span><span class="resumo-value" style="color:var(--blue)">- <span id="resumoEntrada">R$ 0,00</span></span></div>
-              <div class="resumo-item"><span class="resumo-label">Multa/Juros</span><span class="resumo-value" id="resumoTaxasInfo" style="color:var(--orange)">2% + 1% a.m.</span></div>
-            </div>
-
-            <div class="resumo-total">
-              <div class="resumo-total-label">VALOR A PARCELAR</div>
-              <div class="resumo-total-value" id="resumoTotal">R$ 0,00</div>
-              <div class="resumo-parcelas" id="resumoParcelas"></div>
-              <div class="resumo-entrada" id="resumoEntradaInfo" style="display:none;"></div>
-            </div>
-
-            <div class="resumo-gerar-boleto inactive" id="resumoGerarBoleto">
-              <i class="fas fa-barcode"></i>
-              <span>Boleto/PIX não será gerado</span>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
-              <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Salvar</button>
+              <div class="resumo-section">
+                <div class="resumo-section-title">Valores</div>
+                <div class="resumo-item"><span>Valor Original</span><span id="resumoValor">R$ 0,00</span></div>
+                <div class="resumo-item desconto" id="rowDesconto" style="display:none"><span>Desconto</span><span id="resumoDesconto">- R$ 0,00</span></div>
+                <div class="resumo-item entrada" id="rowEntrada" style="display:none"><span>Entrada</span><span id="resumoEntrada">- R$ 0,00</span></div>
+                <div class="resumo-item taxas"><span>Multa/Juros</span><span id="resumoTaxas">2% + 1% a.m.</span></div>
+              </div>
+              <div class="resumo-total">
+                <div class="resumo-total-label">VALOR A PARCELAR</div>
+                <div class="resumo-total-value" id="resumoTotal">R$ 0,00</div>
+                <div class="resumo-parcelas" id="resumoParcelas"></div>
+              </div>
+              <div class="resumo-detalhes" id="resumoDetalhes" style="display:none">
+                <div class="resumo-detalhes-title"><i class="fas fa-calendar-alt"></i> Detalhes das Parcelas</div>
+                <div id="resumoDetalhesContent"></div>
+              </div>
+              <div class="resumo-pix inactive" id="resumoPix"><i class="fas fa-qrcode"></i><span>PIX/Boleto não será gerado</span></div>
+              <div class="resumo-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Salvar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -355,12 +278,32 @@
     </form>
   </main>
 
+  <div class="modal-overlay" id="modalNovoDevedor">
+    <div class="modal">
+      <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Novo Devedor</h3><button class="modal-close" onclick="fecharModal()">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Nome Completo <span class="required">*</span></label><input type="text" class="form-control" id="novoNome" required></div>
+          <div class="form-group"><label>CPF/CNPJ</label><input type="text" class="form-control" id="novoCpf" placeholder="000.000.000-00"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="novoTelefone" placeholder="(00) 00000-0000"></div>
+          <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="novoEmail" placeholder="email@exemplo.com"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="salvarNovoDevedor()"><i class="fas fa-save"></i> Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = window.location.origin;
     let token = localStorage.getItem('token');
     let clienteSelecionado = null;
     let credores = [];
-    let empresas = [];
+    let clientes = [];
     let credorSelecionado = null;
     if (!token) window.location.href = '/login';
 
@@ -368,9 +311,18 @@
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
     function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
     function parseMoney(s) { if (!s) return 0; return parseFloat(s.replace(/[^\d,]/g, '').replace(',', '.')) || 0; }
-    function parsePercent(s) { if (!s) return 0; return parseFloat(s.replace(/[^\d,]/g, '').replace(',', '.')) || 0; }
+    function formatarMoeda(input) {
+      let v = input.value.replace(/\D/g, '');
+      v = (parseInt(v) / 100).toFixed(2);
+      v = v.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      input.value = v === 'NaN' ? '0,00' : v;
+    }
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(' ');
+      return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+    }
 
-    // Carregar usuário
     async function carregarUsuario() {
       try {
         const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
@@ -379,279 +331,189 @@
         if (user && (user.nome || user.email)) {
           document.getElementById('userName').textContent = user.nome || user.email;
           document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (user.nome || user.email).charAt(0).toUpperCase();
+          document.getElementById('userAvatar').textContent = getInitials(user.nome || user.email);
         }
       } catch (e) { console.error(e); }
     }
 
-    // Carregar badges
-    async function carregarBadges() {
-      try {
-        // Busca cobranças vencidas para mostrar no badge
-        const res = await fetch(API + '/api/cobrancas', { headers: getHeaders() });
-        const data = await res.json();
-        if (data.success && data.data) {
-          const hoje = new Date();
-          hoje.setHours(0, 0, 0, 0);
-          const vencidas = data.data.filter(c => {
-            const venc = new Date(c.vencimento);
-            venc.setHours(0, 0, 0, 0);
-            return venc < hoje && c.status !== 'pago' && c.status !== 'cancelado';
-          }).length;
-          document.getElementById('badgeFila').textContent = vencidas > 0 ? vencidas : '';
-        }
-      } catch (e) { }
-    }
-
-    // Carregar credores
     async function carregarCredores() {
       try {
         const res = await fetch(API + '/api/credores', { headers: getHeaders() });
         const data = await res.json();
-        credores = data.success ? (data.data || data.credores || []) : [];
-        const select = document.getElementById('credorId');
-        credores.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.nome;
-          opt.dataset.comissao = c.comissao || 0;
-          select.appendChild(opt);
-        });
+        if (data.success && data.data) {
+          credores = data.data;
+          const select = document.getElementById('credorId');
+          credores.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nome + (c.comissao ? ` (${c.comissao}% comissão)` : '');
+            select.appendChild(opt);
+          });
+        }
       } catch (e) { console.error(e); }
     }
 
-    // Carregar empresas
-    async function carregarEmpresas() {
-      try {
-        const res = await fetch(API + '/api/empresas', { headers: getHeaders() });
-        const data = await res.json();
-        empresas = data.success ? (data.data || []) : [];
-        const select = document.getElementById('empresaId');
-        empresas.forEach(e => {
-          const opt = document.createElement('option');
-          opt.value = e.id;
-          opt.textContent = e.nome + (e.padrao ? ' (Padrão)' : '');
-          if (e.padrao) opt.selected = true;
-          select.appendChild(opt);
-        });
-      } catch (e) { console.error(e); }
-    }
-
-    // Credor selecionado
-    document.getElementById('credorId').addEventListener('change', function() {
-      const selected = this.options[this.selectedIndex];
-      if (this.value) {
-        credorSelecionado = credores.find(c => c.id === this.value);
-        document.getElementById('resumoCredor').style.display = 'flex';
-        document.getElementById('resumoCredorVazio').style.display = 'none';
-        document.getElementById('resumoCredorNome').textContent = selected.textContent;
-        document.getElementById('resumoCredorComissao').textContent = (selected.dataset.comissao || 0) + '%';
+    function selecionarCredor() {
+      const id = document.getElementById('credorId').value;
+      credorSelecionado = credores.find(c => c.id == id);
+      const el = document.getElementById('resumoCredor');
+      if (credorSelecionado) {
+        el.classList.remove('empty');
+        document.getElementById('resumoCredorNome').textContent = credorSelecionado.nome;
+        document.getElementById('resumoCredorComissao').textContent = credorSelecionado.comissao ? `Comissão: ${credorSelecionado.comissao}%` : 'Sem comissão';
       } else {
-        credorSelecionado = null;
-        document.getElementById('resumoCredor').style.display = 'none';
-        document.getElementById('resumoCredorVazio').style.display = 'block';
+        el.classList.add('empty');
+        document.getElementById('resumoCredorNome').textContent = 'Nenhum credor selecionado';
+        document.getElementById('resumoCredorComissao').textContent = '-';
       }
-    });
+    }
 
-    // Buscar clientes
     let searchTimeout;
-    document.getElementById('buscarCliente').addEventListener('input', function() {
+    async function buscarDevedor(termo) {
       clearTimeout(searchTimeout);
-      const q = this.value.trim();
-      if (q.length < 2) {
-        document.getElementById('clienteResults').classList.remove('active');
-        return;
-      }
+      if (termo.length < 2) { document.getElementById('searchResults').classList.remove('active'); return; }
       searchTimeout = setTimeout(async () => {
         try {
-          const res = await fetch(API + '/api/clientes?q=' + encodeURIComponent(q), { headers: getHeaders() });
+          const res = await fetch(API + '/api/clientes?q=' + encodeURIComponent(termo), { headers: getHeaders() });
           const data = await res.json();
-          const results = document.getElementById('clienteResults');
-          results.innerHTML = '';
-          const list = data.success ? (data.data || data.clientes || []) : [];
-          if (list.length === 0) {
-            results.innerHTML = '<div class="cliente-item"><span class="cliente-item-name">Nenhum devedor encontrado</span></div>';
-          } else {
-            list.slice(0, 10).forEach(c => {
-              const div = document.createElement('div');
-              div.className = 'cliente-item';
-              div.innerHTML = `<div class="cliente-item-name">${c.nome}</div><div class="cliente-item-info">${c.cpf_cnpj || ''}</div>`;
-              div.onclick = () => selecionarCliente(c.id, c.nome, c.cpf_cnpj);
-              results.appendChild(div);
-            });
-          }
-          results.classList.add('active');
+          if (data.success) { clientes = data.data || []; renderizarResultados(clientes); }
         } catch (e) { console.error(e); }
       }, 300);
-    });
-
-    function selecionarCliente(id, nome, cpf) {
-      clienteSelecionado = { id, nome, cpf };
-      document.getElementById('clienteId').value = id;
-      document.getElementById('clienteNome').textContent = nome;
-      document.getElementById('clienteCpf').textContent = cpf || '';
-      document.getElementById('clienteAvatar').textContent = nome.charAt(0).toUpperCase();
-      document.getElementById('clienteSelected').classList.add('active');
-      document.getElementById('clienteResults').classList.remove('active');
-      document.getElementById('buscarCliente').value = '';
     }
 
-    function removerCliente() {
+    function mostrarResultados() {
+      if (clientes.length > 0 || document.getElementById('buscaDevedor').value.length >= 2) document.getElementById('searchResults').classList.add('active');
+    }
+
+    function renderizarResultados(lista) {
+      const container = document.getElementById('searchResults');
+      if (lista.length === 0) {
+        container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-search" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>Nenhum devedor encontrado</div><div class="btn-novo-devedor" onclick="abrirModalNovoDevedor()"><i class="fas fa-plus"></i> Cadastrar novo devedor</div>`;
+      } else {
+        container.innerHTML = lista.map(c => `<div class="search-result-item" onclick="selecionarDevedor('${c.id}')"><div class="search-result-avatar">${getInitials(c.nome)}</div><div class="search-result-info"><h4>${c.nome}</h4><p>${c.cpf_cnpj || 'Sem CPF'} • ${c.telefone || 'Sem telefone'}</p></div><div class="search-result-divida"><span>${fmtMoney(c.divida_total || 0)}</span><small>dívida atual</small></div></div>`).join('') + `<div class="btn-novo-devedor" onclick="abrirModalNovoDevedor()"><i class="fas fa-plus"></i> Cadastrar novo devedor</div>`;
+      }
+      container.classList.add('active');
+    }
+
+    function selecionarDevedor(id) {
+      const cliente = clientes.find(c => c.id == id);
+      if (!cliente) return;
+      clienteSelecionado = cliente;
+      document.getElementById('clienteId').value = cliente.id;
+      document.getElementById('buscaDevedor').style.display = 'none';
+      document.getElementById('searchResults').classList.remove('active');
+      const el = document.getElementById('devedorSelecionado');
+      el.classList.add('active');
+      document.getElementById('devedorAvatar').textContent = getInitials(cliente.nome);
+      document.getElementById('devedorNome').textContent = cliente.nome;
+      document.getElementById('devedorTelefone').textContent = cliente.telefone || '-';
+      document.getElementById('devedorEmail').textContent = cliente.email || '-';
+      document.getElementById('devedorCpf').textContent = cliente.cpf_cnpj || '-';
+      document.getElementById('devedorDivida').textContent = fmtMoney(cliente.divida_total || 0);
+    }
+
+    function trocarDevedor() {
       clienteSelecionado = null;
       document.getElementById('clienteId').value = '';
-      document.getElementById('clienteSelected').classList.remove('active');
+      document.getElementById('buscaDevedor').style.display = 'block';
+      document.getElementById('buscaDevedor').value = '';
+      document.getElementById('devedorSelecionado').classList.remove('active');
     }
 
-    // Toggle checkbox boleto
-    function toggleCheckbox(el) {
-      el.classList.toggle('checked');
-      const input = el.querySelector('input');
-      input.checked = !input.checked;
-      
-      const resumoBoleto = document.getElementById('resumoGerarBoleto');
-      if (input.checked) {
-        resumoBoleto.classList.remove('inactive');
-        resumoBoleto.innerHTML = '<i class="fas fa-check-circle"></i> <span>Boleto/PIX será gerado automaticamente</span>';
-      } else {
-        resumoBoleto.classList.add('inactive');
-        resumoBoleto.innerHTML = '<i class="fas fa-barcode"></i> <span>Boleto/PIX não será gerado</span>';
-      }
+    function abrirModalNovoDevedor() {
+      document.getElementById('searchResults').classList.remove('active');
+      document.getElementById('modalNovoDevedor').classList.add('active');
+    }
+    function fecharModal() { document.getElementById('modalNovoDevedor').classList.remove('active'); }
+
+    async function salvarNovoDevedor() {
+      const dados = { nome: document.getElementById('novoNome').value, cpf_cnpj: document.getElementById('novoCpf').value, telefone: document.getElementById('novoTelefone').value, email: document.getElementById('novoEmail').value };
+      if (!dados.nome) { alert('Nome é obrigatório'); return; }
+      try {
+        const res = await fetch(API + '/api/clientes', { method: 'POST', headers: getHeaders(), body: JSON.stringify(dados) });
+        const data = await res.json();
+        if (data.success) { fecharModal(); clientes.push(data.data); selecionarDevedor(data.data.id); alert('Devedor cadastrado!'); }
+        else alert(data.message || 'Erro ao cadastrar');
+      } catch (e) { alert('Erro ao cadastrar devedor'); }
     }
 
-    // Atualizar resumo
     function atualizarResumo() {
-      const valor = parseMoney(document.getElementById('valor').value);
+      const valor = parseMoney(document.getElementById('valorTotal').value);
       const desconto = parseMoney(document.getElementById('desconto').value);
       const entrada = parseMoney(document.getElementById('entrada').value);
       const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-      const multa = parsePercent(document.getElementById('multa').value);
-      const juros = parsePercent(document.getElementById('juros').value);
-      
-      const valorFinal = Math.max(0, valor - desconto - entrada);
-      const valorParcela = parcelas > 0 ? valorFinal / parcelas : valorFinal;
-      
+      const multa = parseFloat(document.getElementById('multa').value) || 0;
+      const juros = parseFloat(document.getElementById('juros').value) || 0;
+      const vencimento = document.getElementById('vencimento').value;
+      const valorParcelar = Math.max(0, valor - desconto - entrada);
+      const valorParcela = parcelas > 0 ? valorParcelar / parcelas : 0;
+
       document.getElementById('resumoValor').textContent = fmtMoney(valor);
-      document.getElementById('resumoDesconto').textContent = fmtMoney(desconto);
-      document.getElementById('resumoTotal').textContent = fmtMoney(valorFinal);
-      
-      // Entrada
-      const entradaRow = document.getElementById('resumoEntradaRow');
-      const entradaInfo = document.getElementById('resumoEntradaInfo');
-      if (entrada > 0) {
-        entradaRow.style.display = 'flex';
-        document.getElementById('resumoEntrada').textContent = fmtMoney(entrada);
-        entradaInfo.style.display = 'block';
-        entradaInfo.textContent = `+ Entrada de ${fmtMoney(entrada)}`;
-      } else {
-        entradaRow.style.display = 'none';
-        entradaInfo.style.display = 'none';
-      }
-      
-      // Parcelas
-      const parcelasEl = document.getElementById('resumoParcelas');
-      if (parcelas > 1) {
-        parcelasEl.textContent = `${parcelas}x de ${fmtMoney(valorParcela)}`;
-        parcelasEl.style.display = 'block';
-      } else {
-        parcelasEl.style.display = 'none';
-      }
-      
-      // Taxas
-      document.getElementById('resumoTaxasInfo').textContent = `${multa}% + ${juros}% a.m.`;
+      const rowDesconto = document.getElementById('rowDesconto');
+      if (desconto > 0) { rowDesconto.style.display = 'flex'; document.getElementById('resumoDesconto').textContent = '- ' + fmtMoney(desconto); } else rowDesconto.style.display = 'none';
+      const rowEntrada = document.getElementById('rowEntrada');
+      if (entrada > 0) { rowEntrada.style.display = 'flex'; document.getElementById('resumoEntrada').textContent = '- ' + fmtMoney(entrada); } else rowEntrada.style.display = 'none';
+      document.getElementById('resumoTaxas').textContent = `${multa}% + ${juros}% a.m.`;
+      document.getElementById('resumoTotal').textContent = fmtMoney(valorParcelar);
+      document.getElementById('resumoParcelas').innerHTML = parcelas > 1 ? `<strong>${parcelas}x</strong> de <strong>${fmtMoney(valorParcela)}</strong>` : (entrada > 0 ? `Entrada: <strong>${fmtMoney(entrada)}</strong> + <strong>${fmtMoney(valorParcelar)}</strong>` : 'Pagamento à vista');
+
+      const detalhesEl = document.getElementById('resumoDetalhes');
+      const detalhesContent = document.getElementById('resumoDetalhesContent');
+      if (parcelas > 1 && vencimento) {
+        detalhesEl.style.display = 'block';
+        let html = '';
+        let dataVenc = new Date(vencimento + 'T12:00:00');
+        if (entrada > 0) html += `<div class="resumo-detalhe-item"><span>Entrada</span><span>${fmtMoney(entrada)}</span></div>`;
+        for (let i = 1; i <= Math.min(parcelas, 6); i++) {
+          html += `<div class="resumo-detalhe-item"><span>${i}ª parcela - ${dataVenc.toLocaleDateString('pt-BR')}</span><span>${fmtMoney(valorParcela)}</span></div>`;
+          dataVenc.setMonth(dataVenc.getMonth() + 1);
+        }
+        if (parcelas > 6) {
+          html += `<div class="resumo-detalhe-item" style="color:var(--text-muted);font-style:italic;"><span>... mais ${parcelas - 6} parcelas</span><span></span></div>`;
+          dataVenc = new Date(vencimento + 'T12:00:00');
+          dataVenc.setMonth(dataVenc.getMonth() + parcelas - 1);
+          html += `<div class="resumo-detalhe-item"><span>Última - ${dataVenc.toLocaleDateString('pt-BR')}</span><span>${fmtMoney(valorParcela)}</span></div>`;
+        }
+        detalhesContent.innerHTML = html;
+      } else detalhesEl.style.display = 'none';
     }
 
-    // Eventos para atualizar resumo
-    ['valor', 'desconto', 'entrada', 'parcelas', 'multa', 'juros'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', atualizarResumo);
-      if (el) el.addEventListener('change', atualizarResumo);
-    });
-
-    // Fechar resultados ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.cliente-search')) {
-        document.getElementById('clienteResults').classList.remove('active');
-      }
-    });
-
-    // Submit form
-    document.getElementById('formCobranca').addEventListener('submit', async function(e) {
+    async function salvarCobranca(e) {
       e.preventDefault();
-      
-      const credorId = document.getElementById('credorId').value;
-      if (!credorId) { alert('Selecione um credor'); return; }
-      if (!clienteSelecionado) { alert('Selecione um devedor'); return; }
-
-      const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
-      const gerarBoleto = document.getElementById('gerarBoleto').checked;
-
       const dados = {
-        credor_id: credorId,
-        cliente_id: clienteSelecionado.id,
-        empresa_id: document.getElementById('empresaId').value || null,
+        cliente_id: document.getElementById('clienteId').value,
+        empresa_id: credorSelecionado?.id || null,
         descricao: document.getElementById('descricao').value,
-        valor_original: parseMoney(document.getElementById('valor').value),
+        valor_original: parseMoney(document.getElementById('valorTotal').value),
         desconto: parseMoney(document.getElementById('desconto').value),
         entrada: parseMoney(document.getElementById('entrada').value),
+        parcelas: parseInt(document.getElementById('parcelas').value) || 1,
         vencimento: document.getElementById('vencimento').value,
-        parcelas: parcelas,
-        multa: parsePercent(document.getElementById('multa').value),
-        juros: parsePercent(document.getElementById('juros').value),
+        multa: parseFloat(document.getElementById('multa').value) || 2,
+        juros: parseFloat(document.getElementById('juros').value) || 1,
         tipo_juros: document.getElementById('tipoJuros').value,
-        observacoes: document.getElementById('observacoes').value,
-        gerar_boleto: gerarBoleto
+        observacoes: document.getElementById('observacoes').value
       };
-
+      if (!dados.cliente_id) { alert('Selecione um devedor'); return; }
+      if (!dados.descricao) { alert('Informe a descrição'); return; }
+      if (!dados.valor_original || dados.valor_original <= 0) { alert('Informe o valor'); return; }
+      if (!dados.vencimento) { alert('Informe o vencimento'); return; }
       try {
         const res = await fetch(API + '/api/cobrancas', { method: 'POST', headers: getHeaders(), body: JSON.stringify(dados) });
         const data = await res.json();
-        if (data.success) {
-          // Se marcou gerar boleto, chama a API do Asaas
-          if (gerarBoleto && data.data && data.data.id) {
-            try {
-              await fetch(API + '/api/asaas/cobrancas/gerar/' + data.data.id, {
-                method: 'POST',
-                headers: getHeaders(),
-                body: JSON.stringify({ tipo_pagamento: 'UNDEFINED' })
-              });
-            } catch (e) { console.error('Erro ao gerar boleto:', e); }
-          }
-          
-          alert(parcelas > 1 ? `${parcelas} cobranças criadas com sucesso!` : 'Cobrança criada com sucesso!');
-          window.location.href = '/cobrancas';
-        } else {
-          alert(data.message || 'Erro ao criar cobrança');
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Erro ao criar cobrança');
-      }
-    });
-
-    // Verificar parâmetros da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const clienteIdParam = urlParams.get('cliente_id');
-    if (clienteIdParam) {
-      fetch(API + '/api/clientes/' + clienteIdParam, { headers: getHeaders() })
-        .then(r => r.json())
-        .then(data => {
-          if (data.success && data.data) {
-            selecionarCliente(data.data.id, data.data.nome, data.data.cpf_cnpj);
-          }
-        });
+        if (data.success) { alert('Cobrança criada com sucesso!'); window.location.href = '/cobrancas'; }
+        else alert(data.message || 'Erro ao criar cobrança');
+      } catch (e) { console.error(e); alert('Erro ao criar cobrança'); }
     }
 
-    // Inicialização
+    document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) document.getElementById('searchResults').classList.remove('active'); });
+
     carregarUsuario();
-    carregarBadges();
     carregarCredores();
-    carregarEmpresas();
-    atualizarResumo();
-    
-    // Definir data padrão (hoje + 7 dias)
     const hoje = new Date();
     hoje.setDate(hoje.getDate() + 7);
     document.getElementById('vencimento').value = hoje.toISOString().split('T')[0];
+    atualizarResumo();
   </script>
 </body>
 </html>
