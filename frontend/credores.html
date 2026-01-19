@@ -605,6 +605,31 @@
               </div>
             </div>
           </div>
+
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-exclamation-triangle"></i> Taxas de Atraso</div>
+            <p style="font-size:12px;color:var(--orange);margin-bottom:16px;">Taxas aplicadas automaticamente nas cobranças quando o devedor atrasa</p>
+            <div class="form-row col-3">
+              <div class="form-group">
+                <label class="form-label">Multa por Atraso (%)</label>
+                <input type="number" class="form-input" id="multaAtraso" value="2" min="0" max="10" step="0.5">
+                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Aplicada uma única vez</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Juros por Atraso (% a.m.)</label>
+                <input type="number" class="form-input" id="jurosAtraso" value="1" min="0" max="10" step="0.1">
+                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Aplicado por mês de atraso</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo de Juros</label>
+                <select class="form-select" id="tipoJurosAtraso">
+                  <option value="simples">Juros Simples</option>
+                  <option value="composto">Juros Composto</option>
+                </select>
+                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Método de cálculo</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- TAB BANCÁRIOS -->
@@ -940,6 +965,9 @@
       document.getElementById('parcelasMax').value = credor.parcelas_maximas || 12;
       document.getElementById('jurosParcelamento').value = credor.juros_parcelamento || 1;
       document.getElementById('entradaMinima').value = credor.entrada_minima || 0;
+      document.getElementById('multaAtraso').value = credor.multa_atraso || 2;
+      document.getElementById('jurosAtraso').value = credor.juros_atraso || 1;
+      document.getElementById('tipoJurosAtraso').value = credor.tipo_juros || 'simples';
       document.getElementById('credorBanco').value = credor.banco || '';
       document.getElementById('credorPix').value = credor.pix || '';
       document.getElementById('credorAgencia').value = credor.agencia || '';
@@ -966,6 +994,9 @@
       document.getElementById('parcelasMax').value = 12;
       document.getElementById('jurosParcelamento').value = 1;
       document.getElementById('entradaMinima').value = 0;
+      document.getElementById('multaAtraso').value = 2;
+      document.getElementById('jurosAtraso').value = 1;
+      document.getElementById('tipoJurosAtraso').value = 'simples';
       document.getElementById('credorBanco').value = '';
       document.getElementById('credorPix').value = '';
       document.getElementById('credorAgencia').value = '';
@@ -994,6 +1025,9 @@
         parcelas_maximas: parseInt(document.getElementById('parcelasMax').value) || 12,
         juros_parcelamento: parseFloat(document.getElementById('jurosParcelamento').value) || 1,
         entrada_minima: parseFloat(document.getElementById('entradaMinima').value) || 0,
+        multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2,
+        juros_atraso: parseFloat(document.getElementById('jurosAtraso').value) || 1,
+        tipo_juros: document.getElementById('tipoJurosAtraso').value || 'simples',
         banco: document.getElementById('credorBanco').value.trim(),
         pix: document.getElementById('credorPix').value.trim(),
         agencia: document.getElementById('credorAgencia').value.trim(),
