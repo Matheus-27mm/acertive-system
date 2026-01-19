@@ -399,12 +399,13 @@
     // ==================== USUÁRIO ====================
     async function carregarUsuario() {
       try {
-        const res = await fetch(API + '/api/me', { headers: getHeaders() });
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
         const data = await res.json();
-        if (data.success && data.user) {
-          document.getElementById('userName').textContent = data.user.nome || data.user.email;
-          document.getElementById('userRole').textContent = data.user.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (data.user.nome || data.user.email).charAt(0).toUpperCase();
+        const user = data.user || data.data || data;
+        if (user && (user.nome || user.email)) {
+          document.getElementById('userName').textContent = user.nome || user.email;
+          document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (user.nome || user.email).charAt(0).toUpperCase();
         }
       } catch (e) { console.error(e); }
     }
@@ -531,7 +532,7 @@
         const keyBadge = document.getElementById('asaasKeyBadge');
         const keyStatus = document.getElementById('asaasKeyStatus');
         
-        if (data.success && data.connected) {
+        if (data.success && data.conectado) {
           badge.className = 'status-badge connected';
           badge.innerHTML = '<i class="fas fa-circle"></i> Conectado';
           card.classList.add('connected');
@@ -590,10 +591,10 @@
       try {
         const res = await fetch(API + '/api/asaas/status', { headers: getHeaders() });
         const data = await res.json();
-        if (data.success && data.connected) {
-          alert('✅ Asaas conectado!\nSaldo: R$ ' + (data.saldo || 0).toFixed(2));
+        if (data.success && data.conectado) {
+          alert('✅ Asaas conectado!\nAmbiente: ' + (data.ambiente || 'Produção') + '\nSaldo: R$ ' + (data.saldo || 0).toFixed(2));
         } else {
-          alert('❌ Asaas não conectado.\n' + (data.message || 'Verifique a API Key'));
+          alert('❌ Asaas não conectado.\n' + (data.erro || 'Verifique a API Key'));
         }
       } catch (e) {
         alert('❌ Erro ao testar Asaas');
