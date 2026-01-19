@@ -373,12 +373,13 @@
     // Carregar usuário
     async function carregarUsuario() {
       try {
-        const res = await fetch(API + '/api/me', { headers: getHeaders() });
+        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
         const data = await res.json();
-        if (data.success && data.user) {
-          document.getElementById('userName').textContent = data.user.nome || data.user.email;
-          document.getElementById('userRole').textContent = data.user.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (data.user.nome || data.user.email).charAt(0).toUpperCase();
+        const user = data.user || data.data || data;
+        if (user && (user.nome || user.email)) {
+          document.getElementById('userName').textContent = user.nome || user.email;
+          document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
+          document.getElementById('userAvatar').textContent = (user.nome || user.email).charAt(0).toUpperCase();
         }
       } catch (e) { console.error(e); }
     }
@@ -386,10 +387,18 @@
     // Carregar badges
     async function carregarBadges() {
       try {
-        const res = await fetch(API + '/api/cobrancas/dashboard', { headers: getHeaders() });
+        // Busca cobranças vencidas para mostrar no badge
+        const res = await fetch(API + '/api/cobrancas', { headers: getHeaders() });
         const data = await res.json();
-        if (data.success) {
-          document.getElementById('badgeFila').textContent = data.vencidasHoje || '';
+        if (data.success && data.data) {
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          const vencidas = data.data.filter(c => {
+            const venc = new Date(c.vencimento);
+            venc.setHours(0, 0, 0, 0);
+            return venc < hoje && c.status !== 'pago' && c.status !== 'cancelado';
+          }).length;
+          document.getElementById('badgeFila').textContent = vencidas > 0 ? vencidas : '';
         }
       } catch (e) { }
     }
