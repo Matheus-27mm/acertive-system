@@ -1,386 +1,182 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ACERTIVE • Credores</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root {
-      --bg-primary: #0a0a0b;
-      --bg-secondary: #111113;
-      --bg-card: #141417;
-      --bg-hover: #1a1a1f;
-      --text-primary: #ffffff;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
-      --gold: #d4a853;
-      --gold-light: #e8c068;
-      --gold-glow: rgba(212, 168, 83, 0.15);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-gold: rgba(212, 168, 83, 0.3);
-      --green: #22c55e;
-      --green-bg: rgba(34, 197, 94, 0.15);
-      --red: #ef4444;
-      --red-bg: rgba(239, 68, 68, 0.15);
-      --blue: #3b82f6;
-      --blue-bg: rgba(59, 130, 246, 0.15);
-      --orange: #f59e0b;
-      --orange-bg: rgba(245, 158, 11, 0.15);
-      --purple: #a855f7;
-      --purple-bg: rgba(168, 85, 247, 0.15);
-      --sidebar-width: 260px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    :root{--bg-primary:#09090b;--bg-secondary:#0f0f12;--bg-card:#141417;--bg-hover:#1a1a1f;--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-light:#FFD56A;--gold-glow:rgba(246,200,76,0.15);--gold-glow-strong:rgba(246,200,76,0.25);--border:rgba(255,255,255,0.08);--border-gold:rgba(246,200,76,0.3);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.12);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar-width:260px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px}
+    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
 
     /* SIDEBAR */
-    .sidebar {
-      position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
-      background: var(--bg-secondary); border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; z-index: 100;
-    }
-    .sidebar-header {
-      padding: 20px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px;
-    }
-    .logo {
-      width: 38px; height: 38px; background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 16px; color: var(--bg-primary);
-    }
-    .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-    .logo-text span { color: var(--gold); }
-    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
-    .nav-section { margin-bottom: 24px; }
-    .nav-title {
-      font-size: 11px; font-weight: 600; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px;
-    }
-    .nav-link {
-      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-      color: var(--text-secondary); text-decoration: none; border-radius: 8px;
-      font-weight: 500; font-size: 14px; transition: all 0.15s; margin-bottom: 2px;
-    }
-    .nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
-    .nav-link.active {
-      background: var(--gold-glow); color: var(--gold);
-    }
-    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .user-info {
-      display: flex; align-items: center; gap: 10px; padding: 10px;
-      background: rgba(255,255,255,0.03); border-radius: 10px;
-    }
-    .user-avatar {
-      width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
-      border-radius: 8px; display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px; color: var(--bg-primary);
-    }
-    .user-details { flex: 1; }
-    .user-name { font-weight: 600; font-size: 13px; }
-    .user-role { font-size: 11px; color: var(--gold); }
-    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.15s; }
-    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-width);height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .logo{width:38px;height:38px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--bg-primary)}
+    .logo-text{font-size:20px;font-weight:800}.logo-text span{color:var(--gold)}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}.nav-section{margin-bottom:24px}
+    .nav-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:0 12px;margin-bottom:8px}
+    .nav-link{display:flex;align-items:center;gap:12px;padding:10px 12px;color:var(--text-secondary);text-decoration:none;border-radius:8px;font-weight:500;font-size:14px;transition:all 0.15s;margin-bottom:2px}
+    .nav-link:hover{background:rgba(255,255,255,0.05);color:var(--text-primary)}.nav-link.active{background:var(--gold-glow);color:var(--gold)}
+    .nav-link i{width:20px;text-align:center;font-size:15px}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+    .user-info{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:10px}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bg-primary)}
+    .user-details{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--gold)}
+    .btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
 
     /* MAIN */
-    .main { margin-left: var(--sidebar-width); min-height: 100vh; }
-    .header {
-      height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
-      position: sticky; top: 0; z-index: 50;
-    }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .page-icon {
-      width: 36px; height: 36px; background: var(--blue-bg); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--blue); font-size: 16px;
-    }
-    .page-title { font-size: 20px; font-weight: 700; }
-    .header-right { display: flex; align-items: center; gap: 10px; }
-    .content { padding: 24px; }
+    .main{margin-left:var(--sidebar-width);min-height:100vh}
+    .header{height:64px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:12px}
+    .page-icon{width:36px;height:36px;background:var(--blue-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:16px}
+    .page-title{font-size:20px;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:10px}
+    .content{padding:24px}
 
     /* BUTTONS */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
-      border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;
-      border: none; transition: all 0.15s; text-decoration: none;
-    }
-    .btn-primary { 
-      background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
-      color: var(--bg-primary); 
-    }
-    .btn-primary:hover { 
-      transform: translateY(-1px); 
-      box-shadow: 0 4px 12px rgba(212,168,83,0.3); 
-    }
-    .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
-    .btn-sm { padding: 8px 12px; font-size: 12px; }
-    .btn-icon { width: 34px; height: 34px; padding: 0; justify-content: center; border-radius: 8px; }
-    .btn-icon-action { 
-      background: transparent; 
-      color: var(--text-muted); 
-      border: none;
-    }
-    .btn-icon-action:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
-    .btn-icon-action.danger:hover { color: var(--red); background: var(--red-bg); }
-    .btn-icon-action.success:hover { color: var(--green); background: var(--green-bg); }
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-primary)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(246,200,76,0.3)}
+    .btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border)}.btn-secondary:hover{background:rgba(255,255,255,0.05);border-color:var(--text-muted)}
+    .btn-sm{padding:8px 12px;font-size:12px}
+    .btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:8px;background:transparent;color:var(--text-muted);border:none}
+    .btn-icon:hover{color:var(--text-primary);background:rgba(255,255,255,0.05)}
+    .btn-icon.danger:hover{color:var(--red);background:var(--red-bg)}
 
-    /* STATS ROW */
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-      padding: 20px; transition: all 0.2s;
-    }
-    .stat-card:hover { border-color: rgba(255,255,255,0.15); }
-    .stat-icon {
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 16px;
-    }
-    .stat-icon.blue { background: var(--blue-bg); color: var(--blue); }
-    .stat-icon.green { background: var(--green-bg); color: var(--green); }
-    .stat-icon.orange { background: var(--orange-bg); color: var(--orange); }
-    .stat-icon.purple { background: var(--purple-bg); color: var(--purple); }
-    .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-    .stat-value { font-size: 28px; font-weight: 700; }
+    /* STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+    .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px}
+    .stat-icon.blue{background:var(--blue-bg);color:var(--blue)}.stat-icon.green{background:var(--green-bg);color:var(--green)}
+    .stat-icon.orange{background:var(--orange-bg);color:var(--orange)}.stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
+    .stat-label{font-size:13px;color:var(--text-muted);margin-bottom:4px}.stat-value{font-size:28px;font-weight:700}
 
     /* FILTERS */
-    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .search-box { flex: 1; min-width: 300px; position: relative; }
-    .search-box input {
-      width: 100%; padding: 12px 12px 12px 44px; background: var(--bg-card);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text-primary); font-size: 14px;
-    }
-    .search-box input::placeholder { color: var(--text-muted); }
-    .search-box input:focus { outline: none; border-color: var(--gold); }
-    .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
-    .filter-select {
-      padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text-primary); font-size: 14px; min-width: 160px;
-      cursor: pointer;
-    }
-    .filter-select:focus { outline: none; border-color: var(--gold); }
+    .filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+    .search-box{flex:1;min-width:300px;position:relative}
+    .search-box input{width:100%;padding:12px 12px 12px 44px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .search-box input::placeholder{color:var(--text-muted)}.search-box input:focus{outline:none;border-color:var(--gold)}
+    .search-box i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+    .filter-select{padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:14px;min-width:160px}
 
     /* TABLE */
-    .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-    .table-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .table-title { font-size: 15px; font-weight: 600; }
-    .table-count { font-size: 13px; color: var(--text-muted); }
-    table { width: 100%; border-collapse: collapse; }
-    thead { background: rgba(255,255,255,0.02); }
-    th { padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.02); }
-    tr.selected { background: var(--gold-glow); }
-
-    /* CHECKBOX */
-    .checkbox-wrapper { display: flex; align-items: center; justify-content: center; }
-    .checkbox {
-      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
-      background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-    }
-    .checkbox:hover { border-color: var(--gold); }
-    .checkbox.checked { background: var(--gold); border-color: var(--gold); }
-    .checkbox.checked::after { content: '✓'; color: var(--bg-primary); font-size: 11px; font-weight: 700; }
-
-    .credor-info { display: flex; align-items: center; gap: 12px; }
-    .credor-avatar {
-      width: 40px; height: 40px; border-radius: 10px; 
-      background: var(--blue-bg);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px; color: var(--blue);
-    }
-    .credor-nome { font-weight: 600; font-size: 14px; }
-    .credor-cnpj { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
-      border-radius: 20px; font-size: 12px; font-weight: 600;
-    }
-    .status-badge.ativo { background: var(--green-bg); color: var(--green); }
-    .status-badge.inativo { background: var(--red-bg); color: var(--red); }
-    .status-badge.suspenso { background: var(--orange-bg); color: var(--orange); }
-    
-    .comissao-text { 
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--purple);
-    }
-    
-    .carteira-info .valor { font-weight: 600; font-size: 14px; }
-    .carteira-info .detalhe { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    
-    .recuperacao-info { display: flex; align-items: center; gap: 10px; }
-    .recuperacao-info .percent { font-weight: 700; font-size: 14px; min-width: 35px; }
-    .progress-bar { flex: 1; max-width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; border-radius: 3px; }
-    .recuperacao-info .valor { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
-    
-    .repassar-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--orange);
-    }
-    
-    .repassar-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--orange);
-    }
-    
-    .actions { display: flex; gap: 4px; }
-    
-    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-    .empty-state p { font-size: 14px; margin-bottom: 20px; }
-
-    /* BULK ACTIONS */
-    .bulk-actions {
-      display: none; align-items: center; gap: 12px; padding: 12px 16px;
-      background: var(--red-bg); border: 1px solid var(--red); border-radius: 10px;
-      margin-bottom: 16px;
-    }
-    .bulk-actions.show { display: flex; }
-    .bulk-actions-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--red); }
-    .bulk-actions-text span { background: var(--red); color: white; padding: 2px 8px; border-radius: 4px; margin-right: 8px; }
-    .btn-bulk { background: var(--red); color: white; border: none; }
-    .btn-bulk:hover { background: #dc2626; }
+    .table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .table-title{font-weight:600}.table-count{font-size:13px;color:var(--text-muted)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--border)}
+    th{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,255,255,0.02)}
+    td{font-size:14px}
+    tr:hover td{background:rgba(255,255,255,0.02)}
+    .credor-info{display:flex;align-items:center;gap:12px}
+    .credor-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white}
+    .credor-avatar.blue{background:linear-gradient(135deg,#3b82f6,#60a5fa)}.credor-avatar.green{background:linear-gradient(135deg,#22c55e,#4ade80)}
+    .credor-avatar.purple{background:linear-gradient(135deg,#a855f7,#c084fc)}.credor-avatar.orange{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+    .credor-name{font-weight:600}.credor-cnpj{font-size:12px;color:var(--text-muted)}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-green{background:var(--green-bg);color:var(--green)}.badge-red{background:var(--red-bg);color:var(--red)}
+    .badge-orange{background:var(--orange-bg);color:var(--orange)}.badge-blue{background:var(--blue-bg);color:var(--blue)}
+    .comissao-value{font-weight:700;color:var(--gold)}
+    .progress-bar{width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--green);border-radius:3px}
+    .empty-state{padding:60px 20px;text-align:center}
+    .empty-state i{font-size:48px;color:var(--text-muted);margin-bottom:16px}
+    .empty-state p{color:var(--text-muted);margin-bottom:20px}
 
     /* MODAL */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-      z-index: 1000; display: none; align-items: center; justify-content: center;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-      width: 90%; max-width: 700px; max-height: 90vh; overflow: hidden;
-      display: flex; flex-direction: column;
-    }
-    .modal.modal-sm { max-width: 450px; }
-    .modal-header {
-      padding: 20px 24px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-    .modal-title i { color: var(--gold); }
-    .modal-title.danger i { color: var(--red); }
-    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 4px; }
-    .modal-close:hover { color: var(--red); }
-    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-    .modal-footer {
-      padding: 16px 24px; border-top: 1px solid var(--border);
-      display: flex; justify-content: flex-end; gap: 12px;
-    }
-
-    /* FORM */
-    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-    .form-row.col-3 { grid-template-columns: repeat(3, 1fr); }
-    .form-group { margin-bottom: 16px; }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
-    .form-label span { color: var(--red); }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; padding: 12px 14px; background: var(--bg-primary);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text-primary); font-size: 14px; transition: border-color 0.15s;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--gold); }
-    .form-textarea { min-height: 80px; resize: vertical; }
-    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
-    .form-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-    .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .form-section-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
-    .form-section-title i { color: var(--gold); font-size: 14px; }
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:720px;margin:auto}
+    .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-title i{color:var(--gold)}
+    .modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px}.modal-close:hover{color:var(--red)}
+    .modal-body{padding:24px;max-height:calc(100vh - 200px);overflow-y:auto}
+    .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
 
     /* TABS */
-    .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-primary); padding: 4px; border-radius: 10px; }
-    .tab {
-      flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
-      border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
-    }
-    .tab:hover { color: var(--text-primary); }
-    .tab.active { background: var(--gold); color: var(--bg-primary); }
-    .tab-content-credor { display: none; }
-    .tab-content-credor.active { display: block; }
+    .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--bg-secondary);padding:4px;border-radius:10px}
+    .tab{flex:1;padding:10px 16px;text-align:center;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.15s}
+    .tab:hover{color:var(--text-primary)}.tab.active{background:var(--bg-card);color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+    .tab-content{display:none}.tab-content.active{display:block}
 
-    /* DELETE CONFIRM */
-    .delete-warning { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: var(--red-bg); border-radius: 10px; margin-bottom: 20px; }
-    .delete-warning-icon { width: 48px; height: 48px; background: var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .delete-warning-icon i { font-size: 24px; color: white; }
-    .delete-warning-text h4 { font-size: 16px; font-weight: 700; color: var(--red); margin-bottom: 4px; }
-    .delete-warning-text p { font-size: 13px; color: var(--text-secondary); }
-    .delete-items { background: var(--bg-primary); border-radius: 10px; padding: 12px; max-height: 150px; overflow-y: auto; }
-    .delete-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid var(--border); }
-    .delete-item:last-child { border-bottom: none; }
-    .delete-item-avatar { width: 32px; height: 32px; background: var(--blue-bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--blue); }
-    .delete-item-name { font-size: 13px; font-weight: 600; }
+    /* FORM CARDS */
+    .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin-bottom:16px}
+    .form-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .form-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .form-card-icon.blue{background:var(--blue-bg);color:var(--blue)}.form-card-icon.green{background:var(--green-bg);color:var(--green)}
+    .form-card-icon.orange{background:var(--orange-bg);color:var(--orange)}.form-card-icon.purple{background:var(--purple-bg);color:var(--purple)}
+    .form-card-icon.gold{background:var(--gold-glow);color:var(--gold)}
+    .form-card-title{font-size:14px;font-weight:600}
+    .form-card-subtitle{font-size:12px;color:var(--text-muted)}
 
-    @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .form-row { grid-template-columns: 1fr; }
-    }
+    /* HIGHLIGHT CARD */
+    .form-card.highlight{background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03));border-color:rgba(245,158,11,0.2)}
+    .form-card.highlight .form-card-header{border-color:rgba(245,158,11,0.15)}
+
+    /* FORM */
+    .form-row{display:grid;gap:16px;margin-bottom:16px}.form-row:last-child{margin-bottom:0}
+    .form-row.cols-2{grid-template-columns:1fr 1fr}.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+    .form-group{position:relative}
+    .form-group label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:8px}
+    .form-group label i{color:var(--text-muted);font-size:11px}
+    .form-group label .req{color:var(--red)}
+    .form-input,.form-select{width:100%;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:14px;transition:all 0.15s}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+    .form-input::placeholder{color:var(--text-muted)}
+    .form-hint{font-size:11px;color:var(--text-muted);margin-top:6px;display:flex;align-items:center;gap:4px}
+    .form-hint i{font-size:10px}
+
+    /* TAXA PREVIEW */
+    .taxa-preview{background:var(--bg-secondary);border-radius:var(--radius-sm);padding:14px;margin-top:16px;display:flex;align-items:center;gap:12px}
+    .taxa-preview-icon{width:40px;height:40px;background:var(--orange-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--orange);font-size:16px}
+    .taxa-preview-text{flex:1}
+    .taxa-preview-title{font-size:12px;color:var(--text-muted);margin-bottom:2px}
+    .taxa-preview-value{font-size:14px;font-weight:600}
+    .taxa-preview-value span{color:var(--orange)}
+
+    /* DELETE MODAL */
+    .modal-sm{max-width:440px}
+    .delete-warning{display:flex;gap:16px;padding:16px;background:var(--red-bg);border-radius:var(--radius-md);margin-bottom:16px}
+    .delete-warning-icon{width:44px;height:44px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px}
+    .delete-warning-text h4{font-size:14px;margin-bottom:4px}.delete-warning-text p{font-size:13px;color:var(--text-secondary)}
+    .btn-danger{background:var(--red);color:white}.btn-danger:hover{background:#dc2626}
+
+    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.stats-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:768px){.stats-row{grid-template-columns:1fr}.form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}.tabs{flex-wrap:wrap}}
   </style>
 </head>
 <body>
-
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">A</div>
-      <div class="logo-text">ACERT<span>IVE</span></div>
-    </div>
+    <div class="sidebar-header"><div class="logo">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
     <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-title">Principal</div>
+      <div class="nav-section"><div class="nav-title">Principal</div>
         <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
         <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobrança</a>
         <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-title">Cadastros</div>
+      <div class="nav-section"><div class="nav-title">Cadastros</div>
         <a href="/credores" class="nav-link active"><i class="fas fa-building"></i> Credores</a>
         <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
         <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-title">Negociação</div>
+      <div class="nav-section"><div class="nav-title">Negociação</div>
         <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
         <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
         <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
       </div>
-      <div class="nav-section">
-        <div class="nav-title">Financeiro</div>
+      <div class="nav-section"><div class="nav-title">Financeiro</div>
         <a href="/financeiro" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
-        <a href="/comissoes" class="nav-link"><i class="fas fa-coins"></i> Comissões</a>
-        <a href="/repasses" class="nav-link"><i class="fas fa-exchange-alt"></i> Repasses</a>
         <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">Administração</div>
-        <a href="/importar-massa" class="nav-link"><i class="fas fa-file-import"></i> Importar</a>
-        <a href="/usuarios" class="nav-link"><i class="fas fa-user-shield"></i> Usuários</a>
-        <a href="/configuracoes" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
       </div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info">
         <div class="user-avatar" id="userAvatar">A</div>
-        <div class="user-details">
-          <div class="user-name" id="userName">Admin</div>
-          <div class="user-role" id="userRole">Administrador</div>
-        </div>
-        <button class="btn-logout" onclick="logout()" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
+        <div class="user-details"><div class="user-name" id="userName">Administrador</div><div class="user-role" id="userRole">Administrador</div></div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
   </aside>
@@ -388,10 +184,7 @@
   <!-- MAIN -->
   <main class="main">
     <header class="header">
-      <div class="header-left">
-        <div class="page-icon"><i class="fas fa-building"></i></div>
-        <h1 class="page-title">Credores</h1>
-      </div>
+      <div class="header-left"><div class="page-icon"><i class="fas fa-building"></i></div><h1 class="page-title">Credores</h1></div>
       <div class="header-right">
         <button class="btn btn-secondary" onclick="exportarCredores()"><i class="fas fa-download"></i> Exportar</button>
         <button class="btn btn-primary" onclick="abrirModalCredor()"><i class="fas fa-plus"></i> Novo Credor</button>
@@ -401,93 +194,32 @@
     <div class="content">
       <!-- STATS -->
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon blue"><i class="fas fa-building"></i></div>
-          <div class="stat-label">Total de Credores</div>
-          <div class="stat-value" id="totalCredores">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-          <div class="stat-label">Credores Ativos</div>
-          <div class="stat-value" id="credoresAtivos">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange"><i class="fas fa-file-invoice-dollar"></i></div>
-          <div class="stat-label">Total em Carteira</div>
-          <div class="stat-value" id="totalCarteira">R$ 0,00</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple"><i class="fas fa-hand-holding-usd"></i></div>
-          <div class="stat-label">Total Recuperado</div>
-          <div class="stat-value" id="totalRecuperado">R$ 0,00</div>
-        </div>
-      </div>
-
-      <!-- BULK ACTIONS -->
-      <div class="bulk-actions" id="bulkActions">
-        <div class="bulk-actions-text"><span id="selectedCount">0</span> credor(es) selecionado(s)</div>
-        <button class="btn btn-bulk btn-sm" onclick="confirmarExclusaoMassa()"><i class="fas fa-trash"></i> Excluir Selecionados</button>
-        <button class="btn btn-secondary btn-sm" onclick="cancelarSelecao()"><i class="fas fa-times"></i> Cancelar</button>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-building"></i></div><div class="stat-label">Total de Credores</div><div class="stat-value" id="statTotal">0</div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div class="stat-label">Credores Ativos</div><div class="stat-value" id="statAtivos">0</div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-wallet"></i></div><div class="stat-label">Total em Carteira</div><div class="stat-value" id="statCarteira">R$ 0</div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-hand-holding-dollar"></i></div><div class="stat-label">Total Recuperado</div><div class="stat-value" id="statRecuperado">R$ 0</div></div>
       </div>
 
       <!-- FILTERS -->
       <div class="filters">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Buscar por nome, CNPJ..." id="searchCredor" onkeyup="filtrarCredores()">
-        </div>
-        <select class="filter-select" id="filterStatus" onchange="filtrarCredores()">
-          <option value="">Todos os Status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
-          <option value="suspenso">Suspenso</option>
-        </select>
-        <select class="filter-select" id="filterOrdem" onchange="filtrarCredores()">
-          <option value="nome">Ordenar por Nome</option>
-          <option value="carteira">Maior Carteira</option>
-          <option value="recuperacao">Maior Recuperação</option>
-          <option value="recente">Mais Recente</option>
-        </select>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchCredor" placeholder="Buscar por nome, CNPJ..." oninput="filtrarCredores()"></div>
+        <select class="filter-select" id="filterStatus" onchange="filtrarCredores()"><option value="">Todos os Status</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option></select>
+        <select class="filter-select" id="filterOrdem" onchange="filtrarCredores()"><option value="">Ordenar por Nome</option><option value="carteira">Maior Carteira</option><option value="recuperado">Maior Recuperação</option><option value="recente">Mais Recente</option></select>
       </div>
 
       <!-- TABLE -->
       <div class="table-container">
-        <div class="table-header">
-          <div class="table-title">Lista de Credores</div>
-          <div class="table-count"><span id="countCredores">0</span> credores encontrados</div>
-        </div>
+        <div class="table-header"><div class="table-title">Lista de Credores</div><div class="table-count"><span id="countCredores">0</span> credores encontrados</div></div>
         <table>
-          <thead>
-            <tr>
-              <th style="width:50px;">
-                <div class="checkbox-wrapper">
-                  <div class="checkbox" id="checkAll" onclick="toggleSelectAll()"></div>
-                </div>
-              </th>
-              <th>Credor</th>
-              <th>Contato</th>
-              <th>Comissão</th>
-              <th>Carteira</th>
-              <th>Recuperação</th>
-              <th>A Repassar</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCredores">
-            <!-- Preenchido via JS -->
-          </tbody>
+          <thead><tr><th>Credor</th><th>Contato</th><th>Comissão</th><th>Carteira</th><th>Recuperação</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="tabelaCredores"></tbody>
         </table>
-        <div class="empty-state" id="emptyState" style="display:none;">
-          <i class="fas fa-building"></i>
-          <p>Nenhum credor cadastrado</p>
-          <button class="btn btn-primary" onclick="abrirModalCredor()"><i class="fas fa-plus"></i> Cadastrar Primeiro Credor</button>
-        </div>
+        <div class="empty-state" id="emptyState" style="display:none;"><i class="fas fa-building"></i><p>Nenhum credor cadastrado</p><button class="btn btn-primary" onclick="abrirModalCredor()"><i class="fas fa-plus"></i> Cadastrar Primeiro Credor</button></div>
       </div>
     </div>
   </main>
 
-  <!-- MODAL NOVO/EDITAR CREDOR -->
+  <!-- MODAL CREDOR -->
   <div class="modal-overlay" id="modalCredor">
     <div class="modal">
       <div class="modal-header">
@@ -497,639 +229,369 @@
       <div class="modal-body">
         <input type="hidden" id="credorId">
         
-        <!-- TABS -->
         <div class="tabs">
-          <div class="tab active" onclick="showTabCredor('dados')">Dados Cadastrais</div>
-          <div class="tab" onclick="showTabCredor('comissao')">Comissão</div>
-          <div class="tab" onclick="showTabCredor('negociacao')">Negociação</div>
-          <div class="tab" onclick="showTabCredor('bancarios')">Dados Bancários</div>
+          <div class="tab active" onclick="showTab('dados')"><i class="fas fa-building"></i> Dados</div>
+          <div class="tab" onclick="showTab('financeiro')"><i class="fas fa-percent"></i> Financeiro</div>
+          <div class="tab" onclick="showTab('taxas')"><i class="fas fa-exclamation-triangle"></i> Taxas</div>
+          <div class="tab" onclick="showTab('banco')"><i class="fas fa-university"></i> Banco</div>
         </div>
 
         <!-- TAB DADOS -->
-        <div class="tab-content-credor active" id="tab-dados">
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-building"></i> Dados da Empresa</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Nome Fantasia <span>*</span></label>
-                <input type="text" class="form-input" id="credorNome" placeholder="Nome do credor">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Razão Social</label>
-                <input type="text" class="form-input" id="credorRazao" placeholder="Razão social">
-              </div>
+        <div class="tab-content active" id="tab-dados">
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon blue"><i class="fas fa-building"></i></div>
+              <div><div class="form-card-title">Dados da Empresa</div><div class="form-card-subtitle">Informações principais do credor</div></div>
             </div>
-            <div class="form-row col-3">
-              <div class="form-group">
-                <label class="form-label">CNPJ</label>
-                <input type="text" class="form-input" id="credorCnpj" placeholder="00.000.000/0000-00">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Telefone</label>
-                <input type="text" class="form-input" id="credorTelefone" placeholder="(00) 0000-0000">
-              </div>
-              <div class="form-group">
-                <label class="form-label">E-mail</label>
-                <input type="email" class="form-input" id="credorEmail" placeholder="email@empresa.com">
-              </div>
+            <div class="form-row cols-2">
+              <div class="form-group"><label><i class="fas fa-store"></i> Nome Fantasia <span class="req">*</span></label><input type="text" class="form-input" id="credorNome" placeholder="Ex: Magazine Luiza"></div>
+              <div class="form-group"><label><i class="fas fa-file-contract"></i> Razão Social</label><input type="text" class="form-input" id="credorRazao" placeholder="Razão social completa"></div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="form-group"><label><i class="fas fa-id-card"></i> CNPJ</label><input type="text" class="form-input" id="credorCnpj" placeholder="00.000.000/0000-00"></div>
+              <div class="form-group"><label><i class="fas fa-phone"></i> Telefone</label><input type="text" class="form-input" id="credorTelefone" placeholder="(00) 0000-0000"></div>
+              <div class="form-group"><label><i class="fas fa-envelope"></i> E-mail</label><input type="email" class="form-input" id="credorEmail" placeholder="email@empresa.com"></div>
             </div>
           </div>
 
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-user"></i> Contato Principal</div>
-            <div class="form-row col-3">
-              <div class="form-group">
-                <label class="form-label">Nome do Contato</label>
-                <input type="text" class="form-input" id="credorContatoNome" placeholder="Nome">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Telefone do Contato</label>
-                <input type="text" class="form-input" id="credorContatoTel" placeholder="(00) 00000-0000">
-              </div>
-              <div class="form-group">
-                <label class="form-label">E-mail do Contato</label>
-                <input type="email" class="form-input" id="credorContatoEmail" placeholder="contato@empresa.com">
-              </div>
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon green"><i class="fas fa-user-tie"></i></div>
+              <div><div class="form-card-title">Contato Principal</div><div class="form-card-subtitle">Responsável pelo relacionamento</div></div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="form-group"><label><i class="fas fa-user"></i> Nome</label><input type="text" class="form-input" id="credorContatoNome" placeholder="Nome do contato"></div>
+              <div class="form-group"><label><i class="fas fa-phone"></i> Telefone</label><input type="text" class="form-input" id="credorContatoTel" placeholder="(00) 00000-0000"></div>
+              <div class="form-group"><label><i class="fas fa-envelope"></i> E-mail</label><input type="email" class="form-input" id="credorContatoEmail" placeholder="contato@empresa.com"></div>
             </div>
           </div>
 
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-cog"></i> Configurações</div>
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon purple"><i class="fas fa-cog"></i></div>
+              <div><div class="form-card-title">Status</div></div>
+            </div>
             <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Status</label>
-                <select class="form-select" id="credorStatus">
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                  <option value="suspenso">Suspenso</option>
-                </select>
+              <div class="form-group"><label><i class="fas fa-toggle-on"></i> Status do Credor</label>
+                <select class="form-select" id="credorStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option><option value="suspenso">Suspenso</option></select>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB COMISSÃO -->
-        <div class="tab-content-credor" id="tab-comissao">
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-percentage"></i> Configuração de Comissão</div>
-            <div class="form-group">
-              <label class="form-label">Percentual de Comissão (%)</label>
-              <input type="number" class="form-input" id="credorComissao" value="10" min="0" max="100" step="0.5">
-              <div class="form-hint">Percentual sobre o valor recuperado que fica com a empresa de cobrança</div>
+        <!-- TAB FINANCEIRO -->
+        <div class="tab-content" id="tab-financeiro">
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon gold"><i class="fas fa-percent"></i></div>
+              <div><div class="form-card-title">Comissão</div><div class="form-card-subtitle">Sua remuneração sobre valores recuperados</div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fas fa-hand-holding-dollar"></i> Percentual de Comissão (%)</label>
+                <input type="number" class="form-input" id="credorComissao" value="10" min="0" max="100" step="0.5">
+                <div class="form-hint"><i class="fas fa-info-circle"></i> Percentual sobre o valor recuperado</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon blue"><i class="fas fa-handshake"></i></div>
+              <div><div class="form-card-title">Regras de Negociação</div><div class="form-card-subtitle">Limites permitidos para acordos</div></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group"><label><i class="fas fa-percentage"></i> Desconto Máximo (%)</label><input type="number" class="form-input" id="descontoMax" value="30" min="0" max="100"><div class="form-hint"><i class="fas fa-info-circle"></i> Limite de desconto em negociações</div></div>
+              <div class="form-group"><label><i class="fas fa-layer-group"></i> Máximo de Parcelas</label><input type="number" class="form-input" id="parcelasMax" value="12" min="1" max="48"><div class="form-hint"><i class="fas fa-info-circle"></i> Quantidade máxima de parcelas</div></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group"><label><i class="fas fa-chart-line"></i> Juros no Parcelamento (% a.m.)</label><input type="number" class="form-input" id="jurosParcelamento" value="1" min="0" max="10" step="0.1"></div>
+              <div class="form-group"><label><i class="fas fa-money-bill-wave"></i> Entrada Mínima (%)</label><input type="number" class="form-input" id="entradaMinima" value="0" min="0" max="100"></div>
             </div>
           </div>
         </div>
 
-        <!-- TAB NEGOCIAÇÃO -->
-        <div class="tab-content-credor" id="tab-negociacao">
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-handshake"></i> Regras de Negociação</div>
-            <div class="form-row">
+        <!-- TAB TAXAS -->
+        <div class="tab-content" id="tab-taxas">
+          <div class="form-card highlight">
+            <div class="form-card-header">
+              <div class="form-card-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+              <div><div class="form-card-title">Taxas de Atraso</div><div class="form-card-subtitle">Aplicadas automaticamente quando o devedor atrasa</div></div>
+            </div>
+            <div class="form-row cols-3">
               <div class="form-group">
-                <label class="form-label">Desconto Máximo (%)</label>
-                <input type="number" class="form-input" id="descontoMax" value="30" min="0" max="100">
+                <label><i class="fas fa-gavel"></i> Multa por Atraso (%)</label>
+                <input type="number" class="form-input" id="multaAtraso" value="2" min="0" max="10" step="0.5" oninput="atualizarPreviewTaxa()">
+                <div class="form-hint"><i class="fas fa-info-circle"></i> Aplicada uma única vez</div>
               </div>
               <div class="form-group">
-                <label class="form-label">Máximo de Parcelas</label>
-                <input type="number" class="form-input" id="parcelasMax" value="12" min="1" max="48">
+                <label><i class="fas fa-chart-line"></i> Juros por Atraso (% a.m.)</label>
+                <input type="number" class="form-input" id="jurosAtraso" value="1" min="0" max="10" step="0.1" oninput="atualizarPreviewTaxa()">
+                <div class="form-hint"><i class="fas fa-info-circle"></i> Aplicado por mês</div>
+              </div>
+              <div class="form-group">
+                <label><i class="fas fa-calculator"></i> Tipo de Juros</label>
+                <select class="form-select" id="tipoJurosAtraso"><option value="simples">Juros Simples</option><option value="composto">Juros Composto</option></select>
+                <div class="form-hint"><i class="fas fa-info-circle"></i> Método de cálculo</div>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Juros no Parcelamento (% a.m.)</label>
-                <input type="number" class="form-input" id="jurosParcelamento" value="1" min="0" max="10" step="0.1">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Entrada Mínima (%)</label>
-                <input type="number" class="form-input" id="entradaMinima" value="0" min="0" max="100">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-exclamation-triangle"></i> Taxas de Atraso</div>
-            <p style="font-size:12px;color:var(--orange);margin-bottom:16px;">Taxas aplicadas automaticamente nas cobranças quando o devedor atrasa</p>
-            <div class="form-row col-3">
-              <div class="form-group">
-                <label class="form-label">Multa por Atraso (%)</label>
-                <input type="number" class="form-input" id="multaAtraso" value="2" min="0" max="10" step="0.5">
-                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Aplicada uma única vez</p>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Juros por Atraso (% a.m.)</label>
-                <input type="number" class="form-input" id="jurosAtraso" value="1" min="0" max="10" step="0.1">
-                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Aplicado por mês de atraso</p>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tipo de Juros</label>
-                <select class="form-select" id="tipoJurosAtraso">
-                  <option value="simples">Juros Simples</option>
-                  <option value="composto">Juros Composto</option>
-                </select>
-                <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Método de cálculo</p>
+            <div class="taxa-preview">
+              <div class="taxa-preview-icon"><i class="fas fa-receipt"></i></div>
+              <div class="taxa-preview-text">
+                <div class="taxa-preview-title">Exemplo: Dívida de R$ 1.000 com 30 dias de atraso</div>
+                <div class="taxa-preview-value" id="taxaPreviewValue">Total: <span>R$ 1.030,00</span> (+R$ 20 multa +R$ 10 juros)</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB BANCÁRIOS -->
-        <div class="tab-content-credor" id="tab-bancarios">
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-university"></i> Dados para Repasse</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Banco</label>
-                <input type="text" class="form-input" id="credorBanco" placeholder="Nome do banco">
-              </div>
-              <div class="form-group">
-                <label class="form-label">PIX</label>
-                <input type="text" class="form-input" id="credorPix" placeholder="CPF, CNPJ, E-mail ou Telefone">
-              </div>
+        <!-- TAB BANCO -->
+        <div class="tab-content" id="tab-banco">
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-icon green"><i class="fas fa-university"></i></div>
+              <div><div class="form-card-title">Dados Bancários</div><div class="form-card-subtitle">Para repasse de valores recuperados</div></div>
             </div>
-            <div class="form-row col-3">
-              <div class="form-group">
-                <label class="form-label">Agência</label>
-                <input type="text" class="form-input" id="credorAgencia" placeholder="0000">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Conta</label>
-                <input type="text" class="form-input" id="credorConta" placeholder="00000-0">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tipo de Conta</label>
-                <select class="form-select" id="credorTipoConta">
-                  <option value="corrente">Conta Corrente</option>
-                  <option value="poupanca">Poupança</option>
-                </select>
-              </div>
+            <div class="form-row cols-2">
+              <div class="form-group"><label><i class="fas fa-university"></i> Banco</label><input type="text" class="form-input" id="credorBanco" placeholder="Ex: Banco do Brasil"></div>
+              <div class="form-group"><label><i class="fas fa-qrcode"></i> Chave PIX</label><input type="text" class="form-input" id="credorPix" placeholder="CPF, CNPJ, E-mail ou Telefone"></div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="form-group"><label><i class="fas fa-hashtag"></i> Agência</label><input type="text" class="form-input" id="credorAgencia" placeholder="0000"></div>
+              <div class="form-group"><label><i class="fas fa-credit-card"></i> Conta</label><input type="text" class="form-input" id="credorConta" placeholder="00000-0"></div>
+              <div class="form-group"><label><i class="fas fa-wallet"></i> Tipo de Conta</label><select class="form-select" id="credorTipoConta"><option value="corrente">Conta Corrente</option><option value="poupanca">Poupança</option></select></div>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="fecharModal('modalCredor')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarCredor()"><i class="fas fa-save"></i> Salvar</button>
+        <button class="btn btn-primary" onclick="salvarCredor()"><i class="fas fa-check"></i> Salvar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL CONFIRMAR EXCLUSÃO -->
+  <!-- MODAL EXCLUIR -->
   <div class="modal-overlay" id="modalExcluir">
     <div class="modal modal-sm">
-      <div class="modal-header">
-        <h3 class="modal-title danger"><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
-        <button class="modal-close" onclick="fecharModal('modalExcluir')"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h3 class="modal-title" style="color:var(--red)"><i class="fas fa-trash"></i> Excluir Credor</h3><button class="modal-close" onclick="fecharModal('modalExcluir')"><i class="fas fa-times"></i></button></div>
       <div class="modal-body">
-        <div class="delete-warning">
-          <div class="delete-warning-icon"><i class="fas fa-trash"></i></div>
-          <div class="delete-warning-text">
-            <h4>Atenção!</h4>
-            <p>Esta ação não pode ser desfeita. Todas as cobranças vinculadas também serão afetadas.</p>
-          </div>
-        </div>
-        <p style="font-size:13px;margin-bottom:12px;color:var(--text-secondary);">Credores que serão excluídos:</p>
-        <div class="delete-items" id="deleteItemsList"></div>
+        <div class="delete-warning"><div class="delete-warning-icon"><i class="fas fa-exclamation"></i></div><div class="delete-warning-text"><h4>Tem certeza?</h4><p>Esta ação não pode ser desfeita. Cobranças vinculadas serão afetadas.</p></div></div>
+        <p style="font-size:14px;color:var(--text-secondary)">Credor: <strong id="deleteCredorNome"></strong></p>
+        <input type="hidden" id="deleteCredorId">
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">Cancelar</button>
-        <button class="btn btn-bulk" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">Cancelar</button><button class="btn btn-danger" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button></div>
     </div>
   </div>
 
   <script>
-    const API = window.location.origin;
-    let token = localStorage.getItem('token');
-    if (!token) window.location.href = '/login';
+    const API=window.location.origin;let token=localStorage.getItem('token');if(!token)window.location.href='/login';
+    let credores=[],credoresOriginal=[];
+    function getHeaders(){return{'Content-Type':'application/json','Authorization':'Bearer '+token}}
+    function fmtMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0)}
+    function logout(){localStorage.removeItem('token');window.location.href='/login'}
+    const avatarColors=['blue','green','purple','orange'];
 
-    let credores = [];
-    let credoresOriginal = [];
-    let selectedIds = [];
-    let deleteIds = [];
-
-    function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
-    
-    function fmtMoney(v) { 
-      const valor = parseFloat(v);
-      if (isNaN(valor)) return 'R$ 0,00';
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor); 
-    }
-    
-    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
-
-    // =====================================================
-    // CARREGAR CREDORES
-    // =====================================================
-    async function carregarCredores() {
-      try {
-        const res = await fetch(API + '/api/credores', { headers: getHeaders() });
-        const data = await res.json();
-        
-        if (data.success) {
-          credoresOriginal = data.data || [];
-          credores = [...credoresOriginal];
-          renderizarCredores();
-          atualizarStats();
-        }
-      } catch (e) {
-        console.error('Erro ao carregar credores:', e);
-      }
+    async function carregarCredores(){
+      try{
+        const[credoresRes,statsRes]=await Promise.all([fetch(API+'/api/credores',{headers:getHeaders()}),fetch(API+'/api/credores/stats',{headers:getHeaders()})]);
+        const credoresData=await credoresRes.json();const statsData=await statsRes.json();
+        if(credoresData.success){credoresOriginal=credoresData.data||[];credores=[...credoresOriginal];renderizarCredores()}
+        if(statsData.success){const s=statsData.data;document.getElementById('statTotal').textContent=s.totalCredores||0;document.getElementById('statAtivos').textContent=s.credoresAtivos||0;document.getElementById('statCarteira').textContent=fmtMoney(s.totalCarteira);document.getElementById('statRecuperado').textContent=fmtMoney(s.totalRecuperado)}
+      }catch(e){console.error(e)}
     }
 
-    function renderizarCredores() {
-      const tbody = document.getElementById('tabelaCredores');
-      const empty = document.getElementById('emptyState');
-      
-      if (credores.length === 0) {
-        tbody.innerHTML = '';
-        empty.style.display = 'block';
-        document.getElementById('countCredores').textContent = '0';
-        return;
-      }
-      
-      empty.style.display = 'none';
-      document.getElementById('countCredores').textContent = credores.length;
-      
-      // Cores para os avatares
-      const cores = [
-        { bg: 'var(--blue-bg)', color: 'var(--blue)' },
-        { bg: 'var(--green-bg)', color: 'var(--green)' },
-        { bg: 'var(--purple-bg)', color: 'var(--purple)' },
-        { bg: 'var(--orange-bg)', color: 'var(--orange)' }
-      ];
-      
-      tbody.innerHTML = credores.map((c, index) => {
-        const iniciais = (c.nome || 'CR').substring(0, 2).toUpperCase();
-        const isSelected = selectedIds.includes(c.id);
-        const cor = cores[index % cores.length];
-        
-        // Cálculos seguros
-        const totalCarteira = parseFloat(c.total_carteira) || 0;
-        const totalRecuperado = parseFloat(c.total_recuperado) || 0;
-        const recuperacao = totalCarteira > 0 ? ((totalRecuperado / totalCarteira) * 100) : 0;
-        const recuperacaoFormatada = recuperacao.toFixed(0);
-        const corRecuperacao = recuperacao >= 20 ? 'var(--green)' : recuperacao >= 10 ? 'var(--orange)' : 'var(--red)';
-        
-        const comissao = parseFloat(c.comissao_percentual) || 10;
-        const totalCobrancas = parseInt(c.total_cobrancas) || 0;
-        
-        return `
-          <tr class="${isSelected ? 'selected' : ''}" data-id="${c.id}">
-            <td>
-              <div class="checkbox-wrapper">
-                <div class="checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect('${c.id}')"></div>
-              </div>
-            </td>
-            <td>
-              <div class="credor-info">
-                <div class="credor-avatar" style="background:${cor.bg};color:${cor.color};">${iniciais}</div>
-                <div>
-                  <div class="credor-nome">${c.nome || '-'}</div>
-                  <div class="credor-cnpj">${c.cnpj || '-'}</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div style="font-size:14px;font-weight:500;">${c.contato_nome || '-'}</div>
-              <div style="font-size:12px;color:var(--text-muted);">${c.telefone || '-'}</div>
-            </td>
-            <td>
-              <span class="comissao-text">${comissao}%</span>
-            </td>
-            <td>
-              <div class="carteira-info">
-                <div class="valor">${fmtMoney(totalCarteira)}</div>
-                <div class="detalhe">${totalCobrancas} cobrança${totalCobrancas !== 1 ? 's' : ''}</div>
-              </div>
-            </td>
-            <td>
-              <div class="recuperacao-info">
-                <span class="percent" style="color:${corRecuperacao};">${recuperacaoFormatada}%</span>
-                <div class="progress-bar">
-                  <div class="progress-bar-fill" style="width:${Math.min(recuperacao, 100)}%;background:${corRecuperacao};"></div>
-                </div>
-              </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${fmtMoney(totalRecuperado)}</div>
-            </td>
-            <td>
-              <span class="repassar-text">${fmtMoney(totalRecuperado > 0 ? totalRecuperado - (totalRecuperado * comissao / 100) : 0)}</span>
-            </td>
-            <td>
-              <span class="status-badge ${c.status || 'ativo'}">
-                <i class="fas fa-circle" style="font-size:6px;"></i> ${(c.status || 'ativo').charAt(0).toUpperCase() + (c.status || 'ativo').slice(1)}
-              </span>
-            </td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-icon btn-icon-action" title="Editar" onclick="editarCredor('${c.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-icon btn-icon-action success" title="Ver Cobranças" onclick="verCobrancas('${c.id}')"><i class="fas fa-file-invoice"></i></button>
-                <button class="btn btn-icon btn-icon-action danger" title="Excluir" onclick="confirmarExclusao('${c.id}')"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+    function renderizarCredores(){
+      const tbody=document.getElementById('tabelaCredores');const empty=document.getElementById('emptyState');
+      document.getElementById('countCredores').textContent=credores.length;
+      if(credores.length===0){tbody.innerHTML='';empty.style.display='block';return}
+      empty.style.display='none';
+      tbody.innerHTML=credores.map((c,i)=>{
+        const initials=(c.nome||'??').split(' ').map(p=>p[0]).join('').substring(0,2).toUpperCase();
+        const color=avatarColors[i%4];
+        const taxa=parseFloat(c.taxa_recuperacao)||0;
+        const statusClass=c.status==='ativo'?'green':c.status==='inativo'?'red':'orange';
+        return`<tr>
+          <td><div class="credor-info"><div class="credor-avatar ${color}">${initials}</div><div><div class="credor-name">${c.nome||'-'}</div><div class="credor-cnpj">${c.cnpj||'Sem CNPJ'}</div></div></div></td>
+          <td><div>${c.contato_nome||'-'}</div><div style="font-size:12px;color:var(--text-muted)">${c.telefone||''}</div></td>
+          <td><span class="comissao-value">${c.comissao_percentual||10}%</span></td>
+          <td><div style="font-weight:600">${fmtMoney(c.valor_carteira)}</div><div style="font-size:12px;color:var(--text-muted)">${c.total_cobrancas||0} cobranças</div></td>
+          <td><div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-weight:600">${taxa}%</span><div class="progress-bar"><div class="progress-fill" style="width:${taxa}%"></div></div></div><div style="font-size:12px;color:var(--text-muted)">${fmtMoney(c.valor_recuperado)}</div></td>
+          <td><span class="badge badge-${statusClass}"><i class="fas fa-circle" style="font-size:6px"></i> ${c.status||'ativo'}</span></td>
+          <td><button class="btn-icon" onclick="editarCredor(${c.id})" title="Editar"><i class="fas fa-edit"></i></button><button class="btn-icon" onclick="verCobrancas(${c.id})" title="Ver Cobranças"><i class="fas fa-file-invoice"></i></button><button class="btn-icon danger" onclick="confirmarExclusao(${c.id},'${(c.nome||'').replace(/'/g,"\\'")}')" title="Excluir"><i class="fas fa-trash"></i></button></td>
+        </tr>`}).join('');
     }
 
-    function atualizarStats() {
-      const total = credoresOriginal.length;
-      const ativos = credoresOriginal.filter(c => c.status === 'ativo' || !c.status).length;
-      const carteira = credoresOriginal.reduce((sum, c) => sum + (parseFloat(c.total_carteira) || 0), 0);
-      const recuperado = credoresOriginal.reduce((sum, c) => sum + (parseFloat(c.total_recuperado) || 0), 0);
-      
-      document.getElementById('totalCredores').textContent = total;
-      document.getElementById('credoresAtivos').textContent = ativos;
-      document.getElementById('totalCarteira').textContent = fmtMoney(carteira);
-      document.getElementById('totalRecuperado').textContent = fmtMoney(recuperado);
+    function filtrarCredores(){
+      const busca=document.getElementById('searchCredor').value.toLowerCase();
+      const status=document.getElementById('filterStatus').value;
+      const ordem=document.getElementById('filterOrdem').value;
+      let filtrados=[...credoresOriginal];
+      if(busca)filtrados=filtrados.filter(c=>(c.nome||'').toLowerCase().includes(busca)||(c.cnpj||'').includes(busca));
+      if(status)filtrados=filtrados.filter(c=>(c.status||'ativo')===status);
+      if(ordem==='carteira')filtrados.sort((a,b)=>(parseFloat(b.valor_carteira)||0)-(parseFloat(a.valor_carteira)||0));
+      else if(ordem==='recuperado')filtrados.sort((a,b)=>(parseFloat(b.valor_recuperado)||0)-(parseFloat(a.valor_recuperado)||0));
+      else if(ordem==='recente')filtrados.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+      else filtrados.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+      credores=filtrados;renderizarCredores();
     }
 
-    // =====================================================
-    // SELEÇÃO
-    // =====================================================
-    function toggleSelect(id) {
-      const idx = selectedIds.indexOf(id);
-      if (idx === -1) selectedIds.push(id);
-      else selectedIds.splice(idx, 1);
-      atualizarSelecao();
+    function showTab(tabId){
+      document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      event.target.closest('.tab').classList.add('active');
+      document.getElementById('tab-'+tabId).classList.add('active');
     }
 
-    function toggleSelectAll() {
-      const checkAll = document.getElementById('checkAll');
-      if (selectedIds.length === credores.length) {
-        selectedIds = [];
-        checkAll.classList.remove('checked');
-      } else {
-        selectedIds = credores.map(c => c.id);
-        checkAll.classList.add('checked');
-      }
-      atualizarSelecao();
+    function abrirModalCredor(){
+      document.getElementById('modalCredorTitulo').textContent='Novo Credor';
+      limparFormulario();
+      document.querySelectorAll('.tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.querySelectorAll('.tab-content').forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.getElementById('modalCredor').classList.add('show');
     }
 
-    function atualizarSelecao() {
-      renderizarCredores();
-      const bulkActions = document.getElementById('bulkActions');
-      const checkAll = document.getElementById('checkAll');
-      
-      if (selectedIds.length > 0) {
-        bulkActions.classList.add('show');
-        document.getElementById('selectedCount').textContent = selectedIds.length;
-      } else {
-        bulkActions.classList.remove('show');
-      }
-      
-      checkAll.classList.toggle('checked', selectedIds.length === credores.length && credores.length > 0);
+    function editarCredor(id){
+      const c=credoresOriginal.find(x=>x.id===id);if(!c)return;
+      document.getElementById('modalCredorTitulo').textContent='Editar Credor';
+      document.getElementById('credorId').value=c.id;
+      document.getElementById('credorNome').value=c.nome||'';
+      document.getElementById('credorRazao').value=c.razao_social||'';
+      document.getElementById('credorCnpj').value=c.cnpj||'';
+      document.getElementById('credorTelefone').value=c.telefone||'';
+      document.getElementById('credorEmail').value=c.email||'';
+      document.getElementById('credorContatoNome').value=c.contato_nome||'';
+      document.getElementById('credorContatoTel').value=c.contato_telefone||'';
+      document.getElementById('credorContatoEmail').value=c.contato_email||'';
+      document.getElementById('credorStatus').value=c.status||'ativo';
+      document.getElementById('credorComissao').value=c.comissao_percentual||10;
+      document.getElementById('descontoMax').value=c.desconto_maximo||30;
+      document.getElementById('parcelasMax').value=c.parcelas_maximo||12;
+      document.getElementById('jurosParcelamento').value=c.juros_parcelamento||1;
+      document.getElementById('entradaMinima').value=c.entrada_minima||0;
+      document.getElementById('multaAtraso').value=c.multa_atraso||2;
+      document.getElementById('jurosAtraso').value=c.juros_atraso||1;
+      document.getElementById('tipoJurosAtraso').value=c.tipo_juros||'simples';
+      document.getElementById('credorBanco').value=c.banco||'';
+      document.getElementById('credorPix').value=c.pix||'';
+      document.getElementById('credorAgencia').value=c.agencia||'';
+      document.getElementById('credorConta').value=c.conta||'';
+      document.getElementById('credorTipoConta').value=c.tipo_conta||'corrente';
+      atualizarPreviewTaxa();
+      document.querySelectorAll('.tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.querySelectorAll('.tab-content').forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.getElementById('modalCredor').classList.add('show');
     }
 
-    function cancelarSelecao() {
-      selectedIds = [];
-      atualizarSelecao();
+    function limparFormulario(){
+      document.getElementById('credorId').value='';
+      document.getElementById('credorNome').value='';
+      document.getElementById('credorRazao').value='';
+      document.getElementById('credorCnpj').value='';
+      document.getElementById('credorTelefone').value='';
+      document.getElementById('credorEmail').value='';
+      document.getElementById('credorContatoNome').value='';
+      document.getElementById('credorContatoTel').value='';
+      document.getElementById('credorContatoEmail').value='';
+      document.getElementById('credorStatus').value='ativo';
+      document.getElementById('credorComissao').value=10;
+      document.getElementById('descontoMax').value=30;
+      document.getElementById('parcelasMax').value=12;
+      document.getElementById('jurosParcelamento').value=1;
+      document.getElementById('entradaMinima').value=0;
+      document.getElementById('multaAtraso').value=2;
+      document.getElementById('jurosAtraso').value=1;
+      document.getElementById('tipoJurosAtraso').value='simples';
+      document.getElementById('credorBanco').value='';
+      document.getElementById('credorPix').value='';
+      document.getElementById('credorAgencia').value='';
+      document.getElementById('credorConta').value='';
+      document.getElementById('credorTipoConta').value='corrente';
+      atualizarPreviewTaxa();
     }
 
-    // =====================================================
-    // EXCLUSÃO
-    // =====================================================
-    function confirmarExclusao(id) {
-      deleteIds = [id];
-      mostrarModalExclusao();
+    function atualizarPreviewTaxa(){
+      const multa=parseFloat(document.getElementById('multaAtraso').value)||0;
+      const juros=parseFloat(document.getElementById('jurosAtraso').value)||0;
+      const valorBase=1000;
+      const valorMulta=valorBase*(multa/100);
+      const valorJuros=valorBase*(juros/100);
+      const total=valorBase+valorMulta+valorJuros;
+      document.getElementById('taxaPreviewValue').innerHTML=`Total: <span>${fmtMoney(total)}</span> (+${fmtMoney(valorMulta)} multa +${fmtMoney(valorJuros)} juros)`;
     }
 
-    function confirmarExclusaoMassa() {
-      deleteIds = [...selectedIds];
-      mostrarModalExclusao();
+    async function salvarCredor(){
+      const id=document.getElementById('credorId').value;
+      const nome=document.getElementById('credorNome').value.trim();
+      if(!nome){alert('Informe o nome do credor');return}
+      const dados={
+        nome,razao_social:document.getElementById('credorRazao').value.trim(),
+        cnpj:document.getElementById('credorCnpj').value.trim(),
+        telefone:document.getElementById('credorTelefone').value.trim(),
+        email:document.getElementById('credorEmail').value.trim(),
+        contato_nome:document.getElementById('credorContatoNome').value.trim(),
+        contato_telefone:document.getElementById('credorContatoTel').value.trim(),
+        contato_email:document.getElementById('credorContatoEmail').value.trim(),
+        status:document.getElementById('credorStatus').value,
+        comissao_percentual:parseFloat(document.getElementById('credorComissao').value)||10,
+        desconto_maximo:parseFloat(document.getElementById('descontoMax').value)||30,
+        parcelas_maximo:parseInt(document.getElementById('parcelasMax').value)||12,
+        juros_parcelamento:parseFloat(document.getElementById('jurosParcelamento').value)||1,
+        entrada_minima:parseFloat(document.getElementById('entradaMinima').value)||0,
+        multa_atraso:parseFloat(document.getElementById('multaAtraso').value)||2,
+        juros_atraso:parseFloat(document.getElementById('jurosAtraso').value)||1,
+        tipo_juros:document.getElementById('tipoJurosAtraso').value||'simples',
+        banco:document.getElementById('credorBanco').value.trim(),
+        pix:document.getElementById('credorPix').value.trim(),
+        agencia:document.getElementById('credorAgencia').value.trim(),
+        conta:document.getElementById('credorConta').value.trim(),
+        tipo_conta:document.getElementById('credorTipoConta').value
+      };
+      try{
+        const url=id?API+'/api/credores/'+id:API+'/api/credores';
+        const method=id?'PUT':'POST';
+        const res=await fetch(url,{method,headers:getHeaders(),body:JSON.stringify(dados)});
+        const data=await res.json();
+        if(data.success){fecharModal('modalCredor');carregarCredores();alert(id?'Credor atualizado!':'Credor cadastrado!')}
+        else alert(data.message||'Erro ao salvar')
+      }catch(e){console.error(e);alert('Erro ao salvar credor')}
     }
 
-    function mostrarModalExclusao() {
-      const lista = document.getElementById('deleteItemsList');
-      const itens = credoresOriginal.filter(c => deleteIds.includes(c.id));
-      
-      lista.innerHTML = itens.map(c => {
-        const iniciais = (c.nome || 'CR').substring(0, 2).toUpperCase();
-        return `
-          <div class="delete-item">
-            <div class="delete-item-avatar">${iniciais}</div>
-            <div class="delete-item-name">${c.nome || 'Credor'}</div>
-          </div>
-        `;
-      }).join('');
-      
+    function confirmarExclusao(id,nome){
+      document.getElementById('deleteCredorId').value=id;
+      document.getElementById('deleteCredorNome').textContent=nome;
       document.getElementById('modalExcluir').classList.add('show');
     }
 
-    async function executarExclusao() {
-      try {
-        for (const id of deleteIds) {
-          await fetch(API + '/api/credores/' + id, { method: 'DELETE', headers: getHeaders() });
-        }
-        fecharModal('modalExcluir');
-        selectedIds = [];
-        deleteIds = [];
-        carregarCredores();
-        alert('Credor(es) excluído(s) com sucesso!');
-      } catch (e) {
-        console.error('Erro ao excluir:', e);
-        alert('Erro ao excluir credor(es)');
-      }
+    async function executarExclusao(){
+      const id=document.getElementById('deleteCredorId').value;
+      try{
+        const res=await fetch(API+'/api/credores/'+id,{method:'DELETE',headers:getHeaders()});
+        const data=await res.json();
+        if(data.success){fecharModal('modalExcluir');carregarCredores();alert(data.message||'Credor removido!')}
+        else alert(data.message||'Erro ao excluir')
+      }catch(e){console.error(e);alert('Erro ao excluir')}
     }
 
-    // =====================================================
-    // MODAL CREDOR
-    // =====================================================
-    function abrirModalCredor() {
-      document.getElementById('modalCredorTitulo').textContent = 'Novo Credor';
-      document.getElementById('credorId').value = '';
-      limparFormulario();
-      document.querySelectorAll('.tabs .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
-      document.querySelectorAll('.tab-content-credor').forEach((t, i) => t.classList.toggle('active', i === 0));
-      document.getElementById('modalCredor').classList.add('show');
+    function fecharModal(id){document.getElementById(id).classList.remove('show')}
+    function verCobrancas(id){window.location.href='/cobrancas?credor='+id}
+
+    function exportarCredores(){
+      const headers=['Nome','CNPJ','Telefone','Email','Status','Comissão','Carteira','Recuperado'];
+      const rows=credoresOriginal.map(c=>[c.nome||'',c.cnpj||'',c.telefone||'',c.email||'',c.status||'ativo',(c.comissao_percentual||10)+'%',fmtMoney(c.valor_carteira||0),fmtMoney(c.valor_recuperado||0)]);
+      const csv=[headers,...rows].map(r=>r.join(';')).join('\n');
+      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+      const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='credores_'+new Date().toISOString().split('T')[0]+'.csv';link.click();
     }
 
-    async function editarCredor(id) {
-      const credor = credoresOriginal.find(c => c.id === id);
-      if (!credor) return;
-      
-      document.getElementById('modalCredorTitulo').textContent = 'Editar Credor';
-      document.getElementById('credorId').value = id;
-      
-      document.getElementById('credorNome').value = credor.nome || '';
-      document.getElementById('credorRazao').value = credor.razao_social || '';
-      document.getElementById('credorCnpj').value = credor.cnpj || '';
-      document.getElementById('credorTelefone').value = credor.telefone || '';
-      document.getElementById('credorEmail').value = credor.email || '';
-      document.getElementById('credorContatoNome').value = credor.contato_nome || '';
-      document.getElementById('credorContatoTel').value = credor.contato_telefone || '';
-      document.getElementById('credorContatoEmail').value = credor.contato_email || '';
-      document.getElementById('credorStatus').value = credor.status || 'ativo';
-      document.getElementById('credorComissao').value = credor.comissao_percentual || 10;
-      document.getElementById('descontoMax').value = credor.desconto_maximo || 30;
-      document.getElementById('parcelasMax').value = credor.parcelas_maximas || 12;
-      document.getElementById('jurosParcelamento').value = credor.juros_parcelamento || 1;
-      document.getElementById('entradaMinima').value = credor.entrada_minima || 0;
-      document.getElementById('multaAtraso').value = credor.multa_atraso || 2;
-      document.getElementById('jurosAtraso').value = credor.juros_atraso || 1;
-      document.getElementById('tipoJurosAtraso').value = credor.tipo_juros || 'simples';
-      document.getElementById('credorBanco').value = credor.banco || '';
-      document.getElementById('credorPix').value = credor.pix || '';
-      document.getElementById('credorAgencia').value = credor.agencia || '';
-      document.getElementById('credorConta').value = credor.conta || '';
-      document.getElementById('credorTipoConta').value = credor.tipo_conta || 'corrente';
-      
-      document.querySelectorAll('.tabs .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
-      document.querySelectorAll('.tab-content-credor').forEach((t, i) => t.classList.toggle('active', i === 0));
-      document.getElementById('modalCredor').classList.add('show');
+    async function carregarUsuario(){
+      try{const res=await fetch(API+'/api/usuarios/me',{headers:getHeaders()});const data=await res.json();
+        if(data.success&&data.data){document.getElementById('userName').textContent=data.data.nome||'Usuário';document.getElementById('userRole').textContent=data.data.nivel==='admin'?'Administrador':'Operador';document.getElementById('userAvatar').textContent=(data.data.nome||'U').charAt(0).toUpperCase()}
+      }catch(e){console.error(e)}
     }
 
-    function limparFormulario() {
-      document.getElementById('credorNome').value = '';
-      document.getElementById('credorRazao').value = '';
-      document.getElementById('credorCnpj').value = '';
-      document.getElementById('credorTelefone').value = '';
-      document.getElementById('credorEmail').value = '';
-      document.getElementById('credorContatoNome').value = '';
-      document.getElementById('credorContatoTel').value = '';
-      document.getElementById('credorContatoEmail').value = '';
-      document.getElementById('credorStatus').value = 'ativo';
-      document.getElementById('credorComissao').value = 10;
-      document.getElementById('descontoMax').value = 30;
-      document.getElementById('parcelasMax').value = 12;
-      document.getElementById('jurosParcelamento').value = 1;
-      document.getElementById('entradaMinima').value = 0;
-      document.getElementById('multaAtraso').value = 2;
-      document.getElementById('jurosAtraso').value = 1;
-      document.getElementById('tipoJurosAtraso').value = 'simples';
-      document.getElementById('credorBanco').value = '';
-      document.getElementById('credorPix').value = '';
-      document.getElementById('credorAgencia').value = '';
-      document.getElementById('credorConta').value = '';
-      document.getElementById('credorTipoConta').value = 'corrente';
-    }
-
-    async function salvarCredor() {
-      const id = document.getElementById('credorId').value;
-      const nome = document.getElementById('credorNome').value.trim();
-      
-      if (!nome) { alert('Informe o nome do credor'); return; }
-      
-      const dados = {
-        nome,
-        razao_social: document.getElementById('credorRazao').value.trim(),
-        cnpj: document.getElementById('credorCnpj').value.trim(),
-        telefone: document.getElementById('credorTelefone').value.trim(),
-        email: document.getElementById('credorEmail').value.trim(),
-        contato_nome: document.getElementById('credorContatoNome').value.trim(),
-        contato_telefone: document.getElementById('credorContatoTel').value.trim(),
-        contato_email: document.getElementById('credorContatoEmail').value.trim(),
-        status: document.getElementById('credorStatus').value,
-        comissao_percentual: parseFloat(document.getElementById('credorComissao').value) || 10,
-        desconto_maximo: parseFloat(document.getElementById('descontoMax').value) || 30,
-        parcelas_maximas: parseInt(document.getElementById('parcelasMax').value) || 12,
-        juros_parcelamento: parseFloat(document.getElementById('jurosParcelamento').value) || 1,
-        entrada_minima: parseFloat(document.getElementById('entradaMinima').value) || 0,
-        multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2,
-        juros_atraso: parseFloat(document.getElementById('jurosAtraso').value) || 1,
-        tipo_juros: document.getElementById('tipoJurosAtraso').value || 'simples',
-        banco: document.getElementById('credorBanco').value.trim(),
-        pix: document.getElementById('credorPix').value.trim(),
-        agencia: document.getElementById('credorAgencia').value.trim(),
-        conta: document.getElementById('credorConta').value.trim(),
-        tipo_conta: document.getElementById('credorTipoConta').value
-      };
-      
-      try {
-        const url = id ? API + '/api/credores/' + id : API + '/api/credores';
-        const method = id ? 'PUT' : 'POST';
-        const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(dados) });
-        const data = await res.json();
-        
-        if (data.success) {
-          fecharModal('modalCredor');
-          carregarCredores();
-          alert(id ? 'Credor atualizado!' : 'Credor cadastrado!');
-        } else {
-          alert(data.message || 'Erro ao salvar credor');
-        }
-      } catch (e) {
-        console.error('Erro:', e);
-        alert('Erro ao salvar credor');
-      }
-    }
-
-    // =====================================================
-    // OUTRAS FUNÇÕES
-    // =====================================================
-    function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
-
-    function showTabCredor(tabId) {
-      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content-credor').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('tab-' + tabId).classList.add('active');
-    }
-
-    function filtrarCredores() {
-      const busca = document.getElementById('searchCredor').value.toLowerCase();
-      const status = document.getElementById('filterStatus').value;
-      const ordem = document.getElementById('filterOrdem').value;
-      
-      let filtrados = [...credoresOriginal];
-      
-      if (busca) {
-        filtrados = filtrados.filter(c => 
-          (c.nome || '').toLowerCase().includes(busca) ||
-          (c.cnpj || '').includes(busca) ||
-          (c.contato_nome || '').toLowerCase().includes(busca)
-        );
-      }
-      
-      if (status) filtrados = filtrados.filter(c => (c.status || 'ativo') === status);
-      
-      if (ordem === 'carteira') filtrados.sort((a, b) => (parseFloat(b.total_carteira) || 0) - (parseFloat(a.total_carteira) || 0));
-      else if (ordem === 'recuperacao') filtrados.sort((a, b) => (parseFloat(b.total_recuperado) || 0) - (parseFloat(a.total_recuperado) || 0));
-      else if (ordem === 'recente') filtrados.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-      else filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-      
-      credores = filtrados;
-      renderizarCredores();
-    }
-
-    function verCobrancas(credorId) { window.location.href = '/cobrancas?credor=' + credorId; }
-
-    function exportarCredores() {
-      const headers = ['Nome', 'CNPJ', 'Telefone', 'Email', 'Status', 'Comissão', 'Carteira', 'Recuperado'];
-      const rows = credoresOriginal.map(c => [
-        c.nome || '', c.cnpj || '', c.telefone || '', c.email || '',
-        c.status || 'ativo', (c.comissao_percentual || 10) + '%',
-        fmtMoney(c.total_carteira || 0), fmtMoney(c.total_recuperado || 0)
-      ]);
-      const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
-      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'credores_' + new Date().toISOString().split('T')[0] + '.csv';
-      link.click();
-    }
-
-    async function carregarUsuario() {
-      try {
-        const res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
-        const data = await res.json();
-        if (data.success && data.data) {
-          document.getElementById('userName').textContent = data.data.nome || 'Usuário';
-          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    // Fechar modal ao clicar fora
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-      overlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
-    });
-
-    // Inicialização
-    carregarUsuario();
-    carregarCredores();
+    document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')})});
+    carregarUsuario();carregarCredores();atualizarPreviewTaxa();
   </script>
 </body>
 </html>

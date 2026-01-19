@@ -177,10 +177,10 @@ module.exports = (pool, auth, registrarLog) => {
           comissao_tipo, comissao_percentual, comissao_meta, comissao_valor_fixo,
           permite_desconto, desconto_maximo, permite_parcelamento, parcelas_maximo,
           banco, agencia, conta, tipo_conta, pix_tipo, pix_chave,
-          observacoes, status, created_at
+          observacoes, status, multa_atraso, juros_atraso, tipo_juros, created_at
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-          $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, NOW()
+          $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, NOW()
         ) RETURNING *
       `, [
         nome,
@@ -210,7 +210,10 @@ module.exports = (pool, auth, registrarLog) => {
         b.pix_tipo || null,
         b.pix_chave || null,
         b.observacoes || null,
-        b.status || 'ativo'
+        b.status || 'ativo',
+        b.multa_atraso || 2,
+        b.juros_atraso || 1,
+        b.tipo_juros || 'simples'
       ]);
       
       await registrarLog(req, 'CRIAR', 'credores', resultado.rows[0].id, { nome });
@@ -265,8 +268,11 @@ module.exports = (pool, auth, registrarLog) => {
           pix_chave = COALESCE($26, pix_chave),
           observacoes = COALESCE($27, observacoes),
           status = COALESCE($28, status),
+          multa_atraso = COALESCE($29, multa_atraso),
+          juros_atraso = COALESCE($30, juros_atraso),
+          tipo_juros = COALESCE($31, tipo_juros),
           updated_at = NOW()
-        WHERE id = $29
+        WHERE id = $32
         RETURNING *
       `, [
         b.nome, b.razao_social, b.cnpj ? b.cnpj.replace(/\D/g, '') : null,
@@ -275,7 +281,9 @@ module.exports = (pool, auth, registrarLog) => {
         b.comissao_tipo, b.comissao_percentual, b.comissao_meta, b.comissao_valor_fixo,
         b.permite_desconto, b.desconto_maximo, b.permite_parcelamento, b.parcelas_maximo,
         b.banco, b.agencia, b.conta, b.tipo_conta, b.pix_tipo, b.pix_chave,
-        b.observacoes, b.status, id
+        b.observacoes, b.status,
+        b.multa_atraso, b.juros_atraso, b.tipo_juros,
+        id
       ]);
       
       if (!resultado.rowCount) {
