@@ -57,9 +57,32 @@
         <div class="form-group" style="margin-bottom:20px"><label>Descrição<span class="required">*</span></label><input type="text" class="form-control" id="descricao" placeholder="Ex: Compra de TV, Mensalidade Janeiro..." required></div>
         <div class="form-row cols-2"><div class="form-group"><label>Valor total<span class="required">*</span></label><div class="input-prefix"><span>R$</span><input type="text" class="form-control large" id="valorTotal" placeholder="0,00" required oninput="formatarMoeda(this);atualizarResumo()"></div></div><div class="form-group"><label>Vencimento<span class="required">*</span></label><input type="date" class="form-control large" id="vencimento" required onchange="atualizarResumo()"></div></div>
         <div class="form-row cols-2"><div class="form-group"><label>Parcelas</label><select class="form-control" id="parcelas" onchange="atualizarResumo()"><option value="1">À vista (1x)</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="12">12x</option><option value="18">18x</option><option value="24">24x</option></select></div><div class="form-group"><label>Observações</label><input type="text" class="form-control" id="observacoes" placeholder="Anotações (opcional)"></div></div>
-        <button type="button" class="advanced-toggle" onclick="toggleAdvanced()"><i class="fas fa-chevron-down"></i><span>Desconto e Entrada</span></button>
-        <div class="advanced-content" id="advancedContent">
-          <div class="form-row cols-2"><div class="form-group"><label>Desconto</label><div class="input-prefix"><span>R$</span><input type="text" class="form-control" id="desconto" placeholder="0,00" oninput="formatarMoeda(this);atualizarResumo()"></div></div><div class="form-group"><label>Entrada</label><div class="input-prefix"><span>R$</span><input type="text" class="form-control" id="entrada" placeholder="0,00" oninput="formatarMoeda(this);atualizarResumo()"></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-handshake"></i> Negociação <span style="font-weight:400;font-size:11px;color:var(--text-muted)">(opcional)</span></div>
+        
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label><i class="fas fa-money-bill-wave" style="color:var(--green);margin-right:4px"></i> Entrada</label>
+            <div class="input-prefix"><span>R$</span><input type="text" class="form-control" id="entrada" placeholder="0,00" oninput="formatarMoeda(this);atualizarResumo()"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Valor pago na hora da negociação</div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-percent" style="color:var(--blue);margin-right:4px"></i> Desconto</label>
+            <div style="display:flex;gap:8px">
+              <div class="input-prefix" style="flex:1"><span>R$</span><input type="text" class="form-control" id="desconto" placeholder="0,00" oninput="formatarMoeda(this);calcularPercentualDesconto();atualizarResumo()"></div>
+              <div style="display:flex;align-items:center;justify-content:center;min-width:70px;padding:0 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;font-weight:600;font-size:14px" id="descontoPercent">0%</div>
+            </div>
+            <div style="font-size:11px;margin-top:6px;display:flex;justify-content:space-between" id="descontoInfo">
+              <span style="color:var(--text-muted)">Abatimento no valor total</span>
+              <span style="color:var(--orange)" id="descontoLimite">Máx: --</span>
+            </div>
+            <div style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-bg);border-radius:8px;font-size:12px;color:var(--red)" id="descontoAlerta">
+              <i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>
+              <span>Desconto acima do limite permitido!</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -164,10 +187,12 @@
       if(credorSelecionado){
         info.classList.add('active');
         const m=parseFloat(credorSelecionado.multa_atraso)||2,j=parseFloat(credorSelecionado.juros_atraso)||1,jp=parseFloat(credorSelecionado.juros_parcelamento)||0;
-        taxasPadrao={multa:m,juros:j,jurosParc:jp};
+        const descMax=parseFloat(credorSelecionado.desconto_maximo)||30;
+        taxasPadrao={multa:m,juros:j,jurosParc:jp,descontoMax:descMax};
         document.getElementById('credorMulta').textContent=m;
         document.getElementById('credorJuros').textContent=j;
         document.getElementById('taxasCredorInfo').textContent='Multa '+m+'% | Juros '+j+'% a.m.'+(jp>0?' | Parc. '+jp+'%':'');
+        document.getElementById('descontoLimite').textContent='Max: '+descMax+'%';
         document.getElementById('multa').value=m;
         document.getElementById('juros').value=j;
         document.getElementById('jurosParc').value=jp||1;
@@ -180,8 +205,43 @@
         ['Multa','JurosAtraso'].forEach(t=>{const b=document.getElementById('box'+t);b.style.borderColor='var(--gold)';b.style.background='var(--gold-glow)';});
         const bp=document.getElementById('boxJurosParc');bp.style.borderColor='var(--border)';bp.style.background='var(--bg-primary)';
         document.getElementById('btnRestaurar').style.display='none';
+        calcularPercentualDesconto();
         atualizarResumo();
-      }else info.classList.remove('active');
+      }else{
+        info.classList.remove('active');
+        document.getElementById('descontoLimite').textContent='Max: --';
+      }
+    }
+
+    function calcularPercentualDesconto(){
+      const valorTotal=parseMoney(document.getElementById('valorTotal').value)||0;
+      const desconto=parseMoney(document.getElementById('desconto').value)||0;
+      const percentEl=document.getElementById('descontoPercent');
+      const alertaEl=document.getElementById('descontoAlerta');
+      
+      if(valorTotal>0&&desconto>0){
+        const percent=((desconto/valorTotal)*100).toFixed(1);
+        percentEl.textContent=percent+'%';
+        
+        const descontoMax=taxasPadrao.descontoMax||30;
+        if(parseFloat(percent)>descontoMax){
+          percentEl.style.color='var(--red)';
+          percentEl.style.background='var(--red-bg)';
+          percentEl.style.borderColor='var(--red)';
+          alertaEl.style.display='block';
+        }else{
+          percentEl.style.color='var(--green)';
+          percentEl.style.background='var(--green-bg)';
+          percentEl.style.borderColor='var(--green)';
+          alertaEl.style.display='none';
+        }
+      }else{
+        percentEl.textContent='0%';
+        percentEl.style.color='var(--text-muted)';
+        percentEl.style.background='var(--bg-secondary)';
+        percentEl.style.borderColor='var(--border)';
+        alertaEl.style.display='none';
+      }
     }
 
     let searchTimeout;
@@ -206,6 +266,8 @@
       const ent=parseMoney(document.getElementById('entrada').value);
       const p=parseInt(document.getElementById('parcelas').value)||1;
       const venc=document.getElementById('vencimento').value;
+      
+      calcularPercentualDesconto();
       
       const ativarJP=document.getElementById('ativarJurosParc').checked;
       const ativarM=document.getElementById('ativarMulta').checked;
