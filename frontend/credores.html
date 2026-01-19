@@ -418,7 +418,7 @@
           <td><div style="font-weight:600">${fmtMoney(c.valor_carteira)}</div><div style="font-size:12px;color:var(--text-muted)">${c.total_cobrancas||0} cobranças</div></td>
           <td><div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-weight:600">${taxa}%</span><div class="progress-bar"><div class="progress-fill" style="width:${taxa}%"></div></div></div><div style="font-size:12px;color:var(--text-muted)">${fmtMoney(c.valor_recuperado)}</div></td>
           <td><span class="badge badge-${statusClass}"><i class="fas fa-circle" style="font-size:6px"></i> ${c.status||'ativo'}</span></td>
-          <td><button class="btn-icon" onclick="editarCredor(${c.id})" title="Editar"><i class="fas fa-edit"></i></button><button class="btn-icon" onclick="verCobrancas(${c.id})" title="Ver Cobranças"><i class="fas fa-file-invoice"></i></button><button class="btn-icon danger" onclick="confirmarExclusao(${c.id},'${(c.nome||'').replace(/'/g,"\\'")}')" title="Excluir"><i class="fas fa-trash"></i></button></td>
+          <td><button class="btn-icon" onclick="editarCredor(${c.id})" title="Editar"><i class="fas fa-edit"></i></button><button class="btn-icon" onclick="verCobrancas(${c.id})" title="Ver Cobranças"><i class="fas fa-file-invoice"></i></button><button class="btn-icon danger" onclick="confirmarExclusao(${c.id})" title="Excluir"><i class="fas fa-trash"></i></button></td>
         </tr>`}).join('');
     }
 
@@ -557,9 +557,11 @@
       }catch(e){console.error(e);alert('Erro ao salvar credor')}
     }
 
-    function confirmarExclusao(id,nome){
+    function confirmarExclusao(id){
+      const c=credoresOriginal.find(x=>x.id===id);
+      if(!c)return;
       document.getElementById('deleteCredorId').value=id;
-      document.getElementById('deleteCredorNome').textContent=nome;
+      document.getElementById('deleteCredorNome').textContent=c.nome||'Credor';
       document.getElementById('modalExcluir').classList.add('show');
     }
 
