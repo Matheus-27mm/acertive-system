@@ -1,6 +1,7 @@
 /**
  * ROTAS DE CREDORES - ACERTIVE
  * Empresas que contratam o escritório para cobrar
+ * CORRIGIDO: credor_id -> empresa_id
  */
 
 const express = require('express');
@@ -23,7 +24,7 @@ module.exports = (pool, auth, registrarLog) => {
           COALESCE(SUM(CASE WHEN c.status IN ('pendente', 'vencido') THEN c.valor_atualizado ELSE 0 END), 0)::numeric as valor_carteira,
           COALESCE(SUM(CASE WHEN c.status = 'pago' THEN c.valor_atualizado ELSE 0 END), 0)::numeric as valor_recuperado
         FROM credores cr
-        LEFT JOIN cobrancas c ON c.credor_id = cr.id
+        LEFT JOIN cobrancas c ON c.empresa_id = cr.id
         WHERE 1=1
       `;
       
@@ -44,7 +45,6 @@ module.exports = (pool, auth, registrarLog) => {
       
       sql += ` GROUP BY cr.id`;
       
-      // Ordenação
       switch (ordem) {
         case 'carteira':
           sql += ' ORDER BY valor_carteira DESC';
@@ -61,7 +61,6 @@ module.exports = (pool, auth, registrarLog) => {
       
       const resultado = await pool.query(sql, params);
       
-      // Calcular taxa de recuperação
       const credores = resultado.rows.map(cr => ({
         ...cr,
         taxa_recuperacao: parseFloat(cr.valor_carteira) > 0 
@@ -89,7 +88,7 @@ module.exports = (pool, auth, registrarLog) => {
           COALESCE(SUM(CASE WHEN c.status IN ('pendente', 'vencido') THEN c.valor_atualizado ELSE 0 END), 0)::numeric as total_carteira,
           COALESCE(SUM(CASE WHEN c.status = 'pago' THEN c.valor_atualizado ELSE 0 END), 0)::numeric as total_recuperado
         FROM credores cr
-        LEFT JOIN cobrancas c ON c.credor_id = cr.id
+        LEFT JOIN cobrancas c ON c.empresa_id = cr.id
       `);
       
       const row = stats.rows[0];
@@ -129,7 +128,7 @@ module.exports = (pool, auth, registrarLog) => {
           COALESCE(SUM(CASE WHEN c.status IN ('pendente', 'vencido') THEN c.valor_atualizado ELSE 0 END), 0)::numeric as valor_carteira,
           COALESCE(SUM(CASE WHEN c.status = 'pago' THEN c.valor_atualizado ELSE 0 END), 0)::numeric as valor_recuperado
         FROM credores cr
-        LEFT JOIN cobrancas c ON c.credor_id = cr.id
+        LEFT JOIN cobrancas c ON c.empresa_id = cr.id
         WHERE cr.id = $1
         GROUP BY cr.id
       `, [id]);
@@ -158,7 +157,6 @@ module.exports = (pool, auth, registrarLog) => {
         return res.status(400).json({ success: false, message: 'Nome é obrigatório.' });
       }
       
-      // Verificar CNPJ duplicado
       if (b.cnpj) {
         const existe = await pool.query(
           'SELECT id FROM credores WHERE cnpj = $1',
@@ -195,7 +193,7 @@ module.exports = (pool, auth, registrarLog) => {
         b.cidade || null,
         b.estado || null,
         b.cep || null,
-        b.comissao_tipo || 'percentual', // percentual, fixo, meta
+        b.comissao_tipo || 'percentual',
         b.comissao_percentual || 10,
         b.comissao_meta || null,
         b.comissao_valor_fixo || null,
@@ -311,15 +309,13 @@ module.exports = (pool, auth, registrarLog) => {
     try {
       const { id } = req.params;
       
-      // Verificar se tem cobranças pendentes
       const cobrancas = await pool.query(`
         SELECT COUNT(*)::int as total 
         FROM cobrancas 
-        WHERE credor_id = $1 AND status IN ('pendente', 'vencido')
+        WHERE empresa_id = $1 AND status IN ('pendente', 'vencido')
       `, [id]);
       
       if (parseInt(cobrancas.rows[0].total) > 0) {
-        // Apenas inativar
         await pool.query(
           'UPDATE credores SET status = $1, updated_at = NOW() WHERE id = $2',
           ['inativo', id]
@@ -328,7 +324,6 @@ module.exports = (pool, auth, registrarLog) => {
         return res.json({ success: true, message: 'Credor inativado (possui cobranças pendentes).' });
       }
       
-      // Se não tem cobranças, pode deletar
       const resultado = await pool.query('DELETE FROM credores WHERE id = $1 RETURNING *', [id]);
       
       if (!resultado.rowCount) {
@@ -361,7 +356,7 @@ module.exports = (pool, auth, registrarLog) => {
           cl.telefone as cliente_telefone
         FROM cobrancas c
         LEFT JOIN clientes cl ON cl.id = c.cliente_id
-        WHERE c.credor_id = $1
+        WHERE c.empresa_id = $1
       `;
       
       const params = [id];
@@ -397,7 +392,6 @@ module.exports = (pool, auth, registrarLog) => {
       const anoAtual = ano || new Date().getFullYear();
       const mesAtual = mes || (new Date().getMonth() + 1);
       
-      // Resumo geral
       const resumo = await pool.query(`
         SELECT 
           COALESCE(SUM(CASE WHEN status = 'pago' THEN valor_atualizado ELSE 0 END), 0)::numeric as total_recuperado,
@@ -405,20 +399,18 @@ module.exports = (pool, auth, registrarLog) => {
           COUNT(CASE WHEN status = 'pago' THEN 1 END)::int as cobrancas_pagas,
           COUNT(CASE WHEN status IN ('pendente', 'vencido') THEN 1 END)::int as cobrancas_pendentes
         FROM cobrancas
-        WHERE credor_id = $1
+        WHERE empresa_id = $1
       `, [id]);
       
-      // Recuperado no mês
       const recuperadoMes = await pool.query(`
         SELECT COALESCE(SUM(valor_atualizado), 0)::numeric as valor
         FROM cobrancas
-        WHERE credor_id = $1 
+        WHERE empresa_id = $1 
           AND status = 'pago'
           AND EXTRACT(MONTH FROM updated_at) = $2
           AND EXTRACT(YEAR FROM updated_at) = $3
       `, [id, mesAtual, anoAtual]);
       
-      // Buscar config de comissão do credor
       const credor = await pool.query(
         'SELECT comissao_tipo, comissao_percentual, comissao_meta, comissao_valor_fixo FROM credores WHERE id = $1',
         [id]
@@ -427,7 +419,6 @@ module.exports = (pool, auth, registrarLog) => {
       const config = credor.rows[0] || {};
       const valorRecuperadoMes = parseFloat(recuperadoMes.rows[0].valor) || 0;
       
-      // Calcular comissão
       let comissaoMes = 0;
       if (config.comissao_tipo === 'percentual') {
         comissaoMes = (valorRecuperadoMes * parseFloat(config.comissao_percentual || 10)) / 100;
