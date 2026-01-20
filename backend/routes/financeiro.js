@@ -51,7 +51,7 @@ module.exports = (pool, auth, registrarLog) => {
       const repasses = await pool.query(`
         SELECT 
           credor_id,
-          COALESCE(SUM(valor), 0)::numeric as total_repassado
+          COALESCE(SUM(valor_repasse), 0)::numeric as total_repassado
         FROM repasses
         WHERE status = 'pago'
           AND EXTRACT(MONTH FROM data_repasse) = $1
@@ -185,7 +185,7 @@ module.exports = (pool, auth, registrarLog) => {
   // =====================================================
   router.post('/repasses', auth, async (req, res) => {
     try {
-      const { credor_id, valor, data_repasse, forma_pagamento, comprovante, observacoes } = req.body || {};
+      const { credor_id, valor, data_repasse, comprovante, observacoes } = req.body || {};
       
       if (!credor_id || !valor) {
         return res.status(400).json({ success: false, message: 'Credor e valor são obrigatórios.' });
@@ -193,18 +193,16 @@ module.exports = (pool, auth, registrarLog) => {
       
       const resultado = await pool.query(`
         INSERT INTO repasses (
-          credor_id, valor, data_repasse, forma_pagamento, comprovante, observacoes,
-          status, criado_por, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, 'pago', $7, NOW())
+          credor_id, valor_repasse, data_repasse, comprovante_url, observacoes,
+          status, created_at
+        ) VALUES ($1, $2, $3, $4, $5, 'pago', NOW())
         RETURNING *
       `, [
         credor_id, 
         parseFloat(valor), 
         data_repasse || new Date(),
-        forma_pagamento || 'pix', 
         comprovante || null,
-        observacoes || null,
-        req.user.userId
+        observacoes || null
       ]);
       
       await registrarLog(req, 'CRIAR', 'repasses', resultado.rows[0].id, { credor_id, valor });
@@ -245,7 +243,7 @@ module.exports = (pool, auth, registrarLog) => {
       // Repasses do período
       const repasses = await pool.query(`
         SELECT 
-          COALESCE(SUM(valor), 0)::numeric as total
+          COALESCE(SUM(valor_repasse), 0)::numeric as total
         FROM repasses
         WHERE status = 'pago'
           AND EXTRACT(MONTH FROM data_repasse) = $1
@@ -321,7 +319,7 @@ module.exports = (pool, auth, registrarLog) => {
       
       // Repasses já feitos no período
       const repassesFeitos = await pool.query(`
-        SELECT COALESCE(SUM(valor), 0)::numeric as valor
+        SELECT COALESCE(SUM(valor_repasse), 0)::numeric as valor
         FROM repasses
         WHERE credor_id = $1
           AND status = 'pago'
