@@ -307,6 +307,14 @@ app.use("/api/relatorios", relatoriosRoutes);
 const importacaoRoutes = require("./routes/importacao")(pool, auth, upload, registrarLog);
 app.use("/api/importacao", importacaoRoutes);
 
+// Comissões
+const comissoesRoutes = require("./routes/comissoes")(pool, auth, registrarLog);
+app.use("/api/comissoes", comissoesRoutes);
+
+// Repasses
+const repassesRoutes = require("./routes/repasses")(pool, auth, registrarLog);
+app.use("/api/repasses", repassesRoutes);
+
 // ========================================
 // ROTAS DO FRONTEND (SPA)
 // ========================================
