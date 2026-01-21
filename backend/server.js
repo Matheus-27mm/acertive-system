@@ -11,6 +11,7 @@ const cors = require("cors");
 const path = require("path");
 const { Pool } = require("pg");
 const multer = require("multer");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 
@@ -23,7 +24,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Servir arquivos estáticos do frontend
-app.use(express.static(path.join(__dirname, "frontend")))
+app.use(express.static(path.join(__dirname, "frontend")));
 
 // ========================================
 // CONEXÃO COM BANCO DE DADOS
@@ -120,14 +121,16 @@ app.get("/api/health", (req, res) => {
 const authRoutes = require("./routes/auth")(pool, registrarLog);
 app.use("/api/auth", authRoutes);
 
-// Rota de login alternativa (compatibilidade)
+// Rota de login direta (compatibilidade)
 app.post("/api/login", async (req, res) => {
     try {
         const { email, senha } = req.body;
-        const bcrypt = require('bcryptjs');
-        const jwt = require('jsonwebtoken');
+        
+        console.log('=== LOGIN ATTEMPT ===');
+        console.log('Email:', email);
         
         if (!email || !senha) {
+            console.log('Erro: campos vazios');
             return res.status(400).json({ error: 'Email e senha são obrigatórios' });
         }
 
@@ -136,27 +139,37 @@ app.post("/api/login", async (req, res) => {
             [email.toLowerCase()]
         );
 
+        console.log('Usuários encontrados:', result.rows.length);
+
         if (result.rows.length === 0) {
+            console.log('Erro: usuário não encontrado');
             return res.status(401).json({ error: 'Email ou senha incorretos' });
         }
 
         const usuario = result.rows[0];
+        console.log('Usuário:', usuario.email, 'Ativo:', usuario.ativo);
 
         if (!usuario.ativo) {
+            console.log('Erro: usuário desativado');
             return res.status(401).json({ error: 'Usuário desativado' });
         }
 
         const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
+        console.log('Senha correta:', senhaCorreta);
         
         if (!senhaCorreta) {
+            console.log('Erro: senha incorreta');
             return res.status(401).json({ error: 'Email ou senha incorretos' });
         }
 
+        // Gerar token JWT
         const token = jwt.sign(
             { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
             JWT_SECRET,
             { expiresIn: '24h' }
         );
+
+        console.log('Login bem sucedido!');
 
         res.json({
             success: true,
@@ -189,7 +202,6 @@ try {
     app.use("/api/credores", credoresRoutes);
 } catch (e) {
     console.log("⚠️ routes/credores.js não encontrado, usando rotas inline");
-    // Rotas básicas de credores inline
     app.get("/api/credores", auth, async (req, res) => {
         const result = await pool.query("SELECT * FROM credores ORDER BY nome");
         res.json(result.rows);
@@ -318,11 +330,11 @@ app.get("/nova-recorrente", sendFront("nova-recorrente.html"));
 app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) return next();
     const htmlPath = path.join(__dirname, "frontend", req.path + ".html");
-res.sendFile(htmlPath, (err) => {
-    if (err) {
-        res.sendFile(path.join(__dirname, "frontend", "login.html"));
-    }
-});
+    res.sendFile(htmlPath, (err) => {
+        if (err) {
+            res.sendFile(path.join(__dirname, "frontend", "login.html"));
+        }
+    });
 });
 
 // ========================================
