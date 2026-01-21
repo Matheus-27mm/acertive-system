@@ -122,10 +122,57 @@ app.use("/api/auth", authRoutes);
 
 // Rota de login alternativa (compatibilidade)
 app.post("/api/login", async (req, res) => {
-    // Redirecionar para /api/auth/login
-    const authRouter = require("./routes/auth")(pool, registrarLog);
-    req.url = "/login";
-    authRouter.handle(req, res);
+    try {
+        const { email, senha } = req.body;
+        const bcrypt = require('bcryptjs');
+        const jwt = require('jsonwebtoken');
+        
+        if (!email || !senha) {
+            return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+        }
+
+        const result = await pool.query(
+            'SELECT id, nome, email, senha, perfil, ativo FROM usuarios WHERE email = $1',
+            [email.toLowerCase()]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Email ou senha incorretos' });
+        }
+
+        const usuario = result.rows[0];
+
+        if (!usuario.ativo) {
+            return res.status(401).json({ error: 'Usuário desativado' });
+        }
+
+        const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
+        
+        if (!senhaCorreta) {
+            return res.status(401).json({ error: 'Email ou senha incorretos' });
+        }
+
+        const token = jwt.sign(
+            { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            success: true,
+            token,
+            usuario: {
+                id: usuario.id,
+                nome: usuario.nome,
+                email: usuario.email,
+                perfil: usuario.perfil
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro no login:', error);
+        res.status(500).json({ error: 'Erro ao fazer login' });
+    }
 });
 
 // Usuários
