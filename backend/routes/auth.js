@@ -14,39 +14,58 @@ module.exports = function(pool, registrarLog) {
     const JWT_EXPIRES = '24h';
 
     // POST /api/auth/login - Fazer login
-router.post('/login', async (req, res) => {
-    console.log('=== AUTH LOGIN ATTEMPT ===');
-    console.log('Body:', req.body);
-    try {
-        const { email, senha } = req.body;
+    router.post('/login', async (req, res) => {
+        console.log('=== AUTH LOGIN ATTEMPT ===');
+        console.log('Body:', req.body);
         
-        console.log('Email:', email);
-        console.log('Senha recebida:', senha ? 'SIM' : 'NÃO');
+        try {
+            const { email, senha } = req.body;
+
+            console.log('Email:', email);
+            console.log('Senha recebida:', senha ? 'SIM' : 'NÃO');
+
+            if (!email || !senha) {
+                console.log('ERRO: Campos vazios');
+                return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+            }
+
             // Buscar usuário
+            console.log('Buscando usuário no banco...');
             const result = await pool.query(`
                 SELECT id, nome, email, senha, perfil, ativo
                 FROM usuarios WHERE email = $1
             `, [email.toLowerCase()]);
 
+            console.log('Usuários encontrados:', result.rows.length);
+
             if (result.rows.length === 0) {
+                console.log('ERRO: Usuário não encontrado');
                 return res.status(401).json({ error: 'Email ou senha incorretos' });
             }
 
             const usuario = result.rows[0];
+            console.log('Usuário encontrado:', usuario.email);
+            console.log('Ativo:', usuario.ativo);
+            console.log('Hash no banco:', usuario.senha ? usuario.senha.substring(0, 30) + '...' : 'NULL');
 
             // Verificar se está ativo
             if (!usuario.ativo) {
+                console.log('ERRO: Usuário desativado');
                 return res.status(401).json({ error: 'Usuário desativado' });
             }
 
             // Verificar senha
+            console.log('Comparando senha...');
             const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
+            console.log('Senha correta:', senhaCorreta);
             
             if (!senhaCorreta) {
+                console.log('ERRO: Senha incorreta');
                 return res.status(401).json({ error: 'Email ou senha incorretos' });
             }
 
             // Gerar token JWT
+            console.log('Gerando token JWT...');
             const token = jwt.sign(
                 { 
                     id: usuario.id, 
@@ -61,10 +80,16 @@ router.post('/login', async (req, res) => {
             await pool.query('UPDATE usuarios SET ultimo_login = NOW() WHERE id = $1', [usuario.id]);
 
             // Registrar log
-            await registrarLog(usuario.id, 'LOGIN', 'usuarios', usuario.id, {
-                ip: req.ip,
-                userAgent: req.headers['user-agent']
-            });
+            try {
+                await registrarLog(usuario.id, 'LOGIN', 'usuarios', usuario.id, {
+                    ip: req.ip,
+                    userAgent: req.headers['user-agent']
+                });
+            } catch (logError) {
+                console.log('Erro ao registrar log (não crítico):', logError.message);
+            }
+
+            console.log('LOGIN BEM SUCEDIDO!');
 
             res.json({
                 success: true,
@@ -78,7 +103,7 @@ router.post('/login', async (req, res) => {
             });
 
         } catch (error) {
-            console.error('Erro no login:', error);
+            console.error('ERRO NO LOGIN:', error);
             res.status(500).json({ error: 'Erro ao fazer login' });
         }
     });
