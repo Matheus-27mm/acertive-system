@@ -23,7 +23,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Servir arquivos estáticos do frontend
-app.use(express.static(path.join(__dirname, "..", "frontend")));
+app.use(express.static(path.join(__dirname, "frontend")))
 
 // ========================================
 // CONEXÃO COM BANCO DE DADOS
@@ -226,7 +226,7 @@ app.use("/api/importacao", importacaoRoutes);
 // ========================================
 
 const sendFront = (file) => (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "frontend", file));
+    res.sendFile(path.join(__dirname, "frontend", file));
 };
 
 // Páginas principais
