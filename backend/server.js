@@ -270,10 +270,10 @@ app.get("/nova-recorrente", sendFront("nova-recorrente.html"));
 // Fallback para SPA - arquivos .html
 app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) return next();
-    const htmlPath = path.join(__dirname, "..", "frontend", req.path + ".html");
+    const htmlPath = path.join(__dirname, "frontend", req.path + ".html");
 res.sendFile(htmlPath, (err) => {
     if (err) {
-        res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
+        res.sendFile(path.join(__dirname, "frontend", "login.html"));
     }
 });
 });
