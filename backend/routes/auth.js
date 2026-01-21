@@ -14,14 +14,14 @@ module.exports = function(pool, registrarLog) {
     const JWT_EXPIRES = '24h';
 
     // POST /api/auth/login - Fazer login
-    router.post('/login', async (req, res) => {
-        try {
-            const { email, senha } = req.body;
-
-            if (!email || !senha) {
-                return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-            }
-
+router.post('/login', async (req, res) => {
+    console.log('=== AUTH LOGIN ATTEMPT ===');
+    console.log('Body:', req.body);
+    try {
+        const { email, senha } = req.body;
+        
+        console.log('Email:', email);
+        console.log('Senha recebida:', senha ? 'SIM' : 'NÃO');
             // Buscar usuário
             const result = await pool.query(`
                 SELECT id, nome, email, senha, perfil, ativo
