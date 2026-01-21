@@ -243,6 +243,33 @@ try {
 // Dashboard
 const dashboardRoutes = require("./routes/dashboard")(pool, auth);
 app.use("/api/dashboard", dashboardRoutes);
+// Rota de alertas/contador (compatibilidade)
+app.get("/api/alertas/contador", auth, async (req, res) => {
+    try {
+        let total = 0;
+        
+        // Cobranças vencidas
+        const cobrancas = await pool.query(`
+            SELECT COUNT(*) FROM cobrancas 
+            WHERE status = 'pendente' AND vencimento <= CURRENT_DATE
+        `);
+        total += parseInt(cobrancas.rows[0].count);
+        
+        // Agendamentos de hoje
+        try {
+            const agendamentos = await pool.query(`
+                SELECT COUNT(*) FROM agendamentos 
+                WHERE data_agendamento = CURRENT_DATE AND status = 'pendente'
+            `);
+            total += parseInt(agendamentos.rows[0].count);
+        } catch (e) {}
+        
+        res.json({ total });
+    } catch (error) {
+        console.error('Erro ao contar alertas:', error);
+        res.json({ total: 0 });
+    }
+});
 
 // Agendamentos
 const agendamentosRoutes = require("./routes/agendamentos")(pool, auth, registrarLog);
