@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sincronização Asaas - ACERTIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--bg-primary:#09090b;--bg-card:rgba(17,17,21,0.95);--text-primary:#fafafa;--text-secondary:#a1a1aa;--text-muted:#71717a;--gold:#F6C84C;--gold-glow:rgba(246,200,76,0.15);--border:rgba(255,255,255,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--radius-lg:16px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;padding:40px 20px}
+    .container{max-width:900px;margin:0 auto}
+    h1{font-size:32px;margin-bottom:10px;display:flex;align-items:center;gap:15px}
+    h1 i{color:var(--gold)}
+    .subtitle{color:var(--text-muted);margin-bottom:40px}
+    
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:25px;margin-bottom:20px}
+    .card-title{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .card-title i{color:var(--gold)}
+    
+    .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px}
+    .status-item{background:rgba(255,255,255,0.03);padding:15px;border-radius:10px}
+    .status-label{font-size:12px;color:var(--text-muted);margin-bottom:5px}
+    .status-value{font-size:24px;font-weight:700}
+    .status-value.green{color:var(--green)}
+    .status-value.red{color:var(--red)}
+    .status-value.blue{color:var(--blue)}
+    
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;font-size:13px;color:var(--text-muted);margin-bottom:8px}
+    .form-group select,.form-group input{width:100%;background:var(--bg-primary);border:1px solid var(--border);color:var(--text-primary);padding:12px 15px;border-radius:8px;font-size:14px}
+    .form-group select:focus,.form-group input:focus{outline:none;border-color:var(--gold)}
+    
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all 0.15s}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),#FFD56A);color:#09090b}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(246,200,76,0.3)}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid var(--border)}
+    .btn-danger{background:var(--red);color:#fff}
+    
+    .btn-group{display:flex;gap:10px;flex-wrap:wrap}
+    
+    .log-container{background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:15px;max-height:300px;overflow-y:auto;font-family:monospace;font-size:13px;line-height:1.6}
+    .log-entry{padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .log-entry.success{color:var(--green)}
+    .log-entry.error{color:var(--red)}
+    .log-entry.info{color:var(--blue)}
+    
+    .result-box{padding:20px;border-radius:10px;margin-top:20px}
+    .result-box.success{background:var(--green-bg);border:1px solid var(--green)}
+    .result-box.error{background:var(--red-bg);border:1px solid var(--red)}
+    .result-box h3{margin-bottom:10px}
+    
+    .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    
+    .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--text-muted);text-decoration:none;margin-bottom:30px}
+    .back-link:hover{color:var(--gold)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/configuracoes" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para Configurações</a>
+    
+    <h1><i class="fas fa-sync-alt"></i> Sincronização Asaas</h1>
+    <p class="subtitle">Importe clientes e cobranças do Asaas para o sistema</p>
+    
+    <!-- STATUS -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-info-circle"></i> Status da Conexão</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-label">Ambiente</div>
+          <div class="status-value" id="statusAmbiente">-</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Conexão Asaas</div>
+          <div class="status-value" id="statusConexao">-</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Clientes Locais</div>
+          <div class="status-value blue" id="statusClientesLocal">0</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Cobranças Locais</div>
+          <div class="status-value blue" id="statusCobrancasLocal">0</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="verificarStatus()"><i class="fas fa-refresh"></i> Atualizar Status</button>
+    </div>
+    
+    <!-- CONFIGURAÇÃO -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-cog"></i> Configuração da Sincronização</h2>
+      <div class="form-group">
+        <label>Empresa (Seu Escritório) *</label>
+        <select id="empresaId">
+          <option value="">Carregando...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Credor Padrão (opcional - vincular cobranças a um credor)</label>
+        <select id="credorId">
+          <option value="">Nenhum (definir depois)</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- AÇÕES -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-play"></i> Executar Sincronização</h2>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="syncCompleta()" id="btnSyncCompleta">
+          <i class="fas fa-sync"></i> Sincronização Completa
+        </button>
+        <button class="btn btn-secondary" onclick="syncClientes()" id="btnSyncClientes">
+          <i class="fas fa-users"></i> Só Clientes
+        </button>
+        <button class="btn btn-secondary" onclick="syncCobrancas()" id="btnSyncCobrancas">
+          <i class="fas fa-file-invoice-dollar"></i> Só Cobranças
+        </button>
+        <button class="btn btn-secondary" onclick="atualizarStatus()" id="btnAtualizarStatus">
+          <i class="fas fa-check-double"></i> Atualizar Status Pagamentos
+        </button>
+      </div>
+      
+      <div id="resultado"></div>
+    </div>
+    
+    <!-- LOG -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-terminal"></i> Log de Execução</h2>
+      <div class="log-container" id="logContainer">
+        <div class="log-entry info">Aguardando ação...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+    let token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    function getHeaders() { 
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; 
+    }
+
+    function log(msg, type = 'info') {
+      const container = document.getElementById('logContainer');
+      const time = new Date().toLocaleTimeString();
+      container.innerHTML += `<div class="log-entry ${type}">[${time}] ${msg}</div>`;
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Processando...';
+      } else {
+        btn.disabled = false;
+      }
+    }
+
+    async function verificarStatus() {
+      try {
+        log('Verificando status da conexão...');
+        const res = await fetch(API + '/api/sync/status', { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('statusAmbiente').textContent = data.data.ambiente?.toUpperCase() || 'SANDBOX';
+          document.getElementById('statusConexao').textContent = data.data.asaas.connected ? 'Conectado ✓' : 'Desconectado ✗';
+          document.getElementById('statusConexao').className = 'status-value ' + (data.data.asaas.connected ? 'green' : 'red');
+          document.getElementById('statusClientesLocal').textContent = data.data.local.clientes;
+          document.getElementById('statusCobrancasLocal').textContent = data.data.local.cobrancas;
+          log('Status atualizado com sucesso', 'success');
+        } else {
+          log('Erro ao verificar status: ' + (data.error || 'Erro desconhecido'), 'error');
+        }
+      } catch (e) {
+        log('Erro de conexão: ' + e.message, 'error');
+      }
+    }
+
+    async function carregarEmpresas() {
+      try {
+        const res = await fetch(API + '/api/empresas', { headers: getHeaders() });
+        const data = await res.json();
+        const sel = document.getElementById('empresaId');
+        sel.innerHTML = '<option value="">Selecione a empresa</option>';
+        
+        const empresas = data.data || data || [];
+        if (Array.isArray(empresas)) {
+          empresas.forEach(e => {
+            sel.innerHTML += `<option value="${e.id}">${e.nome || e.razao_social}</option>`;
+          });
+        }
+        
+        // Se só tem uma empresa, selecionar automaticamente
+        if (empresas.length === 1) {
+          sel.value = empresas[0].id;
+        }
+      } catch (e) {
+        console.error('Erro ao carregar empresas:', e);
+      }
+    }
+
+    async function carregarCredores() {
+      try {
+        const res = await fetch(API + '/api/credores', { headers: getHeaders() });
+        const data = await res.json();
+        const sel = document.getElementById('credorId');
+        sel.innerHTML = '<option value="">Nenhum (definir depois)</option>';
+        
+        const credores = data.data || data || [];
+        if (Array.isArray(credores)) {
+          credores.forEach(c => {
+            sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao carregar credores:', e);
+      }
+    }
+
+    async function syncCompleta() {
+      const empresa_id = document.getElementById('empresaId').value;
+      const credor_id = document.getElementById('credorId').value;
+      
+      if (!empresa_id) {
+        alert('Selecione a empresa!');
+        return;
+      }
+
+      setLoading('btnSyncCompleta', true);
+      log('Iniciando sincronização COMPLETA...', 'info');
+
+      try {
+        const res = await fetch(API + '/api/sync/completa', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ empresa_id, credor_id: credor_id || null })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          log(`✓ Clientes: ${data.data.clientes.importados} importados, ${data.data.clientes.atualizados} atualizados`, 'success');
+          log(`✓ Cobranças: ${data.data.cobrancas.importados} importadas, ${data.data.cobrancas.atualizados} atualizadas`, 'success');
+          
+          document.getElementById('resultado').innerHTML = `
+            <div class="result-box success">
+              <h3>✓ Sincronização Concluída!</h3>
+              <p>Clientes: ${data.data.clientes.importados + data.data.clientes.atualizados} processados</p>
+              <p>Cobranças: ${data.data.cobrancas.importados + data.data.cobrancas.atualizados} processadas</p>
+            </div>
+          `;
+          
+          verificarStatus();
+        } else {
+          log('Erro: ' + (data.error || 'Erro desconhecido'), 'error');
+          document.getElementById('resultado').innerHTML = `
+            <div class="result-box error">
+              <h3>✗ Erro na Sincronização</h3>
+              <p>${data.error || 'Erro desconhecido'}</p>
+            </div>
+          `;
+        }
+      } catch (e) {
+        log('Erro de conexão: ' + e.message, 'error');
+      }
+
+      setLoading('btnSyncCompleta', false);
+      document.getElementById('btnSyncCompleta').innerHTML = '<i class="fas fa-sync"></i> Sincronização Completa';
+    }
+
+    async function syncClientes() {
+      const empresa_id = document.getElementById('empresaId').value;
+      if (!empresa_id) { alert('Selecione a empresa!'); return; }
+
+      setLoading('btnSyncClientes', true);
+      log('Sincronizando clientes...');
+
+      try {
+        const res = await fetch(API + '/api/sync/clientes', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ empresa_id })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          log(`✓ ${data.data.importados} importados, ${data.data.atualizados} atualizados`, 'success');
+        } else {
+          log('Erro: ' + data.error, 'error');
+        }
+      } catch (e) {
+        log('Erro: ' + e.message, 'error');
+      }
+
+      setLoading('btnSyncClientes', false);
+      document.getElementById('btnSyncClientes').innerHTML = '<i class="fas fa-users"></i> Só Clientes';
+      verificarStatus();
+    }
+
+    async function syncCobrancas() {
+      const empresa_id = document.getElementById('empresaId').value;
+      const credor_id = document.getElementById('credorId').value;
+      if (!empresa_id) { alert('Selecione a empresa!'); return; }
+
+      setLoading('btnSyncCobrancas', true);
+      log('Sincronizando cobranças...');
+
+      try {
+        const res = await fetch(API + '/api/sync/cobrancas', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ empresa_id, credor_id: credor_id || null })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          log(`✓ ${data.data.importados} importadas, ${data.data.atualizados} atualizadas, ${data.data.erros} erros`, 'success');
+        } else {
+          log('Erro: ' + data.error, 'error');
+        }
+      } catch (e) {
+        log('Erro: ' + e.message, 'error');
+      }
+
+      setLoading('btnSyncCobrancas', false);
+      document.getElementById('btnSyncCobrancas').innerHTML = '<i class="fas fa-file-invoice-dollar"></i> Só Cobranças';
+      verificarStatus();
+    }
+
+    async function atualizarStatus() {
+      setLoading('btnAtualizarStatus', true);
+      log('Atualizando status de pagamentos pendentes...');
+
+      try {
+        const res = await fetch(API + '/api/sync/atualizar-status', {
+          method: 'POST',
+          headers: getHeaders()
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          log(`✓ ${data.data.verificadas} verificadas, ${data.data.atualizadas} atualizadas`, 'success');
+        } else {
+          log('Erro: ' + data.error, 'error');
+        }
+      } catch (e) {
+        log('Erro: ' + e.message, 'error');
+      }
+
+      setLoading('btnAtualizarStatus', false);
+      document.getElementById('btnAtualizarStatus').innerHTML = '<i class="fas fa-check-double"></i> Atualizar Status Pagamentos';
+    }
+
+    // Inicialização
+    verificarStatus();
+    carregarEmpresas();
+    carregarCredores();
+  </script>
+</body>
+</html>

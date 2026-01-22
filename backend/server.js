@@ -317,6 +317,10 @@ const repassesRoutes = require("./routes/repasses")(pool, auth, registrarLog);
 app.use("/api/repasses", repassesRoutes);
 app.use("/api/financeiro/repasses", repassesRoutes);
 
+// Sincronização Asaas
+const syncAsaasRoutes = require("./routes/sync-asaas")(pool, auth, registrarLog);
+app.use("/api/sync", syncAsaasRoutes);
+
 // ========================================
 // ROTAS DO FRONTEND (SPA)
 // ========================================
@@ -362,6 +366,7 @@ app.get("/dividas", sendFront("dividas.html"));
 app.get("/lembretes", sendFront("lembretes.html"));
 app.get("/cobrancas-recorrentes", sendFront("cobrancas-recorrentes.html"));
 app.get("/nova-recorrente", sendFront("nova-recorrente.html"));
+app.get("/sync-asaas", sendFront("sync-asaas.html"));
 
 
 // Fallback para SPA - arquivos .html

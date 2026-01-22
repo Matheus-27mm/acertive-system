@@ -1,6 +1,9 @@
 /**
+ * ========================================
  * ROTAS ASAAS - ACERTIVE
  * Integração com plataforma de pagamentos Asaas
+ * ATUALIZADO: Adicionada rota /status
+ * ========================================
  */
 
 const express = require('express');
@@ -8,11 +11,23 @@ const express = require('express');
 module.exports = function(pool, auth, registrarLog) {
     const router = express.Router();
 
-    const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://www.asaas.com/api/v3';
-    const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
+    // Configuração dinâmica baseada no ambiente
+    const ASAAS_ENV = process.env.ASAAS_ENV || 'sandbox';
+    const ASAAS_API_URL = ASAAS_ENV === 'production' 
+        ? 'https://www.asaas.com/api/v3'
+        : 'https://sandbox.asaas.com/api/v3';
+    const ASAAS_API_KEY = ASAAS_ENV === 'production'
+        ? process.env.ASAAS_API_KEY
+        : (process.env.ASAAS_API_KEY_SANDBOX || process.env.ASAAS_API_KEY);
+
+    console.log(`[ASAAS] Ambiente: ${ASAAS_ENV}, URL: ${ASAAS_API_URL}`);
 
     // Função para fazer requisições à API do Asaas
     async function asaasRequest(endpoint, method = 'GET', body = null) {
+        if (!ASAAS_API_KEY) {
+            throw new Error('ASAAS_API_KEY não configurada');
+        }
+
         const options = {
             method,
             headers: {
@@ -29,18 +44,141 @@ module.exports = function(pool, auth, registrarLog) {
         return response.json();
     }
 
-    // POST /api/asaas/webhook - Webhook para receber eventos do Asaas
+    // =====================================================
+    // GET /api/asaas/status - Verificar status da conexão
+    // =====================================================
+    router.get('/status', auth, async (req, res) => {
+        try {
+            console.log('[ASAAS] Verificando status da conexão...');
+
+            if (!ASAAS_API_KEY) {
+                return res.json({
+                    success: false,
+                    conectado: false,
+                    erro: 'API Key não configurada',
+                    ambiente: ASAAS_ENV
+                });
+            }
+
+            // Testar conexão buscando saldo da conta
+            const resultado = await asaasRequest('/finance/balance');
+
+            if (resultado.balance !== undefined) {
+                console.log('[ASAAS] Conexão OK, saldo:', resultado.balance);
+                return res.json({
+                    success: true,
+                    conectado: true,
+                    ambiente: ASAAS_ENV,
+                    saldo: resultado.balance
+                });
+            } else if (resultado.errors) {
+                console.log('[ASAAS] Erro na API:', resultado.errors);
+                return res.json({
+                    success: false,
+                    conectado: false,
+                    erro: resultado.errors[0]?.description || 'Erro na API',
+                    ambiente: ASAAS_ENV
+                });
+            } else {
+                return res.json({
+                    success: true,
+                    conectado: true,
+                    ambiente: ASAAS_ENV,
+                    saldo: 0
+                });
+            }
+
+        } catch (error) {
+            console.error('[ASAAS] Erro ao verificar status:', error);
+            res.json({
+                success: false,
+                conectado: false,
+                erro: error.message,
+                ambiente: ASAAS_ENV
+            });
+        }
+    });
+
+    // =====================================================
+    // GET /api/asaas/config - Retornar configuração atual
+    // =====================================================
+    router.get('/config', auth, async (req, res) => {
+        res.json({
+            success: true,
+            ambiente: ASAAS_ENV,
+            api_url: ASAAS_API_URL,
+            api_key_configurada: !!ASAAS_API_KEY
+        });
+    });
+
+    // =====================================================
+    // POST /api/asaas/webhook - Webhook para eventos
+    // =====================================================
     router.post('/webhook', async (req, res) => {
         try {
             const { event, payment } = req.body;
 
-            console.log('Webhook Asaas recebido:', event, payment?.id);
+            console.log('[ASAAS] Webhook recebido:', event, payment?.id);
+
+            // Registrar webhook
+            try {
+                await pool.query(`
+                    INSERT INTO asaas_webhooks_log (event, payment_id, payload, created_at)
+                    VALUES ($1, $2, $3, NOW())
+                `, [event, payment?.id, JSON.stringify(req.body)]);
+            } catch (logErr) {
+                console.error('[ASAAS] Erro ao registrar webhook:', logErr);
+            }
 
             if (!payment) {
                 return res.json({ received: true });
             }
 
-            // Buscar parcela pelo payment_id do Asaas
+            // Mapear status
+            const statusMap = {
+                'PAYMENT_CONFIRMED': 'pago',
+                'PAYMENT_RECEIVED': 'pago',
+                'PAYMENT_OVERDUE': 'vencido',
+                'PAYMENT_DELETED': 'cancelado',
+                'PAYMENT_REFUNDED': 'cancelado'
+            };
+
+            const novoStatus = statusMap[event];
+            if (!novoStatus) {
+                return res.json({ received: true });
+            }
+
+            // Atualizar cobrança
+            const cobrancaResult = await pool.query(`
+                SELECT * FROM cobrancas WHERE asaas_id = $1
+            `, [payment.id]);
+
+            if (cobrancaResult.rows.length > 0) {
+                const cobranca = cobrancaResult.rows[0];
+
+                await pool.query(`
+                    UPDATE cobrancas 
+                    SET status = $1,
+                        valor_pago = CASE WHEN $1 = 'pago' THEN $2 ELSE valor_pago END,
+                        data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END,
+                        asaas_sync_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = $3
+                `, [novoStatus, payment.value, cobranca.id]);
+
+                console.log(`[ASAAS] Cobrança ${cobranca.id} atualizada para ${novoStatus}`);
+
+                // Registrar log
+                try {
+                    await registrarLog(null, `ASAAS_${event}`, 'cobrancas', cobranca.id, {
+                        asaas_id: payment.id,
+                        valor: payment.value,
+                        status: novoStatus
+                    });
+                } catch (e) {}
+            }
+
+            // Verificar parcelas também
             const parcelaResult = await pool.query(`
                 SELECT p.*, a.cliente_id, a.credor_id
                 FROM parcelas p
@@ -48,131 +186,45 @@ module.exports = function(pool, auth, registrarLog) {
                 WHERE p.asaas_payment_id = $1
             `, [payment.id]);
 
-            // Se não encontrou parcela, tentar buscar cobrança
-            if (parcelaResult.rows.length === 0) {
-                const cobrancaResult = await pool.query(`
-                    SELECT * FROM cobrancas WHERE asaas_payment_id = $1
-                `, [payment.id]);
+            if (parcelaResult.rows.length > 0) {
+                const parcela = parcelaResult.rows[0];
 
-                if (cobrancaResult.rows.length > 0) {
-                    const cobranca = cobrancaResult.rows[0];
+                await pool.query(`
+                    UPDATE parcelas 
+                    SET status = $1,
+                        data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END
+                    WHERE id = $2
+                `, [novoStatus, parcela.id]);
 
-                    // Processar evento de cobrança
-                    if (event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_RECEIVED') {
-                        await pool.query(`
-                            UPDATE cobrancas 
-                            SET status = 'pago',
-                                data_pagamento = NOW(),
-                                observacoes = COALESCE(observacoes, '') || E'\n[ASAAS] Pagamento confirmado em ' || NOW()
-                            WHERE id = $1
-                        `, [cobranca.id]);
+                console.log(`[ASAAS] Parcela ${parcela.id} atualizada para ${novoStatus}`);
 
-                        await registrarLog(null, 'ASAAS_PAGAMENTO_COBRANCA', 'cobrancas', cobranca.id, {
-                            asaas_id: payment.id,
-                            valor: payment.value
-                        });
-                    }
-                }
-
-                return res.json({ received: true });
-            }
-
-            const parcela = parcelaResult.rows[0];
-
-            // Processar eventos de parcela
-            switch (event) {
-                case 'PAYMENT_CONFIRMED':
-                case 'PAYMENT_RECEIVED':
-                    // Marcar parcela como paga
-                    await pool.query(`
-                        UPDATE parcelas 
-                        SET status = 'pago',
-                            data_pagamento = NOW()
-                        WHERE id = $1
-                    `, [parcela.id]);
-
-                    // Verificar se todas as parcelas foram pagas
-                    const parcelasPendentes = await pool.query(`
+                // Verificar se acordo foi quitado
+                if (novoStatus === 'pago') {
+                    const pendentes = await pool.query(`
                         SELECT COUNT(*) FROM parcelas 
                         WHERE acordo_id = $1 AND status != 'pago'
                     `, [parcela.acordo_id]);
 
-                    if (parseInt(parcelasPendentes.rows[0].count) === 0) {
-                        // Todas pagas, atualizar acordo
+                    if (parseInt(pendentes.rows[0].count) === 0) {
                         await pool.query(`
-                            UPDATE acordos SET status = 'quitado' WHERE id = $1
+                            UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1
                         `, [parcela.acordo_id]);
+                        console.log(`[ASAAS] Acordo ${parcela.acordo_id} quitado!`);
                     }
-
-                    // Registrar comissão se configurado
-                    await calcularComissao(pool, parcela);
-
-                    await registrarLog(null, 'ASAAS_PAGAMENTO_PARCELA', 'parcelas', parcela.id, {
-                        asaas_id: payment.id,
-                        valor: payment.value,
-                        acordo_id: parcela.acordo_id
-                    });
-                    break;
-
-                case 'PAYMENT_OVERDUE':
-                    await pool.query(`
-                        UPDATE parcelas SET status = 'vencido' WHERE id = $1
-                    `, [parcela.id]);
-                    break;
-
-                case 'PAYMENT_DELETED':
-                case 'PAYMENT_REFUNDED':
-                    await pool.query(`
-                        UPDATE parcelas SET status = 'cancelado' WHERE id = $1
-                    `, [parcela.id]);
-                    break;
+                }
             }
 
             res.json({ received: true });
 
         } catch (error) {
-            console.error('Erro no webhook Asaas:', error);
+            console.error('[ASAAS] Erro no webhook:', error);
             res.status(500).json({ error: 'Erro ao processar webhook' });
         }
     });
 
-    // Função para calcular comissão
-    async function calcularComissao(pool, parcela) {
-        try {
-            // Buscar configuração de comissão do credor
-            const credorResult = await pool.query(`
-                SELECT percentual_comissao FROM credores WHERE id = $1
-            `, [parcela.credor_id]);
-
-            if (credorResult.rows.length === 0) return;
-
-            const percentual = parseFloat(credorResult.rows[0].percentual_comissao || 0);
-            if (percentual <= 0) return;
-
-            const valorComissao = parseFloat(parcela.valor) * (percentual / 100);
-
-            // Registrar comissão
-            await pool.query(`
-                INSERT INTO comissoes (
-                    credor_id, acordo_id, parcela_id, 
-                    valor_parcela, percentual, valor_comissao,
-                    status, created_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW())
-            `, [
-                parcela.credor_id,
-                parcela.acordo_id,
-                parcela.id,
-                parcela.valor,
-                percentual,
-                valorComissao
-            ]);
-
-        } catch (error) {
-            console.error('Erro ao calcular comissão:', error);
-        }
-    }
-
-    // POST /api/asaas/criar-cobranca - Criar cobrança no Asaas
+    // =====================================================
+    // POST /api/asaas/criar-cobranca - Criar cobrança
+    // =====================================================
     router.post('/criar-cobranca', auth, async (req, res) => {
         try {
             const { cliente_id, valor, vencimento, descricao, tipo = 'BOLETO' } = req.body;
@@ -188,7 +240,7 @@ module.exports = function(pool, auth, registrarLog) {
 
             const cli = cliente.rows[0];
 
-            // Verificar se cliente tem asaas_id, senão criar
+            // Verificar se cliente tem asaas_customer_id
             let customerId = cli.asaas_customer_id;
 
             if (!customerId) {
@@ -198,13 +250,13 @@ module.exports = function(pool, auth, registrarLog) {
                     cpfCnpj: cli.cpf_cnpj?.replace(/\D/g, ''),
                     email: cli.email,
                     phone: cli.telefone?.replace(/\D/g, ''),
-                    mobilePhone: cli.telefone?.replace(/\D/g, '')
+                    mobilePhone: cli.celular?.replace(/\D/g, '') || cli.telefone?.replace(/\D/g, '')
                 });
 
                 if (novoCliente.id) {
                     customerId = novoCliente.id;
                     await pool.query(`
-                        UPDATE clientes SET asaas_customer_id = $1 WHERE id = $2
+                        UPDATE clientes SET asaas_customer_id = $1, asaas_sync_at = NOW() WHERE id = $2
                     `, [customerId, cliente_id]);
                 } else {
                     return res.status(400).json({ error: 'Erro ao criar cliente no Asaas', details: novoCliente });
@@ -214,7 +266,7 @@ module.exports = function(pool, auth, registrarLog) {
             // Criar cobrança
             const cobranca = await asaasRequest('/payments', 'POST', {
                 customer: customerId,
-                billingType: tipo, // BOLETO, PIX, CREDIT_CARD
+                billingType: tipo,
                 value: parseFloat(valor),
                 dueDate: vencimento,
                 description: descricao,
@@ -227,19 +279,22 @@ module.exports = function(pool, auth, registrarLog) {
                     asaas_id: cobranca.id,
                     bankSlipUrl: cobranca.bankSlipUrl,
                     invoiceUrl: cobranca.invoiceUrl,
-                    pixQrCode: cobranca.pixQrCodeUrl
+                    pixQrCode: cobranca.pixQrCodeUrl,
+                    pixPayload: cobranca.pixTransaction?.payload
                 });
             } else {
                 res.status(400).json({ error: 'Erro ao criar cobrança', details: cobranca });
             }
 
         } catch (error) {
-            console.error('Erro ao criar cobrança Asaas:', error);
+            console.error('[ASAAS] Erro ao criar cobrança:', error);
             res.status(500).json({ error: 'Erro ao criar cobrança' });
         }
     });
 
-    // POST /api/asaas/criar-parcelas/:acordoId - Criar parcelas no Asaas
+    // =====================================================
+    // POST /api/asaas/criar-parcelas/:acordoId
+    // =====================================================
     router.post('/criar-parcelas/:acordoId', auth, async (req, res) => {
         try {
             const { acordoId } = req.params;
@@ -258,8 +313,6 @@ module.exports = function(pool, auth, registrarLog) {
             }
 
             const ac = acordo.rows[0];
-
-            // Verificar/criar cliente no Asaas
             let customerId = ac.asaas_customer_id;
 
             if (!customerId) {
@@ -278,7 +331,7 @@ module.exports = function(pool, auth, registrarLog) {
                 }
             }
 
-            // Buscar parcelas do acordo
+            // Buscar parcelas
             const parcelas = await pool.query(`
                 SELECT * FROM parcelas WHERE acordo_id = $1 ORDER BY numero
             `, [acordoId]);
@@ -286,7 +339,6 @@ module.exports = function(pool, auth, registrarLog) {
             const resultados = [];
 
             for (const parcela of parcelas.rows) {
-                // Criar cobrança para cada parcela
                 const cobranca = await asaasRequest('/payments', 'POST', {
                     customer: customerId,
                     billingType: tipo,
@@ -297,19 +349,13 @@ module.exports = function(pool, auth, registrarLog) {
                 });
 
                 if (cobranca.id) {
-                    // Atualizar parcela com ID do Asaas
                     await pool.query(`
                         UPDATE parcelas 
                         SET asaas_payment_id = $1,
                             link_boleto = $2,
                             link_pix = $3
                         WHERE id = $4
-                    `, [
-                        cobranca.id,
-                        cobranca.bankSlipUrl,
-                        cobranca.pixQrCodeUrl,
-                        parcela.id
-                    ]);
+                    `, [cobranca.id, cobranca.bankSlipUrl, cobranca.pixQrCodeUrl, parcela.id]);
 
                     resultados.push({
                         parcela: parcela.numero,
@@ -327,19 +373,32 @@ module.exports = function(pool, auth, registrarLog) {
             });
 
         } catch (error) {
-            console.error('Erro ao criar parcelas Asaas:', error);
+            console.error('[ASAAS] Erro ao criar parcelas:', error);
             res.status(500).json({ error: 'Erro ao criar parcelas' });
         }
     });
 
-    // GET /api/asaas/status/:paymentId - Verificar status de pagamento
+    // =====================================================
+    // GET /api/asaas/payment/:paymentId - Status pagamento
+    // =====================================================
+    router.get('/payment/:paymentId', auth, async (req, res) => {
+        try {
+            const { paymentId } = req.params;
+            const payment = await asaasRequest(`/payments/${paymentId}`);
+            res.json(payment);
+        } catch (error) {
+            console.error('[ASAAS] Erro ao verificar status:', error);
+            res.status(500).json({ error: 'Erro ao verificar status' });
+        }
+    });
+
+    // Alias para compatibilidade
     router.get('/status/:paymentId', auth, async (req, res) => {
         try {
             const { paymentId } = req.params;
             const payment = await asaasRequest(`/payments/${paymentId}`);
             res.json(payment);
         } catch (error) {
-            console.error('Erro ao verificar status:', error);
             res.status(500).json({ error: 'Erro ao verificar status' });
         }
     });
