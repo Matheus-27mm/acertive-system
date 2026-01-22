@@ -310,10 +310,12 @@ app.use("/api/importacao", importacaoRoutes);
 // Comissões
 const comissoesRoutes = require("./routes/comissoes")(pool, auth, registrarLog);
 app.use("/api/comissoes", comissoesRoutes);
+app.use("/api/financeiro/comissoes", comissoesRoutes);
 
 // Repasses
 const repassesRoutes = require("./routes/repasses")(pool, auth, registrarLog);
 app.use("/api/repasses", repassesRoutes);
+app.use("/api/financeiro/repasses", repassesRoutes);
 
 // ========================================
 // ROTAS DO FRONTEND (SPA)
@@ -360,6 +362,7 @@ app.get("/dividas", sendFront("dividas.html"));
 app.get("/lembretes", sendFront("lembretes.html"));
 app.get("/cobrancas-recorrentes", sendFront("cobrancas-recorrentes.html"));
 app.get("/nova-recorrente", sendFront("nova-recorrente.html"));
+
 
 // Fallback para SPA - arquivos .html
 app.get("*", (req, res, next) => {
