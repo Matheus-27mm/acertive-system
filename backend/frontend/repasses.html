@@ -91,6 +91,9 @@
     .form-group input,.form-group select{width:100%;background:var(--bg-primary);border:1px solid var(--border);color:var(--text-primary);padding:12px 15px;border-radius:8px;font-size:14px}
     .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold)}
 
+    .debug-info{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:15px;margin-bottom:20px;font-size:12px;color:var(--text-muted);display:none}
+    .debug-info.show{display:block}
+
     @media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform 0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
   </style>
 </head>
@@ -154,10 +157,17 @@
         <p class="page-subtitle">Gerencie os repasses para credores</p>
       </div>
       <div class="header-actions">
+        <button class="btn btn-secondary" onclick="toggleDebug()"><i class="fas fa-bug"></i></button>
         <button class="btn btn-secondary" onclick="calcularPendentes()"><i class="fas fa-calculator"></i> Calcular Pendentes</button>
         <button class="btn btn-primary" onclick="novoRepasse()"><i class="fas fa-plus"></i> Novo Repasse</button>
       </div>
     </header>
+
+    <!-- DEBUG INFO -->
+    <div class="debug-info" id="debugInfo">
+      <strong>🔧 Debug:</strong>
+      <div id="debugContent">Carregando...</div>
+    </div>
 
     <!-- STATS -->
     <div class="stats-grid">
@@ -263,6 +273,26 @@
     let token = localStorage.getItem('token');
     if (!token) window.location.href = '/login';
 
+    let debugMode = false;
+    let debugLog = [];
+
+    function log(msg, data = null) {
+      const entry = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      debugLog.push(entry);
+      console.log(entry, data || '');
+      if (debugMode) {
+        document.getElementById('debugContent').innerHTML = debugLog.slice(-10).join('<br>');
+      }
+    }
+
+    function toggleDebug() {
+      debugMode = !debugMode;
+      document.getElementById('debugInfo').classList.toggle('show', debugMode);
+      if (debugMode) {
+        document.getElementById('debugContent').innerHTML = debugLog.slice(-10).join('<br>');
+      }
+    }
+
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
     function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
@@ -294,31 +324,53 @@
     }
 
     async function carregar() {
+      log('Iniciando carregamento...');
+      
       try {
-        // Calcular pendentes
-        const pendentes = await fetch(API + '/api/financeiro/repasses/calcular', { headers: getHeaders() }).then(r => r.json()).catch(() => null);
-        if (pendentes && pendentes.success) {
-          const dados = pendentes.data || [];
+        // ✅ CORRIGIDO: Calcular pendentes via GET
+        log('Buscando pendentes em /api/financeiro/repasses/calcular');
+        const resPendentes = await fetch(API + '/api/financeiro/repasses/calcular', { headers: getHeaders() });
+        const pendentes = await resPendentes.json();
+        
+        log('Resposta pendentes:', pendentes);
+
+        if (pendentes && pendentes.success && pendentes.data) {
+          const dados = pendentes.data;
           let totalPendente = 0;
           dados.forEach(d => totalPendente += parseFloat(d.valor_repassar || 0));
           document.getElementById('statPendente').textContent = fmtMoney(totalPendente);
           document.getElementById('statCredores').textContent = dados.length;
+          log(`${dados.length} credores com saldo pendente, total: ${fmtMoney(totalPendente)}`);
           renderPendentes(dados);
         } else {
+          log('Nenhum pendente ou erro na resposta');
           renderPendentes([]);
         }
 
         // Histórico
-        const historico = await fetch(API + '/api/financeiro/repasses', { headers: getHeaders() }).then(r => r.json()).catch(() => null);
-        if (historico && historico.success) {
+        log('Buscando histórico em /api/financeiro/repasses');
+        const resHistorico = await fetch(API + '/api/financeiro/repasses', { headers: getHeaders() });
+        const historico = await resHistorico.json();
+        
+        log('Resposta histórico:', historico);
+
+        if (historico && historico.success && historico.data) {
           let repassado = 0;
-          (historico.data || []).forEach(r => { if (r.status === 'pago') repassado += parseFloat(r.valor || 0); });
+          historico.data.forEach(r => { 
+            if (r.status === 'pago') repassado += parseFloat(r.valor || 0); 
+          });
           document.getElementById('statRepassado').textContent = fmtMoney(repassado);
-          renderHistorico(historico.data || []);
+          log(`Total já repassado: ${fmtMoney(repassado)}`);
+          renderHistorico(historico.data);
         }
 
+        // Carregar credores para dropdown
         carregarCredores();
-      } catch (e) { console.error(e); }
+
+      } catch (e) { 
+        log('ERRO ao carregar: ' + e.message);
+        console.error(e); 
+      }
     }
 
     function renderPendentes(dados) {
@@ -360,21 +412,52 @@
     }
 
     async function carregarCredores() {
+      log('Carregando credores para dropdown...');
+      
       try {
-        const res = await fetch(API + '/api/empresas', { headers: getHeaders() });
+        // ✅ CORRIGIDO: Usar /api/credores ao invés de /api/empresas
+        const res = await fetch(API + '/api/credores', { headers: getHeaders() });
         const data = await res.json();
-        if (data && data.success) {
-          const sel = document.getElementById('repasseCredor');
-          sel.innerHTML = '<option value="">Selecione o credor</option>';
-          (data.data || []).forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.nome; sel.appendChild(o); });
+        
+        log('Resposta /api/credores:', data);
+
+        const sel = document.getElementById('repasseCredor');
+        sel.innerHTML = '<option value="">Selecione o credor</option>';
+
+        // Tentar diferentes formatos de resposta
+        let credores = [];
+        if (data && data.success && data.data) {
+          credores = data.data;
+        } else if (Array.isArray(data)) {
+          credores = data;
+        } else if (data && Array.isArray(data.credores)) {
+          credores = data.credores;
         }
-      } catch (e) {}
+
+        log(`${credores.length} credores carregados para dropdown`);
+
+        credores.forEach(c => { 
+          const o = document.createElement('option'); 
+          o.value = c.id; 
+          o.textContent = c.nome || c.razao_social || 'Sem nome'; 
+          sel.appendChild(o); 
+        });
+
+      } catch (e) { 
+        log('ERRO ao carregar credores: ' + e.message);
+      }
     }
 
-    function novoRepasse() { document.getElementById('modalRepasse').classList.add('active'); }
-    function fecharModal() { document.getElementById('modalRepasse').classList.remove('active'); }
+    function novoRepasse() { 
+      document.getElementById('modalRepasse').classList.add('active'); 
+    }
+    
+    function fecharModal() { 
+      document.getElementById('modalRepasse').classList.remove('active'); 
+    }
 
     function pagarRepasse(credorId, credorNome, valor) {
+      log(`Abrindo modal para repasse: ${credorNome} - ${fmtMoney(valor)}`);
       document.getElementById('repasseCredor').value = credorId;
       document.getElementById('repasseValor').value = valor.toFixed(2).replace('.', ',');
       novoRepasse();
@@ -386,30 +469,53 @@
       const forma = document.getElementById('repasseForma').value;
       const comprovante = document.getElementById('repasseComprovante').value;
 
-      if (!credor || !valor) { alert('Preencha todos os campos obrigatórios'); return; }
+      if (!credor || !valor) { 
+        alert('Preencha todos os campos obrigatórios'); 
+        return; 
+      }
+
+      log(`Salvando repasse: credor=${credor}, valor=${valor}, forma=${forma}`);
 
       try {
         const res = await fetch(API + '/api/financeiro/repasses', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ credor_id: credor, valor, forma_pagamento: forma, comprovante, status: 'pago' })
+          body: JSON.stringify({ 
+            credor_id: credor, 
+            valor, 
+            forma_pagamento: forma, 
+            comprovante, 
+            status: 'pago' 
+          })
         });
         const data = await res.json();
+
+        log('Resposta salvar repasse:', data);
 
         if (data && data.success) {
           alert('Repasse registrado com sucesso!');
           fecharModal();
           carregar();
         } else {
-          alert(data?.message || 'Erro ao registrar repasse');
+          alert(data?.error || data?.message || 'Erro ao registrar repasse');
         }
-      } catch (e) { alert('Erro ao registrar repasse'); }
+      } catch (e) { 
+        log('ERRO ao salvar repasse: ' + e.message);
+        alert('Erro ao registrar repasse'); 
+      }
     }
 
-    function calcularPendentes() { carregar(); }
+    function calcularPendentes() { 
+      log('Recalculando pendentes...');
+      carregar(); 
+    }
 
-    document.getElementById('modalRepasse').onclick = e => { if (e.target.id === 'modalRepasse') fecharModal(); };
+    document.getElementById('modalRepasse').onclick = e => { 
+      if (e.target.id === 'modalRepasse') fecharModal(); 
+    };
 
+    // Inicialização
+    log('Página carregada, iniciando...');
     carregarUsuario();
     carregarBadges();
     carregar();
