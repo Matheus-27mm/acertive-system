@@ -1,387 +1,545 @@
 /**
- * ROTAS FINANCEIRO - ACERTIVE
- * Comissões e Repasses aos Credores
- * COM CÁLCULO DE META E BONIFICAÇÃO
+ * ========================================
+ * ACERTIVE - Módulo Financeiro
+ * routes/financeiro.js
+ * ========================================
+ * Unifica: financeiro, comissoes, repasses, relatorios
  */
 
 const express = require('express');
-const router = express.Router();
 
-module.exports = (pool, auth, registrarLog) => {
+module.exports = function(pool, auth, registrarLog) {
+    const router = express.Router();
 
-  // =====================================================
-  // GET /api/financeiro/resumo-credores - Resumo por credor
-  // =====================================================
-  router.get('/resumo-credores', auth, async (req, res) => {
-    try {
-      const { mes, ano } = req.query;
-      
-      const mesAtual = mes || (new Date().getMonth() + 1);
-      const anoAtual = ano || new Date().getFullYear();
-      
-      // Buscar credores com valores recuperados no período
-      const resultado = await pool.query(`
-        SELECT 
-          cr.id,
-          cr.nome,
-          cr.cnpj,
-          cr.comissao_percentual,
-          cr.comissao_meta,
-          cr.comissao_bonus,
-          cr.banco,
-          cr.agencia,
-          cr.conta,
-          cr.tipo_conta,
-          cr.pix_tipo,
-          cr.pix_chave,
-          COALESCE(SUM(CASE 
-            WHEN c.status = 'pago' 
-            AND EXTRACT(MONTH FROM c.data_pagamento) = $1 
-            AND EXTRACT(YEAR FROM c.data_pagamento) = $2 
-            THEN c.valor_pago ELSE 0 
-          END), 0)::numeric as valor_recuperado
-        FROM credores cr
-        LEFT JOIN cobrancas c ON c.empresa_id = cr.id
-        WHERE cr.status = 'ativo'
-        GROUP BY cr.id
-        ORDER BY cr.nome
-      `, [mesAtual, anoAtual]);
-      
-      // Buscar repasses já feitos no período
-      const repasses = await pool.query(`
-        SELECT 
-          credor_id,
-          COALESCE(SUM(valor_repasse), 0)::numeric as total_repassado
-        FROM repasses
-        WHERE status = 'pago'
-          AND EXTRACT(MONTH FROM data_repasse) = $1
-          AND EXTRACT(YEAR FROM data_repasse) = $2
-        GROUP BY credor_id
-      `, [mesAtual, anoAtual]);
-      
-      const repassesMap = {};
-      repasses.rows.forEach(r => { repassesMap[r.credor_id] = parseFloat(r.total_repassado) || 0; });
-      
-      let totalRecuperado = 0;
-      let totalComissao = 0;
-      let totalARepassar = 0;
-      let totalJaRepassado = 0;
-      
-      const credores = resultado.rows.map(cr => {
-        const recuperado = parseFloat(cr.valor_recuperado) || 0;
-        const meta = parseFloat(cr.comissao_meta) || 0;
-        const comissaoBase = parseFloat(cr.comissao_percentual) || 10;
-        const bonus = parseFloat(cr.comissao_bonus) || 0;
-        
-        // Verificar se atingiu a meta
-        const atingiuMeta = meta > 0 && recuperado >= meta;
-        
-        // Calcular comissão (base + bônus se atingiu meta)
-        const percentualComissao = atingiuMeta ? (comissaoBase + bonus) : comissaoBase;
-        const valorComissao = (recuperado * percentualComissao) / 100;
-        
-        // Valor a repassar = recuperado - comissão - já repassado
-        const jaRepassado = repassesMap[cr.id] || 0;
-        const valorARepassar = Math.max(0, recuperado - valorComissao - jaRepassado);
-        
-        totalRecuperado += recuperado;
-        totalComissao += valorComissao;
-        totalARepassar += valorARepassar;
-        totalJaRepassado += jaRepassado;
-        
-        return {
-          id: cr.id,
-          nome: cr.nome,
-          cnpj: cr.cnpj,
-          comissao_percentual: comissaoBase,
-          comissao_meta: meta,
-          comissao_bonus: bonus,
-          atingiu_meta: atingiuMeta,
-          valor_recuperado: recuperado,
-          valor_comissao: valorComissao,
-          valor_a_repassar: valorARepassar,
-          valor_ja_repassado: jaRepassado,
-          banco: cr.banco,
-          agencia: cr.agencia,
-          conta: cr.conta,
-          tipo_conta: cr.tipo_conta,
-          pix_tipo: cr.pix_tipo,
-          pix_chave: cr.pix_chave
-        };
-      });
-      
-      return res.json({
-        success: true,
-        data: {
-          periodo: `${mesAtual}/${anoAtual}`,
-          totais: {
-            recuperado: totalRecuperado,
-            comissao: totalComissao,
-            aRepassar: totalARepassar,
-            jaRepassado: totalJaRepassado
-          },
-          credores
+    // ═══════════════════════════════════════════════════════════════
+    // DASHBOARD FINANCEIRO
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/financeiro/resumo
+    router.get('/resumo', auth, async (req, res) => {
+        try {
+            const { mes, ano } = req.query;
+            const mesAtual = mes || (new Date().getMonth() + 1);
+            const anoAtual = ano || new Date().getFullYear();
+
+            const recuperado = await pool.query(`
+                SELECT COUNT(*)::int as quantidade, COALESCE(SUM(valor_pago), 0)::numeric as valor
+                FROM cobrancas WHERE status = 'pago' AND EXTRACT(MONTH FROM data_pagamento) = $1 AND EXTRACT(YEAR FROM data_pagamento) = $2
+            `, [mesAtual, anoAtual]);
+
+            const repasses = await pool.query(`
+                SELECT COALESCE(SUM(valor), 0)::numeric as total
+                FROM repasses WHERE status = 'pago' AND EXTRACT(MONTH FROM data_repasse) = $1 AND EXTRACT(YEAR FROM data_repasse) = $2
+            `, [mesAtual, anoAtual]);
+
+            res.json({
+                success: true,
+                data: {
+                    periodo: `${mesAtual}/${anoAtual}`,
+                    recuperado: { quantidade: recuperado.rows[0].quantidade, valor: parseFloat(recuperado.rows[0].valor) },
+                    repassado: parseFloat(repasses.rows[0].total)
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao buscar resumo' });
         }
-      });
-      
-    } catch (err) {
-      console.error('[GET /api/financeiro/resumo-credores] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao buscar resumo.' });
-    }
-  });
+    });
 
-  // =====================================================
-  // GET /api/financeiro/repasses - Listar repasses
-  // =====================================================
-  router.get('/repasses', auth, async (req, res) => {
-    try {
-      const { mes, ano, status, credor_id } = req.query;
-      
-      let sql = `
-        SELECT 
-          r.*,
-          cr.nome as credor_nome,
-          cr.cnpj as credor_cnpj
-        FROM repasses r
-        LEFT JOIN credores cr ON cr.id = r.credor_id
-        WHERE 1=1
-      `;
-      
-      const params = [];
-      let idx = 1;
-      
-      if (mes && ano) {
-        sql += ` AND EXTRACT(MONTH FROM r.data_repasse) = $${idx} AND EXTRACT(YEAR FROM r.data_repasse) = $${idx + 1}`;
-        params.push(mes, ano);
-        idx += 2;
-      }
-      
-      if (status) {
-        sql += ` AND r.status = $${idx}`;
-        params.push(status);
-        idx++;
-      }
-      
-      if (credor_id) {
-        sql += ` AND r.credor_id = $${idx}`;
-        params.push(credor_id);
-        idx++;
-      }
-      
-      sql += ' ORDER BY r.data_repasse DESC, r.created_at DESC';
-      
-      const resultado = await pool.query(sql, params);
-      
-      return res.json({ success: true, data: resultado.rows });
-      
-    } catch (err) {
-      console.error('[GET /api/financeiro/repasses] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao buscar repasses.' });
-    }
-  });
+    // GET /api/financeiro/resumo-credores
+    router.get('/resumo-credores', auth, async (req, res) => {
+        try {
+            const { mes, ano } = req.query;
+            const mesAtual = mes || (new Date().getMonth() + 1);
+            const anoAtual = ano || new Date().getFullYear();
 
-  // =====================================================
-  // POST /api/financeiro/repasses - Criar repasse
-  // =====================================================
-  router.post('/repasses', auth, async (req, res) => {
-    try {
-      const { credor_id, valor, data_repasse, comprovante, observacoes } = req.body || {};
-      
-      if (!credor_id || !valor) {
-        return res.status(400).json({ success: false, message: 'Credor e valor são obrigatórios.' });
-      }
-      
-      const resultado = await pool.query(`
-        INSERT INTO repasses (
-          credor_id, valor_repasse, data_repasse, comprovante_url, observacoes,
-          status, created_at
-        ) VALUES ($1, $2, $3, $4, $5, 'pago', NOW())
-        RETURNING *
-      `, [
-        credor_id, 
-        parseFloat(valor), 
-        data_repasse || new Date(),
-        comprovante || null,
-        observacoes || null
-      ]);
-      
-      await registrarLog(req, 'CRIAR', 'repasses', resultado.rows[0].id, { credor_id, valor });
-      
-      return res.status(201).json({
-        success: true,
-        data: resultado.rows[0],
-        message: 'Repasse registrado com sucesso!'
-      });
-      
-    } catch (err) {
-      console.error('[POST /api/financeiro/repasses] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao criar repasse.' });
-    }
-  });
+            const resultado = await pool.query(`
+                SELECT cr.id, cr.nome, cr.cnpj, cr.comissao_percentual, cr.comissao_meta, cr.comissao_bonus,
+                       cr.banco, cr.agencia, cr.conta, cr.pix_tipo, cr.pix_chave,
+                       COALESCE(SUM(CASE WHEN c.status = 'pago' AND EXTRACT(MONTH FROM c.data_pagamento) = $1 AND EXTRACT(YEAR FROM c.data_pagamento) = $2 THEN c.valor_pago ELSE 0 END), 0)::numeric as valor_recuperado
+                FROM credores cr LEFT JOIN cobrancas c ON c.credor_id = cr.id
+                WHERE cr.status = 'ativo' GROUP BY cr.id ORDER BY cr.nome
+            `, [mesAtual, anoAtual]);
 
-  // =====================================================
-  // GET /api/financeiro/resumo - Resumo financeiro geral
-  // =====================================================
-  router.get('/resumo', auth, async (req, res) => {
-    try {
-      const { mes, ano } = req.query;
-      
-      const mesAtual = mes || (new Date().getMonth() + 1);
-      const anoAtual = ano || new Date().getFullYear();
-      
-      // Total recuperado no período
-      const recuperado = await pool.query(`
-        SELECT 
-          COUNT(*)::int as quantidade,
-          COALESCE(SUM(valor_pago), 0)::numeric as valor
-        FROM cobrancas
-        WHERE status = 'pago'
-          AND EXTRACT(MONTH FROM data_pagamento) = $1
-          AND EXTRACT(YEAR FROM data_pagamento) = $2
-      `, [mesAtual, anoAtual]);
-      
-      // Repasses do período
-      const repasses = await pool.query(`
-        SELECT 
-          COALESCE(SUM(valor_repasse), 0)::numeric as total
-        FROM repasses
-        WHERE status = 'pago'
-          AND EXTRACT(MONTH FROM data_repasse) = $1
-          AND EXTRACT(YEAR FROM data_repasse) = $2
-      `, [mesAtual, anoAtual]);
-      
-      const valorRecuperado = parseFloat(recuperado.rows[0].valor) || 0;
-      const valorRepassado = parseFloat(repasses.rows[0].total) || 0;
-      
-      return res.json({
-        success: true,
-        data: {
-          periodo: `${mesAtual}/${anoAtual}`,
-          recuperado: {
-            quantidade: recuperado.rows[0].quantidade,
-            valor: valorRecuperado
-          },
-          repassado: valorRepassado
+            const repasses = await pool.query(`
+                SELECT credor_id, COALESCE(SUM(valor), 0)::numeric as total_repassado
+                FROM repasses WHERE status = 'pago' AND EXTRACT(MONTH FROM data_repasse) = $1 AND EXTRACT(YEAR FROM data_repasse) = $2
+                GROUP BY credor_id
+            `, [mesAtual, anoAtual]);
+
+            const repassesMap = {};
+            repasses.rows.forEach(r => { repassesMap[r.credor_id] = parseFloat(r.total_repassado) || 0; });
+
+            let totalRecuperado = 0, totalComissao = 0, totalARepassar = 0, totalJaRepassado = 0;
+
+            const credores = resultado.rows.map(cr => {
+                const recuperado = parseFloat(cr.valor_recuperado) || 0;
+                const comissaoPerc = parseFloat(cr.comissao_percentual) || 10;
+                let comissao = (recuperado * comissaoPerc) / 100;
+
+                // Verificar meta e bônus
+                if (cr.comissao_meta && recuperado >= parseFloat(cr.comissao_meta) && cr.comissao_bonus) {
+                    comissao += parseFloat(cr.comissao_bonus);
+                }
+
+                const jaRepassado = repassesMap[cr.id] || 0;
+                const aRepassar = Math.max(0, recuperado - comissao - jaRepassado);
+
+                totalRecuperado += recuperado;
+                totalComissao += comissao;
+                totalARepassar += aRepassar;
+                totalJaRepassado += jaRepassado;
+
+                return {
+                    id: cr.id, nome: cr.nome, cnpj: cr.cnpj,
+                    comissao_percentual: comissaoPerc,
+                    valor_recuperado: recuperado,
+                    comissao: Math.round(comissao * 100) / 100,
+                    ja_repassado: jaRepassado,
+                    a_repassar: Math.round(aRepassar * 100) / 100,
+                    dados_bancarios: { banco: cr.banco, agencia: cr.agencia, conta: cr.conta, pix_tipo: cr.pix_tipo, pix_chave: cr.pix_chave }
+                };
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    periodo: `${mesAtual}/${anoAtual}`,
+                    credores,
+                    totais: {
+                        recuperado: Math.round(totalRecuperado * 100) / 100,
+                        comissao: Math.round(totalComissao * 100) / 100,
+                        ja_repassado: Math.round(totalJaRepassado * 100) / 100,
+                        a_repassar: Math.round(totalARepassar * 100) / 100
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('[FINANCEIRO] Erro:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar resumo por credores' });
         }
-      });
-      
-    } catch (err) {
-      console.error('[GET /api/financeiro/resumo] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao buscar resumo.' });
-    }
-  });
+    });
 
-  // =====================================================
-  // GET /api/financeiro/prestacao-contas/:credor_id
-  // =====================================================
-  router.get('/prestacao-contas/:credor_id', auth, async (req, res) => {
-    try {
-      const { credor_id } = req.params;
-      const { mes, ano } = req.query;
-      
-      const mesAtual = mes || (new Date().getMonth() + 1);
-      const anoAtual = ano || new Date().getFullYear();
-      
-      // Dados do credor
-      const credor = await pool.query('SELECT * FROM credores WHERE id = $1', [credor_id]);
-      
-      if (!credor.rowCount) {
-        return res.status(404).json({ success: false, message: 'Credor não encontrado.' });
-      }
-      
-      const dadosCredor = credor.rows[0];
-      
-      // Cobranças pagas no período
-      const cobrancas = await pool.query(`
-        SELECT 
-          c.*,
-          cl.nome as cliente_nome,
-          cl.cpf_cnpj as cliente_cpf
-        FROM cobrancas c
-        LEFT JOIN clientes cl ON cl.id = c.cliente_id
-        WHERE c.empresa_id = $1
-          AND c.status = 'pago'
-          AND EXTRACT(MONTH FROM c.data_pagamento) = $2
-          AND EXTRACT(YEAR FROM c.data_pagamento) = $3
-        ORDER BY c.data_pagamento ASC
-      `, [credor_id, mesAtual, anoAtual]);
-      
-      // Calcular totais
-      const totalRecuperado = cobrancas.rows.reduce((sum, c) => sum + parseFloat(c.valor_pago || 0), 0);
-      
-      const meta = parseFloat(dadosCredor.comissao_meta) || 0;
-      const comissaoBase = parseFloat(dadosCredor.comissao_percentual) || 10;
-      const bonus = parseFloat(dadosCredor.comissao_bonus) || 0;
-      const atingiuMeta = meta > 0 && totalRecuperado >= meta;
-      const percentualComissao = atingiuMeta ? (comissaoBase + bonus) : comissaoBase;
-      const totalComissao = (totalRecuperado * percentualComissao) / 100;
-      const valorRepasse = totalRecuperado - totalComissao;
-      
-      // Repasses já feitos no período
-      const repassesFeitos = await pool.query(`
-        SELECT COALESCE(SUM(valor_repasse), 0)::numeric as valor
-        FROM repasses
-        WHERE credor_id = $1
-          AND status = 'pago'
-          AND EXTRACT(MONTH FROM data_repasse) = $2
-          AND EXTRACT(YEAR FROM data_repasse) = $3
-      `, [credor_id, mesAtual, anoAtual]);
-      
-      const jaRepassado = parseFloat(repassesFeitos.rows[0].valor) || 0;
-      const saldoARepassar = valorRepasse - jaRepassado;
-      
-      return res.json({
-        success: true,
-        data: {
-          credor: dadosCredor,
-          periodo: `${mesAtual}/${anoAtual}`,
-          resumo: {
-            totalRecuperado,
-            meta,
-            atingiuMeta,
-            comissaoPercentual: percentualComissao,
-            comissaoBase,
-            bonus: atingiuMeta ? bonus : 0,
-            totalComissao,
-            valorRepasse,
-            jaRepassado,
-            saldoARepassar
-          },
-          cobrancas: cobrancas.rows
+    // GET /api/financeiro/prestacao-contas/:credor_id
+    router.get('/prestacao-contas/:credor_id', auth, async (req, res) => {
+        try {
+            const { credor_id } = req.params;
+            const { mes, ano } = req.query;
+            const mesAtual = mes || (new Date().getMonth() + 1);
+            const anoAtual = ano || new Date().getFullYear();
+
+            const credor = await pool.query('SELECT * FROM credores WHERE id = $1', [credor_id]);
+            if (!credor.rowCount) return res.status(404).json({ success: false, error: 'Credor não encontrado' });
+
+            const cobrancasPagas = await pool.query(`
+                SELECT c.*, cl.nome as cliente_nome, cl.cpf_cnpj as cliente_cpf
+                FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id
+                WHERE c.credor_id = $1 AND c.status = 'pago'
+                  AND EXTRACT(MONTH FROM c.data_pagamento) = $2 AND EXTRACT(YEAR FROM c.data_pagamento) = $3
+                ORDER BY c.data_pagamento
+            `, [credor_id, mesAtual, anoAtual]);
+
+            const repasses = await pool.query(`
+                SELECT * FROM repasses WHERE credor_id = $1
+                  AND EXTRACT(MONTH FROM data_repasse) = $2 AND EXTRACT(YEAR FROM data_repasse) = $3
+                ORDER BY data_repasse
+            `, [credor_id, mesAtual, anoAtual]);
+
+            const totalRecuperado = cobrancasPagas.rows.reduce((sum, c) => sum + parseFloat(c.valor_pago || 0), 0);
+            const comissaoPerc = parseFloat(credor.rows[0].comissao_percentual) || 10;
+            const comissao = (totalRecuperado * comissaoPerc) / 100;
+            const totalRepassado = repasses.rows.reduce((sum, r) => sum + parseFloat(r.valor || 0), 0);
+            const saldoDevedor = totalRecuperado - comissao - totalRepassado;
+
+            res.json({
+                success: true,
+                data: {
+                    credor: credor.rows[0],
+                    periodo: `${mesAtual}/${anoAtual}`,
+                    cobrancas_pagas: cobrancasPagas.rows,
+                    repasses: repasses.rows,
+                    resumo: {
+                        total_recuperado: Math.round(totalRecuperado * 100) / 100,
+                        comissao_percentual: comissaoPerc,
+                        comissao_valor: Math.round(comissao * 100) / 100,
+                        total_repassado: Math.round(totalRepassado * 100) / 100,
+                        saldo_devedor: Math.round(saldoDevedor * 100) / 100
+                    }
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar prestação de contas' });
         }
-      });
-      
-    } catch (err) {
-      console.error('[GET /api/financeiro/prestacao-contas/:credor_id] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao gerar prestação de contas.' });
-    }
-  });
+    });
 
-  // =====================================================
-  // DELETE /api/financeiro/repasses/:id - Cancelar repasse
-  // =====================================================
-  router.delete('/repasses/:id', auth, async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      const resultado = await pool.query(
-        'DELETE FROM repasses WHERE id = $1 RETURNING *',
-        [id]
-      );
-      
-      if (!resultado.rowCount) {
-        return res.status(404).json({ success: false, message: 'Repasse não encontrado.' });
-      }
-      
-      await registrarLog(req, 'EXCLUIR', 'repasses', id, null);
-      
-      return res.json({ success: true, message: 'Repasse removido.' });
-      
-    } catch (err) {
-      console.error('[DELETE /api/financeiro/repasses/:id] erro:', err.message);
-      return res.status(500).json({ success: false, message: 'Erro ao remover repasse.' });
-    }
-  });
+    // ═══════════════════════════════════════════════════════════════
+    // COMISSÕES
+    // ═══════════════════════════════════════════════════════════════
 
-  return router;
+    // GET /api/financeiro/comissoes
+    router.get('/comissoes', auth, async (req, res) => {
+        try {
+            const { credor_id, status, mes, ano } = req.query;
+
+            let query = `SELECT cm.*, cr.nome as credor_nome FROM comissoes cm LEFT JOIN credores cr ON cr.id = cm.credor_id WHERE 1=1`;
+            const params = [];
+            let idx = 1;
+
+            if (credor_id) { query += ` AND cm.credor_id = $${idx}`; params.push(credor_id); idx++; }
+            if (status) { query += ` AND cm.status = $${idx}`; params.push(status); idx++; }
+            if (mes) { query += ` AND cm.mes = $${idx}`; params.push(mes); idx++; }
+            if (ano) { query += ` AND cm.ano = $${idx}`; params.push(ano); idx++; }
+
+            query += ' ORDER BY cm.ano DESC, cm.mes DESC';
+
+            const result = await pool.query(query, params);
+            res.json({ success: true, data: result.rows });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao listar comissões' });
+        }
+    });
+
+    // GET /api/financeiro/comissoes/estatisticas
+    router.get('/comissoes/estatisticas', auth, async (req, res) => {
+        try {
+            const mesAtual = new Date().getMonth() + 1;
+            const anoAtual = new Date().getFullYear();
+
+            const stats = await pool.query(`
+                SELECT 
+                    COALESCE(SUM(CASE WHEN mes = $1 AND ano = $2 THEN valor ELSE 0 END), 0)::numeric as total_mes,
+                    COALESCE(SUM(CASE WHEN status = 'pendente' THEN valor ELSE 0 END), 0)::numeric as pendente,
+                    COALESCE(SUM(CASE WHEN status = 'pago' THEN valor ELSE 0 END), 0)::numeric as pago
+                FROM comissoes
+            `, [mesAtual, anoAtual]);
+
+            res.json({ success: true, data: stats.rows[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas' });
+        }
+    });
+
+    // POST /api/financeiro/comissoes
+    router.post('/comissoes', auth, async (req, res) => {
+        try {
+            const { credor_id, valor, mes, ano, percentual, observacoes } = req.body;
+
+            if (!credor_id || !valor) return res.status(400).json({ success: false, error: 'Credor e valor são obrigatórios' });
+
+            const result = await pool.query(`
+                INSERT INTO comissoes (credor_id, valor, mes, ano, percentual, observacoes, status, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW()) RETURNING *
+            `, [credor_id, valor, mes || new Date().getMonth() + 1, ano || new Date().getFullYear(), percentual, observacoes]);
+
+            await registrarLog(req.user?.id, 'COMISSAO_CRIADA', 'comissoes', result.rows[0].id, { valor });
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao criar comissão' });
+        }
+    });
+
+    // POST /api/financeiro/comissoes/:id/pagar
+    router.post('/comissoes/:id/pagar', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { data_pagamento } = req.body;
+
+            const result = await pool.query(`
+                UPDATE comissoes SET status = 'pago', data_pagamento = $2, updated_at = NOW()
+                WHERE id = $1 RETURNING *
+            `, [id, data_pagamento || new Date()]);
+
+            if (!result.rowCount) return res.status(404).json({ success: false, error: 'Comissão não encontrada' });
+
+            await registrarLog(req.user?.id, 'COMISSAO_PAGA', 'comissoes', id, {});
+            res.json({ success: true, data: result.rows[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao pagar comissão' });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // REPASSES
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/financeiro/repasses/calcular
+    router.get('/repasses/calcular', auth, async (req, res) => {
+        try {
+            const resultado = await pool.query(`
+                SELECT cr.id, cr.nome, cr.cnpj, cr.comissao_percentual,
+                       cr.banco, cr.agencia, cr.conta, cr.pix_tipo, cr.pix_chave,
+                       COALESCE(SUM(CASE WHEN c.status = 'pago' THEN c.valor_pago ELSE 0 END), 0)::numeric as total_recuperado,
+                       COALESCE((SELECT SUM(valor) FROM repasses WHERE credor_id = cr.id AND status = 'pago'), 0)::numeric as total_repassado
+                FROM credores cr LEFT JOIN cobrancas c ON c.credor_id = cr.id
+                WHERE cr.status = 'ativo' GROUP BY cr.id ORDER BY cr.nome
+            `);
+
+            const credores = resultado.rows.map(cr => {
+                const recuperado = parseFloat(cr.total_recuperado) || 0;
+                const comissao = (recuperado * (parseFloat(cr.comissao_percentual) || 10)) / 100;
+                const repassado = parseFloat(cr.total_repassado) || 0;
+                const pendente = Math.max(0, recuperado - comissao - repassado);
+
+                return {
+                    id: cr.id, nome: cr.nome, cnpj: cr.cnpj,
+                    total_recuperado: recuperado,
+                    comissao,
+                    total_repassado: repassado,
+                    valor_pendente: Math.round(pendente * 100) / 100,
+                    dados_bancarios: { banco: cr.banco, agencia: cr.agencia, conta: cr.conta, pix_tipo: cr.pix_tipo, pix_chave: cr.pix_chave }
+                };
+            }).filter(cr => cr.valor_pendente > 0);
+
+            res.json({ success: true, data: credores });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao calcular repasses' });
+        }
+    });
+
+    // GET /api/financeiro/repasses
+    router.get('/repasses', auth, async (req, res) => {
+        try {
+            const { credor_id, status, page = 1, limit = 50 } = req.query;
+
+            let query = `SELECT r.*, cr.nome as credor_nome FROM repasses r LEFT JOIN credores cr ON cr.id = r.credor_id WHERE 1=1`;
+            const params = [];
+            let idx = 1;
+
+            if (credor_id) { query += ` AND r.credor_id = $${idx}`; params.push(credor_id); idx++; }
+            if (status) { query += ` AND r.status = $${idx}`; params.push(status); idx++; }
+
+            query += ' ORDER BY r.created_at DESC';
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+            query += ` LIMIT $${idx} OFFSET $${idx + 1}`;
+            params.push(parseInt(limit), offset);
+
+            const result = await pool.query(query, params);
+            res.json({ success: true, data: result.rows });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao listar repasses' });
+        }
+    });
+
+    // GET /api/financeiro/repasses/estatisticas
+    router.get('/repasses/estatisticas', auth, async (req, res) => {
+        try {
+            const stats = await pool.query(`
+                SELECT 
+                    COUNT(*)::int as total,
+                    COUNT(CASE WHEN status = 'pendente' THEN 1 END)::int as pendentes,
+                    COUNT(CASE WHEN status = 'pago' THEN 1 END)::int as pagos,
+                    COALESCE(SUM(CASE WHEN status = 'pendente' THEN valor ELSE 0 END), 0)::numeric as valor_pendente,
+                    COALESCE(SUM(CASE WHEN status = 'pago' THEN valor ELSE 0 END), 0)::numeric as valor_pago
+                FROM repasses
+            `);
+            res.json({ success: true, data: stats.rows[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas' });
+        }
+    });
+
+    // POST /api/financeiro/repasses
+    router.post('/repasses', auth, async (req, res) => {
+        try {
+            const { credor_id, valor, data_repasse, forma_pagamento, comprovante, observacoes } = req.body;
+
+            if (!credor_id || !valor) return res.status(400).json({ success: false, error: 'Credor e valor são obrigatórios' });
+
+            const result = await pool.query(`
+                INSERT INTO repasses (credor_id, valor, data_repasse, forma_pagamento, comprovante, observacoes, status, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, 'pago', NOW()) RETURNING *
+            `, [credor_id, valor, data_repasse || new Date(), forma_pagamento || 'pix', comprovante, observacoes]);
+
+            await registrarLog(req.user?.id, 'REPASSE_CRIADO', 'repasses', result.rows[0].id, { credor_id, valor });
+            res.status(201).json({ success: true, data: result.rows[0], message: 'Repasse registrado!' });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao criar repasse' });
+        }
+    });
+
+    // DELETE /api/financeiro/repasses/:id
+    router.delete('/repasses/:id', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+            await pool.query('DELETE FROM repasses WHERE id = $1', [id]);
+            await registrarLog(req.user?.id, 'REPASSE_EXCLUIDO', 'repasses', id, {});
+            res.json({ success: true, message: 'Repasse excluído' });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao excluir repasse' });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // RELATÓRIOS
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/financeiro/relatorios/cobrancas-csv
+    router.get('/relatorios/cobrancas-csv', auth, async (req, res) => {
+        try {
+            const { status, credor_id, data_inicio, data_fim } = req.query;
+
+            let query = `
+                SELECT c.id, cl.nome as cliente, cl.cpf_cnpj, c.descricao, c.valor, c.data_vencimento, c.status, c.data_pagamento, cr.nome as credor
+                FROM cobrancas c LEFT JOIN clientes cl ON cl.id = c.cliente_id LEFT JOIN credores cr ON cr.id = c.credor_id WHERE 1=1
+            `;
+            const params = [];
+            let idx = 1;
+
+            if (status) { query += ` AND c.status = $${idx}`; params.push(status); idx++; }
+            if (credor_id) { query += ` AND c.credor_id = $${idx}`; params.push(credor_id); idx++; }
+            if (data_inicio) { query += ` AND c.data_vencimento >= $${idx}`; params.push(data_inicio); idx++; }
+            if (data_fim) { query += ` AND c.data_vencimento <= $${idx}`; params.push(data_fim); idx++; }
+
+            query += ' ORDER BY c.data_vencimento DESC';
+
+            const result = await pool.query(query, params);
+
+            let csv = 'ID,Cliente,CPF/CNPJ,Descrição,Valor,Vencimento,Status,Data Pagamento,Credor\n';
+            result.rows.forEach(r => {
+                csv += `${r.id},"${r.cliente || ''}","${r.cpf_cnpj || ''}","${r.descricao || ''}",${r.valor},${r.data_vencimento || ''},${r.status},${r.data_pagamento || ''},"${r.credor || ''}"\n`;
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename=cobrancas.csv');
+            res.send('\ufeff' + csv);
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/clientes-csv
+    router.get('/relatorios/clientes-csv', auth, async (req, res) => {
+        try {
+            const result = await pool.query(`
+                SELECT c.id, c.nome, c.cpf_cnpj, c.telefone, c.email, c.cidade, c.estado, c.status,
+                       COUNT(cb.id) as total_cobrancas, COALESCE(SUM(cb.valor), 0) as valor_total
+                FROM clientes c LEFT JOIN cobrancas cb ON cb.cliente_id = c.id
+                GROUP BY c.id ORDER BY c.nome
+            `);
+
+            let csv = 'ID,Nome,CPF/CNPJ,Telefone,Email,Cidade,Estado,Status,Total Cobranças,Valor Total\n';
+            result.rows.forEach(r => {
+                csv += `${r.id},"${r.nome || ''}","${r.cpf_cnpj || ''}","${r.telefone || ''}","${r.email || ''}","${r.cidade || ''}","${r.estado || ''}",${r.status},${r.total_cobrancas},${r.valor_total}\n`;
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename=clientes.csv');
+            res.send('\ufeff' + csv);
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/acordos-csv
+    router.get('/relatorios/acordos-csv', auth, async (req, res) => {
+        try {
+            const result = await pool.query(`
+                SELECT a.id, cl.nome as cliente, cl.cpf_cnpj, cr.nome as credor, a.valor_original, a.valor_acordo, a.desconto_percentual, a.numero_parcelas, a.status, a.created_at
+                FROM acordos a LEFT JOIN clientes cl ON cl.id = a.cliente_id LEFT JOIN credores cr ON cr.id = a.credor_id
+                ORDER BY a.created_at DESC
+            `);
+
+            let csv = 'ID,Cliente,CPF/CNPJ,Credor,Valor Original,Valor Acordo,Desconto %,Parcelas,Status,Data Criação\n';
+            result.rows.forEach(r => {
+                csv += `${r.id},"${r.cliente || ''}","${r.cpf_cnpj || ''}","${r.credor || ''}",${r.valor_original},${r.valor_acordo},${r.desconto_percentual},${r.numero_parcelas},${r.status},${r.created_at}\n`;
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename=acordos.csv');
+            res.send('\ufeff' + csv);
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/financeiro
+    router.get('/relatorios/financeiro', auth, async (req, res) => {
+        try {
+            const { mes, ano } = req.query;
+            const mesAtual = mes || (new Date().getMonth() + 1);
+            const anoAtual = ano || new Date().getFullYear();
+
+            const recebimentos = await pool.query(`
+                SELECT cr.id as credor_id, cr.nome as credor_nome,
+                       COUNT(c.id)::int as quantidade, COALESCE(SUM(c.valor_pago), 0)::numeric as valor
+                FROM credores cr LEFT JOIN cobrancas c ON c.credor_id = cr.id AND c.status = 'pago'
+                    AND EXTRACT(MONTH FROM c.data_pagamento) = $1 AND EXTRACT(YEAR FROM c.data_pagamento) = $2
+                GROUP BY cr.id ORDER BY cr.nome
+            `, [mesAtual, anoAtual]);
+
+            const parcelasPagas = await pool.query(`
+                SELECT COUNT(*)::int as quantidade, COALESCE(SUM(valor_pago), 0)::numeric as valor
+                FROM parcelas WHERE status = 'pago'
+                  AND EXTRACT(MONTH FROM data_pagamento) = $1 AND EXTRACT(YEAR FROM data_pagamento) = $2
+            `, [mesAtual, anoAtual]);
+
+            res.json({
+                success: true,
+                data: {
+                    periodo: `${mesAtual}/${anoAtual}`,
+                    recebimentos_por_credor: recebimentos.rows,
+                    parcelas_pagas: parcelasPagas.rows[0]
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/inadimplencia
+    router.get('/relatorios/inadimplencia', auth, async (req, res) => {
+        try {
+            const faixas = await pool.query(`
+                SELECT 
+                    COUNT(*) FILTER (WHERE data_vencimento >= CURRENT_DATE - 7 AND data_vencimento < CURRENT_DATE)::int as vencido_7_dias,
+                    COUNT(*) FILTER (WHERE data_vencimento >= CURRENT_DATE - 30 AND data_vencimento < CURRENT_DATE - 7)::int as vencido_30_dias,
+                    COUNT(*) FILTER (WHERE data_vencimento >= CURRENT_DATE - 90 AND data_vencimento < CURRENT_DATE - 30)::int as vencido_90_dias,
+                    COUNT(*) FILTER (WHERE data_vencimento < CURRENT_DATE - 90)::int as vencido_mais_90
+                FROM cobrancas WHERE status IN ('pendente', 'vencido')
+            `);
+
+            const topDevedores = await pool.query(`
+                SELECT cl.id, cl.nome, cl.cpf_cnpj, COUNT(c.id)::int as total_cobrancas, COALESCE(SUM(c.valor), 0)::numeric as valor_total
+                FROM clientes cl JOIN cobrancas c ON c.cliente_id = cl.id
+                WHERE c.status IN ('pendente', 'vencido') AND c.data_vencimento < CURRENT_DATE
+                GROUP BY cl.id ORDER BY valor_total DESC LIMIT 10
+            `);
+
+            res.json({ success: true, data: { faixas_atraso: faixas.rows[0], top_devedores: topDevedores.rows } });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/produtividade
+    router.get('/relatorios/produtividade', auth, async (req, res) => {
+        try {
+            const { mes, ano } = req.query;
+            const mesAtual = mes || (new Date().getMonth() + 1);
+            const anoAtual = ano || new Date().getFullYear();
+
+            const acordos = await pool.query(`
+                SELECT COUNT(*)::int as total, COALESCE(SUM(valor_acordo), 0)::numeric as valor
+                FROM acordos WHERE EXTRACT(MONTH FROM created_at) = $1 AND EXTRACT(YEAR FROM created_at) = $2
+            `, [mesAtual, anoAtual]);
+
+            const cobrancasPagas = await pool.query(`
+                SELECT COUNT(*)::int as total, COALESCE(SUM(valor_pago), 0)::numeric as valor
+                FROM cobrancas WHERE status = 'pago'
+                  AND EXTRACT(MONTH FROM data_pagamento) = $1 AND EXTRACT(YEAR FROM data_pagamento) = $2
+            `, [mesAtual, anoAtual]);
+
+            res.json({
+                success: true,
+                data: {
+                    periodo: `${mesAtual}/${anoAtual}`,
+                    acordos: acordos.rows[0],
+                    cobrancas_pagas: cobrancasPagas.rows[0]
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
+        }
+    });
+
+    return router;
 };

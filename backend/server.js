@@ -1,409 +1,223 @@
 /**
  * ========================================
- * ACERTIVE - Sistema de Cobranças
- * Server.js v3.0 - Refatorado e Organizado
+ * ACERTIVE - Sistema de Cobrança
+ * server.js - Servidor Principal
  * ========================================
+ * FASE 2: Backend Consolidado (8 módulos)
  */
 
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const { Pool } = require("pg");
-const multer = require("multer");
-const bcrypt = require("bcryptjs");
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const jwt = require('jsonwebtoken');
+const { Pool } = require('pg');
+const multer = require('multer');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ========================================
-// CONFIGURAÇÕES BÁSICAS
-// ========================================
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURAÇÕES
+// ═══════════════════════════════════════════════════════════════
 
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Servir arquivos estáticos do frontend
-app.use(express.static(path.join(__dirname, "frontend")));
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
-// ========================================
-// CONEXÃO COM BANCO DE DADOS
-// ========================================
+// ═══════════════════════════════════════════════════════════════
+// BANCO DE DADOS
+// ═══════════════════════════════════════════════════════════════
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Testar conexão
-pool.query('SELECT NOW()')
-    .then(() => console.log('✅ Banco de dados conectado'))
-    .catch(err => console.error('❌ Erro ao conectar ao banco:', err));
+pool.on('connect', () => console.log('[DB] Conectado ao PostgreSQL'));
+pool.on('error', (err) => console.error('[DB] Erro:', err));
 
-// ========================================
+// ═══════════════════════════════════════════════════════════════
 // MIDDLEWARES DE AUTENTICAÇÃO
-// ========================================
+// ═══════════════════════════════════════════════════════════════
 
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "acertive_secret_key_2024";
+const JWT_SECRET = process.env.JWT_SECRET || 'acertive_secret_key_2024';
 
-// Middleware de autenticação
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.replace("Bearer ", "");
-        if (!token) {
-            return res.status(401).json({ error: "Token não fornecido" });
-        }
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token) return res.status(401).json({ error: 'Token não fornecido' });
+
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
+        const usuario = await pool.query('SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1', [decoded.id]);
+        
+        if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
+            return res.status(401).json({ error: 'Usuário inválido ou desativado' });
+        }
+
+        req.user = usuario.rows[0];
         next();
     } catch (error) {
-        return res.status(401).json({ error: "Token inválido" });
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token inválido ou expirado' });
+        }
+        res.status(500).json({ error: 'Erro na autenticação' });
     }
 };
 
-// Middleware de autenticação admin
-const authAdmin = (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.replace("Bearer ", "");
-        if (!token) {
-            return res.status(401).json({ error: "Token não fornecido" });
+const authAdmin = async (req, res, next) => {
+    await auth(req, res, () => {
+        if (req.user?.perfil !== 'admin') {
+            return res.status(403).json({ error: 'Acesso negado. Requer perfil admin.' });
         }
-        const decoded = jwt.verify(token, JWT_SECRET);
-        if (decoded.perfil !== "admin") {
-            return res.status(403).json({ error: "Acesso negado" });
-        }
-        req.user = decoded;
         next();
-    } catch (error) {
-        return res.status(401).json({ error: "Token inválido" });
-    }
+    });
 };
 
-// ========================================
-// SISTEMA DE LOG/AUDITORIA
-// ========================================
+// ═══════════════════════════════════════════════════════════════
+// FUNÇÃO DE LOG
+// ═══════════════════════════════════════════════════════════════
 
-async function registrarLog(userId, acao, tabela, registroId, detalhes = {}) {
+async function registrarLog(usuario_id, acao, tabela, registro_id, dados = {}) {
     try {
         await pool.query(`
-            INSERT INTO historico (usuario_id, acao, tabela, registro_id, detalhes, created_at)
+            INSERT INTO historico (usuario_id, acao, tabela, registro_id, dados, created_at)
             VALUES ($1, $2, $3, $4, $5, NOW())
-        `, [userId, acao, tabela, registroId, JSON.stringify(detalhes)]);
+        `, [usuario_id, acao, tabela, registro_id, JSON.stringify(dados)]);
     } catch (error) {
-        console.error('Erro ao registrar log:', error);
+        console.error('[LOG] Erro ao registrar:', error.message);
     }
 }
 
-// ========================================
-// CONFIGURAÇÃO MULTER (UPLOAD)
-// ========================================
+// ═══════════════════════════════════════════════════════════════
+// ROTAS - 8 MÓDULOS CONSOLIDADOS
+// ═══════════════════════════════════════════════════════════════
 
-const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB
-});
+const authRoutes = require('./routes/auth')(pool, registrarLog);
+app.use('/api/auth', authRoutes);
 
-// ========================================
-// ROTA DE HEALTH CHECK
-// ========================================
+const usuariosRoutes = require('./routes/usuarios')(pool, auth, authAdmin, registrarLog);
+app.use('/api/usuarios', usuariosRoutes);
 
-app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+const cadastrosRoutes = require('./routes/cadastros')(pool, auth, registrarLog);
+app.use('/api/cadastros', cadastrosRoutes);
 
-// ========================================
-// IMPORTAR E REGISTRAR ROTAS
-// ========================================
+const cobrancasRoutes = require('./routes/cobrancas')(pool, auth, upload, registrarLog);
+app.use('/api/cobrancas', cobrancasRoutes);
 
-// Autenticação
-const authRoutes = require("./routes/auth")(pool, registrarLog);
-app.use("/api/auth", authRoutes);
+const acordosRoutes = require('./routes/acordos')(pool, auth, registrarLog);
+app.use('/api/acordos', acordosRoutes);
 
-// Rota de login direta (compatibilidade)
-app.post("/api/login", async (req, res) => {
+const acionamentosRoutes = require('./routes/acionamentos')(pool, auth, authAdmin, registrarLog);
+app.use('/api/acionamentos', acionamentosRoutes);
+
+const financeiroRoutes = require('./routes/financeiro')(pool, auth, registrarLog);
+app.use('/api/financeiro', financeiroRoutes);
+
+const integracoesRoutes = require('./routes/integracoes')(pool, auth, registrarLog);
+app.use('/api/integracoes', integracoesRoutes);
+
+// ═══════════════════════════════════════════════════════════════
+// ROTAS LEGADO - Compatibilidade com frontend antigo
+// ═══════════════════════════════════════════════════════════════
+
+// Credores, Clientes, Empresas -> cadastros
+app.use('/api/credores', (req, res, next) => { req.url = '/credores' + req.url; cadastrosRoutes(req, res, next); });
+app.use('/api/clientes', (req, res, next) => { req.url = '/clientes' + req.url; cadastrosRoutes(req, res, next); });
+app.use('/api/empresas', (req, res, next) => { req.url = '/empresas' + req.url; cadastrosRoutes(req, res, next); });
+
+// Parcelas -> acordos/parcelas
+app.use('/api/parcelas', (req, res, next) => { req.url = '/parcelas' + req.url; acordosRoutes(req, res, next); });
+
+// Importação -> cobrancas/importar
+app.post('/api/importacao/clientes', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/clientes'; cobrancasRoutes(req, res, next); });
+app.post('/api/importacao/cobrancas', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/cobrancas'; cobrancasRoutes(req, res, next); });
+app.post('/api/importacao/massa', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/massa'; cobrancasRoutes(req, res, next); });
+
+// Dashboard, Config -> integracoes
+app.use('/api/dashboard', (req, res, next) => { req.url = '/dashboard' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/configuracoes', (req, res, next) => { req.url = '/configuracoes' + req.url; integracoesRoutes(req, res, next); });
+
+// Asaas, Sync, WhatsApp, Email, PDF -> integracoes
+app.use('/api/asaas', (req, res, next) => { req.url = '/asaas' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/sync', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/sync-asaas', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/whatsapp', (req, res, next) => { req.url = '/whatsapp' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/email', (req, res, next) => { req.url = '/email' + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/pdf', (req, res, next) => { req.url = '/pdf' + req.url; integracoesRoutes(req, res, next); });
+
+// Régua, Agendamentos, Histórico -> acionamentos
+app.use('/api/regua', (req, res, next) => { req.url = '/regua' + req.url; acionamentosRoutes(req, res, next); });
+app.use('/api/agendamentos', (req, res, next) => { req.url = '/agendamentos' + req.url; acionamentosRoutes(req, res, next); });
+app.use('/api/historico', (req, res, next) => { req.url = '/historico' + req.url; acionamentosRoutes(req, res, next); });
+
+// Comissões, Repasses, Relatórios -> financeiro
+app.use('/api/comissoes', (req, res, next) => { req.url = '/comissoes' + req.url; financeiroRoutes(req, res, next); });
+app.use('/api/repasses', (req, res, next) => { req.url = '/repasses' + req.url; financeiroRoutes(req, res, next); });
+app.use('/api/relatorios', (req, res, next) => { req.url = '/relatorios' + req.url; financeiroRoutes(req, res, next); });
+
+// ═══════════════════════════════════════════════════════════════
+// ROTA DE SAÚDE
+// ═══════════════════════════════════════════════════════════════
+
+app.get('/api/health', async (req, res) => {
     try {
-        const { email, senha } = req.body;
-        
-        console.log('=== LOGIN ATTEMPT ===');
-        console.log('Email:', email);
-        
-        if (!email || !senha) {
-            console.log('Erro: campos vazios');
-            return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-        }
-
-        const result = await pool.query(
-            'SELECT id, nome, email, senha, perfil, ativo FROM usuarios WHERE email = $1',
-            [email.toLowerCase()]
-        );
-
-        console.log('Usuários encontrados:', result.rows.length);
-
-        if (result.rows.length === 0) {
-            console.log('Erro: usuário não encontrado');
-            return res.status(401).json({ error: 'Email ou senha incorretos' });
-        }
-
-        const usuario = result.rows[0];
-        console.log('Usuário:', usuario.email, 'Ativo:', usuario.ativo);
-
-        if (!usuario.ativo) {
-            console.log('Erro: usuário desativado');
-            return res.status(401).json({ error: 'Usuário desativado' });
-        }
-
-        const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-        console.log('Senha correta:', senhaCorreta);
-        
-        if (!senhaCorreta) {
-            console.log('Erro: senha incorreta');
-            return res.status(401).json({ error: 'Email ou senha incorretos' });
-        }
-
-        // Gerar token JWT
-        const token = jwt.sign(
-            { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
-            JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        console.log('Login bem sucedido!');
-
-        res.json({
-            success: true,
-            token,
-            usuario: {
-                id: usuario.id,
-                nome: usuario.nome,
-                email: usuario.email,
-                perfil: usuario.perfil
-            }
+        await pool.query('SELECT 1');
+        res.json({ 
+            status: 'ok', 
+            timestamp: new Date().toISOString(),
+            database: 'connected',
+            version: '2.0.0',
+            modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes']
         });
-
     } catch (error) {
-        console.error('Erro no login:', error);
-        res.status(500).json({ error: 'Erro ao fazer login' });
+        res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
     }
 });
 
-// Usuários
-const usuariosRoutes = require("./routes/usuarios")(pool, auth, authAdmin, registrarLog);
-app.use("/api/usuarios", usuariosRoutes);
+// ═══════════════════════════════════════════════════════════════
+// FALLBACK
+// ═══════════════════════════════════════════════════════════════
 
-// Empresas
-const empresasRoutes = require("./routes/empresas")(pool, auth, registrarLog);
-app.use("/api/empresas", empresasRoutes);
-
-// Credores (se existir o arquivo, senão criar básico)
-try {
-    const credoresRoutes = require("./routes/credores")(pool, auth, registrarLog);
-    app.use("/api/credores", credoresRoutes);
-} catch (e) {
-    console.log("⚠️ routes/credores.js não encontrado, usando rotas inline");
-    app.get("/api/credores", auth, async (req, res) => {
-        const result = await pool.query("SELECT * FROM credores ORDER BY nome");
-        res.json(result.rows);
-    });
-}
-
-// Clientes (Devedores)
-const clientesRoutes = require("./routes/clientes")(pool, auth, registrarLog);
-app.use("/api/clientes", clientesRoutes);
-
-// Cobranças - CORRIGIDO com credor_id
-const cobrancasRoutes = require("./routes/cobrancas")(pool, auth, registrarLog);
-app.use("/api/cobrancas", cobrancasRoutes);
-
-// Acordos (se existir)
-try {
-    const acordosRoutes = require("./routes/acordos")(pool, auth, registrarLog);
-    app.use("/api/acordos", acordosRoutes);
-} catch (e) {
-    console.log("⚠️ routes/acordos.js não encontrado");
-}
-
-// Parcelas (se existir)
-try {
-    const parcelasRoutes = require("./routes/parcelas")(pool, auth, registrarLog);
-    app.use("/api/parcelas", parcelasRoutes);
-} catch (e) {
-    console.log("⚠️ routes/parcelas.js não encontrado");
-}
-
-// Financeiro (se existir)
-try {
-    const financeiroRoutes = require("./routes/financeiro")(pool, auth, registrarLog);
-    app.use("/api/financeiro", financeiroRoutes);
-} catch (e) {
-    console.log("⚠️ routes/financeiro.js não encontrado");
-}
-
-// Dashboard
-const dashboardRoutes = require("./routes/dashboard")(pool, auth);
-app.use("/api/dashboard", dashboardRoutes);
-// Rota de alertas/contador (compatibilidade)
-app.get("/api/alertas/contador", auth, async (req, res) => {
-    try {
-        let total = 0;
-        
-        // Cobranças vencidas
-        const cobrancas = await pool.query(`
-            SELECT COUNT(*) FROM cobrancas 
-            WHERE status = 'pendente' AND vencimento <= CURRENT_DATE
-        `);
-        total += parseInt(cobrancas.rows[0].count);
-        
-        // Agendamentos de hoje
-        try {
-            const agendamentos = await pool.query(`
-                SELECT COUNT(*) FROM agendamentos 
-                WHERE data_agendamento = CURRENT_DATE AND status = 'pendente'
-            `);
-            total += parseInt(agendamentos.rows[0].count);
-        } catch (e) {}
-        
-        res.json({ total });
-    } catch (error) {
-        console.error('Erro ao contar alertas:', error);
-        res.json({ total: 0 });
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Endpoint não encontrado' });
     }
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// Agendamentos
-const agendamentosRoutes = require("./routes/agendamentos")(pool, auth, registrarLog);
-app.use("/api/agendamentos", agendamentosRoutes);
-
-// Configurações
-const configuracoesRoutes = require("./routes/configuracoes")(pool, auth, registrarLog);
-app.use("/api/configuracoes", configuracoesRoutes);
-
-// PDF
-const pdfRoutes = require("./routes/pdf")(pool, auth, registrarLog);
-app.use("/api/pdf", pdfRoutes);
-
-// WhatsApp
-const whatsappRoutes = require("./routes/whatsapp")(pool, auth, registrarLog);
-app.use("/api/whatsapp", whatsappRoutes);
-
-// Email
-const emailRoutes = require("./routes/email")(pool, auth, registrarLog);
-app.use("/api/email", emailRoutes);
-
-// Asaas (webhooks e integração)
-const asaasRoutes = require("./routes/asaas")(pool, auth, registrarLog);
-app.use("/api/asaas", asaasRoutes);
-
-// Régua de cobrança
-const reguaRoutes = require("./routes/regua")(pool, auth, registrarLog);
-app.use("/api/regua", reguaRoutes);
-
-// Relatórios
-const relatoriosRoutes = require("./routes/relatorios")(pool, auth, registrarLog);
-app.use("/api/relatorios", relatoriosRoutes);
-
-// Importação
-const importacaoRoutes = require("./routes/importacao")(pool, auth, upload, registrarLog);
-app.use("/api/importacao", importacaoRoutes);
-
-// Comissões
-const comissoesRoutes = require("./routes/comissoes")(pool, auth, registrarLog);
-app.use("/api/comissoes", comissoesRoutes);
-app.use("/api/financeiro/comissoes", comissoesRoutes);
-
-// Repasses
-const repassesRoutes = require("./routes/repasses")(pool, auth, registrarLog);
-app.use("/api/repasses", repassesRoutes);
-app.use("/api/financeiro/repasses", repassesRoutes);
-
-// Sincronização Asaas
-const syncAsaasRoutes = require("./routes/sync-asaas")(pool, auth, registrarLog);
-app.use("/api/sync", syncAsaasRoutes);
-
-// ========================================
-// ROTAS DO FRONTEND (SPA)
-// ========================================
-
-const sendFront = (file) => (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend", file));
-};
-
-// Páginas principais
-app.get("/", sendFront("login.html"));
-app.get("/login", sendFront("login.html"));
-app.get("/dashboard", sendFront("dashboard.html"));
-app.get("/nova-cobranca", sendFront("nova-cobranca.html"));
-app.get("/cobrancas", sendFront("cobrancas.html"));
-app.get(["/novo-cliente", "/novo-cliente/"], sendFront("novo-cliente.html"));
-app.get("/clientes", sendFront("clientes.html"));
-app.get("/devedores", sendFront("clientes.html"));
-app.get("/credores", sendFront("credores.html"));
-app.get("/acordos", sendFront("acordos.html"));
-app.get("/parcelas", sendFront("parcelas.html"));
-app.get("/agendamentos", sendFront("agendamentos.html"));
-app.get("/novo-agendamento", sendFront("novo-agendamento.html"));
-app.get("/configuracoes", sendFront("configuracoes.html"));
-app.get("/config", sendFront("configuracoes.html"));
-app.get("/usuarios", sendFront("usuarios.html"));
-app.get("/historico", sendFront("historico.html"));
-app.get("/relatorios", sendFront("relatorios.html"));
-app.get("/financeiro", sendFront("financeiro.html"));
-app.get("/financeiro-b2b", sendFront("financeiro-b2b.html"));
-app.get("/comissoes", sendFront("comissoes.html"));
-app.get("/repasses", sendFront("repasses.html"));
-app.get("/regua-cobranca", sendFront("regua-cobranca.html"));
-app.get("/regua", sendFront("regua-cobranca.html"));
-app.get("/fila-cobranca", sendFront("fila-cobranca.html"));
-app.get("/fila", sendFront("fila-cobranca.html"));
-app.get("/importar-cobrancas", sendFront("importar-cobrancas.html"));
-app.get("/importar-clientes", sendFront("importar-clientes.html"));
-app.get("/importar-massa", sendFront("importar-massa.html"));
-app.get("/templates", sendFront("templates-mensagem.html"));
-app.get("/simulador", sendFront("simulador.html"));
-app.get("/atendimento", sendFront("atendimento.html"));
-app.get("/dividas", sendFront("dividas.html"));
-app.get("/lembretes", sendFront("lembretes.html"));
-app.get("/cobrancas-recorrentes", sendFront("cobrancas-recorrentes.html"));
-app.get("/nova-recorrente", sendFront("nova-recorrente.html"));
-app.get("/sync-asaas", sendFront("sync-asaas.html"));
-
-
-// Fallback para SPA - arquivos .html
-app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api/")) return next();
-    const htmlPath = path.join(__dirname, "frontend", req.path + ".html");
-    res.sendFile(htmlPath, (err) => {
-        if (err) {
-            res.sendFile(path.join(__dirname, "frontend", "login.html"));
-        }
-    });
-});
-
-// ========================================
-// TRATAMENTO DE ERROS
-// ========================================
 
 app.use((err, req, res, next) => {
-    console.error("Erro:", err);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    console.error('[ERROR]', err);
+    res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
 });
 
-// ========================================
-// INICIAR SERVIDOR
-// ========================================
-
-const PORT = process.env.PORT || 3000;
+// ═══════════════════════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ═══════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
-    console.log(`
-========================================
-🚀 ACERTIVE v3.0 - Servidor Iniciado
-========================================
-📍 URL: http://localhost:${PORT}
-📅 Data: ${new Date().toLocaleString('pt-BR')}
-========================================
-    `);
+    console.log('');
+    console.log('╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.0                ║');
+    console.log('╠═══════════════════════════════════════════════════════════════╣');
+    console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
+    console.log('║                                                               ║');
+    console.log('║  📦 Módulos:                                                  ║');
+    console.log('║     • auth         - Autenticação                             ║');
+    console.log('║     • usuarios     - Gestão de usuários                       ║');
+    console.log('║     • cadastros    - Credores, Clientes, Empresas             ║');
+    console.log('║     • cobrancas    - Cobranças + Importação                   ║');
+    console.log('║     • acordos      - Acordos + Parcelas                       ║');
+    console.log('║     • acionamentos - Régua, Agendamentos, Histórico           ║');
+    console.log('║     • financeiro   - Comissões, Repasses, Relatórios          ║');
+    console.log('║     • integracoes  - Asaas, WhatsApp, Email, PDF              ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log('');
 });
-
-module.exports = app;

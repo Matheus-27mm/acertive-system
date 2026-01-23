@@ -1,6 +1,9 @@
 /**
- * ROTAS DE AUTENTICAÇÃO - ACERTIVE
- * Login, logout e gestão de sessão
+ * ========================================
+ * ACERTIVE - Módulo de Autenticação
+ * routes/auth.js
+ * ========================================
+ * Login, logout, verificação e recuperação de senha
  */
 
 const express = require('express');
@@ -13,65 +16,43 @@ module.exports = function(pool, registrarLog) {
     const JWT_SECRET = process.env.JWT_SECRET || 'acertive_secret_key_2024';
     const JWT_EXPIRES = '24h';
 
-    // POST /api/auth/login - Fazer login
+    // =====================================================
+    // POST /api/auth/login
+    // =====================================================
     router.post('/login', async (req, res) => {
-        console.log('=== AUTH LOGIN ATTEMPT ===');
-        console.log('Body:', req.body);
-        
         try {
             const { email, senha } = req.body;
 
-            console.log('Email:', email);
-            console.log('Senha recebida:', senha ? 'SIM' : 'NÃO');
-
             if (!email || !senha) {
-                console.log('ERRO: Campos vazios');
                 return res.status(400).json({ error: 'Email e senha são obrigatórios' });
             }
 
             // Buscar usuário
-            console.log('Buscando usuário no banco...');
             const result = await pool.query(`
                 SELECT id, nome, email, senha, perfil, ativo
                 FROM usuarios WHERE email = $1
             `, [email.toLowerCase()]);
 
-            console.log('Usuários encontrados:', result.rows.length);
-
             if (result.rows.length === 0) {
-                console.log('ERRO: Usuário não encontrado');
                 return res.status(401).json({ error: 'Email ou senha incorretos' });
             }
 
             const usuario = result.rows[0];
-            console.log('Usuário encontrado:', usuario.email);
-            console.log('Ativo:', usuario.ativo);
-            console.log('Hash no banco:', usuario.senha ? usuario.senha.substring(0, 30) + '...' : 'NULL');
 
-            // Verificar se está ativo
             if (!usuario.ativo) {
-                console.log('ERRO: Usuário desativado');
                 return res.status(401).json({ error: 'Usuário desativado' });
             }
 
             // Verificar senha
-            console.log('Comparando senha...');
             const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-            console.log('Senha correta:', senhaCorreta);
             
             if (!senhaCorreta) {
-                console.log('ERRO: Senha incorreta');
                 return res.status(401).json({ error: 'Email ou senha incorretos' });
             }
 
             // Gerar token JWT
-            console.log('Gerando token JWT...');
             const token = jwt.sign(
-                { 
-                    id: usuario.id, 
-                    email: usuario.email, 
-                    perfil: usuario.perfil 
-                },
+                { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
                 JWT_SECRET,
                 { expiresIn: JWT_EXPIRES }
             );
@@ -85,11 +66,7 @@ module.exports = function(pool, registrarLog) {
                     ip: req.ip,
                     userAgent: req.headers['user-agent']
                 });
-            } catch (logError) {
-                console.log('Erro ao registrar log (não crítico):', logError.message);
-            }
-
-            console.log('LOGIN BEM SUCEDIDO!');
+            } catch (e) {}
 
             res.json({
                 success: true,
@@ -103,12 +80,14 @@ module.exports = function(pool, registrarLog) {
             });
 
         } catch (error) {
-            console.error('ERRO NO LOGIN:', error);
+            console.error('[AUTH] Erro no login:', error);
             res.status(500).json({ error: 'Erro ao fazer login' });
         }
     });
 
-    // POST /api/auth/logout - Fazer logout (client-side, apenas registra)
+    // =====================================================
+    // POST /api/auth/logout
+    // =====================================================
     router.post('/logout', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
@@ -117,20 +96,19 @@ module.exports = function(pool, registrarLog) {
                 try {
                     const decoded = jwt.verify(token, JWT_SECRET);
                     await registrarLog(decoded.id, 'LOGOUT', 'usuarios', decoded.id, {});
-                } catch (e) {
-                    // Token inválido, não registra
-                }
+                } catch (e) {}
             }
 
             res.json({ success: true, message: 'Logout realizado' });
 
         } catch (error) {
-            console.error('Erro no logout:', error);
             res.status(500).json({ error: 'Erro ao fazer logout' });
         }
     });
 
-    // POST /api/auth/verificar - Verificar se token é válido
+    // =====================================================
+    // POST /api/auth/verificar
+    // =====================================================
     router.post('/verificar', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
@@ -141,7 +119,6 @@ module.exports = function(pool, registrarLog) {
 
             const decoded = jwt.verify(token, JWT_SECRET);
 
-            // Verificar se usuário ainda existe e está ativo
             const usuario = await pool.query(`
                 SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1
             `, [decoded.id]);
@@ -150,21 +127,19 @@ module.exports = function(pool, registrarLog) {
                 return res.status(401).json({ valid: false, error: 'Usuário inválido' });
             }
 
-            res.json({
-                valid: true,
-                usuario: usuario.rows[0]
-            });
+            res.json({ valid: true, usuario: usuario.rows[0] });
 
         } catch (error) {
             if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
                 return res.status(401).json({ valid: false, error: 'Token inválido ou expirado' });
             }
-            console.error('Erro ao verificar token:', error);
             res.status(500).json({ valid: false, error: 'Erro ao verificar token' });
         }
     });
 
-    // POST /api/auth/refresh - Renovar token
+    // =====================================================
+    // POST /api/auth/refresh
+    // =====================================================
     router.post('/refresh', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
@@ -173,7 +148,6 @@ module.exports = function(pool, registrarLog) {
                 return res.status(401).json({ error: 'Token não fornecido' });
             }
 
-            // Verificar token atual (mesmo expirado, se não muito antigo)
             let decoded;
             try {
                 decoded = jwt.verify(token, JWT_SECRET, { ignoreExpiration: true });
@@ -187,7 +161,6 @@ module.exports = function(pool, registrarLog) {
                 return res.status(401).json({ error: 'Token muito antigo, faça login novamente' });
             }
 
-            // Verificar se usuário ainda existe e está ativo
             const usuario = await pool.query(`
                 SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1
             `, [decoded.id]);
@@ -196,30 +169,22 @@ module.exports = function(pool, registrarLog) {
                 return res.status(401).json({ error: 'Usuário inválido' });
             }
 
-            // Gerar novo token
             const novoToken = jwt.sign(
-                { 
-                    id: usuario.rows[0].id, 
-                    email: usuario.rows[0].email, 
-                    perfil: usuario.rows[0].perfil 
-                },
+                { id: usuario.rows[0].id, email: usuario.rows[0].email, perfil: usuario.rows[0].perfil },
                 JWT_SECRET,
                 { expiresIn: JWT_EXPIRES }
             );
 
-            res.json({
-                success: true,
-                token: novoToken,
-                usuario: usuario.rows[0]
-            });
+            res.json({ success: true, token: novoToken, usuario: usuario.rows[0] });
 
         } catch (error) {
-            console.error('Erro ao renovar token:', error);
             res.status(500).json({ error: 'Erro ao renovar token' });
         }
     });
 
-    // POST /api/auth/recuperar-senha - Solicitar recuperação de senha
+    // =====================================================
+    // POST /api/auth/recuperar-senha
+    // =====================================================
     router.post('/recuperar-senha', async (req, res) => {
         try {
             const { email } = req.body;
@@ -228,7 +193,6 @@ module.exports = function(pool, registrarLog) {
                 return res.status(400).json({ error: 'Email é obrigatório' });
             }
 
-            // Verificar se email existe
             const usuario = await pool.query('SELECT id, nome FROM usuarios WHERE email = $1', [email.toLowerCase()]);
 
             // Sempre retornar sucesso para não revelar se email existe
@@ -236,27 +200,27 @@ module.exports = function(pool, registrarLog) {
                 return res.json({ success: true, message: 'Se o email existir, você receberá as instruções' });
             }
 
-            // Gerar token de recuperação (válido por 1 hora)
             const tokenRecuperacao = jwt.sign(
                 { id: usuario.rows[0].id, tipo: 'recuperacao' },
                 JWT_SECRET,
                 { expiresIn: '1h' }
             );
 
-            // Aqui você enviaria o email com o link de recuperação
-            console.log(`Token de recuperação para ${email}: ${tokenRecuperacao}`);
+            // TODO: Implementar envio de email
+            console.log(`[AUTH] Token de recuperação para ${email}: ${tokenRecuperacao}`);
 
             await registrarLog(usuario.rows[0].id, 'RECUPERACAO_SENHA_SOLICITADA', 'usuarios', usuario.rows[0].id, {});
 
             res.json({ success: true, message: 'Se o email existir, você receberá as instruções' });
 
         } catch (error) {
-            console.error('Erro na recuperação de senha:', error);
             res.status(500).json({ error: 'Erro ao processar solicitação' });
         }
     });
 
-    // POST /api/auth/redefinir-senha - Redefinir senha com token
+    // =====================================================
+    // POST /api/auth/redefinir-senha
+    // =====================================================
     router.post('/redefinir-senha', async (req, res) => {
         try {
             const { token, nova_senha } = req.body;
@@ -265,7 +229,6 @@ module.exports = function(pool, registrarLog) {
                 return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
             }
 
-            // Verificar token
             let decoded;
             try {
                 decoded = jwt.verify(token, JWT_SECRET);
@@ -277,7 +240,6 @@ module.exports = function(pool, registrarLog) {
                 return res.status(401).json({ error: 'Token inválido' });
             }
 
-            // Atualizar senha
             const senhaHash = await bcrypt.hash(nova_senha, 10);
             
             await pool.query('UPDATE usuarios SET senha = $1 WHERE id = $2', [senhaHash, decoded.id]);
@@ -287,7 +249,6 @@ module.exports = function(pool, registrarLog) {
             res.json({ success: true, message: 'Senha redefinida com sucesso' });
 
         } catch (error) {
-            console.error('Erro ao redefinir senha:', error);
             res.status(500).json({ error: 'Erro ao redefinir senha' });
         }
     });

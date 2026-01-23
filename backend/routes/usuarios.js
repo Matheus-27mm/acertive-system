@@ -1,5 +1,8 @@
 /**
- * ROTAS DE USUÁRIOS - ACERTIVE
+ * ========================================
+ * ACERTIVE - Módulo de Usuários
+ * routes/usuarios.js
+ * ========================================
  * CRUD de usuários do sistema
  */
 
@@ -9,22 +12,25 @@ const bcrypt = require('bcryptjs');
 module.exports = function(pool, auth, authAdmin, registrarLog) {
     const router = express.Router();
 
+    // =====================================================
     // GET /api/usuarios - Listar usuários (admin)
+    // =====================================================
     router.get('/', authAdmin, async (req, res) => {
         try {
             const result = await pool.query(`
                 SELECT id, nome, email, perfil, ativo, created_at, ultimo_login
-                FROM usuarios
-                ORDER BY nome
+                FROM usuarios ORDER BY nome
             `);
-            res.json(result.rows);
+            res.json({ success: true, data: result.rows });
         } catch (error) {
-            console.error('Erro ao listar usuários:', error);
-            res.status(500).json({ error: 'Erro ao listar usuários' });
+            console.error('[USUARIOS] Erro ao listar:', error);
+            res.status(500).json({ success: false, error: 'Erro ao listar usuários' });
         }
     });
 
+    // =====================================================
     // GET /api/usuarios/me - Dados do usuário logado
+    // =====================================================
     router.get('/me', auth, async (req, res) => {
         try {
             const result = await pool.query(`
@@ -33,82 +39,83 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
             `, [req.user.id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Usuário não encontrado' });
+                return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             }
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0] });
         } catch (error) {
-            console.error('Erro ao buscar usuário:', error);
-            res.status(500).json({ error: 'Erro ao buscar dados' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar dados' });
         }
     });
 
+    // =====================================================
     // GET /api/usuarios/:id - Buscar usuário específico
+    // =====================================================
     router.get('/:id', authAdmin, async (req, res) => {
         try {
             const { id } = req.params;
             
+            // Evitar conflito com /me
+            if (id === 'me') return;
+
             const result = await pool.query(`
                 SELECT id, nome, email, perfil, ativo, created_at, ultimo_login
                 FROM usuarios WHERE id = $1
             `, [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Usuário não encontrado' });
+                return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             }
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0] });
         } catch (error) {
-            console.error('Erro ao buscar usuário:', error);
-            res.status(500).json({ error: 'Erro ao buscar usuário' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar usuário' });
         }
     });
 
+    // =====================================================
     // POST /api/usuarios - Criar usuário (admin)
+    // =====================================================
     router.post('/', authAdmin, async (req, res) => {
         try {
             const { nome, email, senha, perfil = 'operador' } = req.body;
 
             if (!nome || !email || !senha) {
-                return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
+                return res.status(400).json({ success: false, error: 'Nome, email e senha são obrigatórios' });
             }
 
             // Verificar se email já existe
-            const existe = await pool.query('SELECT id FROM usuarios WHERE email = $1', [email]);
+            const existe = await pool.query('SELECT id FROM usuarios WHERE email = $1', [email.toLowerCase()]);
             if (existe.rows.length > 0) {
-                return res.status(400).json({ error: 'Email já cadastrado' });
+                return res.status(400).json({ success: false, error: 'Email já cadastrado' });
             }
 
-            // Hash da senha
             const senhaHash = await bcrypt.hash(senha, 10);
 
             const result = await pool.query(`
                 INSERT INTO usuarios (nome, email, senha, perfil, ativo, created_at)
                 VALUES ($1, $2, $3, $4, true, NOW())
                 RETURNING id, nome, email, perfil
-            `, [nome, email, senhaHash, perfil]);
+            `, [nome, email.toLowerCase(), senhaHash, perfil]);
 
-            await registrarLog(req.user.id, 'USUARIO_CRIADO', 'usuarios', result.rows[0].id, {
-                nome,
-                email,
-                perfil
-            });
+            await registrarLog(req.user.id, 'USUARIO_CRIADO', 'usuarios', result.rows[0].id, { nome, email, perfil });
 
-            res.status(201).json(result.rows[0]);
+            res.status(201).json({ success: true, data: result.rows[0], message: 'Usuário criado com sucesso!' });
 
         } catch (error) {
-            console.error('Erro ao criar usuário:', error);
-            res.status(500).json({ error: 'Erro ao criar usuário' });
+            console.error('[USUARIOS] Erro ao criar:', error);
+            res.status(500).json({ success: false, error: 'Erro ao criar usuário' });
         }
     });
 
+    // =====================================================
     // PUT /api/usuarios/:id - Atualizar usuário (admin)
+    // =====================================================
     router.put('/:id', authAdmin, async (req, res) => {
         try {
             const { id } = req.params;
             const { nome, email, senha, perfil, ativo } = req.body;
 
-            // Montar query dinâmica
             let updateFields = [];
             let params = [];
             let paramIndex = 1;
@@ -121,7 +128,7 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
 
             if (email !== undefined) {
                 updateFields.push(`email = $${paramIndex}`);
-                params.push(email);
+                params.push(email.toLowerCase());
                 paramIndex++;
             }
 
@@ -145,88 +152,85 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
             }
 
             if (updateFields.length === 0) {
-                return res.status(400).json({ error: 'Nenhum campo para atualizar' });
+                return res.status(400).json({ success: false, error: 'Nenhum campo para atualizar' });
             }
 
+            updateFields.push('updated_at = NOW()');
             params.push(id);
             
             const result = await pool.query(`
-                UPDATE usuarios 
-                SET ${updateFields.join(', ')}
+                UPDATE usuarios SET ${updateFields.join(', ')}
                 WHERE id = $${paramIndex}
                 RETURNING id, nome, email, perfil, ativo
             `, params);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Usuário não encontrado' });
+                return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             }
 
-            await registrarLog(req.user.id, 'USUARIO_ATUALIZADO', 'usuarios', id, {
-                campos_atualizados: updateFields
-            });
+            await registrarLog(req.user.id, 'USUARIO_ATUALIZADO', 'usuarios', id, { campos: updateFields });
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0], message: 'Usuário atualizado!' });
 
         } catch (error) {
-            console.error('Erro ao atualizar usuário:', error);
-            res.status(500).json({ error: 'Erro ao atualizar usuário' });
+            console.error('[USUARIOS] Erro ao atualizar:', error);
+            res.status(500).json({ success: false, error: 'Erro ao atualizar usuário' });
         }
     });
 
+    // =====================================================
     // PUT /api/usuarios/me/senha - Alterar própria senha
+    // =====================================================
     router.put('/me/senha', auth, async (req, res) => {
         try {
             const { senha_atual, nova_senha } = req.body;
 
             if (!senha_atual || !nova_senha) {
-                return res.status(400).json({ error: 'Senha atual e nova senha são obrigatórias' });
+                return res.status(400).json({ success: false, error: 'Senha atual e nova senha são obrigatórias' });
             }
 
-            // Verificar senha atual
             const usuario = await pool.query('SELECT senha FROM usuarios WHERE id = $1', [req.user.id]);
             
             if (usuario.rows.length === 0) {
-                return res.status(404).json({ error: 'Usuário não encontrado' });
+                return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             }
 
             const senhaCorreta = await bcrypt.compare(senha_atual, usuario.rows[0].senha);
             
             if (!senhaCorreta) {
-                return res.status(401).json({ error: 'Senha atual incorreta' });
+                return res.status(401).json({ success: false, error: 'Senha atual incorreta' });
             }
 
-            // Atualizar senha
             const senhaHash = await bcrypt.hash(nova_senha, 10);
             
-            await pool.query('UPDATE usuarios SET senha = $1 WHERE id = $2', [senhaHash, req.user.id]);
+            await pool.query('UPDATE usuarios SET senha = $1, updated_at = NOW() WHERE id = $2', [senhaHash, req.user.id]);
 
             await registrarLog(req.user.id, 'SENHA_ALTERADA', 'usuarios', req.user.id, {});
 
             res.json({ success: true, message: 'Senha alterada com sucesso' });
 
         } catch (error) {
-            console.error('Erro ao alterar senha:', error);
-            res.status(500).json({ error: 'Erro ao alterar senha' });
+            res.status(500).json({ success: false, error: 'Erro ao alterar senha' });
         }
     });
 
+    // =====================================================
     // DELETE /api/usuarios/:id - Desativar usuário (admin)
+    // =====================================================
     router.delete('/:id', authAdmin, async (req, res) => {
         try {
             const { id } = req.params;
 
-            // Não permitir desativar o próprio usuário
-            if (parseInt(id) === req.user.id) {
-                return res.status(400).json({ error: 'Não é possível desativar seu próprio usuário' });
+            if (id === req.user.id) {
+                return res.status(400).json({ success: false, error: 'Não é possível desativar seu próprio usuário' });
             }
 
-            // Soft delete - apenas desativar
             const result = await pool.query(`
-                UPDATE usuarios SET ativo = false WHERE id = $1 RETURNING id
+                UPDATE usuarios SET ativo = false, updated_at = NOW() WHERE id = $1 RETURNING id
             `, [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Usuário não encontrado' });
+                return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             }
 
             await registrarLog(req.user.id, 'USUARIO_DESATIVADO', 'usuarios', id, {});
@@ -234,8 +238,7 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
             res.json({ success: true, message: 'Usuário desativado' });
 
         } catch (error) {
-            console.error('Erro ao desativar usuário:', error);
-            res.status(500).json({ error: 'Erro ao desativar usuário' });
+            res.status(500).json({ success: false, error: 'Erro ao desativar usuário' });
         }
     });
 
