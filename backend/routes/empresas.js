@@ -237,22 +237,32 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { id } = req.params;
 
-            const count = await pool.query('SELECT COUNT(*) FROM empresas');
-            if (parseInt(count.rows[0].count) <= 1) {
-                return res.status(400).json({ success: false, error: 'Não é possível remover a única empresa' });
+            // Verificar se a empresa existe
+            const empresa = await pool.query('SELECT * FROM empresas WHERE id = $1', [id]);
+            if (empresa.rows.length === 0) {
+                return res.status(404).json({ success: false, error: 'Empresa não encontrada' });
             }
 
+            // Deletar a empresa
             await pool.query('DELETE FROM empresas WHERE id = $1', [id]);
 
+            // Se era a padrão, definir outra como padrão
+            if (empresa.rows[0].padrao) {
+                await pool.query(`
+                    UPDATE empresas SET padrao = true 
+                    WHERE id = (SELECT id FROM empresas ORDER BY created_at LIMIT 1)
+                `);
+            }
+
             try {
-                await registrarLog(req.user?.id, 'EMPRESA_REMOVIDA', 'empresas', id, {});
+                await registrarLog(req.user?.id, 'EMPRESA_REMOVIDA', 'empresas', id, { nome: empresa.rows[0].nome });
             } catch (logErr) {}
 
-            res.json({ success: true, message: 'Empresa removida!' });
+            res.json({ success: true, message: 'Empresa removida com sucesso!' });
 
         } catch (error) {
             console.error('[EMPRESAS] Erro ao remover empresa:', error);
-            res.status(500).json({ success: false, error: 'Erro ao remover empresa' });
+            res.status(500).json({ success: false, error: 'Erro ao remover empresa: ' + error.message });
         }
     });
 
