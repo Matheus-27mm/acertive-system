@@ -2,6 +2,7 @@
  * ROTAS DE EMPRESAS - ACERTIVE
  * CRUD de empresas/escritórios
  * CORRIGIDO: Aceita todos os campos do formulário
+ * ATUALIZADO: Desvincula usuários antes de excluir empresa
  */
 
 const express = require('express');
@@ -233,6 +234,7 @@ module.exports = function(pool, auth, registrarLog) {
     });
 
     // DELETE /api/empresas/:id - Remover empresa
+    // ATUALIZADO: Desvincula usuários e outras dependências antes de excluir
     router.delete('/:id', auth, async (req, res) => {
         try {
             const { id } = req.params;
@@ -243,22 +245,63 @@ module.exports = function(pool, auth, registrarLog) {
                 return res.status(404).json({ success: false, error: 'Empresa não encontrada' });
             }
 
-            // Deletar a empresa
+            const empresaNome = empresa.rows[0].nome;
+            const eraPadrao = empresa.rows[0].padrao;
+
+            // ========================================
+            // DESVINCULAR DEPENDÊNCIAS ANTES DE EXCLUIR
+            // ========================================
+
+            // 1. Desvincular usuários (SET empresa_id = NULL)
+            try {
+                await pool.query('UPDATE usuarios SET empresa_id = NULL WHERE empresa_id = $1', [id]);
+                console.log(`[EMPRESAS] Usuários desvinculados da empresa ${id}`);
+            } catch (e) {
+                // Tenta com tabela 'users' se 'usuarios' não existir
+                try {
+                    await pool.query('UPDATE users SET empresa_id = NULL WHERE empresa_id = $1', [id]);
+                    console.log(`[EMPRESAS] Users desvinculados da empresa ${id}`);
+                } catch (e2) {
+                    console.log('[EMPRESAS] Nenhuma tabela de usuários com empresa_id encontrada');
+                }
+            }
+
+            // 2. Desvincular cobranças (opcional - SET empresa_id = NULL)
+            try {
+                await pool.query('UPDATE cobrancas SET empresa_id = NULL WHERE empresa_id = $1', [id]);
+                console.log(`[EMPRESAS] Cobranças desvinculadas da empresa ${id}`);
+            } catch (e) {
+                console.log('[EMPRESAS] Sem cobranças para desvincular ou coluna não existe');
+            }
+
+            // 3. Desvincular clientes (se tiver empresa_id)
+            try {
+                await pool.query('UPDATE clientes SET empresa_id = NULL WHERE empresa_id = $1', [id]);
+                console.log(`[EMPRESAS] Clientes desvinculados da empresa ${id}`);
+            } catch (e) {
+                console.log('[EMPRESAS] Sem clientes para desvincular ou coluna não existe');
+            }
+
+            // ========================================
+            // DELETAR A EMPRESA
+            // ========================================
             await pool.query('DELETE FROM empresas WHERE id = $1', [id]);
+            console.log(`[EMPRESAS] Empresa ${id} (${empresaNome}) removida`);
 
             // Se era a padrão, definir outra como padrão
-            if (empresa.rows[0].padrao) {
+            if (eraPadrao) {
                 await pool.query(`
                     UPDATE empresas SET padrao = true 
                     WHERE id = (SELECT id FROM empresas ORDER BY created_at LIMIT 1)
                 `);
+                console.log('[EMPRESAS] Nova empresa padrão definida');
             }
 
             try {
-                await registrarLog(req.user?.id, 'EMPRESA_REMOVIDA', 'empresas', id, { nome: empresa.rows[0].nome });
+                await registrarLog(req.user?.id, 'EMPRESA_REMOVIDA', 'empresas', id, { nome: empresaNome });
             } catch (logErr) {}
 
-            res.json({ success: true, message: 'Empresa removida com sucesso!' });
+            res.json({ success: true, message: `Empresa "${empresaNome}" removida com sucesso!` });
 
         } catch (error) {
             console.error('[EMPRESAS] Erro ao remover empresa:', error);
