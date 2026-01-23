@@ -302,75 +302,39 @@ module.exports = function(pool, auth, registrarLog) {
     });
 
     // GET /api/cobrancas/estatisticas-completas - Estatísticas detalhadas
+    // FORMATO COMPATÍVEL COM FRONTEND
     router.get('/estatisticas-completas', auth, async (req, res) => {
         try {
-            // Estatísticas gerais
-            const geral = await pool.query(`
+            // Estatísticas gerais - CORRIGIDO para calcular vencidas corretamente
+            const result = await pool.query(`
                 SELECT 
-                    COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE status = 'pendente') as pendentes,
-                    COUNT(*) FILTER (WHERE status = 'pago') as pagas,
-                    COUNT(*) FILTER (WHERE status = 'vencido' OR (status = 'pendente' AND data_vencimento < CURRENT_DATE)) as vencidas,
-                    COALESCE(SUM(valor), 0) as valor_total,
-                    COALESCE(SUM(valor) FILTER (WHERE status = 'pendente'), 0) as valor_pendente,
-                    COALESCE(SUM(valor) FILTER (WHERE status = 'pago'), 0) as valor_pago
+                    COUNT(*) FILTER (WHERE (arquivado = false OR arquivado IS NULL)) as total,
+                    COUNT(*) FILTER (WHERE status = 'pendente' AND data_vencimento >= CURRENT_DATE AND (arquivado = false OR arquivado IS NULL)) as pendentes,
+                    COUNT(*) FILTER (WHERE status = 'pago' AND (arquivado = false OR arquivado IS NULL)) as pagas,
+                    COUNT(*) FILTER (WHERE (status = 'vencido' OR (status = 'pendente' AND data_vencimento < CURRENT_DATE)) AND (arquivado = false OR arquivado IS NULL)) as vencidas,
+                    COUNT(*) FILTER (WHERE status = 'acordo' AND (arquivado = false OR arquivado IS NULL)) as em_acordo,
+                    COUNT(*) FILTER (WHERE arquivado = true) as arquivadas,
+                    COALESCE(SUM(valor) FILTER (WHERE (arquivado = false OR arquivado IS NULL)), 0) as valor_total,
+                    COALESCE(SUM(valor) FILTER (WHERE status = 'pendente' AND (arquivado = false OR arquivado IS NULL)), 0) as valor_pendente,
+                    COALESCE(SUM(valor) FILTER (WHERE status = 'pago' AND (arquivado = false OR arquivado IS NULL)), 0) as valor_pago
                 FROM cobrancas
-                WHERE arquivado = false OR arquivado IS NULL
             `);
 
-            // Por credor
-            const porCredor = await pool.query(`
-                SELECT 
-                    cr.nome as credor,
-                    COUNT(*) as total,
-                    COALESCE(SUM(c.valor), 0) as valor_total,
-                    COUNT(*) FILTER (WHERE c.status = 'pendente') as pendentes
-                FROM cobrancas c
-                LEFT JOIN credores cr ON c.credor_id = cr.id
-                WHERE c.arquivado = false OR c.arquivado IS NULL
-                GROUP BY cr.id, cr.nome
-                ORDER BY valor_total DESC
-            `);
+            const stats = result.rows[0];
 
-            // Por empresa
-            const porEmpresa = await pool.query(`
-                SELECT 
-                    emp.nome as empresa,
-                    COUNT(*) as total,
-                    COALESCE(SUM(c.valor), 0) as valor_total,
-                    COUNT(*) FILTER (WHERE c.status = 'pendente') as pendentes
-                FROM cobrancas c
-                LEFT JOIN empresas emp ON c.empresa_id = emp.id
-                WHERE c.arquivado = false OR c.arquivado IS NULL
-                GROUP BY emp.id, emp.nome
-                ORDER BY valor_total DESC
-            `);
-
-            // Vencendo hoje
-            const venceHoje = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(valor), 0) as valor
-                FROM cobrancas
-                WHERE status = 'pendente' AND data_vencimento = CURRENT_DATE
-                AND (arquivado = false OR arquivado IS NULL)
-            `);
-
-            // Vencendo esta semana
-            const venceSemana = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(valor), 0) as valor
-                FROM cobrancas
-                WHERE status = 'pendente' 
-                AND data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
-                AND (arquivado = false OR arquivado IS NULL)
-            `);
-
+            // FORMATO QUE O FRONTEND ESPERA (camelCase)
             res.json({
                 success: true,
                 data: {
-                    geral: geral.rows[0],
-                    porCredor: porCredor.rows,
-                    porEmpresa: porEmpresa.rows,
-                    venceHoje: venceHoje.rows[0],
-                    venceSemana: venceSemana.rows[0]
+                    total: parseInt(stats.total) || 0,
+                    pendentes: parseInt(stats.pendentes) || 0,
+                    vencidas: parseInt(stats.vencidas) || 0,
+                    pagas: parseInt(stats.pagas) || 0,
+                    emAcordo: parseInt(stats.em_acordo) || 0,
+                    arquivadas: parseInt(stats.arquivadas) || 0,
+                    valorTotal: parseFloat(stats.valor_total) || 0,
+                    valorPendente: parseFloat(stats.valor_pendente) || 0,
+                    valorPago: parseFloat(stats.valor_pago) || 0
                 }
             });
 
