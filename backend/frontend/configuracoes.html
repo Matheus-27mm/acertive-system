@@ -435,8 +435,9 @@
               <p>${e.cnpj || 'CNPJ não informado'} ${e.chave_pix ? '• PIX: ' + e.chave_pix : ''}</p>
             </div>
             <div class="empresa-actions">
-              <button class="btn btn-secondary btn-sm" onclick="editarEmpresa('${e.id}')"><i class="fas fa-edit"></i></button>
-              ${!e.padrao ? `<button class="btn btn-secondary btn-sm" onclick="definirPadrao('${e.id}')"><i class="fas fa-star"></i></button>` : ''}
+              <button class="btn btn-secondary btn-sm" onclick="editarEmpresa('${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+              ${!e.padrao ? `<button class="btn btn-secondary btn-sm" onclick="definirPadrao('${e.id}')" title="Definir como padrão"><i class="fas fa-star"></i></button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="excluirEmpresa('${e.id}', '${e.nome}')" title="Excluir"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         `).join('');
@@ -519,6 +520,29 @@
         });
         carregarEmpresas();
       } catch (e) { alert('Erro'); }
+    }
+
+    // ==================== EXCLUIR EMPRESA ====================
+    async function excluirEmpresa(id, nome) {
+      if (!confirm(`⚠️ Tem certeza que deseja EXCLUIR a empresa "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+      
+      try {
+        const res = await fetch(API + '/api/empresas/' + id, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Empresa excluída com sucesso!');
+          carregarEmpresas();
+        } else {
+          alert('❌ Erro: ' + (data.message || data.error || 'Não foi possível excluir'));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('❌ Erro ao excluir empresa');
+      }
     }
 
     // ==================== INTEGRAÇÕES ====================
