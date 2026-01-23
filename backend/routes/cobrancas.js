@@ -1,6 +1,7 @@
 /**
  * ROTAS DE COBRANÇAS - ACERTIVE
  * CRUD de cobranças - CORRIGIDO COM credor_id (UUID)
+ * ATUALIZADO: Formato de resposta compatível com frontend
  */
 
 const express = require('express');
@@ -25,17 +26,19 @@ module.exports = function(pool, auth, registrarLog) {
 
             let query = `
                 SELECT c.*, 
-                       cl.nome as cliente_nome,
+                       cl.nome as cliente,
                        cl.cpf_cnpj as cliente_documento,
                        cl.telefone as cliente_telefone,
                        cl.email as cliente_email,
                        cr.nome as credor_nome,
-                       emp.nome as empresa_nome
+                       emp.nome as empresa_nome,
+                       c.data_vencimento as vencimento,
+                       c.valor as valor_original
                 FROM cobrancas c
-                JOIN clientes cl ON c.cliente_id = cl.id
+                LEFT JOIN clientes cl ON c.cliente_id = cl.id
                 LEFT JOIN credores cr ON c.credor_id = cr.id
                 LEFT JOIN empresas emp ON c.empresa_id = emp.id
-                WHERE 1=1
+                WHERE c.arquivado = false OR c.arquivado IS NULL
             `;
             const params = [];
             let paramIndex = 1;
@@ -92,13 +95,16 @@ module.exports = function(pool, auth, registrarLog) {
             query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
             params.push(parseInt(limit), offset);
 
+            console.log('[COBRANCAS] Query:', query);
+            console.log('[COBRANCAS] Params:', params);
+
             const result = await pool.query(query, params);
 
             // Contar total para paginação
             let countQuery = `
                 SELECT COUNT(*) FROM cobrancas c
-                JOIN clientes cl ON c.cliente_id = cl.id
-                WHERE 1=1
+                LEFT JOIN clientes cl ON c.cliente_id = cl.id
+                WHERE (c.arquivado = false OR c.arquivado IS NULL)
             `;
             const countParams = [];
             let countIndex = 1;
@@ -130,8 +136,10 @@ module.exports = function(pool, auth, registrarLog) {
             const countResult = await pool.query(countQuery, countParams);
             const total = parseInt(countResult.rows[0].count);
 
+            // FORMATO COMPATÍVEL COM FRONTEND
             res.json({
-                cobrancas: result.rows,
+                success: true,
+                data: result.rows,
                 total,
                 page: parseInt(page),
                 totalPages: Math.ceil(total / parseInt(limit))
@@ -139,7 +147,129 @@ module.exports = function(pool, auth, registrarLog) {
 
         } catch (error) {
             console.error('Erro ao listar cobranças:', error);
-            res.status(500).json({ error: 'Erro ao listar cobranças' });
+            res.status(500).json({ success: false, error: 'Erro ao listar cobranças' });
+        }
+    });
+
+    // GET /api/cobrancas/arquivadas - Listar cobranças arquivadas
+    router.get('/arquivadas', auth, async (req, res) => {
+        try {
+            const { page = 1, limit = 50 } = req.query;
+
+            const query = `
+                SELECT c.*, 
+                       cl.nome as cliente,
+                       cl.cpf_cnpj as cliente_documento,
+                       cl.telefone as cliente_telefone,
+                       cl.email as cliente_email,
+                       cr.nome as credor_nome,
+                       emp.nome as empresa_nome,
+                       c.data_vencimento as vencimento,
+                       c.valor as valor_original
+                FROM cobrancas c
+                LEFT JOIN clientes cl ON c.cliente_id = cl.id
+                LEFT JOIN credores cr ON c.credor_id = cr.id
+                LEFT JOIN empresas emp ON c.empresa_id = emp.id
+                WHERE c.arquivado = true
+                ORDER BY c.updated_at DESC
+                LIMIT $1 OFFSET $2
+            `;
+
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+            const result = await pool.query(query, [parseInt(limit), offset]);
+
+            const countResult = await pool.query('SELECT COUNT(*) FROM cobrancas WHERE arquivado = true');
+            const total = parseInt(countResult.rows[0].count);
+
+            res.json({
+                success: true,
+                data: result.rows,
+                total,
+                page: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit))
+            });
+
+        } catch (error) {
+            console.error('Erro ao listar arquivadas:', error);
+            res.status(500).json({ success: false, error: 'Erro ao listar cobranças arquivadas' });
+        }
+    });
+
+    // POST /api/cobrancas/arquivar-massa - Arquivar múltiplas cobranças
+    router.post('/arquivar-massa', auth, async (req, res) => {
+        try {
+            const { ids } = req.body;
+
+            if (!ids || !Array.isArray(ids) || ids.length === 0) {
+                return res.status(400).json({ success: false, error: 'IDs são obrigatórios' });
+            }
+
+            const result = await pool.query(`
+                UPDATE cobrancas 
+                SET arquivado = true, updated_at = NOW()
+                WHERE id = ANY($1::uuid[])
+                RETURNING id
+            `, [ids]);
+
+            res.json({ 
+                success: true, 
+                message: `${result.rowCount} cobrança(s) arquivada(s)`,
+                arquivadas: result.rowCount 
+            });
+
+        } catch (error) {
+            console.error('Erro ao arquivar cobranças:', error);
+            res.status(500).json({ success: false, error: 'Erro ao arquivar cobranças' });
+        }
+    });
+
+    // POST /api/cobrancas/desarquivar-massa - Desarquivar múltiplas cobranças
+    router.post('/desarquivar-massa', auth, async (req, res) => {
+        try {
+            const { ids } = req.body;
+
+            if (!ids || !Array.isArray(ids) || ids.length === 0) {
+                return res.status(400).json({ success: false, error: 'IDs são obrigatórios' });
+            }
+
+            const result = await pool.query(`
+                UPDATE cobrancas 
+                SET arquivado = false, updated_at = NOW()
+                WHERE id = ANY($1::uuid[])
+                RETURNING id
+            `, [ids]);
+
+            res.json({ 
+                success: true, 
+                message: `${result.rowCount} cobrança(s) desarquivada(s)`,
+                desarquivadas: result.rowCount 
+            });
+
+        } catch (error) {
+            console.error('Erro ao desarquivar cobranças:', error);
+            res.status(500).json({ success: false, error: 'Erro ao desarquivar cobranças' });
+        }
+    });
+
+    // POST /api/cobrancas/arquivar-todas - Arquivar todas as cobranças filtradas
+    router.post('/arquivar-todas', auth, async (req, res) => {
+        try {
+            const result = await pool.query(`
+                UPDATE cobrancas 
+                SET arquivado = true, updated_at = NOW()
+                WHERE arquivado = false OR arquivado IS NULL
+                RETURNING id
+            `);
+
+            res.json({ 
+                success: true, 
+                message: `${result.rowCount} cobrança(s) arquivada(s)`,
+                arquivadas: result.rowCount 
+            });
+
+        } catch (error) {
+            console.error('Erro ao arquivar todas:', error);
+            res.status(500).json({ success: false, error: 'Erro ao arquivar cobranças' });
         }
     });
 
@@ -148,21 +278,26 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const result = await pool.query(`
                 SELECT 
-                    COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE status = 'pendente') as pendentes,
-                    COUNT(*) FILTER (WHERE status = 'pago') as pagas,
-                    COUNT(*) FILTER (WHERE status = 'vencido' OR (status = 'pendente' AND data_vencimento < CURRENT_DATE)) as vencidas,
-                    COALESCE(SUM(valor), 0) as valor_total,
-                    COALESCE(SUM(valor) FILTER (WHERE status = 'pendente'), 0) as valor_pendente,
-                    COALESCE(SUM(valor) FILTER (WHERE status = 'pago'), 0) as valor_pago
+                    COUNT(*) FILTER (WHERE (arquivado = false OR arquivado IS NULL)) as total,
+                    COUNT(*) FILTER (WHERE status = 'pendente' AND data_vencimento >= CURRENT_DATE AND (arquivado = false OR arquivado IS NULL)) as pendentes,
+                    COUNT(*) FILTER (WHERE status = 'pago' AND (arquivado = false OR arquivado IS NULL)) as pagas,
+                    COUNT(*) FILTER (WHERE (status = 'vencido' OR (status = 'pendente' AND data_vencimento < CURRENT_DATE)) AND (arquivado = false OR arquivado IS NULL)) as vencidas,
+                    COUNT(*) FILTER (WHERE status = 'acordo' AND (arquivado = false OR arquivado IS NULL)) as acordo,
+                    COUNT(*) FILTER (WHERE arquivado = true) as arquivadas,
+                    COALESCE(SUM(valor) FILTER (WHERE (arquivado = false OR arquivado IS NULL)), 0) as valor_total,
+                    COALESCE(SUM(valor) FILTER (WHERE status = 'pendente' AND (arquivado = false OR arquivado IS NULL)), 0) as valor_pendente,
+                    COALESCE(SUM(valor) FILTER (WHERE status = 'pago' AND (arquivado = false OR arquivado IS NULL)), 0) as valor_pago
                 FROM cobrancas
             `);
 
-            res.json(result.rows[0]);
+            res.json({
+                success: true,
+                data: result.rows[0]
+            });
 
         } catch (error) {
             console.error('Erro ao buscar estatísticas:', error);
-            res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas' });
         }
     });
 
@@ -180,6 +315,7 @@ module.exports = function(pool, auth, registrarLog) {
                     COALESCE(SUM(valor) FILTER (WHERE status = 'pendente'), 0) as valor_pendente,
                     COALESCE(SUM(valor) FILTER (WHERE status = 'pago'), 0) as valor_pago
                 FROM cobrancas
+                WHERE arquivado = false OR arquivado IS NULL
             `);
 
             // Por credor
@@ -191,6 +327,7 @@ module.exports = function(pool, auth, registrarLog) {
                     COUNT(*) FILTER (WHERE c.status = 'pendente') as pendentes
                 FROM cobrancas c
                 LEFT JOIN credores cr ON c.credor_id = cr.id
+                WHERE c.arquivado = false OR c.arquivado IS NULL
                 GROUP BY cr.id, cr.nome
                 ORDER BY valor_total DESC
             `);
@@ -204,6 +341,7 @@ module.exports = function(pool, auth, registrarLog) {
                     COUNT(*) FILTER (WHERE c.status = 'pendente') as pendentes
                 FROM cobrancas c
                 LEFT JOIN empresas emp ON c.empresa_id = emp.id
+                WHERE c.arquivado = false OR c.arquivado IS NULL
                 GROUP BY emp.id, emp.nome
                 ORDER BY valor_total DESC
             `);
@@ -213,6 +351,7 @@ module.exports = function(pool, auth, registrarLog) {
                 SELECT COUNT(*), COALESCE(SUM(valor), 0) as valor
                 FROM cobrancas
                 WHERE status = 'pendente' AND data_vencimento = CURRENT_DATE
+                AND (arquivado = false OR arquivado IS NULL)
             `);
 
             // Vencendo esta semana
@@ -220,20 +359,24 @@ module.exports = function(pool, auth, registrarLog) {
                 SELECT COUNT(*), COALESCE(SUM(valor), 0) as valor
                 FROM cobrancas
                 WHERE status = 'pendente' 
-                  AND data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+                AND data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+                AND (arquivado = false OR arquivado IS NULL)
             `);
 
             res.json({
-                geral: geral.rows[0],
-                por_credor: porCredor.rows,
-                por_empresa: porEmpresa.rows,
-                vence_hoje: venceHoje.rows[0],
-                vence_semana: venceSemana.rows[0]
+                success: true,
+                data: {
+                    geral: geral.rows[0],
+                    porCredor: porCredor.rows,
+                    porEmpresa: porEmpresa.rows,
+                    venceHoje: venceHoje.rows[0],
+                    venceSemana: venceSemana.rows[0]
+                }
             });
 
         } catch (error) {
             console.error('Erro ao buscar estatísticas completas:', error);
-            res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas' });
         }
     });
 
@@ -242,41 +385,45 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { id } = req.params;
 
+            // Evitar conflito com outras rotas
+            if (['estatisticas', 'estatisticas-completas', 'arquivadas'].includes(id)) {
+                return;
+            }
+
             const result = await pool.query(`
                 SELECT c.*, 
-                       cl.nome as cliente_nome,
+                       cl.nome as cliente,
                        cl.cpf_cnpj as cliente_documento,
                        cl.telefone as cliente_telefone,
                        cl.email as cliente_email,
                        cr.nome as credor_nome,
                        emp.nome as empresa_nome
                 FROM cobrancas c
-                JOIN clientes cl ON c.cliente_id = cl.id
+                LEFT JOIN clientes cl ON c.cliente_id = cl.id
                 LEFT JOIN credores cr ON c.credor_id = cr.id
                 LEFT JOIN empresas emp ON c.empresa_id = emp.id
                 WHERE c.id = $1::uuid
             `, [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Cobrança não encontrada' });
+                return res.status(404).json({ success: false, error: 'Cobrança não encontrada' });
             }
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0] });
 
         } catch (error) {
             console.error('Erro ao buscar cobrança:', error);
-            res.status(500).json({ error: 'Erro ao buscar cobrança' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar cobrança' });
         }
     });
 
     // POST /api/cobrancas - Criar cobrança
-    // ✅ CORRIGIDO: Aceita tanto credor_id quanto empresa_id (ambos UUID)
     router.post('/', auth, async (req, res) => {
         try {
             const {
                 cliente_id,
-                credor_id,      // UUID do credor (quem contratou a cobrança)
-                empresa_id,     // UUID da empresa (seu escritório)
+                credor_id,
+                empresa_id,
                 descricao,
                 valor,
                 data_vencimento,
@@ -285,72 +432,43 @@ module.exports = function(pool, auth, registrarLog) {
                 status = 'pendente'
             } = req.body;
 
-            // Validações
-            if (!cliente_id) {
-                return res.status(400).json({ error: 'Cliente é obrigatório' });
+            if (!cliente_id || !valor || !data_vencimento) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'Cliente, valor e data de vencimento são obrigatórios' 
+                });
             }
-
-            if (!valor || parseFloat(valor) <= 0) {
-                return res.status(400).json({ error: 'Valor deve ser maior que zero' });
-            }
-
-            if (!data_vencimento) {
-                return res.status(400).json({ error: 'Data de vencimento é obrigatória' });
-            }
-
-            // Preparar valores UUID (pode ser null)
-            const finalCredorId = credor_id || null;
-            const finalEmpresaId = empresa_id || null;
 
             const result = await pool.query(`
                 INSERT INTO cobrancas (
-                    cliente_id, credor_id, empresa_id, descricao, valor, 
-                    data_vencimento, numero_contrato, observacoes, 
-                    status, created_at
-                ) VALUES (
-                    $1::uuid, 
-                    $2::uuid, 
-                    $3::uuid, 
-                    $4, $5, $6, $7, $8, $9, NOW()
+                    cliente_id, credor_id, empresa_id, descricao, valor,
+                    data_vencimento, numero_contrato, observacoes, status,
+                    arquivado, created_at, updated_at
                 )
+                VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, $7, $8, $9, false, NOW(), NOW())
                 RETURNING *
             `, [
                 cliente_id,
-                finalCredorId,
-                finalEmpresaId,
-                descricao,
+                credor_id || null,
+                empresa_id || null,
+                descricao || '',
                 parseFloat(valor),
                 data_vencimento,
-                numero_contrato,
-                observacoes,
+                numero_contrato || null,
+                observacoes || null,
                 status
             ]);
 
-            // Buscar dados completos para retornar
-            const cobrancaCompleta = await pool.query(`
-                SELECT c.*, 
-                       cl.nome as cliente_nome,
-                       cr.nome as credor_nome,
-                       emp.nome as empresa_nome
-                FROM cobrancas c
-                JOIN clientes cl ON c.cliente_id = cl.id
-                LEFT JOIN credores cr ON c.credor_id = cr.id
-                LEFT JOIN empresas emp ON c.empresa_id = emp.id
-                WHERE c.id = $1
-            `, [result.rows[0].id]);
-
             await registrarLog(req.user?.id, 'COBRANCA_CRIADA', 'cobrancas', result.rows[0].id, {
-                cliente_id,
-                credor_id: finalCredorId,
-                empresa_id: finalEmpresaId,
-                valor
+                valor,
+                cliente_id
             });
 
-            res.status(201).json(cobrancaCompleta.rows[0]);
+            res.status(201).json({ success: true, data: result.rows[0] });
 
         } catch (error) {
             console.error('Erro ao criar cobrança:', error);
-            res.status(500).json({ error: 'Erro ao criar cobrança: ' + error.message });
+            res.status(500).json({ success: false, error: 'Erro ao criar cobrança: ' + error.message });
         }
     });
 
@@ -370,9 +488,8 @@ module.exports = function(pool, auth, registrarLog) {
                 status
             } = req.body;
 
-            // Construir query dinâmica
-            let updateFields = [];
-            let params = [id];
+            const updateFields = [];
+            const params = [id];
             let paramIndex = 2;
 
             if (cliente_id !== undefined) {
@@ -383,13 +500,13 @@ module.exports = function(pool, auth, registrarLog) {
 
             if (credor_id !== undefined) {
                 updateFields.push(`credor_id = $${paramIndex}::uuid`);
-                params.push(credor_id || null);
+                params.push(credor_id);
                 paramIndex++;
             }
 
             if (empresa_id !== undefined) {
                 updateFields.push(`empresa_id = $${paramIndex}::uuid`);
-                params.push(empresa_id || null);
+                params.push(empresa_id);
                 paramIndex++;
             }
 
@@ -430,7 +547,7 @@ module.exports = function(pool, auth, registrarLog) {
             }
 
             if (updateFields.length === 0) {
-                return res.status(400).json({ error: 'Nenhum campo para atualizar' });
+                return res.status(400).json({ success: false, error: 'Nenhum campo para atualizar' });
             }
 
             updateFields.push('updated_at = NOW()');
@@ -442,16 +559,16 @@ module.exports = function(pool, auth, registrarLog) {
             `, params);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Cobrança não encontrada' });
+                return res.status(404).json({ success: false, error: 'Cobrança não encontrada' });
             }
 
             await registrarLog(req.user?.id, 'COBRANCA_ATUALIZADA', 'cobrancas', id, {});
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0] });
 
         } catch (error) {
             console.error('Erro ao atualizar cobrança:', error);
-            res.status(500).json({ error: 'Erro ao atualizar cobrança' });
+            res.status(500).json({ success: false, error: 'Erro ao atualizar cobrança' });
         }
     });
 
@@ -476,16 +593,16 @@ module.exports = function(pool, auth, registrarLog) {
             const result = await pool.query(query, params);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Cobrança não encontrada' });
+                return res.status(404).json({ success: false, error: 'Cobrança não encontrada' });
             }
 
             await registrarLog(req.user?.id, 'COBRANCA_STATUS', 'cobrancas', id, { status });
 
-            res.json(result.rows[0]);
+            res.json({ success: true, data: result.rows[0] });
 
         } catch (error) {
             console.error('Erro ao atualizar status:', error);
-            res.status(500).json({ error: 'Erro ao atualizar status' });
+            res.status(500).json({ success: false, error: 'Erro ao atualizar status' });
         }
     });
 
@@ -495,10 +612,9 @@ module.exports = function(pool, auth, registrarLog) {
             const { ids } = req.body;
 
             if (!ids || !Array.isArray(ids) || ids.length === 0) {
-                return res.status(400).json({ error: 'IDs são obrigatórios' });
+                return res.status(400).json({ success: false, error: 'IDs são obrigatórios' });
             }
 
-            // Converter array de strings para formato UUID
             const result = await pool.query(`
                 UPDATE cobrancas 
                 SET status = 'pago', data_pagamento = NOW(), updated_at = NOW()
@@ -511,11 +627,15 @@ module.exports = function(pool, auth, registrarLog) {
                 quantidade: result.rowCount
             });
 
-            res.json({ success: true, atualizadas: result.rowCount });
+            res.json({ 
+                success: true, 
+                message: `${result.rowCount} cobrança(s) marcada(s) como paga(s)`,
+                atualizadas: result.rowCount 
+            });
 
         } catch (error) {
             console.error('Erro ao marcar cobranças como pagas:', error);
-            res.status(500).json({ error: 'Erro ao atualizar cobranças' });
+            res.status(500).json({ success: false, error: 'Erro ao atualizar cobranças' });
         }
     });
 
@@ -527,16 +647,16 @@ module.exports = function(pool, auth, registrarLog) {
             const result = await pool.query('DELETE FROM cobrancas WHERE id = $1::uuid RETURNING id', [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Cobrança não encontrada' });
+                return res.status(404).json({ success: false, error: 'Cobrança não encontrada' });
             }
 
             await registrarLog(req.user?.id, 'COBRANCA_REMOVIDA', 'cobrancas', id, {});
 
-            res.json({ success: true });
+            res.json({ success: true, message: 'Cobrança removida' });
 
         } catch (error) {
             console.error('Erro ao remover cobrança:', error);
-            res.status(500).json({ error: 'Erro ao remover cobrança' });
+            res.status(500).json({ success: false, error: 'Erro ao remover cobrança' });
         }
     });
 
@@ -551,19 +671,19 @@ module.exports = function(pool, auth, registrarLog) {
                        cl.telefone as cliente_telefone,
                        cr.nome as credor_nome
                 FROM cobrancas c
-                JOIN clientes cl ON c.cliente_id = cl.id
+                LEFT JOIN clientes cl ON c.cliente_id = cl.id
                 LEFT JOIN credores cr ON c.credor_id = cr.id
                 WHERE c.id = $1::uuid
             `, [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Cobrança não encontrada' });
+                return res.status(404).json({ success: false, error: 'Cobrança não encontrada' });
             }
 
             const cobranca = result.rows[0];
 
             if (!cobranca.cliente_telefone) {
-                return res.status(400).json({ error: 'Cliente não possui telefone cadastrado' });
+                return res.status(400).json({ success: false, error: 'Cliente não possui telefone cadastrado' });
             }
 
             // Formatar telefone
@@ -606,7 +726,7 @@ _ACERTIVE - Sistema de Cobranças_`;
 
         } catch (error) {
             console.error('Erro ao gerar link WhatsApp:', error);
-            res.status(500).json({ error: 'Erro ao gerar link' });
+            res.status(500).json({ success: false, error: 'Erro ao gerar link' });
         }
     });
 
