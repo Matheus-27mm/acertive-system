@@ -907,8 +907,22 @@
   <script>
     const API = window.location.origin;
     let token = localStorage.getItem('token');
-    if (!token) window.location.href = '/';
-
+if (!token) {
+    window.location.href = '/login';
+} else {
+    // Valida o token antes de continuar
+    fetch('/api/usuarios/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(res => {
+        if (!res.ok) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+    }).catch(() => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    });
+}
     function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
     function fmtMoney(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
