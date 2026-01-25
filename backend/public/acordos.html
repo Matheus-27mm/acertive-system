@@ -682,8 +682,293 @@
     async function confirmarGerarAsaas() { const id = document.getElementById('gerarId').value; try { const r = await fetch(API + '/api/acordos/parcelas/' + id + '/gerar-asaas', { method: 'POST', headers: H() }); const d = await r.json(); if (r.ok && (d.success || d.invoiceUrl)) { fecharModal('modalGerar'); toast('✅ Cobrança gerada!'); await carregarParcelas(); if (d.invoiceUrl && confirm('Deseja copiar o link?')) copiarLink(d.invoiceUrl); } else { toast(d.error || 'Erro'); } } catch (e) { toast('Erro ao gerar'); } }
 
     // INIT
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER VENCIDAS
+    // ═══════════════════════════════════════════════════════════════
+    function renderVencidas() {
+      const filtered = parcelas.filter(p => getStatusParcela(p) === 'vencido');
+      const tbody = document.getElementById('tbodyVencidas');
+      
+      // Stats
+      const valorTotal = filtered.reduce((s, p) => s + (parseFloat(p.valor) || 0), 0);
+      const diasMedia = filtered.length ? Math.round(filtered.reduce((s, p) => s + getDiasAtraso(p.data_vencimento), 0) / filtered.length) : 0;
+      const clientesUnicos = [...new Set(filtered.map(p => p.cliente_id))].length;
+      
+      document.getElementById('statVencidasQtd').textContent = filtered.length;
+      document.getElementById('statVencidasTotal').textContent = fmtMoney(valorTotal);
+      document.getElementById('statVencidasMedia').textContent = diasMedia + ' dias';
+      document.getElementById('statVencidasClientes').textContent = clientesUnicos;
+      document.getElementById('vencidasCount').textContent = filtered.length;
+      
+      if (!filtered.length) {
+        tbody.innerHTML = '';
+        document.getElementById('emptyVencidas').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyVencidas').style.display = 'none';
+
+      // Ordenar por dias de atraso (maior primeiro)
+      const sorted = [...filtered].sort((a, b) => getDiasAtraso(b.data_vencimento) - getDiasAtraso(a.data_vencimento));
+
+      tbody.innerHTML = sorted.map(p => {
+        const dias = getDiasAtraso(p.data_vencimento);
+        const temLink = !!p.asaas_invoice_url;
+        const urgente = dias > 7;
+        
+        let acoes = temLink
+          ? `<button class="action-btn link" onclick="window.open('${p.asaas_invoice_url}','_blank')"><i class="fas fa-external-link-alt"></i></button>
+             <button class="action-btn copiar" onclick="copiarLink('${p.asaas_invoice_url}')"><i class="fas fa-copy"></i></button>`
+          : `<button class="action-btn" onclick="abrirModalGerar('${p.id}')"><i class="fas fa-bolt"></i></button>`;
+        acoes += `<button class="action-btn whatsapp" onclick="enviarWhatsApp('${p.id}')"><i class="fab fa-whatsapp"></i></button>`;
+        acoes += `<button class="action-btn success" onclick="abrirModalPagar('${p.id}')"><i class="fas fa-check"></i></button>`;
+        
+        return `
+          <tr style="${urgente ? 'background:rgba(239,68,68,0.05)' : ''}">
+            <td><span class="parcela-num">${p.numero||'-'}/${p.total_parcelas||'-'}</span></td>
+            <td>
+              <div class="cliente-info">
+                <span class="cliente-nome">${p.cliente_nome||'-'}</span>
+                <span class="cliente-meta">${p.cliente_telefone||''}</span>
+              </div>
+            </td>
+            <td><span class="credor-tag"><i class="fas fa-building"></i> ${p.credor_nome||'-'}</span></td>
+            <td>${fmtDate(p.data_vencimento)}</td>
+            <td>
+              <span class="status-badge ${urgente ? 'atrasado' : 'vencido'}">
+                <i class="fas fa-clock"></i> ${dias} dias
+              </span>
+              ${urgente ? '<span class="badge urgente" style="margin-left:4px"><i class="fas fa-exclamation"></i></span>' : ''}
+            </td>
+            <td style="text-align:right"><span class="valor-gold">${fmtMoney(p.valor)}</span></td>
+            <td><div class="actions">${acoes}</div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER PAGAS
+    // ═══════════════════════════════════════════════════════════════
+    function filtrarPagas() {
+      const busca = document.getElementById('searchPagas').value.toLowerCase();
+      const credor = document.getElementById('filtroCredorPagas').value;
+      const periodo = document.getElementById('filtroPeriodoPagas').value;
+      const timing = document.getElementById('filtroTimingPagas').value;
+      
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      
+      pagasFiltradas = parcelas.filter(p => {
+        if (getStatusParcela(p) !== 'pago') return false;
+        if (busca && !(p.cliente_nome || '').toLowerCase().includes(busca)) return false;
+        if (credor && String(p.credor_id) !== credor) return false;
+        
+        if (periodo) {
+          const dataPag = new Date(p.data_pagamento);
+          if (periodo === 'hoje' && dataPag.toDateString() !== hoje.toDateString()) return false;
+          if (periodo === 'semana') {
+            const inicioSemana = new Date(hoje); inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+            if (dataPag < inicioSemana) return false;
+          }
+          if (periodo === 'mes' && (dataPag.getMonth() !== hoje.getMonth() || dataPag.getFullYear() !== hoje.getFullYear())) return false;
+          if (periodo === 'trimestre') {
+            const trimAtual = Math.floor(hoje.getMonth() / 3);
+            const trimPag = Math.floor(dataPag.getMonth() / 3);
+            if (trimPag !== trimAtual || dataPag.getFullYear() !== hoje.getFullYear()) return false;
+          }
+        }
+        
+        if (timing) {
+          const t = getTimingPagamento(p.data_vencimento, p.data_pagamento);
+          if (timing === 'antes' && t.tipo !== 'antes' && t.tipo !== 'no-dia') return false;
+          if (timing === 'depois' && t.tipo !== 'depois') return false;
+        }
+        
+        return true;
+      });
+      
+      renderPagas();
+    }
+
+    function renderPagas() {
+      if (!pagasFiltradas) pagasFiltradas = parcelas.filter(p => getStatusParcela(p) === 'pago');
+      
+      const tbody = document.getElementById('tbodyPagas');
+      const tfoot = document.getElementById('tfootPagas');
+      const hoje = new Date();
+      const mesAtual = hoje.getMonth();
+      const anoAtual = hoje.getFullYear();
+      
+      // Stats completas
+      const todasPagas = parcelas.filter(p => getStatusParcela(p) === 'pago');
+      const pagasMes = todasPagas.filter(p => {
+        const d = new Date(p.data_pagamento);
+        return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+      });
+      
+      const valorTotal = todasPagas.reduce((s, p) => s + (parseFloat(p.valor_pago || p.valor) || 0), 0);
+      const valorMes = pagasMes.reduce((s, p) => s + (parseFloat(p.valor_pago || p.valor) || 0), 0);
+      
+      const noPrazo = todasPagas.filter(p => {
+        const t = getTimingPagamento(p.data_vencimento, p.data_pagamento);
+        return t.tipo === 'antes' || t.tipo === 'no-dia';
+      });
+      const atrasadas = todasPagas.filter(p => {
+        const t = getTimingPagamento(p.data_vencimento, p.data_pagamento);
+        return t.tipo === 'depois';
+      });
+      
+      document.getElementById('statPagasTotal').textContent = todasPagas.length;
+      document.getElementById('statPagasValorTotal').textContent = fmtMoney(valorTotal);
+      document.getElementById('statPagasMes').textContent = pagasMes.length;
+      document.getElementById('statPagasValorMes').textContent = fmtMoney(valorMes);
+      document.getElementById('statPagasNoPrazo').textContent = noPrazo.length;
+      document.getElementById('statPagasNoPrazoPerc').textContent = todasPagas.length ? Math.round((noPrazo.length / todasPagas.length) * 100) + '%' : '0%';
+      document.getElementById('statPagasAtrasadas').textContent = atrasadas.length;
+      document.getElementById('statPagasAtrasadasPerc').textContent = todasPagas.length ? Math.round((atrasadas.length / todasPagas.length) * 100) + '%' : '0%';
+      document.getElementById('pagasCount').textContent = pagasFiltradas.length;
+      
+      if (!pagasFiltradas.length) {
+        tbody.innerHTML = '';
+        tfoot.innerHTML = '';
+        document.getElementById('emptyPagas').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyPagas').style.display = 'none';
+
+      // Ordenar por data de pagamento (mais recente primeiro)
+      const sorted = [...pagasFiltradas].sort((a, b) => new Date(b.data_pagamento) - new Date(a.data_pagamento));
+      const valorFiltrado = sorted.reduce((s, p) => s + (parseFloat(p.valor_pago || p.valor) || 0), 0);
+
+      tbody.innerHTML = sorted.map(p => {
+        const timing = getTimingPagamento(p.data_vencimento, p.data_pagamento);
+        const forma = p.forma_pagamento || 'pix';
+        
+        let timingHtml = '';
+        if (timing.tipo === 'antes') {
+          timingHtml = `<div class="timing"><div class="timing-icon antes"><i class="fas fa-check"></i></div><span class="timing-text positivo">${timing.dias}d antes</span></div>`;
+        } else if (timing.tipo === 'no-dia') {
+          timingHtml = `<div class="timing"><div class="timing-icon no-dia"><i class="fas fa-clock"></i></div><span class="timing-text">No dia</span></div>`;
+        } else {
+          timingHtml = `<div class="timing"><div class="timing-icon depois"><i class="fas fa-exclamation"></i></div><span class="timing-text negativo">${timing.dias}d depois</span></div>`;
+        }
+        
+        return `
+          <tr>
+            <td><span class="parcela-num">${p.numero||'-'}/${p.total_parcelas||'-'}</span></td>
+            <td>
+              <div class="cliente-info">
+                <span class="cliente-nome">${p.cliente_nome||'-'}</span>
+                <span class="cliente-meta">${p.cliente_cpf||p.cliente_telefone||''}</span>
+              </div>
+            </td>
+            <td><span class="credor-tag"><i class="fas fa-building"></i> ${p.credor_nome||'-'}</span></td>
+            <td>${fmtDate(p.data_vencimento)}</td>
+            <td><span style="color:var(--green);font-weight:600">${fmtDate(p.data_pagamento)}</span></td>
+            <td>${timingHtml}</td>
+            <td><span class="forma-pagamento"><i class="fas ${getFormaIcon(forma)}"></i> ${forma.charAt(0).toUpperCase() + forma.slice(1)}</span></td>
+            <td style="text-align:right"><span class="valor-gold">${fmtMoney(p.valor_pago||p.valor)}</span></td>
+          </tr>
+        `;
+      }).join('');
+      
+      // Footer com total
+      tfoot.innerHTML = `
+        <tr class="summary-row">
+          <td colspan="7" style="text-align:right;font-weight:600">Total (${sorted.length} parcelas):</td>
+          <td style="text-align:right">${fmtMoney(valorFiltrado)}</td>
+        </tr>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // WHATSAPP
+    // ═══════════════════════════════════════════════════════════════
+    function abrirWhatsApp(tel, nome, valor) {
+      if (!tel) { toast('Cliente sem telefone'); return; }
+      const telefone = tel.replace(/\D/g, '');
+      const t = telefone.length <= 11 ? '55' + telefone : telefone;
+      const msg = `Olá, *${nome}*!\n\nLembramos do seu acordo no valor de *${fmtMoney(valor)}*.\n\nEntre em contato para mais informações!\n\n_ACERTIVE Cobranças_`;
+      window.open(`https://wa.me/${t}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function enviarWhatsApp(id) {
+      const p = parcelas.find(x => x.id == id);
+      if (!p) return;
+      enviarWhatsAppParcela(p.cliente_telefone, p.cliente_nome, p.numero, p.total_parcelas, p.valor, p.data_vencimento, p.asaas_invoice_url);
+    }
+
+    function enviarWhatsAppParcela(tel, nome, num, total, valor, venc, link) {
+      if (!tel) { toast('Cliente sem telefone'); return; }
+      const telefone = tel.replace(/\D/g, '');
+      const t = telefone.length <= 11 ? '55' + telefone : telefone;
+      const st = new Date(venc) < new Date() ? 'vencido' : 'pendente';
+      
+      let msg = st === 'vencido'
+        ? `Olá, *${nome}*!\n\n⚠️ *PARCELA EM ATRASO*\n\n📌 Parcela: ${num}/${total}\n💰 Valor: *${fmtMoney(valor)}*\n📅 Vencimento: ${fmtDate(venc)}\n\nPor favor, regularize o mais breve possível.`
+        : `Olá, *${nome}*!\n\n📄 *LEMBRETE DE PARCELA*\n\n📌 Parcela: ${num}/${total}\n💰 Valor: *${fmtMoney(valor)}*\n📅 Vencimento: ${fmtDate(venc)}\n\nEvite juros, pague em dia!`;
+      
+      if (link) msg += `\n\n🔗 *Link para pagamento:*\n${link}`;
+      msg += '\n\n_ACERTIVE Cobranças_';
+      
+      window.open(`https://wa.me/${t}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    async function copiarLink(url) {
+      if (!url) { toast('Link não disponível'); return; }
+      try {
+        await navigator.clipboard.writeText(url);
+        toast('✅ Link copiado!');
+      } catch (e) {
+        const i = document.createElement('input');
+        i.value = url;
+        document.body.appendChild(i);
+        i.select();
+        document.execCommand('copy');
+        document.body.removeChild(i);
+        toast('✅ Link copiado!');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL NOVO ACORDO
+    // ═══════════════════════════════════════════════════════════════
+    function abrirModalNovo() { tipo = null; item = null; valorOriginal = 0; document.getElementById('etapa0').style.display = 'block'; document.getElementById('etapa1a').style.display = 'none'; document.getElementById('etapa1b').style.display = 'none'; document.getElementById('etapa2').style.display = 'none'; document.getElementById('btnSalvar').style.display = 'none'; document.getElementById('secaoValorManual').style.display = 'none'; document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected')); document.getElementById('modalNovo').classList.add('show'); }
+    function escolherTipo(t) { tipo = t; event.currentTarget.classList.add('selected'); setTimeout(() => { document.getElementById('etapa0').style.display = 'none'; if (t === 'cobranca') { document.getElementById('etapa1a').style.display = 'block'; document.getElementById('buscaCob').value = ''; document.getElementById('listaCob').innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Digite para buscar...</p>'; document.getElementById('buscaCob').focus(); } else { document.getElementById('etapa1b').style.display = 'block'; document.getElementById('buscaCli').value = ''; document.getElementById('listaCli').innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Digite para buscar...</p>'; document.getElementById('buscaCli').focus(); } }, 200); }
+    function voltar0() { document.getElementById('etapa0').style.display = 'block'; document.getElementById('etapa1a').style.display = 'none'; document.getElementById('etapa1b').style.display = 'none'; document.getElementById('etapa2').style.display = 'none'; document.getElementById('btnSalvar').style.display = 'none'; document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected')); tipo = null; item = null; }
+    function voltarBusca() { document.getElementById('etapa2').style.display = 'none'; document.getElementById('btnSalvar').style.display = 'none'; if (tipo === 'cobranca') document.getElementById('etapa1a').style.display = 'block'; else document.getElementById('etapa1b').style.display = 'block'; item = null; }
+
+    async function buscarCli() { const b = document.getElementById('buscaCli').value.trim(); const l = document.getElementById('listaCli'); if (b.length < 2) { l.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Digite 2+ caracteres...</p>'; return; } l.innerHTML = '<p style="text-align:center;padding:20px"><i class="fas fa-spinner fa-spin"></i></p>'; try { const r = await fetch(API + '/api/clientes/buscar?q=' + encodeURIComponent(b), { headers: H() }); const d = await r.json(); if (d.success && d.data && d.data.length) { clientes = d.data; l.innerHTML = clientes.map(c => `<div class="item-card" onclick="selCli('${c.id}')"><div class="item-avatar">${(c.nome || 'CL').substring(0, 2).toUpperCase()}</div><div class="item-info"><div class="item-nome">${c.nome || 'Cliente'}</div><div class="item-meta">${c.cpf_cnpj || '-'}</div></div><div class="item-valor">${fmtMoney(c.divida_total || 0)}</div></div>`).join(''); } else { l.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Nenhum cliente encontrado</p>'; } } catch (e) { l.innerHTML = '<p style="text-align:center;color:var(--red);padding:20px">Erro ao buscar</p>'; } }
+    function selCli(id) { item = clientes.find(c => String(c.id) === String(id)); if (!item) return toast('Erro'); document.getElementById('tituloSel').textContent = 'Cliente Selecionado'; document.getElementById('cardSel').innerHTML = `<div class="item-avatar">${(item.nome || 'CL').substring(0, 2).toUpperCase()}</div><div class="item-info"><div class="item-nome">${item.nome || 'Cliente'}</div><div class="item-meta">${item.cpf_cnpj || '-'}</div></div><div class="item-valor">${fmtMoney(item.divida_total || 0)}</div>`; if (item.divida_total && parseFloat(item.divida_total) > 0) { valorOriginal = parseFloat(item.divida_total); document.getElementById('secaoValorManual').style.display = 'none'; } else { valorOriginal = 0; document.getElementById('secaoValorManual').style.display = 'block'; document.getElementById('valorManual').value = ''; } config2(); }
+
+    async function buscarCob() { const b = document.getElementById('buscaCob').value.trim(); const l = document.getElementById('listaCob'); if (b.length < 2) { l.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Digite 2+ caracteres...</p>'; return; } l.innerHTML = '<p style="text-align:center;padding:20px"><i class="fas fa-spinner fa-spin"></i></p>'; try { const r = await fetch(API + '/api/cobrancas?q=' + encodeURIComponent(b), { headers: H() }); const d = await r.json(); if (d.success && d.data && d.data.length) { cobrancas = d.data.filter(c => ['pendente', 'vencido', 'vencida'].includes((c.status || '').toLowerCase())); if (cobrancas.length) { l.innerHTML = cobrancas.map(c => `<div class="item-card" onclick="selCob('${c.id}')"><div class="item-avatar"><i class="fas fa-file-invoice-dollar"></i></div><div class="item-info"><div class="item-nome">${c.descricao || 'Cobrança'}</div><div class="item-meta">${c.cliente_nome || 'Cliente'} • ${fmtDate(c.vencimento || c.data_vencimento)}</div></div><div class="item-valor">${fmtMoney(c.valor_atualizado || c.valor_original || c.valor)}</div></div>`).join(''); } else { l.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Nenhuma cobrança pendente</p>'; } } else { l.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Nenhuma cobrança encontrada</p>'; } } catch (e) { l.innerHTML = '<p style="text-align:center;color:var(--red);padding:20px">Erro ao buscar</p>'; } }
+    function selCob(id) { item = cobrancas.find(c => String(c.id) === String(id)); if (!item) return toast('Erro'); document.getElementById('tituloSel').textContent = 'Cobrança Selecionada'; document.getElementById('cardSel').innerHTML = `<div class="item-avatar"><i class="fas fa-file-invoice-dollar"></i></div><div class="item-info"><div class="item-nome">${item.descricao || 'Cobrança'}</div><div class="item-meta">${item.cliente_nome || 'Cliente'} • ${fmtDate(item.vencimento || item.data_vencimento)}</div></div><div class="item-valor">${fmtMoney(item.valor_atualizado || item.valor_original || item.valor)}</div>`; valorOriginal = parseFloat(item.valor_atualizado || item.valor_original || item.valor) || 0; document.getElementById('secaoValorManual').style.display = 'none'; config2(); }
+
+    function config2() { document.getElementById('etapa1a').style.display = 'none'; document.getElementById('etapa1b').style.display = 'none'; document.getElementById('etapa2').style.display = 'block'; document.getElementById('btnSalvar').style.display = 'inline-flex'; document.getElementById('valorOrig').value = fmtMoney(valorOriginal); document.getElementById('desconto').value = 0; document.getElementById('numParc').value = 1; const d = new Date(); d.setDate(d.getDate() + 7); document.getElementById('primVenc').value = d.toISOString().split('T')[0]; calcular(); }
+    function calcular() { if (tipo === 'cliente' && document.getElementById('secaoValorManual').style.display !== 'none') { valorOriginal = parseFloat(document.getElementById('valorManual').value) || 0; document.getElementById('valorOrig').value = fmtMoney(valorOriginal); } const dc = parseFloat(document.getElementById('desconto').value) || 0; const np = parseInt(document.getElementById('numParc').value) || 1; const vd = valorOriginal * (dc / 100); const vf = valorOriginal - vd; const vp = np > 0 ? vf / np : 0; document.getElementById('valorFinal').value = fmtMoney(vf); document.getElementById('valorParc').value = fmtMoney(vp); document.getElementById('resOrig').textContent = fmtMoney(valorOriginal); document.getElementById('resDesc').textContent = '- ' + fmtMoney(vd); document.getElementById('resFinal').textContent = fmtMoney(vf); }
+
+    async function salvarAcordo() { const np = parseInt(document.getElementById('numParc').value) || 0; const pv = document.getElementById('primVenc').value; if (tipo === 'cliente' && document.getElementById('secaoValorManual').style.display !== 'none') { valorOriginal = parseFloat(document.getElementById('valorManual').value) || 0; } if (valorOriginal <= 0) { toast('Informe o valor'); return; } if (np < 1) { toast('Parcelas inválido'); return; } if (!pv) { toast('Informe o 1º vencimento'); return; } const dc = parseFloat(document.getElementById('desconto').value) || 0; const vd = valorOriginal * (dc / 100); const vf = valorOriginal - vd; const vp = vf / np; const dados = { cliente_id: tipo === 'cliente' ? item.id : item.cliente_id, credor_id: tipo === 'cobranca' ? item.credor_id : null, cobranca_id: tipo === 'cobranca' ? item.id : null, valor_original: valorOriginal, desconto_percentual: dc, desconto_valor: vd, valor_acordo: vf, valor_entrada: 0, numero_parcelas: np, valor_parcela: vp, data_primeiro_vencimento: pv, forma_pagamento: 'boleto', status: 'ativo' }; try { const r = await fetch(API + '/api/acordos', { method: 'POST', headers: H(), body: JSON.stringify(dados) }); const d = await r.json(); if (d.success) { toast('✅ Acordo criado com sucesso!'); fecharModal('modalNovo'); carregarAcordos(); carregarParcelas(); } else { toast(d.message || d.error || 'Erro ao criar acordo'); } } catch (e) { toast('Erro ao criar acordo'); } }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL PAGAR
+    // ═══════════════════════════════════════════════════════════════
+    function abrirModalPagar(id) { const p = parcelas.find(x => x.id == id); if (!p) return; abrirModalPagarDireto(id, p.cliente_nome, p.numero, p.total_parcelas, p.data_vencimento, p.valor); }
+    function abrirModalPagarDireto(id, cliente, num, total, venc, valor) { document.getElementById('pagId').value = id; document.getElementById('pagCliente').textContent = cliente || '-'; document.getElementById('pagParcela').textContent = `Parcela ${num||'-'}/${total||'-'}`; document.getElementById('pagVencimento').textContent = fmtDate(venc); document.getElementById('pagValor').textContent = fmtMoney(valor); document.getElementById('pagValorPago').value = valor || 0; document.getElementById('pagData').value = new Date().toISOString().split('T')[0]; document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected')); document.querySelector('.payment-method').classList.add('selected'); metodoPagamento = 'pix'; document.getElementById('modalPagar').classList.add('show'); }
+    function selecionarMetodo(el, m) { document.querySelectorAll('.payment-method').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); metodoPagamento = m; }
+    async function confirmarPagamento() { const id = document.getElementById('pagId').value; const valor = document.getElementById('pagValorPago').value; const data = document.getElementById('pagData').value; if (!valor || !data) { toast('Preencha valor e data'); return; } try { const r = await fetch(API + '/api/acordos/parcelas/' + id + '/pagar', { method: 'PUT', headers: H(), body: JSON.stringify({ valor_pago: valor, data_pagamento: data, forma_pagamento: metodoPagamento }) }); const d = await r.json(); if (r.ok || d.success) { fecharModal('modalPagar'); toast('✅ Pagamento registrado!'); carregarAcordos(); carregarParcelas(); } else { toast(d.error || 'Erro ao registrar pagamento'); } } catch (e) { toast('Erro ao registrar pagamento'); } }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MODAL GERAR ASAAS
+    // ═══════════════════════════════════════════════════════════════
+    function abrirModalGerar(id) { const p = parcelas.find(x => x.id == id); if (!p) return; abrirModalGerarDireto(id, p.cliente_nome, p.numero, p.total_parcelas, p.valor); }
+    function abrirModalGerarDireto(id, cliente, num, total, valor) { document.getElementById('gerarId').value = id; document.getElementById('gerarCliente').textContent = cliente || '-'; document.getElementById('gerarParcela').textContent = `Parcela ${num||'-'}/${total||'-'}`; document.getElementById('gerarValor').textContent = fmtMoney(valor); document.getElementById('modalGerar').classList.add('show'); }
+    async function confirmarGerarAsaas() { const id = document.getElementById('gerarId').value; try { const r = await fetch(API + '/api/acordos/parcelas/' + id + '/gerar-asaas', { method: 'POST', headers: H() }); const d = await r.json(); if (r.ok && (d.success || d.invoiceUrl)) { fecharModal('modalGerar'); toast('✅ Cobrança gerada no Asaas!'); await carregarParcelas(); if (d.invoiceUrl && confirm('Cobrança gerada! Deseja copiar o link?')) copiarLink(d.invoiceUrl); } else { toast(d.error || 'Erro ao gerar cobrança'); } } catch (e) { toast('Erro ao gerar cobrança'); } }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INICIALIZAÇÃO
+    // ═══════════════════════════════════════════════════════════════
     document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
     carregarUsuario();
+    carregarCredores();
     carregarAcordos();
     carregarParcelas();
   </script>
