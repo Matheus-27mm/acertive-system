@@ -467,13 +467,242 @@
     function abrirModalNova() { document.getElementById('novaClienteId').value = ''; document.getElementById('novaDevedor').value = ''; document.getElementById('novaDevedor').style.display = 'block'; document.getElementById('devedorSelecionado').style.display = 'none'; document.getElementById('novaDescricao').value = ''; document.getElementById('novaValor').value = ''; const hoje = new Date(); hoje.setDate(hoje.getDate() + 7); document.getElementById('novaVencimento').value = hoje.toISOString().split('T')[0]; document.getElementById('modalNova').classList.add('show'); }
     let searchDevedorTimeout;
     async function buscarDevedor(termo) { clearTimeout(searchDevedorTimeout); const container = document.getElementById('resultadosDevedor'); if (termo.length < 2) { container.style.display = 'none'; return; } searchDevedorTimeout = setTimeout(async () => { try { const r = await fetch(API + '/api/clientes?q=' + encodeURIComponent(termo), { headers: H() }); const d = await r.json(); if (d.success && d.data.length) { container.innerHTML = d.data.map(c => `<div style="padding:12px;cursor:pointer;border-bottom:1px solid var(--border)" onclick="selecionarNovoDevedor('${c.id}','${c.nome}','${c.cpf_cnpj || ''}')" onmouseover="this.style.background='var(--gold-glow)'" onmouseout="this.style.background='transparent'"><div style="font-weight:600">${c.nome}</div><div style="font-size:12px;color:var(--muted)">${c.cpf_cnpj || 'Sem CPF'}</div></div>`).join(''); container.style.display = 'block'; } else { container.style.display = 'none'; } } catch (e) { container.style.display = 'none'; } }, 300); }
-    function selecionarNovoDevedor(id, nome, cpf) { document.getElementById('novaClienteId').value = id; document.getElementById('devAvatar').textContent = initials(nome); document.getElementById('devNome').textContent = nome; document.getElementById('devCpf').textContent = cpf || '-'; document.getElementById('novaDevedor').style.display = 'none'; document.getElementById('devedorSelecionado').style.display = 'block'; document.getElementById('resultadosDevedor').style.display = 'none'; }
+    function selecionarNovoDevedor(id, nome, cpf) { document.getElementById('novaClienteId').value = id; document.getElementById('devAvatar').textContent = initials(nome); document.getElementById('devNome').textContent = nome; document.getElementById('devCpf').textContent = cpf || '-'; document.getElementById('novaDevedor').style.display = 'none'; document.getElementById('devedorSelecionado').style.display = 'block'; document.getElementById('resultadosDevedor').style.display = 'none'; atualizarResumo(); }
     function trocarDevedor() { document.getElementById('novaClienteId').value = ''; document.getElementById('novaDevedor').value = ''; document.getElementById('novaDevedor').style.display = 'block'; document.getElementById('devedorSelecionado').style.display = 'none'; document.getElementById('novaDevedor').focus(); }
-    async function salvarNovaCobranca() { const clienteId = document.getElementById('novaClienteId').value; const credorId = document.getElementById('novaCredor').value; const descricao = document.getElementById('novaDescricao').value; const valor = parseMoney(document.getElementById('novaValor').value); const vencimento = document.getElementById('novaVencimento').value; const multa = parseFloat(document.getElementById('novaMulta').value) || 2; const juros = parseFloat(document.getElementById('novaJuros').value) || 1; if (!clienteId) { toast('Selecione um devedor'); return; } if (!credorId) { toast('Selecione um credor'); return; } if (!descricao) { toast('Informe a descrição'); return; } if (!valor) { toast('Informe o valor'); return; } if (!vencimento) { toast('Informe o vencimento'); return; } try { const r = await fetch(API + '/api/cobrancas', { method: 'POST', headers: H(), body: JSON.stringify({ cliente_id: clienteId, credor_id: credorId, descricao, valor_original: valor, vencimento, multa, juros }) }); const d = await r.json(); if (d.success) { toast('Cobrança criada!'); fecharModal('modalNova'); carregarFila(); carregarEstatisticas(); } else toast(d.message || 'Erro'); } catch (e) { toast('Erro'); } }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // FUNÇÕES DO MODAL NOVA COBRANÇA - MELHORADAS
+    // ═══════════════════════════════════════════════════════════════
+    function selecionarCategoria(el, categoria) {
+      document.querySelectorAll('.categoria-badge').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('novaCategoria').value = categoria;
+    }
+
+    function selecionarTipoCobranca(el, tipo) {
+      document.querySelectorAll('.tipo-cobranca-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('novaTipoCobranca').value = tipo;
+      atualizarResumo();
+    }
+
+    function toggleSwitch(el, campo) {
+      el.classList.toggle('active');
+      const isActive = el.classList.contains('active');
+      
+      if (campo === 'gerarAsaas') {
+        document.getElementById('novaGerarAsaas').value = isActive ? 'true' : 'false';
+      } else if (campo === 'notificar') {
+        document.getElementById('novaNotificar').value = isActive ? 'true' : 'false';
+        document.getElementById('notificacaoOptions').style.display = isActive ? 'block' : 'none';
+      }
+    }
+
+    function toggleNotificacaoCanal(el, canal) {
+      el.classList.toggle('selected');
+      if (el.classList.contains('selected')) {
+        if (!notificacaoCanais.includes(canal)) notificacaoCanais.push(canal);
+      } else {
+        notificacaoCanais = notificacaoCanais.filter(c => c !== canal);
+      }
+    }
+
+    function calcularPreviewParcelas() {
+      const valor = parseMoney(document.getElementById('novaValor').value);
+      const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
+      const vencimento = document.getElementById('novaVencimento').value;
+      
+      if (parcelas > 1 && valor > 0 && vencimento) {
+        const valorParcela = valor / parcelas;
+        const container = document.getElementById('parcelasPreviewContainer');
+        const grid = document.getElementById('parcelasPreviewGrid');
+        
+        let html = '';
+        const dataBase = new Date(vencimento);
+        
+        for (let i = 0; i < parcelas; i++) {
+          const dataVenc = new Date(dataBase);
+          dataVenc.setMonth(dataVenc.getMonth() + i);
+          html += `
+            <div class="parcela-preview-item">
+              <div class="num">${i + 1}/${parcelas}</div>
+              <div class="valor">${fmtMoney(valorParcela)}</div>
+              <div class="venc">${dataVenc.toLocaleDateString('pt-BR')}</div>
+            </div>
+          `;
+        }
+        
+        grid.innerHTML = html;
+        container.style.display = 'block';
+      } else {
+        document.getElementById('parcelasPreviewContainer').style.display = 'none';
+      }
+      
+      atualizarResumo();
+    }
+
+    function handleAnexos(files) {
+      for (let file of files) {
+        if (anexosFiles.length >= 5) {
+          toast('Máximo de 5 anexos');
+          break;
+        }
+        anexosFiles.push(file);
+      }
+      renderAnexos();
+    }
+
+    function renderAnexos() {
+      const container = document.getElementById('anexosList');
+      if (!anexosFiles.length) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      container.innerHTML = anexosFiles.map((f, i) => {
+        const icon = f.type.includes('pdf') ? 'fa-file-pdf' : (f.type.includes('image') ? 'fa-file-image' : 'fa-file');
+        return `
+          <div class="anexo-item">
+            <i class="fas ${icon}"></i>
+            <span>${f.name}</span>
+            <button onclick="removerAnexo(${i})"><i class="fas fa-times"></i></button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removerAnexo(index) {
+      anexosFiles.splice(index, 1);
+      renderAnexos();
+    }
+
+    function atualizarResumo() {
+      const valor = parseMoney(document.getElementById('novaValor').value);
+      const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
+      const vencimento = document.getElementById('novaVencimento').value;
+      const tipo = document.getElementById('novaTipoCobranca').value;
+      
+      if (valor > 0) {
+        document.getElementById('resumoCobranca').style.display = 'block';
+        document.getElementById('resumoValor').textContent = fmtMoney(valor);
+        document.getElementById('resumoParcelas').textContent = parcelas === 1 ? 'À vista' : parcelas + 'x de ' + fmtMoney(valor / parcelas);
+        document.getElementById('resumoVencimento').textContent = vencimento ? new Date(vencimento).toLocaleDateString('pt-BR') : '-';
+        document.getElementById('resumoTipo').textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+      } else {
+        document.getElementById('resumoCobranca').style.display = 'none';
+      }
+    }
+
+    async function salvarNovaCobranca() { 
+      const clienteId = document.getElementById('novaClienteId').value; 
+      const credorId = document.getElementById('novaCredor').value; 
+      const descricao = document.getElementById('novaDescricao').value; 
+      const valor = parseMoney(document.getElementById('novaValor').value); 
+      const vencimento = document.getElementById('novaVencimento').value; 
+      const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
+      const multa = parseFloat(document.getElementById('novaMulta').value) || 2; 
+      const juros = parseFloat(document.getElementById('novaJuros').value) || 1;
+      const categoria = document.getElementById('novaCategoria').value;
+      const referencia = document.getElementById('novaReferencia').value;
+      const tipoCobranca = document.getElementById('novaTipoCobranca').value;
+      const gerarAsaas = document.getElementById('novaGerarAsaas').value === 'true';
+      const notificar = document.getElementById('novaNotificar').value === 'true';
+      const observacoes = document.getElementById('novaObservacoes').value;
+      const correcao = document.getElementById('novaCorrecao').value;
+      
+      // Validações
+      if (!clienteId) { toast('Selecione um devedor'); return; } 
+      if (!credorId) { toast('Selecione um credor'); return; } 
+      if (!descricao) { toast('Informe a descrição'); return; } 
+      if (!valor) { toast('Informe o valor'); return; } 
+      if (!vencimento) { toast('Informe o vencimento'); return; } 
+      
+      try { 
+        const dados = { 
+          cliente_id: clienteId, 
+          credor_id: credorId, 
+          descricao, 
+          valor_original: valor, 
+          vencimento, 
+          numero_parcelas: parcelas,
+          multa, 
+          juros,
+          categoria,
+          referencia,
+          tipo_cobranca: tipoCobranca,
+          gerar_asaas: gerarAsaas,
+          notificar_cliente: notificar,
+          canais_notificacao: notificacaoCanais,
+          observacoes,
+          correcao
+        };
+        
+        const r = await fetch(API + '/api/cobrancas', { method: 'POST', headers: H(), body: JSON.stringify(dados) }); 
+        const d = await r.json(); 
+        
+        if (d.success) { 
+          let msg = '✅ Cobrança criada com sucesso!';
+          if (gerarAsaas && d.asaas_url) {
+            msg += '\n\n🔗 Link de pagamento gerado!';
+            if (confirm(msg + '\n\nDeseja copiar o link?')) {
+              navigator.clipboard.writeText(d.asaas_url);
+              toast('Link copiado!');
+            }
+          } else {
+            toast(msg);
+          }
+          fecharModal('modalNova'); 
+          carregarFila(); 
+          carregarEstatisticas(); 
+        } else {
+          toast(d.message || d.error || 'Erro ao criar cobrança');
+        }
+      } catch (e) { 
+        console.error('Erro:', e);
+        toast('Erro ao criar cobrança'); 
+      } 
+    }
+    
     function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
     document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
 
+    // ═══════════════════════════════════════════════════════════════
+    // IMPORTAR
+    // ═══════════════════════════════════════════════════════════════
+    document.getElementById('uploadArea').addEventListener('dragover', e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--gold)'; });
+    document.getElementById('uploadArea').addEventListener('dragleave', e => { e.currentTarget.style.borderColor = 'var(--border)'; });
+    document.getElementById('uploadArea').addEventListener('drop', e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--border)'; if (e.dataTransfer.files[0]) processarArquivo(e.dataTransfer.files[0]); });
+    document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files[0]) processarArquivo(e.target.files[0]); });
+    function processarArquivo(file) { const reader = new FileReader(); reader.onload = function(e) { try { dadosImportacao = JSON.parse(e.target.result); document.getElementById('fileInfo').style.display = 'block'; document.getElementById('fileName').textContent = file.name; document.getElementById('fileDetails').textContent = `${dadosImportacao.length.toLocaleString()} registros`; document.getElementById('btnImportar').disabled = false; logImport(`✅ Arquivo: ${dadosImportacao.length} registros`, 'success'); } catch (err) { toast('Erro ao ler JSON'); } }; reader.readAsText(file); }
+    async function iniciarImportacao() { if (!dadosImportacao.length) return; if (!confirm(`Importar ${dadosImportacao.length} registros?`)) return; document.getElementById('btnImportar').disabled = true; document.getElementById('progressContainer').style.display = 'block'; document.getElementById('importStats').style.display = 'grid'; document.getElementById('importLog').style.display = 'block'; const total = dadosImportacao.length; let importados = 0, erros = 0, naoEnc = 0; document.getElementById('impTotal').textContent = total; const LOTE = 50; const lotes = []; for (let i = 0; i < total; i += LOTE) lotes.push(dadosImportacao.slice(i, i + LOTE)); logImport(`🚀 ${lotes.length} lotes...`, 'info'); for (let i = 0; i < lotes.length; i++) { try { const r = await fetch(API + '/api/importar-cobrancas-massa', { method: 'POST', headers: H(), body: JSON.stringify({ cobrancas: lotes[i] }) }); const d = await r.json(); if (d.success) { importados += d.importados || 0; erros += d.erros || 0; naoEnc += d.clientesNaoEncontrados || 0; logImport(`Lote ${i+1}: ${d.importados} ok`, d.erros > 0 ? 'error' : 'success'); } else { erros += lotes[i].length; logImport(`Lote ${i+1}: ERRO`, 'error'); } } catch (e) { erros += lotes[i].length; logImport(`Lote ${i+1}: ERRO`, 'error'); } const prog = Math.round(((i + 1) / lotes.length) * 100); document.getElementById('progressFill').style.width = prog + '%'; document.getElementById('progressFill').textContent = prog + '%'; document.getElementById('progressText').textContent = `Lote ${i+1}/${lotes.length}`; document.getElementById('impSucesso').textContent = importados; document.getElementById('impErros').textContent = erros; document.getElementById('impNaoEnc').textContent = naoEnc; } document.getElementById('progressText').textContent = 'Concluído!'; logImport(`✅ ${importados} importados, ${erros} erros`, 'success'); carregarEstatisticas(); }
+    function logImport(msg, type = 'info') { const log = document.getElementById('importLog'); const time = new Date().toLocaleTimeString(); log.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`; log.scrollTop = log.scrollHeight; }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SIMULADOR COMPLETO
+    // ═══════════════════════════════════════════════════════════════
+    function calcularSimulacao() { 
+      const valor = parseMoney(document.getElementById('simValor').value); 
+      const desconto = parseInt(document.getElementById('simDesconto').value); 
+      const parcelas = parseInt(document.getElementById('simParcelas').value); 
+      const entrada = parseMoney(document.getElementById('simEntrada').value); 
+      document.getElementById('simDescontoValor').textContent = desconto + '%'; 
+      document.getElementById('simParcelasValor').textContent = parcelas + 'x'; 
+      const valorDesconto = valor * (desconto / 100); 
+      const valorAcordo = valor - valorDesconto; 
+      const valorRestante = valorAcordo - entrada; 
+      const valorParcela = parcelas > 0 ? valorRestante / parcelas : 0; 
+      document.getElementById('resOriginal').textContent = fmtMoney(valor); 
+      document.getElementById('resDesconto').textContent = '- ' + fmtMoney(valorDesconto); 
+      document.getElementById('resAcordo').textContent = fmtMoney(valorAcordo); 
+      document.getElementById('resEntrada').textContent = fmtMoney(entrada); 
+      document.getElementById('resParcela').textContent = parcelas + 'x de ' + fmtMoney(valorParcela); 
+    }
+    function limparSimulacao() { document.getElementById('simValor').value = ''; document.getElementById('simDesconto').value = 10; document.getElementById('simParcelas').value = 6; document.getElementById('simEntrada').value = ''; calcularSimulacao(); }
+    function gerarAcordo() { toast('Redirecionando para acordos...'); window.location.href = 'acordos.html?nova=true'; }
+
+    // ═══════════════════════════════════════════════════════════════
     // INIT
+    // ═══════════════════════════════════════════════════════════════
     carregarUsuario();
     carregarEstatisticas();
     carregarCredores();
