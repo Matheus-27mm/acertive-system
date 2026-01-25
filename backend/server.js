@@ -4,6 +4,7 @@
  * server.js - Servidor Principal
  * ========================================
  * FASE 2: Backend Consolidado (8 módulos)
+ * ATUALIZADO: Integração Asaas no módulo de cobranças
  */
 
 require('dotenv').config();
@@ -43,6 +44,175 @@ const pool = new Pool({
 
 pool.on('connect', () => console.log('[DB] Conectado ao PostgreSQL'));
 pool.on('error', (err) => console.error('[DB] Erro:', err));
+
+// ═══════════════════════════════════════════════════════════════
+// SERVIÇO ASAAS - Para integração automática nas cobranças
+// ═══════════════════════════════════════════════════════════════
+
+const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
+const ASAAS_URL = process.env.ASAAS_SANDBOX === 'true' 
+    ? 'https://sandbox.asaas.com/api/v3'
+    : 'https://api.asaas.com/api/v3';
+
+const asaasService = ASAAS_API_KEY ? {
+    // Criar cliente no Asaas
+    async criarCliente(dados) {
+        try {
+            const response = await fetch(`${ASAAS_URL}/customers`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': ASAAS_API_KEY
+                },
+                body: JSON.stringify({
+                    name: dados.name,
+                    cpfCnpj: dados.cpfCnpj,
+                    email: dados.email || null,
+                    phone: dados.phone || null,
+                    mobilePhone: dados.mobilePhone || dados.phone || null
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                console.error('[ASAAS] Erro ao criar cliente:', result);
+                // Se cliente já existe, buscar pelo CPF
+                if (result.errors?.some(e => e.code === 'invalid_cpfCnpj' || e.description?.includes('já cadastrado'))) {
+                    return await this.buscarClientePorCpf(dados.cpfCnpj);
+                }
+                return null;
+            }
+            
+            console.log('[ASAAS] Cliente criado:', result.id);
+            return result;
+        } catch (error) {
+            console.error('[ASAAS] Erro ao criar cliente:', error.message);
+            return null;
+        }
+    },
+
+    // Buscar cliente por CPF
+    async buscarClientePorCpf(cpfCnpj) {
+        try {
+            const cpfLimpo = cpfCnpj?.replace(/\D/g, '');
+            if (!cpfLimpo) return null;
+            
+            const response = await fetch(`${ASAAS_URL}/customers?cpfCnpj=${cpfLimpo}`, {
+                headers: { 'access_token': ASAAS_API_KEY }
+            });
+            
+            const result = await response.json();
+            
+            if (result.data && result.data.length > 0) {
+                console.log('[ASAAS] Cliente encontrado:', result.data[0].id);
+                return result.data[0];
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('[ASAAS] Erro ao buscar cliente:', error.message);
+            return null;
+        }
+    },
+
+    // Criar cobrança no Asaas
+    async criarCobranca(dados) {
+        try {
+            const body = {
+                customer: dados.customer,
+                billingType: dados.billingType || 'BOLETO',
+                value: parseFloat(dados.value),
+                dueDate: dados.dueDate,
+                description: dados.description || 'Cobrança ACERTIVE',
+                externalReference: dados.externalReference || null
+            };
+
+            // Adicionar multa e juros se informados
+            if (dados.fine) {
+                body.fine = {
+                    value: dados.fine.value || 2,
+                    type: dados.fine.type || 'PERCENTAGE'
+                };
+            }
+            
+            if (dados.interest) {
+                body.interest = {
+                    value: dados.interest.value || 1,
+                    type: dados.interest.type || 'PERCENTAGE'
+                };
+            }
+
+            const response = await fetch(`${ASAAS_URL}/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': ASAAS_API_KEY
+                },
+                body: JSON.stringify(body)
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                console.error('[ASAAS] Erro ao criar cobrança:', result);
+                return null;
+            }
+            
+            console.log('[ASAAS] Cobrança criada:', result.id, '- Link:', result.invoiceUrl);
+            return result;
+        } catch (error) {
+            console.error('[ASAAS] Erro ao criar cobrança:', error.message);
+            return null;
+        }
+    },
+
+    // Buscar cobrança por ID
+    async buscarCobranca(id) {
+        try {
+            const response = await fetch(`${ASAAS_URL}/payments/${id}`, {
+                headers: { 'access_token': ASAAS_API_KEY }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('[ASAAS] Erro ao buscar cobrança:', error.message);
+            return null;
+        }
+    },
+
+    // Cancelar cobrança
+    async cancelarCobranca(id) {
+        try {
+            const response = await fetch(`${ASAAS_URL}/payments/${id}`, {
+                method: 'DELETE',
+                headers: { 'access_token': ASAAS_API_KEY }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('[ASAAS] Erro ao cancelar cobrança:', error.message);
+            return null;
+        }
+    },
+
+    // Gerar PIX QR Code
+    async gerarPixQrCode(paymentId) {
+        try {
+            const response = await fetch(`${ASAAS_URL}/payments/${paymentId}/pixQrCode`, {
+                headers: { 'access_token': ASAAS_API_KEY }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('[ASAAS] Erro ao gerar PIX:', error.message);
+            return null;
+        }
+    }
+} : null;
+
+if (asaasService) {
+    console.log('[ASAAS] Serviço configurado -', ASAAS_URL.includes('sandbox') ? 'SANDBOX' : 'PRODUÇÃO');
+} else {
+    console.log('[ASAAS] Serviço NÃO configurado - defina ASAAS_API_KEY no .env');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // MIDDLEWARES DE AUTENTICAÇÃO
@@ -109,7 +279,8 @@ app.use('/api/usuarios', usuariosRoutes);
 const cadastrosRoutes = require('./routes/cadastros')(pool, auth, registrarLog);
 app.use('/api/cadastros', cadastrosRoutes);
 
-const cobrancasRoutes = require('./routes/cobrancas')(pool, auth, upload, registrarLog);
+// ATUALIZADO: Passando asaasService para o módulo de cobranças
+const cobrancasRoutes = require('./routes/cobrancas')(pool, auth, upload, registrarLog, asaasService);
 app.use('/api/cobrancas', cobrancasRoutes);
 
 const acordosRoutes = require('./routes/acordos')(pool, auth, registrarLog);
@@ -174,7 +345,9 @@ app.get('/api/health', async (req, res) => {
             status: 'ok', 
             timestamp: new Date().toISOString(),
             database: 'connected',
-            version: '2.0.0',
+            asaas: asaasService ? 'configured' : 'not_configured',
+            asaas_mode: ASAAS_URL?.includes('sandbox') ? 'sandbox' : 'production',
+            version: '2.1.0',
             modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes']
         });
     } catch (error) {
@@ -205,7 +378,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log('');
     console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║            ACERTIVE - Sistema de Cobrança v2.0                ║');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.1                ║');
     console.log('╠═══════════════════════════════════════════════════════════════╣');
     console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
     console.log('║                                                               ║');
@@ -213,11 +386,13 @@ app.listen(PORT, () => {
     console.log('║     • auth         - Autenticação                             ║');
     console.log('║     • usuarios     - Gestão de usuários                       ║');
     console.log('║     • cadastros    - Credores, Clientes, Empresas             ║');
-    console.log('║     • cobrancas    - Cobranças + Importação                   ║');
+    console.log('║     • cobrancas    - Cobranças + Importação + Asaas Auto      ║');
     console.log('║     • acordos      - Acordos + Parcelas                       ║');
     console.log('║     • acionamentos - Régua, Agendamentos, Histórico           ║');
     console.log('║     • financeiro   - Comissões, Repasses, Relatórios          ║');
     console.log('║     • integracoes  - Asaas, WhatsApp, Email, PDF              ║');
+    console.log('║                                                               ║');
+    console.log(`║  🔗 Asaas: ${asaasService ? (ASAAS_URL.includes('sandbox') ? 'SANDBOX ✓' : 'PRODUÇÃO ✓') : 'NÃO CONFIGURADO'}                                  ║`);
     console.log('╚═══════════════════════════════════════════════════════════════╝');
     console.log('');
 });
