@@ -540,6 +540,212 @@ module.exports = function(pool, auth, registrarLog) {
             res.status(500).json({ success: false, error: 'Erro ao gerar relatório' });
         }
     });
+/**
+ * ========================================
+ * ENDPOINTS ADICIONAIS PARA RELATÓRIOS
+ * ========================================
+ * 
+ * INSTRUÇÕES:
+ * Adicione estes endpoints no arquivo routes/financeiro.js
+ * ANTES da linha "return router;"
+ * 
+ * ========================================
+ */
+
+    // ═══════════════════════════════════════════════════════════════
+    // RELATÓRIOS - NOVOS ENDPOINTS PARA DADOS REAIS
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/financeiro/relatorios/resumo-geral
+    router.get('/relatorios/resumo-geral', auth, async (req, res) => {
+        try {
+            const mesAtual = new Date().getMonth() + 1;
+            const anoAtual = new Date().getFullYear();
+
+            // Clientes inadimplentes (com cobranças vencidas)
+            const inadimplentes = await pool.query(`
+                SELECT COUNT(DISTINCT cliente_id)::int as total
+                FROM cobrancas 
+                WHERE status IN ('pendente', 'vencido') 
+                AND data_vencimento < CURRENT_DATE
+            `);
+
+            // Valor total em atraso
+            const valorAtraso = await pool.query(`
+                SELECT COALESCE(SUM(valor), 0)::numeric as total
+                FROM cobrancas 
+                WHERE status IN ('pendente', 'vencido') 
+                AND data_vencimento < CURRENT_DATE
+            `);
+
+            // Recebido no mês atual (cobranças pagas)
+            const recebidoCobrancas = await pool.query(`
+                SELECT COALESCE(SUM(valor_pago), 0)::numeric as total
+                FROM cobrancas 
+                WHERE status = 'pago'
+                AND EXTRACT(MONTH FROM data_pagamento) = $1 
+                AND EXTRACT(YEAR FROM data_pagamento) = $2
+            `, [mesAtual, anoAtual]);
+
+            // Recebido no mês (parcelas de acordos pagas)
+            const recebidoParcelas = await pool.query(`
+                SELECT COALESCE(SUM(valor_pago), 0)::numeric as total
+                FROM parcelas 
+                WHERE status = 'pago'
+                AND EXTRACT(MONTH FROM data_pagamento) = $1 
+                AND EXTRACT(YEAR FROM data_pagamento) = $2
+            `, [mesAtual, anoAtual]);
+
+            const recebidoMes = parseFloat(recebidoCobrancas.rows[0].total) + parseFloat(recebidoParcelas.rows[0].total);
+
+            // Taxa de conversão
+            const totalVencidasQuery = await pool.query(`
+                SELECT COUNT(*)::int as total FROM cobrancas WHERE data_vencimento < CURRENT_DATE
+            `);
+            const acordosFechadosQuery = await pool.query(`
+                SELECT COUNT(*)::int as total FROM acordos WHERE status IN ('ativo', 'quitado')
+            `);
+
+            const totalVencidas = totalVencidasQuery.rows[0].total || 1;
+            const acordosFechados = acordosFechadosQuery.rows[0].total || 0;
+            const taxaConversao = Math.round((acordosFechados / totalVencidas) * 100);
+
+            res.json({
+                success: true,
+                data: {
+                    inadimplentes: inadimplentes.rows[0].total || 0,
+                    valor_atraso: parseFloat(valorAtraso.rows[0].total) || 0,
+                    recebido_mes: recebidoMes,
+                    taxa_conversao: taxaConversao
+                }
+            });
+        } catch (error) {
+            console.error('[RELATORIOS] Erro resumo-geral:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar resumo' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/evolucao-mensal
+    router.get('/relatorios/evolucao-mensal', auth, async (req, res) => {
+        try {
+            const meses = [];
+            const hoje = new Date();
+
+            for (let i = 5; i >= 0; i--) {
+                const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                const mes = data.getMonth() + 1;
+                const ano = data.getFullYear();
+                const nomeMes = data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+
+                // Recuperado no mês (cobranças + parcelas pagas)
+                const recuperadoCobrancas = await pool.query(`
+                    SELECT COALESCE(SUM(valor_pago), 0)::numeric as total
+                    FROM cobrancas WHERE status = 'pago'
+                    AND EXTRACT(MONTH FROM data_pagamento) = $1 
+                    AND EXTRACT(YEAR FROM data_pagamento) = $2
+                `, [mes, ano]);
+
+                const recuperadoParcelas = await pool.query(`
+                    SELECT COALESCE(SUM(valor_pago), 0)::numeric as total
+                    FROM parcelas WHERE status = 'pago'
+                    AND EXTRACT(MONTH FROM data_pagamento) = $1 
+                    AND EXTRACT(YEAR FROM data_pagamento) = $2
+                `, [mes, ano]);
+
+                const recuperado = parseFloat(recuperadoCobrancas.rows[0].total) + parseFloat(recuperadoParcelas.rows[0].total);
+
+                // Em atraso acumulado até o final do mês
+                const ultimoDia = new Date(ano, mes, 0);
+                const emAtraso = await pool.query(`
+                    SELECT COALESCE(SUM(valor), 0)::numeric as total
+                    FROM cobrancas 
+                    WHERE status IN ('pendente', 'vencido')
+                    AND data_vencimento <= $1
+                `, [ultimoDia.toISOString().split('T')[0]]);
+
+                meses.push({
+                    mes: nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1),
+                    recuperado: Math.round(recuperado),
+                    em_atraso: Math.round(parseFloat(emAtraso.rows[0].total))
+                });
+            }
+
+            res.json({ success: true, data: meses });
+        } catch (error) {
+            console.error('[RELATORIOS] Erro evolucao-mensal:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar evolução' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/distribuicao-status
+    router.get('/relatorios/distribuicao-status', auth, async (req, res) => {
+        try {
+            const resultado = await pool.query(`
+                SELECT 
+                    COALESCE(SUM(CASE WHEN status = 'pago' THEN valor_pago ELSE 0 END), 0)::numeric as pago,
+                    COALESCE(SUM(CASE WHEN status = 'pendente' AND data_vencimento >= CURRENT_DATE THEN valor ELSE 0 END), 0)::numeric as pendente,
+                    COALESCE(SUM(CASE WHEN status IN ('pendente', 'vencido') AND data_vencimento < CURRENT_DATE THEN valor ELSE 0 END), 0)::numeric as vencido
+                FROM cobrancas
+            `);
+
+            res.json({
+                success: true,
+                data: {
+                    pago: parseFloat(resultado.rows[0].pago) || 0,
+                    pendente: parseFloat(resultado.rows[0].pendente) || 0,
+                    vencido: parseFloat(resultado.rows[0].vencido) || 0
+                }
+            });
+        } catch (error) {
+            console.error('[RELATORIOS] Erro distribuicao-status:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar distribuição' });
+        }
+    });
+
+    // GET /api/financeiro/relatorios/top-devedores
+    router.get('/relatorios/top-devedores', auth, async (req, res) => {
+        try {
+            const resultado = await pool.query(`
+                SELECT 
+                    cl.id,
+                    cl.nome,
+                    cl.cpf_cnpj,
+                    COUNT(c.id)::int as total_cobrancas,
+                    COALESCE(SUM(c.valor), 0)::numeric as valor_total,
+                    MIN(c.data_vencimento) as primeira_vencida
+                FROM clientes cl
+                JOIN cobrancas c ON c.cliente_id = cl.id
+                WHERE c.status IN ('pendente', 'vencido')
+                AND c.data_vencimento < CURRENT_DATE
+                GROUP BY cl.id
+                ORDER BY valor_total DESC
+                LIMIT 10
+            `);
+
+            const devedores = resultado.rows.map(d => {
+                const diasAtraso = d.primeira_vencida 
+                    ? Math.max(0, Math.floor((new Date() - new Date(d.primeira_vencida)) / (1000 * 60 * 60 * 24))) 
+                    : 0;
+                
+                return {
+                    id: d.id,
+                    nome: d.nome,
+                    cpf_cnpj: d.cpf_cnpj,
+                    total_cobrancas: d.total_cobrancas,
+                    valor_total: parseFloat(d.valor_total),
+                    dias_atraso: diasAtraso,
+                    situacao: diasAtraso > 90 ? 'inadimplente' : 'pendente'
+                };
+            });
+
+            res.json({ success: true, data: devedores });
+        } catch (error) {
+            console.error('[RELATORIOS] Erro top-devedores:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar devedores' });
+        }
+    });
+
+// FIM DOS ENDPOINTS - Adicione ANTES do "return router;"
 
     return router;
 };
