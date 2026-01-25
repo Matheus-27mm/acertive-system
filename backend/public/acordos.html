@@ -260,10 +260,16 @@
 
     <!-- SECTION: PAGAS -->
     <div class="section" id="sectionPagas">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-label">Total Pagas</div><div class="stat-value" id="statPagasTotal">0</div></div></div>
+        <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-coins"></i></div><div><div class="stat-label">Valor Recebido</div><div class="stat-value" id="statPagasValorTotal">R$ 0</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div><div><div class="stat-label">Pagas no Mês</div><div class="stat-value" id="statPagasMes">0</div></div></div>
+        <div class="stat-card"><div class="stat-icon cyan"><i class="fas fa-chart-line"></i></div><div><div class="stat-label">Valor no Mês</div><div class="stat-value" id="statPagasValorMes">R$ 0</div></div></div>
+      </div>
       <div class="table-container">
         <div class="table-header"><div class="table-title"><i class="fas fa-check-circle" style="color:var(--green);margin-right:8px"></i> Parcelas Pagas</div><div class="table-count" id="pagasCount">0</div></div>
         <table>
-          <thead><tr><th>Parcela</th><th>Cliente</th><th>Vencimento</th><th>Pago em</th><th style="text-align:right">Valor</th></tr></thead>
+          <thead><tr><th>Parcela</th><th>Cliente</th><th>Credor</th><th>Vencimento</th><th>Pago em</th><th>Forma</th><th style="text-align:right">Valor</th></tr></thead>
           <tbody id="tbodyPagas"></tbody>
         </table>
         <div id="emptyPagas" class="empty-state" style="display:none;"><i class="fas fa-inbox"></i><h3>Nenhuma parcela paga</h3></div>
@@ -437,13 +443,17 @@
 
     async function carregarParcelas() {
       try {
-        const r = await fetch(API + '/api/parcelas', { headers: H() });
+        const r = await fetch(API + '/api/acordos/parcelas', { headers: H() });
         const d = await r.json();
-        parcelas = Array.isArray(d) ? d : (d.data || []);
+        parcelas = d.success ? (d.data || []) : (Array.isArray(d) ? d : []);
+        console.log('Parcelas carregadas:', parcelas.length);
         calcularStatsParcelas();
         parcelasFiltradas = [...parcelas];
         renderParcelas();
-      } catch (e) { parcelas = []; }
+      } catch (e) { 
+        console.error('Erro ao carregar parcelas:', e);
+        parcelas = []; 
+      }
     }
 
     function calcularStatsAcordos() {
@@ -573,21 +583,70 @@
     }
 
     function renderParcelasByStatus(status) {
-      const statusMap = { hoje: 'hoje', vencidas: 'vencido', pagas: 'pago' };
-      const filtered = parcelas.filter(p => getStatusParcela(p) === statusMap[status]);
+      const statusMap = { hoje: 'hoje', vencidas: 'vencido', pagas: 'pago', parcelas: 'all' };
+      const filtered = status === 'parcelas' ? parcelas : parcelas.filter(p => getStatusParcela(p) === statusMap[status]);
       const tbody = document.getElementById('tbody' + status.charAt(0).toUpperCase() + status.slice(1));
       const count = document.getElementById(status + 'Count');
       const empty = document.getElementById('empty' + status.charAt(0).toUpperCase() + status.slice(1));
       count.textContent = filtered.length;
       if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
       empty.style.display = 'none';
+      
       if (status === 'hoje') {
-        tbody.innerHTML = filtered.map(p => { const temLink = !!p.asaas_invoice_url; let acoes = temLink ? `<button class="action-btn link" onclick="window.open('${p.asaas_invoice_url}','_blank')"><i class="fas fa-external-link-alt"></i></button><button class="action-btn copiar" onclick="copiarLink('${p.asaas_invoice_url}')"><i class="fas fa-copy"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsAppComLink('${p.id}')"><i class="fab fa-whatsapp"></i></button>` : `<button class="action-btn" onclick="abrirModalGerar('${p.id}')"><i class="fas fa-bolt"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsApp('${p.id}')"><i class="fab fa-whatsapp"></i></button>`; acoes += `<button class="action-btn success" onclick="abrirModalPagar('${p.id}')"><i class="fas fa-check"></i></button>`; return `<tr><td><span class="parcela-num" style="display:inline-flex">${p.numero_parcela||p.numero||'-'}</span></td><td>${p.cliente_nome||'-'}</td><td class="valor-gold">${fmtMoney(p.valor)}</td><td><div class="actions">${acoes}</div></td></tr>`; }).join('');
+        tbody.innerHTML = filtered.map(p => { 
+          const temLink = !!p.asaas_invoice_url; 
+          let acoes = temLink 
+            ? `<button class="action-btn link" onclick="window.open('${p.asaas_invoice_url}','_blank')"><i class="fas fa-external-link-alt"></i></button><button class="action-btn copiar" onclick="copiarLink('${p.asaas_invoice_url}')"><i class="fas fa-copy"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsAppComLink('${p.id}')"><i class="fab fa-whatsapp"></i></button>` 
+            : `<button class="action-btn" onclick="abrirModalGerar('${p.id}')"><i class="fas fa-bolt"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsApp('${p.id}')"><i class="fab fa-whatsapp"></i></button>`; 
+          acoes += `<button class="action-btn success" onclick="abrirModalPagar('${p.id}')"><i class="fas fa-check"></i></button>`; 
+          return `<tr><td><span class="parcela-num" style="display:inline-flex">${p.numero||'-'}</span></td><td>${p.cliente_nome||'-'}</td><td class="valor-gold">${fmtMoney(p.valor)}</td><td><div class="actions">${acoes}</div></td></tr>`; 
+        }).join('');
       } else if (status === 'vencidas') {
         const hoje = new Date();
-        tbody.innerHTML = filtered.map(p => { const venc = new Date(p.data_vencimento); const dias = Math.floor((hoje - venc) / (1000*60*60*24)); const temLink = !!p.asaas_invoice_url; let acoes = temLink ? `<button class="action-btn link" onclick="window.open('${p.asaas_invoice_url}','_blank')"><i class="fas fa-external-link-alt"></i></button><button class="action-btn copiar" onclick="copiarLink('${p.asaas_invoice_url}')"><i class="fas fa-copy"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsAppComLink('${p.id}')"><i class="fab fa-whatsapp"></i></button>` : `<button class="action-btn" onclick="abrirModalGerar('${p.id}')"><i class="fas fa-bolt"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsApp('${p.id}')"><i class="fab fa-whatsapp"></i></button>`; acoes += `<button class="action-btn success" onclick="abrirModalPagar('${p.id}')"><i class="fas fa-check"></i></button>`; return `<tr><td><span class="parcela-num" style="display:inline-flex">${p.numero_parcela||p.numero||'-'}</span></td><td>${p.cliente_nome||'-'}</td><td>${fmtDate(p.data_vencimento)}</td><td style="color:var(--red);font-weight:700">${dias}d</td><td style="text-align:right" class="valor-gold">${fmtMoney(p.valor)}</td><td><div class="actions">${acoes}</div></td></tr>`; }).join('');
+        tbody.innerHTML = filtered.map(p => { 
+          const venc = new Date(p.data_vencimento); 
+          const dias = Math.floor((hoje - venc) / (1000*60*60*24)); 
+          const temLink = !!p.asaas_invoice_url; 
+          let acoes = temLink 
+            ? `<button class="action-btn link" onclick="window.open('${p.asaas_invoice_url}','_blank')"><i class="fas fa-external-link-alt"></i></button><button class="action-btn copiar" onclick="copiarLink('${p.asaas_invoice_url}')"><i class="fas fa-copy"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsAppComLink('${p.id}')"><i class="fab fa-whatsapp"></i></button>` 
+            : `<button class="action-btn" onclick="abrirModalGerar('${p.id}')"><i class="fas fa-bolt"></i></button><button class="action-btn whatsapp" onclick="enviarWhatsApp('${p.id}')"><i class="fab fa-whatsapp"></i></button>`; 
+          acoes += `<button class="action-btn success" onclick="abrirModalPagar('${p.id}')"><i class="fas fa-check"></i></button>`; 
+          return `<tr><td><span class="parcela-num" style="display:inline-flex">${p.numero||'-'}</span></td><td>${p.cliente_nome||'-'}</td><td>${fmtDate(p.data_vencimento)}</td><td style="color:var(--red);font-weight:700">${dias}d</td><td style="text-align:right" class="valor-gold">${fmtMoney(p.valor)}</td><td><div class="actions">${acoes}</div></td></tr>`; 
+        }).join('');
       } else if (status === 'pagas') {
-        tbody.innerHTML = filtered.map(p => `<tr><td><span class="parcela-num" style="display:inline-flex">${p.numero_parcela||p.numero||'-'}</span></td><td>${p.cliente_nome||'-'}</td><td>${fmtDate(p.data_vencimento)}</td><td>${fmtDate(p.data_pagamento)}</td><td style="text-align:right" class="valor-gold">${fmtMoney(p.valor_pago||p.valor)}</td></tr>`).join('');
+        // Calcular stats das pagas
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth();
+        const anoAtual = hoje.getFullYear();
+        const pagasMes = filtered.filter(p => {
+          const dataPag = new Date(p.data_pagamento);
+          return dataPag.getMonth() === mesAtual && dataPag.getFullYear() === anoAtual;
+        });
+        const valorTotal = filtered.reduce((s, p) => s + (parseFloat(p.valor_pago || p.valor) || 0), 0);
+        const valorMes = pagasMes.reduce((s, p) => s + (parseFloat(p.valor_pago || p.valor) || 0), 0);
+        
+        document.getElementById('statPagasTotal').textContent = filtered.length;
+        document.getElementById('statPagasValorTotal').textContent = fmtMoney(valorTotal);
+        document.getElementById('statPagasMes').textContent = pagasMes.length;
+        document.getElementById('statPagasValorMes').textContent = fmtMoney(valorMes);
+        
+        // Ordenar por data de pagamento (mais recente primeiro)
+        const sorted = [...filtered].sort((a, b) => new Date(b.data_pagamento) - new Date(a.data_pagamento));
+        
+        tbody.innerHTML = sorted.map(p => {
+          const forma = p.forma_pagamento || 'pix';
+          const formaIcon = forma === 'pix' ? 'fa-qrcode' : (forma === 'boleto' ? 'fa-barcode' : 'fa-credit-card');
+          const formaLabel = forma.charAt(0).toUpperCase() + forma.slice(1);
+          return `<tr>
+            <td><span class="parcela-num" style="display:inline-flex">${p.numero||'-'}/${p.total_parcelas||p.numero_parcelas||'-'}</span></td>
+            <td><div style="font-weight:600">${p.cliente_nome||'-'}</div><div style="font-size:11px;color:var(--muted)">${p.cliente_cpf||p.cliente_telefone||''}</div></td>
+            <td>${p.credor_nome||'-'}</td>
+            <td>${fmtDate(p.data_vencimento)}</td>
+            <td><span style="color:var(--green);font-weight:600">${fmtDate(p.data_pagamento)}</span></td>
+            <td><span style="display:inline-flex;align-items:center;gap:4px"><i class="fas ${formaIcon}" style="color:var(--gold)"></i> ${formaLabel}</span></td>
+            <td style="text-align:right"><span class="valor-gold">${fmtMoney(p.valor_pago||p.valor)}</span></td>
+          </tr>`;
+        }).join('');
       }
     }
 
