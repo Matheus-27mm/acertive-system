@@ -417,7 +417,7 @@
             </div>
             <div class="form-group">
               <label>Juros (% a.m.)</label>
-              <input type="number" class="form-control" id="novaJuros" value="1" min="0" max="20" step="0.1">
+              <input type="number" class="form-control" id="novaJuros" value="1" min="0" max="20" step="0.1" oninput="calcularPreviewParcelas();atualizarResumo()">
             </div>
             <div class="form-group">
               <label>Correção</label>
@@ -814,14 +814,46 @@
       const valor = parseMoney(document.getElementById('novaValor').value);
       const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
       const vencimento = document.getElementById('novaVencimento').value;
+      const juros = parseFloat(document.getElementById('novaJuros').value) || 0;
       
       if (parcelas > 1 && valor > 0 && vencimento) {
-        const valorParcela = valor / parcelas;
         const container = document.getElementById('parcelasPreviewContainer');
         const grid = document.getElementById('parcelasPreviewGrid');
         
+        // Calcular valor da parcela COM JUROS (Tabela Price)
+        let valorParcela, valorTotal;
+        
+        if (juros > 0) {
+          // Fórmula Price: PMT = PV * [i * (1+i)^n] / [(1+i)^n - 1]
+          const taxaMensal = juros / 100;
+          const fator = Math.pow(1 + taxaMensal, parcelas);
+          valorParcela = valor * (taxaMensal * fator) / (fator - 1);
+          valorTotal = valorParcela * parcelas;
+        } else {
+          valorParcela = valor / parcelas;
+          valorTotal = valor;
+        }
+        
         let html = '';
         const dataBase = new Date(vencimento + 'T12:00:00');
+        
+        // Header com resumo
+        if (juros > 0) {
+          const acrescimo = valorTotal - valor;
+          html += `
+            <div style="padding:8px 12px;background:var(--gold-glow);border-radius:6px;margin-bottom:8px;font-size:11px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span>Valor original:</span><span>${fmtMoney(valor)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span>Juros (${juros}% a.m.):</span><span style="color:var(--orange)">+ ${fmtMoney(acrescimo)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-weight:700">
+                <span>Total a pagar:</span><span style="color:var(--gold)">${fmtMoney(valorTotal)}</span>
+              </div>
+            </div>
+          `;
+        }
         
         for (let i = 0; i < Math.min(parcelas, 12); i++) {
           const dataVenc = new Date(dataBase);
@@ -841,6 +873,12 @@
         
         grid.innerHTML = html;
         container.classList.add('show');
+        
+        // Atualizar resumo com valor COM juros
+        document.getElementById('resumoParcelas').textContent = parcelas + 'x de ' + fmtMoney(valorParcela);
+        if (juros > 0) {
+          document.getElementById('resumoValor').textContent = fmtMoney(valorTotal);
+        }
       } else {
         document.getElementById('parcelasPreviewContainer').classList.remove('show');
       }
@@ -851,11 +889,26 @@
       const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
       const vencimento = document.getElementById('novaVencimento').value;
       const tipo = document.getElementById('novaTipoCobranca').value;
+      const juros = parseFloat(document.getElementById('novaJuros').value) || 0;
       
       if (valor > 0) {
         document.getElementById('resumoCobranca').classList.add('show');
-        document.getElementById('resumoValor').textContent = fmtMoney(valor);
-        document.getElementById('resumoParcelas').textContent = parcelas === 1 ? 'À vista' : parcelas + 'x de ' + fmtMoney(valor / parcelas);
+        
+        // Calcular valor com juros se parcelado
+        let valorTotal = valor;
+        let valorParcela = valor;
+        
+        if (parcelas > 1 && juros > 0) {
+          const taxaMensal = juros / 100;
+          const fator = Math.pow(1 + taxaMensal, parcelas);
+          valorParcela = valor * (taxaMensal * fator) / (fator - 1);
+          valorTotal = valorParcela * parcelas;
+        } else if (parcelas > 1) {
+          valorParcela = valor / parcelas;
+        }
+        
+        document.getElementById('resumoValor').textContent = fmtMoney(valorTotal);
+        document.getElementById('resumoParcelas').textContent = parcelas === 1 ? 'À vista' : parcelas + 'x de ' + fmtMoney(valorParcela);
         document.getElementById('resumoVencimento').textContent = vencimento ? new Date(vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
         document.getElementById('resumoTipo').textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
       } else {
