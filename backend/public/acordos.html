@@ -964,6 +964,26 @@
     async function confirmarGerarAsaas() { const id = document.getElementById('gerarId').value; try { const r = await fetch(API + '/api/acordos/parcelas/' + id + '/gerar-asaas', { method: 'POST', headers: H() }); const d = await r.json(); if (r.ok && (d.success || d.invoiceUrl)) { fecharModal('modalGerar'); toast('✅ Cobrança gerada no Asaas!'); await carregarParcelas(); if (d.invoiceUrl && confirm('Cobrança gerada! Deseja copiar o link?')) copiarLink(d.invoiceUrl); } else { toast(d.error || 'Erro ao gerar cobrança'); } } catch (e) { toast('Erro ao gerar cobrança'); } }
 
     // ═══════════════════════════════════════════════════════════════
+    // CARREGAR CREDORES (para filtros e selects)
+    // ═══════════════════════════════════════════════════════════════
+    async function carregarCredores() {
+      try {
+        const r = await fetch(API + '/api/credores', { headers: H() });
+        const d = await r.json();
+        if (d.success && d.data) {
+          const selects = document.querySelectorAll('select[id*="Credor"]');
+          selects.forEach(sel => {
+            const firstOption = sel.querySelector('option');
+            sel.innerHTML = firstOption ? firstOption.outerHTML : '<option value="">Todos</option>';
+            d.data.forEach(c => {
+              sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+            });
+          });
+        }
+      } catch (e) { console.error('Erro ao carregar credores:', e); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // INICIALIZAÇÃO
     // ═══════════════════════════════════════════════════════════════
     document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
