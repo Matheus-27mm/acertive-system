@@ -39,9 +39,9 @@ module.exports = function(pool, auth, registrarLog) {
                     acordosAtivos: row.acordos_ativos,
                     acordosQuitados: row.acordos_quitados,
                     acordosQuebrados: row.acordos_quebrados,
-                    valorTotalAcordos: parseFloat(row.valor_total_acordos),
-                    descontoMedio: parseFloat(row.desconto_medio).toFixed(1),
-                    taxaQuitacao: parseFloat(taxaQuitacao)
+                    valorTotalAcordos: parseFloat(row.valor_total_acordos) || 0,
+                    descontoMedio: parseFloat(row.desconto_medio || 0).toFixed(1),
+                    taxaQuitacao: parseFloat(taxaQuitacao) || 0
                 }
             });
         } catch (error) {
@@ -166,10 +166,10 @@ module.exports = function(pool, auth, registrarLog) {
             res.json({
                 success: true,
                 data: {
-                    vencendoHoje: { quantidade: row.vencendo_hoje, valor: parseFloat(row.valor_hoje) },
-                    vencendoSemana: { quantidade: row.vencendo_semana, valor: parseFloat(row.valor_semana) },
-                    vencidas: { quantidade: row.vencidas, valor: parseFloat(row.valor_vencidas) },
-                    totalPagas: { quantidade: row.total_pagas, valor: parseFloat(row.valor_total_pago) }
+                    vencendoHoje: { quantidade: row.vencendo_hoje, valor: parseFloat(row.valor_hoje) || 0 },
+                    vencendoSemana: { quantidade: row.vencendo_semana, valor: parseFloat(row.valor_semana) || 0 },
+                    vencidas: { quantidade: row.vencidas, valor: parseFloat(row.valor_vencidas) || 0 },
+                    totalPagas: { quantidade: row.total_pagas, valor: parseFloat(row.valor_total_pago) || 0 }
                 }
             });
         } catch (error) {
@@ -211,7 +211,9 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('COMMIT');
             
-            await registrarLog(req.user?.id, 'PARCELA_PAGA', 'parcelas', id, { valor_pago: valorPago });
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'PARCELA_PAGA', 'parcelas', id, { valor_pago: valorPago });
+            }
             
             const quitado = parseInt(pendentes.rows[0].count) === 0;
             res.json({ success: true, message: quitado ? 'Parcela paga! Acordo quitado!' : 'Parcela paga!', acordo_quitado: quitado });
@@ -234,13 +236,15 @@ module.exports = function(pool, auth, registrarLog) {
             if (!nova_data) return res.status(400).json({ success: false, error: 'Nova data é obrigatória' });
             
             const resultado = await pool.query(`
-                UPDATE parcelas SET data_vencimento = $1, observacoes = CONCAT(observacoes, ' | Reagendado: ', $2), updated_at = NOW()
+                UPDATE parcelas SET data_vencimento = $1, observacoes = CONCAT(COALESCE(observacoes, ''), ' | Reagendado: ', $2), updated_at = NOW()
                 WHERE id = $3 AND status = 'pendente' RETURNING *
             `, [nova_data, motivo || 'Solicitação', id]);
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Parcela não encontrada ou já paga' });
             
-            await registrarLog(req.user?.id, 'PARCELA_REAGENDADA', 'parcelas', id, { nova_data });
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'PARCELA_REAGENDADA', 'parcelas', id, { nova_data });
+            }
             res.json({ success: true, data: resultado.rows[0], message: 'Parcela reagendada!' });
         } catch (error) {
             console.error('[PARCELAS] Erro ao reagendar:', error);
@@ -270,10 +274,10 @@ module.exports = function(pool, auth, registrarLog) {
             let telefone = String(p.cliente_telefone).replace(/\D/g, '');
             if (telefone.length <= 11) telefone = '55' + telefone;
             
-            const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor);
-            const vencimento = new Date(p.data_vencimento).toLocaleDateString('pt-BR');
+            const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor || 0);
+            const vencimento = p.data_vencimento ? new Date(p.data_vencimento).toLocaleDateString('pt-BR') : '-';
             
-            const vencida = new Date(p.data_vencimento) < new Date();
+            const vencida = p.data_vencimento && new Date(p.data_vencimento) < new Date();
             
             let mensagem = vencida
                 ? `Olá, *${p.cliente_nome}*!\n\n⚠️ *PARCELA EM ATRASO*\n\n📌 *Parcela:* ${p.numero}/${p.numero_parcelas}\n💰 *Valor:* ${valor}\n📅 *Vencimento:* ${vencimento}\n\nPor favor, regularize.`
@@ -337,6 +341,8 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const b = req.body || {};
             
+            console.log('[ACORDOS] Dados recebidos:', JSON.stringify(b, null, 2));
+            
             if (!b.cobranca_id && !b.cliente_id) {
                 return res.status(400).json({ success: false, error: 'Cobrança ou cliente é obrigatório' });
             }
@@ -350,28 +356,55 @@ module.exports = function(pool, auth, registrarLog) {
             await client.query('BEGIN');
             
             let clienteId = b.cliente_id;
-            let credorId = b.credor_id;
-            let valorOriginal = b.valor_original || b.valor_acordo;
+            let credorId = b.credor_id || null;
+            // CORREÇÃO: usar valor_original do body se fornecido
+            let valorOriginal = parseFloat(b.valor_original) || parseFloat(b.valor_acordo);
             
             if (b.cobranca_id) {
-                const cobranca = await client.query('SELECT cliente_id, credor_id, valor_atualizado FROM cobrancas WHERE id = $1', [b.cobranca_id]);
+                const cobranca = await client.query('SELECT cliente_id, credor_id, valor_atualizado, valor_original FROM cobrancas WHERE id = $1', [b.cobranca_id]);
                 if (cobranca.rowCount > 0) {
                     clienteId = clienteId || cobranca.rows[0].cliente_id;
                     credorId = credorId || cobranca.rows[0].credor_id;
-                    valorOriginal = cobranca.rows[0].valor_atualizado || valorOriginal;
+                    // Só pega da cobrança se não veio no body
+                    if (!b.valor_original) {
+                        valorOriginal = parseFloat(cobranca.rows[0].valor_atualizado) || parseFloat(cobranca.rows[0].valor_original) || valorOriginal;
+                    }
                 }
             }
             
             const valorAcordo = parseFloat(b.valor_acordo);
             const numParcelas = parseInt(b.numero_parcelas);
             const valorEntrada = parseFloat(b.valor_entrada) || 0;
-            const descontoPerc = valorOriginal > 0 ? ((valorOriginal - valorAcordo) / valorOriginal * 100) : 0;
-            const valorParcela = numParcelas > 0 ? ((valorAcordo - valorEntrada) / numParcelas) : 0;
+            
+            // CORREÇÃO: usar desconto_percentual do body se fornecido, senão calcular
+            let descontoPerc = 0;
+            if (b.desconto_percentual !== undefined && b.desconto_percentual !== null) {
+                descontoPerc = parseFloat(b.desconto_percentual) || 0;
+            } else if (valorOriginal > 0 && valorOriginal > valorAcordo) {
+                descontoPerc = ((valorOriginal - valorAcordo) / valorOriginal * 100);
+            }
+            
+            const valorRestante = valorAcordo - valorEntrada;
+            const valorParcela = numParcelas > 0 ? (valorRestante / numParcelas) : 0;
+            
+            console.log('[ACORDOS] Calculado:', { valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, valorParcela });
             
             const acordo = await client.query(`
                 INSERT INTO acordos (cobranca_id, cliente_id, credor_id, valor_original, valor_acordo, desconto_percentual, valor_entrada, numero_parcelas, valor_parcela, data_primeiro_vencimento, observacoes, status, created_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'ativo', NOW()) RETURNING *
-            `, [b.cobranca_id || null, clienteId, credorId || null, valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, valorParcela, b.data_primeiro_vencimento || new Date(), b.observacoes || null]);
+            `, [
+                b.cobranca_id || null, 
+                clienteId, 
+                credorId, 
+                valorOriginal, 
+                valorAcordo, 
+                descontoPerc, 
+                valorEntrada, 
+                numParcelas, 
+                Math.round(valorParcela * 100) / 100, 
+                b.data_primeiro_vencimento || new Date(), 
+                b.observacoes || null
+            ]);
             
             const acordoId = acordo.rows[0].id;
             
@@ -382,7 +415,7 @@ module.exports = function(pool, auth, registrarLog) {
                 await client.query(`
                     INSERT INTO parcelas (acordo_id, numero, valor, data_vencimento, status, created_at)
                     VALUES ($1, $2, $3, $4, 'pendente', NOW())
-                `, [acordoId, i, Math.round(valorParcela * 100) / 100, dataVenc]);
+                `, [acordoId, i, Math.round(valorParcela * 100) / 100, new Date(dataVenc)]);
                 
                 dataVenc.setMonth(dataVenc.getMonth() + 1);
             }
@@ -394,14 +427,16 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('COMMIT');
             
-            await registrarLog(req.user?.id, 'ACORDO_CRIADO', 'acordos', acordoId, { valor: valorAcordo, parcelas: numParcelas });
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'ACORDO_CRIADO', 'acordos', acordoId, { valor: valorAcordo, parcelas: numParcelas });
+            }
             
             res.status(201).json({ success: true, data: acordo.rows[0], message: 'Acordo criado com sucesso!' });
             
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('[ACORDOS] Erro ao criar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao criar acordo' });
+            res.status(500).json({ success: false, error: 'Erro ao criar acordo: ' + error.message });
         } finally {
             client.release();
         }
@@ -451,7 +486,9 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
             
-            await registrarLog(req.user?.id, 'ACORDO_ATUALIZADO', 'acordos', id, b);
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'ACORDO_ATUALIZADO', 'acordos', id, b);
+            }
             res.json({ success: true, data: resultado.rows[0] });
         } catch (error) {
             console.error('[ACORDOS] Erro ao atualizar:', error);
@@ -470,7 +507,7 @@ module.exports = function(pool, auth, registrarLog) {
             await client.query('BEGIN');
             
             const acordo = await client.query(`
-                UPDATE acordos SET status = 'quebrado', observacoes = CONCAT(observacoes, ' | QUEBRADO: ', $1), updated_at = NOW()
+                UPDATE acordos SET status = 'quebrado', observacoes = CONCAT(COALESCE(observacoes, ''), ' | QUEBRADO: ', $1), updated_at = NOW()
                 WHERE id = $2 RETURNING cobranca_id
             `, [motivo || 'Não informado', id]);
             
@@ -489,7 +526,9 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('COMMIT');
             
-            await registrarLog(req.user?.id, 'ACORDO_QUEBRADO', 'acordos', id, { motivo });
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'ACORDO_QUEBRADO', 'acordos', id, { motivo });
+            }
             res.json({ success: true, message: 'Acordo quebrado. Cobrança voltou para status vencido.' });
             
         } catch (error) {

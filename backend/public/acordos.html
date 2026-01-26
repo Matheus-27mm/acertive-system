@@ -239,63 +239,398 @@
 
     async function carregarUsuario(){try{const r=await fetch(API+'/api/auth/me',{headers:H()});if(r.ok){const d=await r.json();if(d.user){document.getElementById('userName').textContent=d.user.nome;document.getElementById('userAvatar').textContent=initials(d.user.nome);}}}catch(e){}}
     async function carregarEstatisticas(){try{const r=await fetch(API+'/api/acordos/stats',{headers:H()});const d=await r.json();if(d.success&&d.data){document.getElementById('statAtivos').textContent=d.data.acordosAtivos||0;document.getElementById('statValor').textContent=fmtMoney(d.data.valorTotalAcordos);document.getElementById('statQuitados').textContent=d.data.acordosQuitados||0;document.getElementById('statTaxa').textContent=(d.data.taxaQuitacao||0)+'%';document.getElementById('countAtivos').textContent=d.data.acordosAtivos||0;}}catch(e){}}
-    async function carregarAcordos(){try{const r=await fetch(API+'/api/acordos?limit=100',{headers:H()});const d=await r.json();if(d.success){acordos=d.data||[];renderizar();}}catch(e){document.getElementById('listaAcordos').innerHTML='<div class="empty"><i class="fas fa-exclamation-circle"></i><p>Erro</p></div>';}}
+    
+    async function carregarAcordos(){
+      try{
+        const r=await fetch(API+'/api/acordos?limit=100',{headers:H()});
+        const d=await r.json();
+        if(d.success){
+          acordos=d.data||[];
+          // Carregar parcelas de cada acordo ativo
+          for(let a of acordos){
+            if(a.status==='ativo'){
+              try{
+                const rp=await fetch(API+'/api/acordos/'+a.id,{headers:H()});
+                const dp=await rp.json();
+                if(dp.success&&dp.data?.parcelas){
+                  a.parcelas=dp.data.parcelas;
+                }
+              }catch(e){}
+            }
+          }
+          renderizar();
+        }
+      }catch(e){document.getElementById('listaAcordos').innerHTML='<div class="empty"><i class="fas fa-exclamation-circle"></i><p>Erro</p></div>';}
+    }
 
     function renderizar(){
-      const container=document.getElementById('listaAcordos');const busca=document.getElementById('busca').value.toLowerCase();const hoje=new Date().toISOString().split('T')[0];
-      let filtrados=acordos.filter(a=>{if(currentTab==='ativos')return a.status==='ativo';if(currentTab==='quitados')return a.status==='quitado';if(currentTab==='quebrados')return a.status==='quebrado';return true;});
+      const container=document.getElementById('listaAcordos');
+      const busca=document.getElementById('busca').value.toLowerCase();
+      const hoje=new Date().toISOString().split('T')[0];
+      
+      let filtrados=acordos.filter(a=>{
+        if(currentTab==='ativos')return a.status==='ativo';
+        if(currentTab==='quitados')return a.status==='quitado';
+        if(currentTab==='quebrados')return a.status==='quebrado';
+        return true;
+      });
+      
       if(busca)filtrados=filtrados.filter(a=>a.cliente_nome?.toLowerCase().includes(busca));
-      if(filtrados.length===0){container.innerHTML='<div class="empty"><i class="fas fa-handshake"></i><h3>Nenhum acordo</h3><p>Crie acordos para renegociar dívidas</p></div>';return;}
+      
+      if(filtrados.length===0){
+        container.innerHTML='<div class="empty"><i class="fas fa-handshake"></i><h3>Nenhum acordo</h3><p>Crie acordos para renegociar dívidas</p></div>';
+        return;
+      }
+      
       container.innerHTML=filtrados.map(a=>{
-        const totalParc=a.total_parcelas||a.numero_parcelas||1;const parcPagas=a.parcelas_pagas||0;
-        return `<div class="acordo-card"><div class="acordo-header"><div class="acordo-avatar">${initials(a.cliente_nome)}</div><div class="acordo-info"><div class="acordo-cliente">${a.cliente_nome||'-'}</div><div class="acordo-meta"><span><i class="fas fa-calendar"></i> ${new Date(a.created_at).toLocaleDateString('pt-BR')}</span><span><i class="fas fa-layer-group"></i> ${parcPagas}/${totalParc} parcelas</span>${a.proxima_parcela?`<span><i class="fas fa-clock"></i> Próx: ${new Date(a.proxima_parcela).toLocaleDateString('pt-BR')}</span>`:''}</div></div><div class="acordo-valores"><div class="acordo-original">${fmtMoney(a.valor_original)}</div><div class="acordo-final">${fmtMoney(a.valor_acordo)}</div>${a.desconto_percentual>0?`<div class="acordo-desconto">-${a.desconto_percentual?.toFixed(0)}%</div>`:''}</div><span class="acordo-status ${a.status}">${a.status}</span></div>${a.status==='ativo'?`<div class="acordo-body"><div class="parcelas-timeline">${renderTimeline(a,totalParc,hoje)}</div></div><div class="acordo-actions">${renderAcoes(a,totalParc)}</div>`:''}</div>`;
+        const totalParc=a.total_parcelas||a.numero_parcelas||1;
+        const parcPagas=a.parcelas_pagas||0;
+        // CORREÇÃO: tratar desconto_percentual null/undefined
+        const descPerc = Number(a.desconto_percentual) || 0;
+        
+        return `<div class="acordo-card">
+          <div class="acordo-header">
+            <div class="acordo-avatar">${initials(a.cliente_nome)}</div>
+            <div class="acordo-info">
+              <div class="acordo-cliente">${a.cliente_nome||'-'}</div>
+              <div class="acordo-meta">
+                <span><i class="fas fa-calendar"></i> ${new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                <span><i class="fas fa-layer-group"></i> ${parcPagas}/${totalParc} parcelas</span>
+                ${a.proxima_parcela?`<span><i class="fas fa-clock"></i> Próx: ${new Date(a.proxima_parcela).toLocaleDateString('pt-BR')}</span>`:''}
+              </div>
+            </div>
+            <div class="acordo-valores">
+              <div class="acordo-original">${fmtMoney(a.valor_original)}</div>
+              <div class="acordo-final">${fmtMoney(a.valor_acordo)}</div>
+              ${descPerc > 0 ? `<div class="acordo-desconto">-${descPerc.toFixed(0)}%</div>` : ''}
+            </div>
+            <span class="acordo-status ${a.status}">${a.status}</span>
+          </div>
+          ${a.status==='ativo'?`
+            <div class="acordo-body">
+              <div class="parcelas-timeline">${renderTimeline(a,totalParc,hoje)}</div>
+            </div>
+            <div class="acordo-actions">${renderAcoes(a,totalParc)}</div>
+          `:''}
+        </div>`;
       }).join('');
     }
 
     function renderTimeline(a,total,hoje){
       const parcelas=a.parcelas||[];
-      if(parcelas.length===0){let html='';for(let i=1;i<=total;i++){const pago=i<=(a.parcelas_pagas||0);html+=`<div class="parcela-node ${pago?'pago':'futuro'}"><div class="parcela-circle">${i}</div><div class="parcela-info"><div class="parcela-valor">${fmtMoney(a.valor_parcela)}</div></div></div>`;}return html;}
-      return parcelas.map(p=>{const venc=p.data_vencimento?.split('T')[0];let status='futuro';if(p.status==='pago')status='pago';else if(venc<hoje)status='vencido';else if(venc===hoje)status='atual';return `<div class="parcela-node ${status}"><div class="parcela-circle" onclick="clickParcela('${p.id}','${p.status}',${p.valor},'${venc}',${p.numero},${total})">${p.numero}</div><div class="parcela-info"><div class="parcela-valor">${fmtMoney(p.valor)}</div><div class="parcela-data">${venc?venc.split('-').reverse().slice(0,2).join('/'):'-'}</div></div></div>`;}).join('');
+      if(parcelas.length===0){
+        let html='';
+        for(let i=1;i<=total;i++){
+          const pago=i<=(a.parcelas_pagas||0);
+          html+=`<div class="parcela-node ${pago?'pago':'futuro'}">
+            <div class="parcela-circle">${i}</div>
+            <div class="parcela-info"><div class="parcela-valor">${fmtMoney(a.valor_parcela)}</div></div>
+          </div>`;
+        }
+        return html;
+      }
+      return parcelas.map(p=>{
+        const venc=p.data_vencimento?.split('T')[0];
+        let status='futuro';
+        if(p.status==='pago')status='pago';
+        else if(venc<hoje)status='vencido';
+        else if(venc===hoje)status='atual';
+        return `<div class="parcela-node ${status}">
+          <div class="parcela-circle" onclick="clickParcela('${p.id}','${p.status}',${p.valor},'${venc}',${p.numero},${total})">${p.numero}</div>
+          <div class="parcela-info">
+            <div class="parcela-valor">${fmtMoney(p.valor)}</div>
+            <div class="parcela-data">${venc?venc.split('-').reverse().slice(0,2).join('/'):'-'}</div>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     function renderAcoes(a,total){
-      const parcelas=a.parcelas||[];const pendente=parcelas.find(p=>p.status==='pendente');let html='';
-      if(pendente){const venc=pendente.data_vencimento?.split('T')[0];html+=`<button class="btn btn-sm btn-success" onclick="abrirModalPagar('${pendente.id}',${pendente.numero},${total},${pendente.valor},'${venc}')"><i class="fas fa-check"></i> Pagar ${pendente.numero}</button><button class="btn btn-sm btn-secondary" onclick="enviarWhatsapp('${pendente.id}')"><i class="fab fa-whatsapp"></i></button>`;}
-      html+=`<button class="btn btn-sm btn-danger" onclick="abrirModalQuebrar('${a.id}')" style="margin-left:auto"><i class="fas fa-times"></i> Quebrar</button>`;return html;
+      const parcelas=a.parcelas||[];
+      const pendente=parcelas.find(p=>p.status==='pendente');
+      let html='';
+      if(pendente){
+        const venc=pendente.data_vencimento?.split('T')[0];
+        html+=`<button class="btn btn-sm btn-success" onclick="abrirModalPagar('${pendente.id}',${pendente.numero},${total},${pendente.valor},'${venc}')"><i class="fas fa-check"></i> Pagar ${pendente.numero}</button>
+        <button class="btn btn-sm btn-secondary" onclick="enviarWhatsapp('${pendente.id}')"><i class="fab fa-whatsapp"></i></button>`;
+      }
+      html+=`<button class="btn btn-sm btn-danger" onclick="abrirModalQuebrar('${a.id}')" style="margin-left:auto"><i class="fas fa-times"></i> Quebrar</button>`;
+      return html;
     }
 
-    function trocarTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelector(`.tab[onclick="trocarTab('${tab}')"]`).classList.add('active');renderizar();}
+    function trocarTab(tab){
+      currentTab=tab;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelector(`.tab[onclick="trocarTab('${tab}')"]`).classList.add('active');
+      renderizar();
+    }
+    
     function filtrar(){renderizar();}
 
-    function abrirModalNovo(){document.getElementById('novoClienteId').value='';document.getElementById('novoCliente').value='';document.getElementById('novoCliente').style.display='block';document.getElementById('clienteSelecionado').style.display='none';document.getElementById('secaoCobrancas').style.display='none';document.getElementById('secaoCondicoes').style.display='none';document.getElementById('secaoObs').style.display='none';cobrancasCliente=[];cobrancasSelecionadas=[];const amanha=new Date();amanha.setDate(amanha.getDate()+1);document.getElementById('novoPrimeiroVenc').value=amanha.toISOString().split('T')[0];document.getElementById('modalNovo').classList.add('show');}
+    function abrirModalNovo(){
+      document.getElementById('novoClienteId').value='';
+      document.getElementById('novoCliente').value='';
+      document.getElementById('novoCliente').style.display='block';
+      document.getElementById('clienteSelecionado').style.display='none';
+      document.getElementById('secaoCobrancas').style.display='none';
+      document.getElementById('secaoCondicoes').style.display='none';
+      document.getElementById('secaoObs').style.display='none';
+      cobrancasCliente=[];
+      cobrancasSelecionadas=[];
+      const amanha=new Date();
+      amanha.setDate(amanha.getDate()+1);
+      document.getElementById('novoPrimeiroVenc').value=amanha.toISOString().split('T')[0];
+      document.getElementById('modalNovo').classList.add('show');
+    }
 
     let buscaTimeout;
-    async function buscarCliente(termo){clearTimeout(buscaTimeout);if(termo.length<2){document.getElementById('resultadosCliente').style.display='none';return;}buscaTimeout=setTimeout(async()=>{try{const r=await fetch(API+'/api/clientes?q='+encodeURIComponent(termo),{headers:H()});const d=await r.json();const container=document.getElementById('resultadosCliente');if(d.success&&d.data?.length>0){container.innerHTML=d.data.slice(0,8).map(c=>`<div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--gold-glow)'" onmouseout="this.style.background=''" onclick="selecionarCliente('${c.id}','${c.nome}','${c.cpf_cnpj||''}')">${c.nome}<div style="font-size:11px;color:var(--muted)">${c.cpf_cnpj||'-'}</div></div>`).join('');container.style.display='block';}else{container.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum encontrado</div>';container.style.display='block';}}catch(e){}},300);}
+    async function buscarCliente(termo){
+      clearTimeout(buscaTimeout);
+      if(termo.length<2){
+        document.getElementById('resultadosCliente').style.display='none';
+        return;
+      }
+      buscaTimeout=setTimeout(async()=>{
+        try{
+          const r=await fetch(API+'/api/clientes?q='+encodeURIComponent(termo),{headers:H()});
+          const d=await r.json();
+          const container=document.getElementById('resultadosCliente');
+          if(d.success&&d.data?.length>0){
+            container.innerHTML=d.data.slice(0,8).map(c=>`<div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--gold-glow)'" onmouseout="this.style.background=''" onclick="selecionarCliente('${c.id}','${c.nome}','${c.cpf_cnpj||''}')">${c.nome}<div style="font-size:11px;color:var(--muted)">${c.cpf_cnpj||'-'}</div></div>`).join('');
+            container.style.display='block';
+          }else{
+            container.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum encontrado</div>';
+            container.style.display='block';
+          }
+        }catch(e){}
+      },300);
+    }
 
-    async function selecionarCliente(id,nome,doc){document.getElementById('novoClienteId').value=id;document.getElementById('selAvatar').textContent=initials(nome);document.getElementById('selNome').textContent=nome;document.getElementById('selDoc').textContent=doc||'-';document.getElementById('novoCliente').style.display='none';document.getElementById('clienteSelecionado').style.display='block';document.getElementById('resultadosCliente').style.display='none';await carregarCobrancasCliente(id);}
+    async function selecionarCliente(id,nome,doc){
+      document.getElementById('novoClienteId').value=id;
+      document.getElementById('selAvatar').textContent=initials(nome);
+      document.getElementById('selNome').textContent=nome;
+      document.getElementById('selDoc').textContent=doc||'-';
+      document.getElementById('novoCliente').style.display='none';
+      document.getElementById('clienteSelecionado').style.display='block';
+      document.getElementById('resultadosCliente').style.display='none';
+      await carregarCobrancasCliente(id);
+    }
 
-    function limparCliente(){document.getElementById('novoClienteId').value='';document.getElementById('novoCliente').value='';document.getElementById('novoCliente').style.display='block';document.getElementById('clienteSelecionado').style.display='none';document.getElementById('secaoCobrancas').style.display='none';document.getElementById('secaoCondicoes').style.display='none';document.getElementById('secaoObs').style.display='none';}
+    function limparCliente(){
+      document.getElementById('novoClienteId').value='';
+      document.getElementById('novoCliente').value='';
+      document.getElementById('novoCliente').style.display='block';
+      document.getElementById('clienteSelecionado').style.display='none';
+      document.getElementById('secaoCobrancas').style.display='none';
+      document.getElementById('secaoCondicoes').style.display='none';
+      document.getElementById('secaoObs').style.display='none';
+    }
 
-    async function carregarCobrancasCliente(clienteId){try{const r=await fetch(API+'/api/cobrancas?cliente_id='+clienteId+'&limit=50',{headers:H()});const d=await r.json();cobrancasCliente=(d.data||[]).filter(c=>c.status!=='pago'&&c.status!=='acordo');cobrancasSelecionadas=[];const container=document.getElementById('listaCobrancasCliente');if(cobrancasCliente.length===0){container.innerHTML='<div style="text-align:center;padding:20px;color:var(--green)"><i class="fas fa-check-circle"></i> Nenhuma cobrança pendente</div>';}else{container.innerHTML=cobrancasCliente.map(c=>{const venc=c.vencimento||c.data_vencimento;const vencido=venc&&new Date(venc)<new Date();return `<div class="cobranca-select" data-id="${c.id}" onclick="toggleCobranca('${c.id}')"><div class="cobranca-select-header"><div class="cobranca-select-desc">${c.descricao||'-'}</div><div class="cobranca-select-valor">${fmtMoney(c.valor||c.valor_original)}</div></div><div class="cobranca-select-meta">Venc: ${venc?new Date(venc).toLocaleDateString('pt-BR'):'-'}${vencido?' <span style="color:var(--red)">● Vencido</span>':''}</div></div>`;}).join('');}document.getElementById('secaoCobrancas').style.display='block';document.getElementById('secaoCondicoes').style.display='block';document.getElementById('secaoObs').style.display='block';atualizarTotal();calcularAcordo();}catch(e){}}
+    async function carregarCobrancasCliente(clienteId){
+      try{
+        const r=await fetch(API+'/api/cobrancas?cliente_id='+clienteId+'&limit=50',{headers:H()});
+        const d=await r.json();
+        cobrancasCliente=(d.data||[]).filter(c=>c.status!=='pago'&&c.status!=='acordo');
+        cobrancasSelecionadas=[];
+        const container=document.getElementById('listaCobrancasCliente');
+        if(cobrancasCliente.length===0){
+          container.innerHTML='<div style="text-align:center;padding:20px;color:var(--green)"><i class="fas fa-check-circle"></i> Nenhuma cobrança pendente</div>';
+        }else{
+          container.innerHTML=cobrancasCliente.map(c=>{
+            const venc=c.vencimento||c.data_vencimento;
+            const vencido=venc&&new Date(venc)<new Date();
+            return `<div class="cobranca-select" data-id="${c.id}" onclick="toggleCobranca('${c.id}')">
+              <div class="cobranca-select-header">
+                <div class="cobranca-select-desc">${c.descricao||'-'}</div>
+                <div class="cobranca-select-valor">${fmtMoney(c.valor||c.valor_original)}</div>
+              </div>
+              <div class="cobranca-select-meta">Venc: ${venc?new Date(venc).toLocaleDateString('pt-BR'):'-'}${vencido?' <span style="color:var(--red)">● Vencido</span>':''}</div>
+            </div>`;
+          }).join('');
+        }
+        document.getElementById('secaoCobrancas').style.display='block';
+        document.getElementById('secaoCondicoes').style.display='block';
+        document.getElementById('secaoObs').style.display='block';
+        atualizarTotal();
+        calcularAcordo();
+      }catch(e){}
+    }
 
-    function toggleCobranca(id){const el=document.querySelector(`.cobranca-select[data-id="${id}"]`);if(cobrancasSelecionadas.includes(id)){cobrancasSelecionadas=cobrancasSelecionadas.filter(x=>x!==id);el.classList.remove('selected');}else{cobrancasSelecionadas.push(id);el.classList.add('selected');}atualizarTotal();calcularAcordo();}
+    function toggleCobranca(id){
+      const el=document.querySelector(`.cobranca-select[data-id="${id}"]`);
+      if(cobrancasSelecionadas.includes(id)){
+        cobrancasSelecionadas=cobrancasSelecionadas.filter(x=>x!==id);
+        el.classList.remove('selected');
+      }else{
+        cobrancasSelecionadas.push(id);
+        el.classList.add('selected');
+      }
+      atualizarTotal();
+      calcularAcordo();
+    }
 
-    function atualizarTotal(){const total=cobrancasSelecionadas.reduce((s,id)=>{const c=cobrancasCliente.find(x=>x.id===id);return s+(parseFloat(c?.valor||c?.valor_original)||0);},0);document.getElementById('totalSelecionado').textContent=fmtMoney(total);}
+    function atualizarTotal(){
+      const total=cobrancasSelecionadas.reduce((s,id)=>{
+        const c=cobrancasCliente.find(x=>x.id===id);
+        return s+(parseFloat(c?.valor||c?.valor_original)||0);
+      },0);
+      document.getElementById('totalSelecionado').textContent=fmtMoney(total);
+    }
 
-    function calcularAcordo(){const valorOrig=cobrancasSelecionadas.reduce((s,id)=>{const c=cobrancasCliente.find(x=>x.id===id);return s+(parseFloat(c?.valor||c?.valor_original)||0);},0);const desc=parseFloat(document.getElementById('novoDesconto').value)||0;const entrada=parseMoney(document.getElementById('novoEntrada').value);const parcelas=parseInt(document.getElementById('novoParcelas').value)||1;const valorDesc=valorOrig*(desc/100);const valorAcordo=valorOrig-valorDesc;const valorRest=valorAcordo-entrada;const valorParc=parcelas>0?valorRest/parcelas:0;document.getElementById('simOriginal').textContent=fmtMoney(valorOrig);document.getElementById('simDesconto').textContent='- '+fmtMoney(valorDesc);document.getElementById('simAcordo').textContent=fmtMoney(valorAcordo);document.getElementById('simEntrada').textContent=fmtMoney(entrada);document.getElementById('simParcelas').textContent=`${parcelas}x de ${fmtMoney(valorParc)}`;}
+    function calcularAcordo(){
+      const valorOrig=cobrancasSelecionadas.reduce((s,id)=>{
+        const c=cobrancasCliente.find(x=>x.id===id);
+        return s+(parseFloat(c?.valor||c?.valor_original)||0);
+      },0);
+      const desc=parseFloat(document.getElementById('novoDesconto').value)||0;
+      const entrada=parseMoney(document.getElementById('novoEntrada').value);
+      const parcelas=parseInt(document.getElementById('novoParcelas').value)||1;
+      const valorDesc=valorOrig*(desc/100);
+      const valorAcordo=valorOrig-valorDesc;
+      const valorRest=valorAcordo-entrada;
+      const valorParc=parcelas>0?valorRest/parcelas:0;
+      document.getElementById('simOriginal').textContent=fmtMoney(valorOrig);
+      document.getElementById('simDesconto').textContent='- '+fmtMoney(valorDesc);
+      document.getElementById('simAcordo').textContent=fmtMoney(valorAcordo);
+      document.getElementById('simEntrada').textContent=fmtMoney(entrada);
+      document.getElementById('simParcelas').textContent=`${parcelas}x de ${fmtMoney(valorParc)}`;
+    }
 
-    async function criarAcordo(){const clienteId=document.getElementById('novoClienteId').value;const desc=parseFloat(document.getElementById('novoDesconto').value)||0;const entrada=parseMoney(document.getElementById('novoEntrada').value);const parcelas=parseInt(document.getElementById('novoParcelas').value)||1;const primeiroVenc=document.getElementById('novoPrimeiroVenc').value;const obs=document.getElementById('novoObs').value;if(!clienteId){alert('Selecione um cliente');return;}if(cobrancasSelecionadas.length===0){alert('Selecione pelo menos uma cobrança');return;}if(!primeiroVenc){alert('Informe o primeiro vencimento');return;}const valorOrig=cobrancasSelecionadas.reduce((s,id)=>{const c=cobrancasCliente.find(x=>x.id===id);return s+(parseFloat(c?.valor||c?.valor_original)||0);},0);const valorAcordo=valorOrig*(1-desc/100);try{const r=await fetch(API+'/api/acordos',{method:'POST',headers:H(),body:JSON.stringify({cliente_id:clienteId,cobranca_id:cobrancasSelecionadas[0],valor_original:valorOrig,valor_acordo:valorAcordo,desconto_percentual:desc,valor_entrada:entrada,numero_parcelas:parcelas,data_primeiro_vencimento:primeiroVenc,observacoes:obs})});const d=await r.json();if(d.success){for(let i=1;i<cobrancasSelecionadas.length;i++){try{await fetch(API+'/api/cobrancas/'+cobrancasSelecionadas[i]+'/status',{method:'PUT',headers:H(),body:JSON.stringify({status:'acordo'})});}catch(e){}}fecharModal('modalNovo');carregarAcordos();carregarEstatisticas();alert('✅ Acordo criado!');}else{alert(d.error||'Erro');}}catch(e){alert('Erro ao criar');}}
+    async function criarAcordo(){
+      const clienteId=document.getElementById('novoClienteId').value;
+      const desc=parseFloat(document.getElementById('novoDesconto').value)||0;
+      const entrada=parseMoney(document.getElementById('novoEntrada').value);
+      const parcelas=parseInt(document.getElementById('novoParcelas').value)||1;
+      const primeiroVenc=document.getElementById('novoPrimeiroVenc').value;
+      const obs=document.getElementById('novoObs').value;
+      
+      if(!clienteId){alert('Selecione um cliente');return;}
+      if(cobrancasSelecionadas.length===0){alert('Selecione pelo menos uma cobrança');return;}
+      if(!primeiroVenc){alert('Informe o primeiro vencimento');return;}
+      
+      const valorOrig=cobrancasSelecionadas.reduce((s,id)=>{
+        const c=cobrancasCliente.find(x=>x.id===id);
+        return s+(parseFloat(c?.valor||c?.valor_original)||0);
+      },0);
+      const valorAcordo=valorOrig*(1-desc/100);
+      
+      try{
+        const r=await fetch(API+'/api/acordos',{
+          method:'POST',
+          headers:H(),
+          body:JSON.stringify({
+            cliente_id: clienteId,
+            cobranca_id: cobrancasSelecionadas[0],
+            valor_original: valorOrig,
+            valor_acordo: valorAcordo,
+            desconto_percentual: desc,
+            valor_entrada: entrada,
+            numero_parcelas: parcelas,
+            data_primeiro_vencimento: primeiroVenc,
+            observacoes: obs
+          })
+        });
+        const d=await r.json();
+        if(d.success){
+          // Marcar outras cobranças como acordo também
+          for(let i=1;i<cobrancasSelecionadas.length;i++){
+            try{
+              await fetch(API+'/api/cobrancas/'+cobrancasSelecionadas[i]+'/status',{
+                method:'PUT',
+                headers:H(),
+                body:JSON.stringify({status:'acordo'})
+              });
+            }catch(e){}
+          }
+          fecharModal('modalNovo');
+          carregarAcordos();
+          carregarEstatisticas();
+          alert('✅ Acordo criado!');
+        }else{
+          alert(d.error||'Erro ao criar acordo');
+        }
+      }catch(e){
+        console.error('Erro:', e);
+        alert('Erro ao criar acordo');
+      }
+    }
 
-    function clickParcela(id,status,valor,venc,num,total){if(status==='pago'){alert('Já paga!');return;}abrirModalPagar(id,num,total,valor,venc);}
-    function abrirModalPagar(id,num,total,valor,venc){document.getElementById('pagarId').value=id;document.getElementById('pagarDesc').textContent=`Parcela ${num}/${total}`;document.getElementById('pagarValor').textContent=fmtMoney(valor);document.getElementById('pagarVenc').textContent='Vencimento: '+(venc?new Date(venc+'T12:00:00').toLocaleDateString('pt-BR'):'-');document.getElementById('pagarData').value=new Date().toISOString().split('T')[0];document.getElementById('modalPagar').classList.add('show');}
-    async function confirmarPagamento(){const id=document.getElementById('pagarId').value;const data=document.getElementById('pagarData').value;const forma=document.getElementById('pagarForma').value;try{const r=await fetch(API+'/api/acordos/parcelas/'+id+'/pagar',{method:'PUT',headers:H(),body:JSON.stringify({data_pagamento:data,forma_pagamento:forma})});const d=await r.json();if(d.success){fecharModal('modalPagar');carregarAcordos();carregarEstatisticas();alert(d.acordo_quitado?'🎉 Acordo quitado!':'✅ Pago!');}else{alert(d.error||'Erro');}}catch(e){alert('Erro');}}
+    function clickParcela(id,status,valor,venc,num,total){
+      if(status==='pago'){alert('Já paga!');return;}
+      abrirModalPagar(id,num,total,valor,venc);
+    }
+    
+    function abrirModalPagar(id,num,total,valor,venc){
+      document.getElementById('pagarId').value=id;
+      document.getElementById('pagarDesc').textContent=`Parcela ${num}/${total}`;
+      document.getElementById('pagarValor').textContent=fmtMoney(valor);
+      document.getElementById('pagarVenc').textContent='Vencimento: '+(venc?new Date(venc+'T12:00:00').toLocaleDateString('pt-BR'):'-');
+      document.getElementById('pagarData').value=new Date().toISOString().split('T')[0];
+      document.getElementById('modalPagar').classList.add('show');
+    }
+    
+    async function confirmarPagamento(){
+      const id=document.getElementById('pagarId').value;
+      const data=document.getElementById('pagarData').value;
+      const forma=document.getElementById('pagarForma').value;
+      try{
+        const r=await fetch(API+'/api/acordos/parcelas/'+id+'/pagar',{
+          method:'PUT',
+          headers:H(),
+          body:JSON.stringify({data_pagamento:data,forma_pagamento:forma})
+        });
+        const d=await r.json();
+        if(d.success){
+          fecharModal('modalPagar');
+          carregarAcordos();
+          carregarEstatisticas();
+          alert(d.acordo_quitado?'🎉 Acordo quitado!':'✅ Pago!');
+        }else{
+          alert(d.error||'Erro');
+        }
+      }catch(e){alert('Erro');}
+    }
 
-    function abrirModalQuebrar(id){document.getElementById('quebrarId').value=id;document.getElementById('quebrarMotivo').value='';document.getElementById('modalQuebrar').classList.add('show');}
-    async function confirmarQuebrar(){const id=document.getElementById('quebrarId').value;const motivo=document.getElementById('quebrarMotivo').value;try{const r=await fetch(API+'/api/acordos/'+id+'/quebrar',{method:'PUT',headers:H(),body:JSON.stringify({motivo})});const d=await r.json();if(d.success){fecharModal('modalQuebrar');carregarAcordos();carregarEstatisticas();alert('Acordo quebrado');}else{alert(d.error||'Erro');}}catch(e){alert('Erro');}}
+    function abrirModalQuebrar(id){
+      document.getElementById('quebrarId').value=id;
+      document.getElementById('quebrarMotivo').value='';
+      document.getElementById('modalQuebrar').classList.add('show');
+    }
+    
+    async function confirmarQuebrar(){
+      const id=document.getElementById('quebrarId').value;
+      const motivo=document.getElementById('quebrarMotivo').value;
+      try{
+        const r=await fetch(API+'/api/acordos/'+id+'/quebrar',{
+          method:'PUT',
+          headers:H(),
+          body:JSON.stringify({motivo})
+        });
+        const d=await r.json();
+        if(d.success){
+          fecharModal('modalQuebrar');
+          carregarAcordos();
+          carregarEstatisticas();
+          alert('Acordo quebrado');
+        }else{
+          alert(d.error||'Erro');
+        }
+      }catch(e){alert('Erro');}
+    }
 
-    async function enviarWhatsapp(parcelaId){try{const r=await fetch(API+'/api/acordos/parcelas/'+parcelaId+'/whatsapp',{headers:H()});const d=await r.json();if(d.success&&d.link)window.open(d.link,'_blank');else alert(d.error||'Erro');}catch(e){alert('Erro');}}
+    async function enviarWhatsapp(parcelaId){
+      try{
+        const r=await fetch(API+'/api/acordos/parcelas/'+parcelaId+'/whatsapp',{headers:H()});
+        const d=await r.json();
+        if(d.success&&d.link)window.open(d.link,'_blank');
+        else alert(d.error||'Erro');
+      }catch(e){alert('Erro');}
+    }
 
-    carregarUsuario();carregarEstatisticas();carregarAcordos();
+    carregarUsuario();
+    carregarEstatisticas();
+    carregarAcordos();
   </script>
 </body>
 </html>
