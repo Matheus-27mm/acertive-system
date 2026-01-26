@@ -199,7 +199,7 @@ module.exports = function(pool, auth, upload, registrarLog, asaasService = null)
                     INSERT INTO cobrancas (
                         cliente_id, credor_id, empresa_id, descricao, 
                         valor, valor_original, valor_atualizado, 
-                        data_vencimento, numero_contrato,
+                        vencimento, data_vencimento, numero_contrato,
                         numero_parcela, total_parcelas, 
                         multa, juros, categoria, referencia, 
                         tipo_cobranca, observacoes, correcao,
@@ -207,7 +207,7 @@ module.exports = function(pool, auth, upload, registrarLog, asaasService = null)
                     ) VALUES (
                         $1::uuid, $2::uuid, $3::uuid, $4, 
                         $5, $5, $5, 
-                        $6, $7,
+                        $6, $6, $7,
                         $8, $9, 
                         $10, $11, $12, $13, 
                         $14, $15, $16,
@@ -772,8 +772,8 @@ module.exports = function(pool, auth, upload, registrarLog, asaasService = null)
                     }
 
                     await pool.query(`
-                        INSERT INTO cobrancas (cliente_id, credor_id, descricao, valor, valor_original, data_vencimento, categoria, referencia, status, created_at) 
-                        VALUES ($1, $2, $3, $4, $4, $5, $6, $7, 'pendente', NOW())
+                        INSERT INTO cobrancas (cliente_id, credor_id, descricao, valor, valor_original, vencimento, data_vencimento, categoria, referencia, status, created_at) 
+                        VALUES ($1, $2, $3, $4, $4, $5, $5, $6, $7, 'pendente', NOW())
                     `, [clienteId, credor_id || null, descricao, parseFloat(valor), dataVenc, categoria, referencia]);
                     importados++;
                 } catch (err) { erros.push({ linha: i + 2, erro: err.message }); }
@@ -838,8 +838,8 @@ module.exports = function(pool, auth, upload, registrarLog, asaasService = null)
                         }
 
                         await pool.query(`
-                            INSERT INTO cobrancas (cliente_id, credor_id, descricao, valor, valor_original, data_vencimento, numero_contrato, categoria, status, created_at) 
-                            VALUES ($1, $2, $3, $4, $4, $5, $6, $7, 'pendente', NOW())
+                            INSERT INTO cobrancas (cliente_id, credor_id, descricao, valor, valor_original, vencimento, data_vencimento, numero_contrato, categoria, status, created_at) 
+                            VALUES ($1, $2, $3, $4, $4, $5, $5, $6, $7, 'pendente', NOW())
                         `, [clienteId, credor_id || null, descricao, parseFloat(valor), dataVenc, contrato, categoria]);
                         resultado.cobrancas_criadas++;
                     }
