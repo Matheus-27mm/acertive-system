@@ -10,6 +10,7 @@
     :root {
       --bg: #09090b;
       --card: rgba(17,17,21,0.95);
+      --card-hover: rgba(25,25,30,0.95);
       --text: #fafafa;
       --muted: #71717a;
       --gold: #ca9b3c;
@@ -24,7 +25,6 @@
       --orange: #f59e0b;
       --orange-bg: rgba(245,158,11,0.15);
       --purple: #a855f7;
-      --purple-bg: rgba(168,85,247,0.15);
       --sidebar: 240px;
       --radius: 12px;
     }
@@ -62,7 +62,7 @@
     /* Buttons */
     .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:10px; font-weight:600; font-size:13px; cursor:pointer; border:none; transition:all 0.15s; }
     .btn-primary { background:var(--gold); color:var(--bg); }
-    .btn-primary:hover { filter:brightness(1.1); }
+    .btn-primary:hover { filter:brightness(1.1); transform:translateY(-1px); }
     .btn-secondary { background:var(--card); color:var(--text); border:1px solid var(--border); }
     .btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
     .btn-success { background:var(--green); color:#fff; }
@@ -70,7 +70,8 @@
     .btn-danger { background:var(--red-bg); color:var(--red); border:1px solid transparent; }
     .btn-danger:hover { border-color:var(--red); }
     .btn-sm { padding:8px 14px; font-size:12px; }
-    .btn-icon { width:36px; height:36px; padding:0; justify-content:center; }
+    .btn-xs { padding:6px 10px; font-size:11px; }
+    .btn-icon { width:32px; height:32px; padding:0; justify-content:center; border-radius:8px; }
     
     /* Stats */
     .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
@@ -83,56 +84,90 @@
     .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
     .stat-value { font-size:24px; font-weight:700; margin-top:2px; }
     
+    /* Toolbar */
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
+    .toolbar-left { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .search-box { display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px; min-width:280px; }
+    .search-box:focus-within { border-color:var(--gold); }
+    .search-box i { color:var(--muted); }
+    .search-box input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:13px; }
+    .filter-select { padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:13px; cursor:pointer; }
+    .filter-select:focus { border-color:var(--gold); outline:none; }
+    
     /* Tabs */
-    .tabs { display:flex; gap:4px; margin-bottom:24px; background:var(--card); border-radius:var(--radius); padding:4px; border:1px solid var(--border); width:fit-content; }
-    .tab { padding:12px 20px; background:transparent; border:none; color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; border-radius:8px; display:flex; align-items:center; gap:8px; transition:all 0.15s; }
+    .tabs { display:flex; gap:4px; background:var(--card); border-radius:var(--radius); padding:4px; border:1px solid var(--border); }
+    .tab { padding:10px 16px; background:transparent; border:none; color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; border-radius:8px; display:flex; align-items:center; gap:8px; transition:all 0.15s; }
     .tab:hover { color:var(--text); }
     .tab.active { background:var(--gold); color:var(--bg); }
     .tab .badge { padding:2px 8px; border-radius:10px; font-size:11px; background:rgba(0,0,0,0.2); }
     
-    /* Toolbar */
-    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
-    .search-box { display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px; min-width:300px; }
-    .search-box:focus-within { border-color:var(--gold); }
-    .search-box i { color:var(--muted); }
-    .search-box input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:13px; }
-    .filter-group { display:flex; gap:8px; }
+    /* Cliente Card */
+    .cliente-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; overflow:hidden; transition:all 0.2s; }
+    .cliente-card:hover { border-color:rgba(255,255,255,0.15); }
+    .cliente-card.expanded { border-color:var(--gold); }
     
-    /* Table */
-    .table-container { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
-    .table { width:100%; border-collapse:collapse; }
-    .table th { text-align:left; padding:14px 20px; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; background:rgba(0,0,0,0.2); border-bottom:1px solid var(--border); }
-    .table td { padding:16px 20px; border-bottom:1px solid var(--border); vertical-align:middle; }
-    .table tr:last-child td { border-bottom:none; }
-    .table tr:hover { background:rgba(255,255,255,0.02); }
+    .cliente-header { padding:16px 20px; display:flex; align-items:center; gap:16px; cursor:pointer; }
+    .cliente-header:hover { background:rgba(255,255,255,0.02); }
     
-    /* Cliente Cell */
-    .cliente-cell { display:flex; align-items:center; gap:12px; }
-    .cliente-avatar { width:40px; height:40px; background:var(--gold); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:var(--bg); flex-shrink:0; }
-    .cliente-info { min-width:0; }
-    .cliente-nome { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .cliente-doc { font-size:12px; color:var(--muted); }
+    .cliente-avatar { width:48px; height:48px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--bg); flex-shrink:0; }
     
-    /* Status Badge */
-    .status { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; }
-    .status.pendente { background:var(--orange-bg); color:var(--orange); }
-    .status.vencido { background:var(--red-bg); color:var(--red); }
-    .status.pago { background:var(--green-bg); color:var(--green); }
-    .status.acordo { background:var(--blue-bg); color:var(--blue); }
-    .status.arquivado { background:rgba(255,255,255,0.1); color:var(--muted); }
-    .status::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+    .cliente-info { flex:1; min-width:0; }
+    .cliente-nome { font-weight:700; font-size:15px; margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+    .cliente-meta { display:flex; align-items:center; gap:16px; font-size:12px; color:var(--muted); flex-wrap:wrap; }
+    .cliente-meta i { margin-right:4px; }
+    .cliente-meta .telefone { color:var(--green); cursor:pointer; }
+    .cliente-meta .telefone:hover { text-decoration:underline; }
     
-    /* Valor */
-    .valor { font-weight:700; font-size:15px; }
-    .valor.destaque { color:var(--gold); font-size:16px; }
+    .cliente-resumo { display:flex; align-items:center; gap:24px; }
+    .resumo-item { text-align:right; }
+    .resumo-label { font-size:11px; color:var(--muted); text-transform:uppercase; }
+    .resumo-valor { font-size:18px; font-weight:700; color:var(--gold); }
+    .resumo-valor.vencido { color:var(--red); }
     
-    /* Vencimento */
-    .vencimento { font-size:13px; }
-    .vencimento.vencido { color:var(--red); }
-    .vencimento .dias { font-size:11px; color:var(--muted); display:block; margin-top:2px; }
+    .cliente-toggle { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--muted); transition:all 0.2s; }
+    .cliente-card.expanded .cliente-toggle { background:var(--gold-glow); color:var(--gold); transform:rotate(180deg); }
     
-    /* Actions */
-    .actions { display:flex; gap:6px; }
+    /* Cobranças List */
+    .cobrancas-list { display:none; border-top:1px solid var(--border); background:rgba(0,0,0,0.2); }
+    .cliente-card.expanded .cobrancas-list { display:block; }
+    
+    .cobranca-item { display:flex; align-items:center; gap:16px; padding:14px 20px; border-bottom:1px solid var(--border); transition:background 0.15s; }
+    .cobranca-item:last-child { border-bottom:none; }
+    .cobranca-item:hover { background:rgba(255,255,255,0.02); }
+    
+    .cobranca-check { width:20px; height:20px; border:2px solid var(--border); border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; }
+    .cobranca-check:hover { border-color:var(--gold); }
+    .cobranca-check.checked { background:var(--gold); border-color:var(--gold); }
+    .cobranca-check.checked::after { content:'✓'; color:var(--bg); font-size:12px; font-weight:700; }
+    
+    .cobranca-info { flex:1; min-width:0; }
+    .cobranca-descricao { font-weight:600; font-size:14px; margin-bottom:2px; }
+    .cobranca-detalhe { font-size:12px; color:var(--muted); }
+    
+    .cobranca-valor { text-align:right; min-width:100px; }
+    .cobranca-valor-num { font-weight:700; font-size:15px; color:var(--gold); }
+    
+    .cobranca-vencimento { text-align:center; min-width:120px; }
+    .cobranca-data { font-size:13px; font-weight:500; }
+    .cobranca-dias { font-size:11px; padding:3px 8px; border-radius:20px; margin-top:4px; display:inline-block; }
+    .cobranca-dias.vencido { background:var(--red-bg); color:var(--red); }
+    .cobranca-dias.hoje { background:var(--orange-bg); color:var(--orange); }
+    .cobranca-dias.futuro { background:var(--green-bg); color:var(--green); }
+    
+    .cobranca-status { min-width:90px; text-align:center; }
+    .status-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; }
+    .status-badge.pendente { background:var(--orange-bg); color:var(--orange); }
+    .status-badge.vencido { background:var(--red-bg); color:var(--red); }
+    .status-badge.pago { background:var(--green-bg); color:var(--green); }
+    .status-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+    
+    .cobranca-acoes { display:flex; gap:6px; }
+    
+    /* Ações do Cliente */
+    .cliente-acoes { padding:16px 20px; background:rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .acoes-selecionadas { display:flex; gap:8px; align-items:center; }
+    .selecionadas-texto { font-size:13px; color:var(--muted); margin-right:8px; }
+    .acoes-rapidas { display:flex; gap:8px; }
     
     /* Empty State */
     .empty { text-align:center; padding:60px 20px; color:var(--muted); }
@@ -158,7 +193,6 @@
     
     /* Form */
     .form-group { margin-bottom:16px; }
-    .form-group:last-child { margin-bottom:0; }
     .form-group label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; }
     .form-control { width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; }
     .form-control:focus { outline:none; border-color:var(--gold); }
@@ -168,11 +202,13 @@
     .input-prefix input { padding-left:40px; }
     
     /* Cliente Search */
+    .cliente-search-container { position:relative; }
     .cliente-search-results { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:10; display:none; }
     .cliente-search-results.show { display:block; }
     .cliente-search-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--border); }
     .cliente-search-item:hover { background:var(--gold-glow); }
     .cliente-search-item:last-child { border-bottom:none; }
+    .cliente-selecionado { display:flex; align-items:center; gap:12px; padding:12px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px; margin-top:8px; }
     
     /* Responsive */
     @media(max-width:1200px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
@@ -180,7 +216,8 @@
     @media(max-width:768px) { 
       .stats-grid { grid-template-columns:1fr; } 
       .form-row { grid-template-columns:1fr; }
-      .table-container { overflow-x:auto; }
+      .cliente-resumo { flex-direction:column; gap:8px; }
+      .cobranca-item { flex-wrap:wrap; }
     }
   </style>
 </head>
@@ -226,16 +263,16 @@
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+        <div class="stat-icon orange"><i class="fas fa-users"></i></div>
         <div>
-          <div class="stat-label">Pendentes</div>
-          <div class="stat-value" id="statPendentes">0</div>
+          <div class="stat-label">Clientes com Dívidas</div>
+          <div class="stat-value" id="statClientes">0</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
         <div>
-          <div class="stat-label">Vencidas</div>
+          <div class="stat-label">Cobranças Vencidas</div>
           <div class="stat-value" id="statVencidas">0</div>
         </div>
       </div>
@@ -255,47 +292,30 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" onclick="trocarTab('pendentes')">
-        <i class="fas fa-clock"></i> Pendentes <span class="badge" id="countPendentes">0</span>
-      </button>
-      <button class="tab" onclick="trocarTab('vencidas')">
-        <i class="fas fa-exclamation-triangle"></i> Vencidas
-      </button>
-      <button class="tab" onclick="trocarTab('pagas')">
-        <i class="fas fa-check"></i> Pagas
-      </button>
-      <button class="tab" onclick="trocarTab('todas')">
-        <i class="fas fa-list"></i> Todas
-      </button>
-    </div>
-
     <!-- Toolbar -->
     <div class="toolbar">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="busca" placeholder="Buscar cliente ou descrição..." oninput="filtrar()">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="busca" placeholder="Buscar cliente..." oninput="filtrar()">
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="trocarTab('todos')">
+            <i class="fas fa-list"></i> Todos
+          </button>
+          <button class="tab" onclick="trocarTab('vencidos')">
+            <i class="fas fa-exclamation-triangle"></i> Vencidos
+          </button>
+          <button class="tab" onclick="trocarTab('pendentes')">
+            <i class="fas fa-clock"></i> A Vencer
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Descrição</th>
-            <th>Valor</th>
-            <th>Vencimento</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaCobrancas">
-          <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
-        </tbody>
-      </table>
+    <!-- Lista de Clientes -->
+    <div id="listaClientes">
+      <div class="loading"><div class="spinner"></div></div>
     </div>
   </main>
 
@@ -307,20 +327,18 @@
         <button class="modal-close" onclick="fecharModal('modalNova')">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="form-group" style="position:relative">
+        <div class="form-group cliente-search-container">
           <label>Cliente *</label>
           <input type="text" class="form-control" id="novoCliente" placeholder="Buscar cliente..." oninput="buscarCliente(this.value)" autocomplete="off">
           <div class="cliente-search-results" id="resultadosCliente"></div>
           <input type="hidden" id="novoClienteId">
-        </div>
-        <div id="clienteSelecionado" style="display:none; margin-bottom:16px; padding:12px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div class="cliente-avatar" id="selAvatar">--</div>
+          <div id="clienteSelecionado" style="display:none" class="cliente-selecionado">
+            <div class="cliente-avatar" id="selAvatar" style="width:36px;height:36px;font-size:14px;">--</div>
             <div style="flex:1">
               <div style="font-weight:600" id="selNome">-</div>
-              <div style="font-size:12px; color:var(--muted)" id="selDoc">-</div>
+              <div style="font-size:12px;color:var(--muted)" id="selDoc">-</div>
             </div>
-            <button onclick="limparCliente()" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:8px;">
+            <button onclick="limparCliente()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -364,9 +382,10 @@
         <button class="modal-close" onclick="fecharModal('modalPagar')">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="text-align:center; padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:20px;">
-          <div style="font-size:14px; color:var(--muted)" id="pagarDescricao">-</div>
-          <div style="font-size:32px; font-weight:700; color:var(--gold); margin:8px 0" id="pagarValor">R$ 0,00</div>
+        <div style="text-align:center;padding:20px 0;border-bottom:1px solid var(--border);margin-bottom:20px;">
+          <div style="font-size:14px;color:var(--muted)" id="pagarCliente">-</div>
+          <div style="font-size:28px;font-weight:700;color:var(--gold);margin:8px 0" id="pagarValor">R$ 0,00</div>
+          <div style="font-size:13px;color:var(--muted)" id="pagarDescricao">-</div>
         </div>
         <div class="form-group">
           <label>Data do Pagamento</label>
@@ -401,10 +420,10 @@
         <button class="modal-close" onclick="fecharModal('modalAcordo')">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="padding:16px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:20px;">
-          <div style="font-size:12px; color:var(--muted)">Dívida Original</div>
-          <div style="font-size:24px; font-weight:700; color:var(--gold)" id="acordoValorOriginal">R$ 0,00</div>
-          <div style="font-size:13px; color:var(--muted); margin-top:4px" id="acordoDescricao">-</div>
+        <div style="padding:16px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:20px;">
+          <div style="font-size:12px;color:var(--muted)">Dívida Total Selecionada</div>
+          <div style="font-size:24px;font-weight:700;color:var(--gold)" id="acordoValorOriginal">R$ 0,00</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px" id="acordoQtd">0 cobrança(s)</div>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -429,29 +448,29 @@
           <label>Entrada (R$)</label>
           <div class="input-prefix">
             <span>R$</span>
-            <input type="text" class="form-control" id="acordoEntrada" value="0,00" oninput="formatarMoeda(this); calcularAcordo()">
+            <input type="text" class="form-control" id="acordoEntrada" value="0,00" oninput="formatarMoeda(this);calcularAcordo()">
           </div>
         </div>
         <div class="form-group">
           <label>Primeiro Vencimento</label>
           <input type="date" class="form-control" id="acordoPrimeiroVenc">
         </div>
-        <div style="padding:16px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px; margin-top:16px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <div style="padding:16px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:8px;margin-top:16px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
             <span style="color:var(--muted)">Valor com desconto:</span>
             <span style="font-weight:600" id="acordoValorFinal">R$ 0,00</span>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
             <span style="color:var(--muted)">Entrada:</span>
             <span style="font-weight:600" id="acordoEntradaRes">R$ 0,00</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.2);">
+          <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.2);">
             <span style="font-weight:600">Parcelas:</span>
-            <span style="font-weight:700; color:var(--gold); font-size:18px" id="acordoParcelasRes">6x de R$ 0,00</span>
+            <span style="font-weight:700;color:var(--gold);font-size:18px" id="acordoParcelasRes">6x de R$ 0,00</span>
           </div>
         </div>
-        <input type="hidden" id="acordoCobrancaId">
         <input type="hidden" id="acordoClienteId">
+        <input type="hidden" id="acordoCobrancasIds">
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="fecharModal('modalAcordo')">Cancelar</button>
@@ -468,7 +487,9 @@
     if (!token) window.location.href = 'login.html';
     
     let cobrancas = [];
-    let currentTab = 'pendentes';
+    let clientesAgrupados = {};
+    let currentTab = 'todos';
+    let selecionados = {}; // { clienteId: [cobrancaIds] }
     
     const H = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
     const logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
@@ -485,11 +506,26 @@
     // Calcular dias de vencimento
     function diasVencimento(dataVenc) {
       if (!dataVenc) return null;
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const venc = new Date(dataVenc + 'T00:00:00');
-      const diff = Math.floor((venc - hoje) / (1000 * 60 * 60 * 24));
-      return diff;
+      try {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const dataStr = dataVenc.toString().split('T')[0];
+        if (!dataStr || dataStr === 'null') return null;
+        const venc = new Date(dataStr + 'T12:00:00');
+        if (isNaN(venc.getTime())) return null;
+        return Math.floor((venc - hoje) / (1000 * 60 * 60 * 24));
+      } catch (e) { return null; }
+    }
+    
+    function formatarData(data) {
+      if (!data) return '-';
+      try {
+        const dataStr = data.toString().split('T')[0];
+        if (!dataStr || dataStr === 'null') return '-';
+        const d = new Date(dataStr + 'T12:00:00');
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleDateString('pt-BR');
+      } catch (e) { return '-'; }
     }
     
     // Carregar usuário
@@ -512,127 +548,292 @@
         const r = await fetch(API + '/api/cobrancas/stats', { headers: H() });
         const d = await r.json();
         if (d.success && d.data) {
-          document.getElementById('statPendentes').textContent = d.data.pendentes || 0;
           document.getElementById('statVencidas').textContent = d.data.vencidas || 0;
           document.getElementById('statTotal').textContent = fmtMoney(d.data.totalPendente);
           document.getElementById('statRecebido').textContent = fmtMoney(d.data.recebidoMes);
-          document.getElementById('countPendentes').textContent = d.data.pendentes || 0;
         }
-      } catch (e) {}
+      } catch (e) { console.error('Erro stats:', e); }
     }
     
     // Carregar cobranças
     async function carregarCobrancas() {
       try {
-        const r = await fetch(API + '/api/cobrancas?limit=200', { headers: H() });
+        const r = await fetch(API + '/api/cobrancas?limit=500', { headers: H() });
         const d = await r.json();
         if (d.success) {
-          cobrancas = d.data || [];
+          cobrancas = (d.data || []).filter(c => c.status !== 'pago' && c.status !== 'acordo');
+          agruparPorCliente();
           renderizar();
         }
       } catch (e) {
-        document.getElementById('tabelaCobrancas').innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-exclamation-circle"></i><p>Erro ao carregar</p></div></td></tr>';
+        document.getElementById('listaClientes').innerHTML = '<div class="empty"><i class="fas fa-exclamation-circle"></i><h3>Erro ao carregar</h3></div>';
       }
     }
     
-    // Renderizar tabela
-    function renderizar() {
-      const tbody = document.getElementById('tabelaCobrancas');
-      const busca = document.getElementById('busca').value.toLowerCase();
-      const hoje = new Date().toISOString().split('T')[0];
+    // Agrupar cobranças por cliente
+    function agruparPorCliente() {
+      clientesAgrupados = {};
       
-      let filtradas = cobrancas.filter(c => {
-        // Ignorar cobranças que já viraram acordo
-        if (c.status === 'acordo') return false;
+      cobrancas.forEach(c => {
+        const clienteId = c.cliente_id || 'sem-cliente';
+        if (!clientesAgrupados[clienteId]) {
+          clientesAgrupados[clienteId] = {
+            id: clienteId,
+            nome: c.cliente_nome || 'Cliente não identificado',
+            cpf: c.cliente_cpf || '',
+            telefone: c.cliente_telefone || '',
+            email: c.cliente_email || '',
+            cobrancas: [],
+            totalValor: 0,
+            totalVencido: 0,
+            qtdVencidas: 0
+          };
+        }
         
-        if (currentTab === 'pendentes') {
-          const venc = c.vencimento || c.data_vencimento;
-          return c.status === 'pendente' && (!venc || venc >= hoje);
+        const cliente = clientesAgrupados[clienteId];
+        cliente.cobrancas.push(c);
+        
+        const valor = parseFloat(c.valor || c.valor_original || 0);
+        cliente.totalValor += valor;
+        
+        const dias = diasVencimento(c.data_vencimento || c.vencimento);
+        if (dias !== null && dias < 0) {
+          cliente.totalVencido += valor;
+          cliente.qtdVencidas++;
         }
-        if (currentTab === 'vencidas') {
-          const venc = c.vencimento || c.data_vencimento;
-          return (c.status === 'pendente' || c.status === 'vencido') && venc && venc < hoje;
-        }
-        if (currentTab === 'pagas') return c.status === 'pago';
-        return c.status !== 'acordo'; // todas menos acordos
       });
       
+      // Atualizar estatísticas
+      document.getElementById('statClientes').textContent = Object.keys(clientesAgrupados).length;
+    }
+    
+    // Renderizar lista
+    function renderizar() {
+      const container = document.getElementById('listaClientes');
+      const busca = document.getElementById('busca').value.toLowerCase();
+      
+      let clientes = Object.values(clientesAgrupados);
+      
+      // Filtrar por busca
       if (busca) {
-        filtradas = filtradas.filter(c => 
-          c.cliente_nome?.toLowerCase().includes(busca) ||
-          c.descricao?.toLowerCase().includes(busca)
+        clientes = clientes.filter(c => 
+          c.nome.toLowerCase().includes(busca) ||
+          (c.cpf && c.cpf.includes(busca)) ||
+          (c.telefone && c.telefone.includes(busca))
         );
       }
       
-      if (filtradas.length === 0) {
-        tbody.innerHTML = `
-          <tr><td colspan="6">
-            <div class="empty">
-              <i class="fas fa-file-invoice-dollar"></i>
-              <h3>Nenhuma cobrança</h3>
-              <p>Clique em "Nova Cobrança" para começar</p>
-            </div>
-          </td></tr>`;
+      // Filtrar por tab
+      if (currentTab === 'vencidos') {
+        clientes = clientes.filter(c => c.qtdVencidas > 0);
+      } else if (currentTab === 'pendentes') {
+        clientes = clientes.filter(c => c.qtdVencidas === 0);
+      }
+      
+      // Ordenar por valor vencido (maior primeiro)
+      clientes.sort((a, b) => b.totalVencido - a.totalVencido || b.totalValor - a.totalValor);
+      
+      if (clientes.length === 0) {
+        container.innerHTML = `
+          <div class="empty">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <h3>Nenhuma cobrança encontrada</h3>
+            <p>Clique em "Nova Cobrança" para começar</p>
+          </div>`;
         return;
       }
       
-      tbody.innerHTML = filtradas.map(c => {
-        const venc = c.vencimento || c.data_vencimento;
-        const dias = diasVencimento(venc);
-        const vencido = dias !== null && dias < 0;
-        const venceHoje = dias === 0;
-        
-        let statusClass = c.status;
-        if (c.status === 'pendente' && vencido) statusClass = 'vencido';
-        
-        let diasTexto = '';
-        if (dias !== null && c.status !== 'pago') {
-          if (dias < 0) diasTexto = `${Math.abs(dias)} dias atrás`;
-          else if (dias === 0) diasTexto = 'Vence hoje';
-          else diasTexto = `em ${dias} dias`;
-        }
+      container.innerHTML = clientes.map(cliente => {
+        const temVencidas = cliente.qtdVencidas > 0;
         
         return `
-          <tr>
-            <td>
-              <div class="cliente-cell">
-                <div class="cliente-avatar">${initials(c.cliente_nome)}</div>
-                <div class="cliente-info">
-                  <div class="cliente-nome">${c.cliente_nome || '-'}</div>
-                  <div class="cliente-doc">${c.cliente_cpf || ''}</div>
+          <div class="cliente-card" id="card-${cliente.id}">
+            <div class="cliente-header" onclick="toggleCliente('${cliente.id}')">
+              <div class="cliente-avatar">${initials(cliente.nome)}</div>
+              <div class="cliente-info">
+                <div class="cliente-nome">
+                  ${cliente.nome}
+                  ${temVencidas ? `<span style="color:var(--red);font-size:12px;font-weight:500"><i class="fas fa-exclamation-circle"></i> ${cliente.qtdVencidas} vencida(s)</span>` : ''}
+                </div>
+                <div class="cliente-meta">
+                  ${cliente.telefone ? `<span class="telefone" onclick="event.stopPropagation();abrirWhatsappCliente('${cliente.telefone}','${cliente.nome}')"><i class="fab fa-whatsapp"></i> ${cliente.telefone}</span>` : ''}
+                  ${cliente.cpf ? `<span><i class="fas fa-id-card"></i> ${cliente.cpf}</span>` : ''}
+                  <span><i class="fas fa-file-invoice"></i> ${cliente.cobrancas.length} cobrança(s)</span>
                 </div>
               </div>
-            </td>
-            <td>${c.descricao || '-'}</td>
-            <td><span class="valor destaque">${fmtMoney(c.valor || c.valor_original)}</span></td>
-            <td>
-              <div class="vencimento ${vencido ? 'vencido' : ''}">
-                ${venc ? new Date(venc + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}
-                ${diasTexto ? `<span class="dias">${diasTexto}</span>` : ''}
+              <div class="cliente-resumo">
+                ${temVencidas ? `
+                  <div class="resumo-item">
+                    <div class="resumo-label">Vencido</div>
+                    <div class="resumo-valor vencido">${fmtMoney(cliente.totalVencido)}</div>
+                  </div>
+                ` : ''}
+                <div class="resumo-item">
+                  <div class="resumo-label">Total</div>
+                  <div class="resumo-valor">${fmtMoney(cliente.totalValor)}</div>
+                </div>
               </div>
-            </td>
-            <td><span class="status ${statusClass}">${statusClass}</span></td>
-            <td>
-              <div class="actions">
-                ${c.status !== 'pago' ? `
-                  <button class="btn btn-sm btn-success" onclick="abrirModalPagar('${c.id}', '${c.descricao || ''}', ${c.valor || c.valor_original})" title="Pagar">
-                    <i class="fas fa-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-secondary" onclick="abrirModalAcordo('${c.id}', '${c.cliente_id}', '${c.descricao || ''}', ${c.valor || c.valor_original})" title="Criar Acordo">
-                    <i class="fas fa-handshake"></i>
-                  </button>
-                  <button class="btn btn-sm btn-secondary" onclick="enviarWhatsapp('${c.id}')" title="WhatsApp">
-                    <i class="fab fa-whatsapp"></i>
-                  </button>
-                ` : `
-                  <span style="color:var(--muted); font-size:12px">
-                    <i class="fas fa-check-circle"></i> Pago
-                  </span>
-                `}
+              <div class="cliente-toggle">
+                <i class="fas fa-chevron-down"></i>
               </div>
-            </td>
-          </tr>`;
+            </div>
+            
+            <div class="cobrancas-list">
+              ${cliente.cobrancas.map(c => renderCobranca(c, cliente.id)).join('')}
+              
+              <div class="cliente-acoes">
+                <div class="acoes-selecionadas">
+                  <span class="selecionadas-texto" id="sel-texto-${cliente.id}">Selecione cobranças</span>
+                  <button class="btn btn-sm btn-success" onclick="pagarSelecionadas('${cliente.id}')" id="btn-pagar-${cliente.id}" style="display:none">
+                    <i class="fas fa-check"></i> Pagar Selecionadas
+                  </button>
+                  <button class="btn btn-sm btn-primary" onclick="abrirModalAcordoCliente('${cliente.id}')" id="btn-acordo-${cliente.id}" style="display:none">
+                    <i class="fas fa-handshake"></i> Criar Acordo
+                  </button>
+                </div>
+                <div class="acoes-rapidas">
+                  <button class="btn btn-sm btn-secondary" onclick="selecionarTodas('${cliente.id}')">
+                    <i class="fas fa-check-double"></i> Selecionar Todas
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="abrirWhatsappCliente('${cliente.telefone}','${cliente.nome}')">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>`;
       }).join('');
+    }
+    
+    // Render cobrança individual
+    function renderCobranca(c, clienteId) {
+      const venc = c.data_vencimento || c.vencimento;
+      const dias = diasVencimento(venc);
+      const vencido = dias !== null && dias < 0;
+      const hoje = dias === 0;
+      
+      let diasTexto = '', diasClass = 'futuro';
+      if (dias !== null) {
+        if (dias < 0) {
+          diasTexto = `${Math.abs(dias)} dias atrás`;
+          diasClass = 'vencido';
+        } else if (dias === 0) {
+          diasTexto = 'Vence hoje';
+          diasClass = 'hoje';
+        } else {
+          diasTexto = `em ${dias} dias`;
+          diasClass = 'futuro';
+        }
+      }
+      
+      const statusClass = vencido ? 'vencido' : 'pendente';
+      const isSelected = selecionados[clienteId]?.includes(c.id);
+      
+      return `
+        <div class="cobranca-item">
+          <div class="cobranca-check ${isSelected ? 'checked' : ''}" onclick="toggleSelecionado('${clienteId}','${c.id}')"></div>
+          <div class="cobranca-info">
+            <div class="cobranca-descricao">${c.descricao || '-'}</div>
+            <div class="cobranca-detalhe">${c.referencia ? `Ref: ${c.referencia}` : ''}</div>
+          </div>
+          <div class="cobranca-valor">
+            <div class="cobranca-valor-num">${fmtMoney(c.valor || c.valor_original)}</div>
+          </div>
+          <div class="cobranca-vencimento">
+            <div class="cobranca-data">${formatarData(venc)}</div>
+            ${diasTexto ? `<div class="cobranca-dias ${diasClass}">${diasTexto}</div>` : ''}
+          </div>
+          <div class="cobranca-status">
+            <span class="status-badge ${statusClass}">${statusClass}</span>
+          </div>
+          <div class="cobranca-acoes">
+            <button class="btn btn-icon btn-success" onclick="abrirModalPagar('${c.id}','${(c.descricao || '').replace(/'/g, "\\'")}',${c.valor || c.valor_original},'${c.cliente_nome || ''}')" title="Pagar">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn btn-icon btn-secondary" onclick="enviarWhatsapp('${c.id}')" title="WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </button>
+          </div>
+        </div>`;
+    }
+    
+    // Toggle expandir cliente
+    function toggleCliente(clienteId) {
+      const card = document.getElementById('card-' + clienteId);
+      card.classList.toggle('expanded');
+    }
+    
+    // Toggle selecionado
+    function toggleSelecionado(clienteId, cobrancaId) {
+      if (!selecionados[clienteId]) selecionados[clienteId] = [];
+      
+      const idx = selecionados[clienteId].indexOf(cobrancaId);
+      if (idx > -1) {
+        selecionados[clienteId].splice(idx, 1);
+      } else {
+        selecionados[clienteId].push(cobrancaId);
+      }
+      
+      atualizarSelecao(clienteId);
+    }
+    
+    // Selecionar todas
+    function selecionarTodas(clienteId) {
+      const cliente = clientesAgrupados[clienteId];
+      if (!cliente) return;
+      
+      const todasIds = cliente.cobrancas.map(c => c.id);
+      const todasSelecionadas = selecionados[clienteId]?.length === todasIds.length;
+      
+      if (todasSelecionadas) {
+        selecionados[clienteId] = [];
+      } else {
+        selecionados[clienteId] = [...todasIds];
+      }
+      
+      atualizarSelecao(clienteId);
+    }
+    
+    // Atualizar UI de seleção
+    function atualizarSelecao(clienteId) {
+      const cliente = clientesAgrupados[clienteId];
+      if (!cliente) return;
+      
+      const qtd = selecionados[clienteId]?.length || 0;
+      const texto = document.getElementById('sel-texto-' + clienteId);
+      const btnPagar = document.getElementById('btn-pagar-' + clienteId);
+      const btnAcordo = document.getElementById('btn-acordo-' + clienteId);
+      
+      if (qtd > 0) {
+        const valorTotal = cliente.cobrancas
+          .filter(c => selecionados[clienteId].includes(c.id))
+          .reduce((sum, c) => sum + parseFloat(c.valor || c.valor_original || 0), 0);
+        
+        texto.textContent = `${qtd} selecionada(s) · ${fmtMoney(valorTotal)}`;
+        btnPagar.style.display = 'inline-flex';
+        btnAcordo.style.display = 'inline-flex';
+      } else {
+        texto.textContent = 'Selecione cobranças';
+        btnPagar.style.display = 'none';
+        btnAcordo.style.display = 'none';
+      }
+      
+      // Atualizar checkboxes visuais
+      cliente.cobrancas.forEach(c => {
+        const checks = document.querySelectorAll(`.cobranca-check`);
+        checks.forEach(check => {
+          const onclick = check.getAttribute('onclick');
+          if (onclick && onclick.includes(c.id)) {
+            if (selecionados[clienteId]?.includes(c.id)) {
+              check.classList.add('checked');
+            } else {
+              check.classList.remove('checked');
+            }
+          }
+        });
+      });
+      
+      renderizar(); // Simples re-render
     }
     
     // Trocar tab
@@ -645,6 +846,17 @@
     
     function filtrar() { renderizar(); }
     
+    // WhatsApp do cliente
+    function abrirWhatsappCliente(telefone, nome) {
+      if (!telefone) { alert('Cliente sem telefone'); return; }
+      
+      let tel = telefone.replace(/\D/g, '');
+      if (tel.length <= 11) tel = '55' + tel;
+      
+      const msg = `Olá ${nome}! Entramos em contato sobre suas pendências financeiras. Podemos conversar?`;
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    
     // ========== NOVA COBRANÇA ==========
     function abrirModalNova() {
       document.getElementById('novoClienteId').value = '';
@@ -655,7 +867,6 @@
       document.getElementById('novoValor').value = '';
       document.getElementById('novoObs').value = '';
       
-      // Data padrão: hoje + 30 dias
       const data = new Date();
       data.setDate(data.getDate() + 30);
       document.getElementById('novoVencimento').value = data.toISOString().split('T')[0];
@@ -668,10 +879,7 @@
       clearTimeout(buscaTimeout);
       const container = document.getElementById('resultadosCliente');
       
-      if (termo.length < 2) {
-        container.classList.remove('show');
-        return;
-      }
+      if (termo.length < 2) { container.classList.remove('show'); return; }
       
       buscaTimeout = setTimeout(async () => {
         try {
@@ -680,13 +888,13 @@
           
           if (d.success && d.data?.length > 0) {
             container.innerHTML = d.data.slice(0, 8).map(c => `
-              <div class="cliente-search-item" onclick="selecionarCliente('${c.id}', '${c.nome}', '${c.cpf_cnpj || ''}')">
+              <div class="cliente-search-item" onclick="selecionarCliente('${c.id}','${c.nome}','${c.cpf_cnpj || ''}')">
                 <div style="font-weight:600">${c.nome}</div>
-                <div style="font-size:11px; color:var(--muted)">${c.cpf_cnpj || '-'}</div>
+                <div style="font-size:11px;color:var(--muted)">${c.cpf_cnpj || '-'} ${c.telefone ? '· ' + c.telefone : ''}</div>
               </div>
             `).join('');
           } else {
-            container.innerHTML = '<div style="padding:16px; text-align:center; color:var(--muted)">Nenhum cliente encontrado</div>';
+            container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum cliente encontrado</div>';
           }
           container.classList.add('show');
         } catch (e) {}
@@ -699,7 +907,7 @@
       document.getElementById('selNome').textContent = nome;
       document.getElementById('selDoc').textContent = doc || '-';
       document.getElementById('novoCliente').style.display = 'none';
-      document.getElementById('clienteSelecionado').style.display = 'block';
+      document.getElementById('clienteSelecionado').style.display = 'flex';
       document.getElementById('resultadosCliente').classList.remove('show');
     }
     
@@ -726,14 +934,7 @@
         const r = await fetch(API + '/api/cobrancas', {
           method: 'POST',
           headers: H(),
-          body: JSON.stringify({
-            cliente_id: clienteId,
-            descricao,
-            valor,
-            vencimento,
-            observacoes: obs,
-            status: 'pendente'
-          })
+          body: JSON.stringify({ cliente_id: clienteId, descricao, valor, vencimento, observacoes: obs, status: 'pendente' })
         });
         
         const d = await r.json();
@@ -745,14 +946,13 @@
         } else {
           alert(d.error || 'Erro ao criar cobrança');
         }
-      } catch (e) {
-        alert('Erro ao criar cobrança');
-      }
+      } catch (e) { alert('Erro ao criar cobrança'); }
     }
     
     // ========== PAGAR ==========
-    function abrirModalPagar(id, descricao, valor) {
+    function abrirModalPagar(id, descricao, valor, clienteNome) {
       document.getElementById('pagarId').value = id;
+      document.getElementById('pagarCliente').textContent = clienteNome || '-';
       document.getElementById('pagarDescricao').textContent = descricao || '-';
       document.getElementById('pagarValor').textContent = fmtMoney(valor);
       document.getElementById('pagarData').value = new Date().toISOString().split('T')[0];
@@ -777,23 +977,50 @@
           carregarCobrancas();
           carregarEstatisticas();
           alert('✅ Pagamento registrado!');
-        } else {
-          alert(d.error || 'Erro');
-        }
-      } catch (e) {
-        alert('Erro ao registrar pagamento');
-      }
+        } else { alert(d.error || 'Erro'); }
+      } catch (e) { alert('Erro ao registrar pagamento'); }
+    }
+    
+    // Pagar selecionadas
+    async function pagarSelecionadas(clienteId) {
+      const ids = selecionados[clienteId] || [];
+      if (ids.length === 0) return;
+      
+      if (!confirm(`Confirma pagamento de ${ids.length} cobrança(s)?`)) return;
+      
+      try {
+        const r = await fetch(API + '/api/cobrancas/marcar-pagas', {
+          method: 'POST',
+          headers: H(),
+          body: JSON.stringify({ ids })
+        });
+        
+        const d = await r.json();
+        if (d.success) {
+          selecionados[clienteId] = [];
+          carregarCobrancas();
+          carregarEstatisticas();
+          alert('✅ Pagamentos registrados!');
+        } else { alert(d.error || 'Erro'); }
+      } catch (e) { alert('Erro'); }
     }
     
     // ========== ACORDO ==========
     let acordoValorOriginal = 0;
     
-    function abrirModalAcordo(cobrancaId, clienteId, descricao, valor) {
-      acordoValorOriginal = valor;
-      document.getElementById('acordoCobrancaId').value = cobrancaId;
+    function abrirModalAcordoCliente(clienteId) {
+      const ids = selecionados[clienteId] || [];
+      if (ids.length === 0) { alert('Selecione pelo menos uma cobrança'); return; }
+      
+      const cliente = clientesAgrupados[clienteId];
+      const cobrancasSel = cliente.cobrancas.filter(c => ids.includes(c.id));
+      
+      acordoValorOriginal = cobrancasSel.reduce((sum, c) => sum + parseFloat(c.valor || c.valor_original || 0), 0);
+      
       document.getElementById('acordoClienteId').value = clienteId;
-      document.getElementById('acordoValorOriginal').textContent = fmtMoney(valor);
-      document.getElementById('acordoDescricao').textContent = descricao || '-';
+      document.getElementById('acordoCobrancasIds').value = ids.join(',');
+      document.getElementById('acordoValorOriginal').textContent = fmtMoney(acordoValorOriginal);
+      document.getElementById('acordoQtd').textContent = `${ids.length} cobrança(s) selecionada(s)`;
       document.getElementById('acordoDesconto').value = 0;
       document.getElementById('acordoParcelas').value = '6';
       document.getElementById('acordoEntrada').value = '0,00';
@@ -821,8 +1048,8 @@
     }
     
     async function criarAcordo() {
-      const cobrancaId = document.getElementById('acordoCobrancaId').value;
       const clienteId = document.getElementById('acordoClienteId').value;
+      const cobrancasIds = document.getElementById('acordoCobrancasIds').value.split(',');
       const desconto = parseFloat(document.getElementById('acordoDesconto').value) || 0;
       const parcelas = parseInt(document.getElementById('acordoParcelas').value) || 1;
       const entrada = parseMoney(document.getElementById('acordoEntrada').value);
@@ -833,11 +1060,12 @@
       const valorAcordo = acordoValorOriginal * (1 - desconto / 100);
       
       try {
+        // Criar acordo com a primeira cobrança
         const r = await fetch(API + '/api/acordos', {
           method: 'POST',
           headers: H(),
           body: JSON.stringify({
-            cobranca_id: cobrancaId,
+            cobranca_id: cobrancasIds[0],
             cliente_id: clienteId,
             valor_original: acordoValorOriginal,
             valor_acordo: valorAcordo,
@@ -850,31 +1078,35 @@
         
         const d = await r.json();
         if (d.success) {
+          // Marcar demais cobranças como acordo
+          if (cobrancasIds.length > 1) {
+            for (let i = 1; i < cobrancasIds.length; i++) {
+              await fetch(API + '/api/cobrancas/' + cobrancasIds[i] + '/status', {
+                method: 'PUT',
+                headers: H(),
+                body: JSON.stringify({ status: 'acordo' })
+              });
+            }
+          }
+          
           fecharModal('modalAcordo');
+          selecionados[clienteId] = [];
           carregarCobrancas();
           carregarEstatisticas();
           alert('✅ Acordo criado! Veja na tela de Acordos.');
-        } else {
-          alert(d.error || 'Erro ao criar acordo');
-        }
-      } catch (e) {
-        alert('Erro ao criar acordo');
-      }
+        } else { alert(d.error || 'Erro ao criar acordo'); }
+      } catch (e) { alert('Erro ao criar acordo'); }
     }
     
-    // ========== WHATSAPP ==========
+    // WhatsApp individual
     async function enviarWhatsapp(cobrancaId) {
       try {
         const r = await fetch(API + '/api/cobrancas/' + cobrancaId + '/whatsapp', { headers: H() });
         const d = await r.json();
         if (d.success && d.link) {
           window.open(d.link, '_blank');
-        } else {
-          alert(d.error || 'Erro ao gerar link');
-        }
-      } catch (e) {
-        alert('Erro');
-      }
+        } else { alert(d.error || 'Erro ao gerar link'); }
+      } catch (e) { alert('Erro'); }
     }
     
     // Inicializar
