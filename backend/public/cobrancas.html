@@ -534,9 +534,12 @@
       try {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
+        // Pegar só a parte da data (YYYY-MM-DD) e criar data sem timezone
         const dataStr = dataVenc.toString().split('T')[0];
         if (!dataStr || dataStr === 'null') return null;
-        const venc = new Date(dataStr + 'T12:00:00');
+        const partes = dataStr.split('-');
+        if (partes.length !== 3) return null;
+        const venc = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
         if (isNaN(venc.getTime())) return null;
         return Math.floor((venc - hoje) / (1000 * 60 * 60 * 24));
       } catch (e) { return null; }
@@ -545,11 +548,13 @@
     function formatarData(data) {
       if (!data) return '-';
       try {
+        // Pegar só a parte da data (YYYY-MM-DD)
         const dataStr = data.toString().split('T')[0];
         if (!dataStr || dataStr === 'null') return '-';
-        const d = new Date(dataStr + 'T12:00:00');
-        if (isNaN(d.getTime())) return '-';
-        return d.toLocaleDateString('pt-BR');
+        const partes = dataStr.split('-');
+        if (partes.length !== 3) return '-';
+        // Retornar no formato DD/MM/YYYY sem conversão de timezone
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
       } catch (e) { return '-'; }
     }
     
