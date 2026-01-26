@@ -344,8 +344,33 @@
           </div>
         </div>
         <div class="form-group">
+          <label>Credor <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
+          <select class="form-control" id="novoCredor">
+            <option value="">Sem credor específico</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Descrição *</label>
           <input type="text" class="form-control" id="novoDescricao" placeholder="Ex: Fatura de celular, Empréstimo...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Categoria</label>
+            <select class="form-control" id="novoCategoria">
+              <option value="outros">Outros</option>
+              <option value="emprestimo">Empréstimo</option>
+              <option value="cartao">Cartão de Crédito</option>
+              <option value="financiamento">Financiamento</option>
+              <option value="telecom">Celular / Telecom</option>
+              <option value="servicos">Serviços</option>
+              <option value="boleto">Boleto</option>
+              <option value="mensalidade">Mensalidade</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vencimento *</label>
+            <input type="date" class="form-control" id="novoVencimento">
+          </div>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -356,8 +381,8 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Vencimento *</label>
-            <input type="date" class="form-control" id="novoVencimento">
+            <label>Referência <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
+            <input type="text" class="form-control" id="novoReferencia" placeholder="Nº contrato, protocolo...">
           </div>
         </div>
         <div class="form-group">
@@ -857,14 +882,32 @@
       window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
     }
     
+    // Carregar credores para o select
+    async function carregarCredores() {
+      try {
+        const r = await fetch(API + '/api/credores', { headers: H() });
+        const d = await r.json();
+        if (d.success && d.data) {
+          const select = document.getElementById('novoCredor');
+          select.innerHTML = '<option value="">Sem credor específico</option>';
+          d.data.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+          });
+        }
+      } catch (e) { console.log('Sem credores'); }
+    }
+    
     // ========== NOVA COBRANÇA ==========
     function abrirModalNova() {
       document.getElementById('novoClienteId').value = '';
       document.getElementById('novoCliente').value = '';
       document.getElementById('novoCliente').style.display = 'block';
       document.getElementById('clienteSelecionado').style.display = 'none';
+      document.getElementById('novoCredor').value = '';
       document.getElementById('novoDescricao').value = '';
+      document.getElementById('novoCategoria').value = 'outros';
       document.getElementById('novoValor').value = '';
+      document.getElementById('novoReferencia').value = '';
       document.getElementById('novoObs').value = '';
       
       const data = new Date();
@@ -920,9 +963,12 @@
     
     async function criarCobranca() {
       const clienteId = document.getElementById('novoClienteId').value;
+      const credorId = document.getElementById('novoCredor').value;
       const descricao = document.getElementById('novoDescricao').value.trim();
+      const categoria = document.getElementById('novoCategoria').value;
       const valor = parseMoney(document.getElementById('novoValor').value);
       const vencimento = document.getElementById('novoVencimento').value;
+      const referencia = document.getElementById('novoReferencia').value.trim();
       const obs = document.getElementById('novoObs').value.trim();
       
       if (!clienteId) { alert('Selecione um cliente'); return; }
@@ -934,7 +980,17 @@
         const r = await fetch(API + '/api/cobrancas', {
           method: 'POST',
           headers: H(),
-          body: JSON.stringify({ cliente_id: clienteId, descricao, valor, vencimento, observacoes: obs, status: 'pendente' })
+          body: JSON.stringify({ 
+            cliente_id: clienteId, 
+            credor_id: credorId || null,
+            descricao, 
+            categoria,
+            valor, 
+            vencimento, 
+            referencia: referencia || null,
+            observacoes: obs, 
+            status: 'pendente' 
+          })
         });
         
         const d = await r.json();
@@ -1111,6 +1167,7 @@
     
     // Inicializar
     carregarUsuario();
+    carregarCredores();
     carregarEstatisticas();
     carregarCobrancas();
   </script>
