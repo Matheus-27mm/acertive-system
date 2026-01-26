@@ -16,6 +16,9 @@ const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const multer = require('multer');
 
+// Compatibilidade com Node.js < 18 (que não tem fetch nativo)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -333,6 +336,17 @@ app.use('/api/historico', (req, res, next) => { req.url = '/historico' + req.url
 app.use('/api/comissoes', (req, res, next) => { req.url = '/comissoes' + req.url; financeiroRoutes(req, res, next); });
 app.use('/api/repasses', (req, res, next) => { req.url = '/repasses' + req.url; financeiroRoutes(req, res, next); });
 app.use('/api/relatorios', (req, res, next) => { req.url = '/relatorios' + req.url; financeiroRoutes(req, res, next); });
+
+// ═══════════════════════════════════════════════════════════════
+// ROTA /api/auth/me - Retorna dados do usuário logado
+// ═══════════════════════════════════════════════════════════════
+app.get('/api/auth/me', auth, async (req, res) => {
+    try {
+        res.json({ success: true, user: req.user });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Erro ao buscar usuário' });
+    }
+});
 
 // ═══════════════════════════════════════════════════════════════
 // ROTA DE SAÚDE

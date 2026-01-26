@@ -4,6 +4,7 @@
  * routes/auth.js
  * ========================================
  * Login, logout, verificação e recuperação de senha
+ * ATUALIZADO: Adicionada rota /me
  */
 
 const express = require('express');
@@ -15,6 +16,51 @@ module.exports = function(pool, registrarLog) {
 
     const JWT_SECRET = process.env.JWT_SECRET || 'acertive_secret_key_2024';
     const JWT_EXPIRES = '24h';
+
+    // =====================================================
+    // Middleware de autenticação local
+    // =====================================================
+    const authLocal = async (req, res, next) => {
+        try {
+            const token = req.headers.authorization?.replace('Bearer ', '');
+            if (!token) return res.status(401).json({ error: 'Token não fornecido' });
+
+            const decoded = jwt.verify(token, JWT_SECRET);
+            const usuario = await pool.query('SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1', [decoded.id]);
+            
+            if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
+                return res.status(401).json({ error: 'Usuário inválido ou desativado' });
+            }
+
+            req.user = usuario.rows[0];
+            next();
+        } catch (error) {
+            if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+                return res.status(401).json({ error: 'Token inválido ou expirado' });
+            }
+            res.status(500).json({ error: 'Erro na autenticação' });
+        }
+    };
+
+    // =====================================================
+    // GET /api/auth/me - Retorna dados do usuário logado
+    // =====================================================
+    router.get('/me', authLocal, async (req, res) => {
+        try {
+            res.json({ 
+                success: true, 
+                user: {
+                    id: req.user.id,
+                    nome: req.user.nome,
+                    email: req.user.email,
+                    perfil: req.user.perfil
+                }
+            });
+        } catch (error) {
+            console.error('[AUTH] Erro ao buscar usuário:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar usuário' });
+        }
+    });
 
     // =====================================================
     // POST /api/auth/login
