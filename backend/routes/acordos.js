@@ -11,6 +11,17 @@ const express = require('express');
 module.exports = function(pool, auth, registrarLog) {
     const router = express.Router();
 
+    // Helper para registrar log de forma segura
+    const logSeguro = async (userId, acao, tabela, registroId, dados) => {
+        try {
+            if (registrarLog && typeof registrarLog === 'function') {
+                await registrarLog(userId, acao, tabela, registroId, dados);
+            }
+        } catch (e) {
+            console.error('[LOG] Erro ao registrar log:', e.message);
+        }
+    };
+
     // ═══════════════════════════════════════════════════════════════
     // ROTAS ESPECÍFICAS (devem vir ANTES das rotas com :id)
     // ═══════════════════════════════════════════════════════════════
@@ -211,9 +222,7 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('COMMIT');
             
-            if (registrarLog) {
-                await registrarLog(req.user?.id, 'PARCELA_PAGA', 'parcelas', id, { valor_pago: valorPago });
-            }
+            await logSeguro(req.user?.id, 'PARCELA_PAGA', 'parcelas', id, { valor_pago: valorPago });
             
             const quitado = parseInt(pendentes.rows[0].count) === 0;
             res.json({ success: true, message: quitado ? 'Parcela paga! Acordo quitado!' : 'Parcela paga!', acordo_quitado: quitado });
@@ -221,7 +230,7 @@ module.exports = function(pool, auth, registrarLog) {
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('[PARCELAS] Erro ao pagar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao registrar pagamento' });
+            res.status(500).json({ success: false, error: 'Erro ao registrar pagamento: ' + error.message });
         } finally {
             client.release();
         }
@@ -242,13 +251,11 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Parcela não encontrada ou já paga' });
             
-            if (registrarLog) {
-                await registrarLog(req.user?.id, 'PARCELA_REAGENDADA', 'parcelas', id, { nova_data });
-            }
+            await logSeguro(req.user?.id, 'PARCELA_REAGENDADA', 'parcelas', id, { nova_data });
             res.json({ success: true, data: resultado.rows[0], message: 'Parcela reagendada!' });
         } catch (error) {
             console.error('[PARCELAS] Erro ao reagendar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao reagendar' });
+            res.status(500).json({ success: false, error: 'Erro ao reagendar: ' + error.message });
         }
     });
 
@@ -288,7 +295,7 @@ module.exports = function(pool, auth, registrarLog) {
             res.json({ success: true, link: `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`, telefone, mensagem });
         } catch (error) {
             console.error('[PARCELAS] Erro WhatsApp:', error);
-            res.status(500).json({ success: false, error: 'Erro ao gerar link' });
+            res.status(500).json({ success: false, error: 'Erro ao gerar link: ' + error.message });
         }
     });
 
@@ -330,7 +337,7 @@ module.exports = function(pool, auth, registrarLog) {
             
         } catch (error) {
             console.error('[ACORDOS] Erro ao listar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao listar acordos' });
+            res.status(500).json({ success: false, error: 'Erro ao listar acordos: ' + error.message });
         }
     });
 
@@ -357,7 +364,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             let clienteId = b.cliente_id;
             let credorId = b.credor_id || null;
-            // CORREÇÃO: usar valor_original do body se fornecido
             let valorOriginal = parseFloat(b.valor_original) || parseFloat(b.valor_acordo);
             
             if (b.cobranca_id) {
@@ -365,7 +371,6 @@ module.exports = function(pool, auth, registrarLog) {
                 if (cobranca.rowCount > 0) {
                     clienteId = clienteId || cobranca.rows[0].cliente_id;
                     credorId = credorId || cobranca.rows[0].credor_id;
-                    // Só pega da cobrança se não veio no body
                     if (!b.valor_original) {
                         valorOriginal = parseFloat(cobranca.rows[0].valor_atualizado) || parseFloat(cobranca.rows[0].valor_original) || valorOriginal;
                     }
@@ -376,7 +381,6 @@ module.exports = function(pool, auth, registrarLog) {
             const numParcelas = parseInt(b.numero_parcelas);
             const valorEntrada = parseFloat(b.valor_entrada) || 0;
             
-            // CORREÇÃO: usar desconto_percentual do body se fornecido, senão calcular
             let descontoPerc = 0;
             if (b.desconto_percentual !== undefined && b.desconto_percentual !== null) {
                 descontoPerc = parseFloat(b.desconto_percentual) || 0;
@@ -420,16 +424,20 @@ module.exports = function(pool, auth, registrarLog) {
                 dataVenc.setMonth(dataVenc.getMonth() + 1);
             }
             
-            // Atualizar cobrança original
+            // Atualizar cobrança original (se tiver acordo_id na tabela)
             if (b.cobranca_id) {
-                await client.query('UPDATE cobrancas SET status = \'acordo\', acordo_id = $1, updated_at = NOW() WHERE id = $2', [acordoId, b.cobranca_id]);
+                try {
+                    await client.query('UPDATE cobrancas SET status = \'acordo\', acordo_id = $1, updated_at = NOW() WHERE id = $2', [acordoId, b.cobranca_id]);
+                } catch (colErr) {
+                    // Se acordo_id não existir, só atualiza o status
+                    console.log('[ACORDOS] Coluna acordo_id não existe, atualizando só status');
+                    await client.query('UPDATE cobrancas SET status = \'acordo\', updated_at = NOW() WHERE id = $1', [b.cobranca_id]);
+                }
             }
             
             await client.query('COMMIT');
             
-            if (registrarLog) {
-                await registrarLog(req.user?.id, 'ACORDO_CRIADO', 'acordos', acordoId, { valor: valorAcordo, parcelas: numParcelas });
-            }
+            await logSeguro(req.user?.id, 'ACORDO_CRIADO', 'acordos', acordoId, { valor: valorAcordo, parcelas: numParcelas });
             
             res.status(201).json({ success: true, data: acordo.rows[0], message: 'Acordo criado com sucesso!' });
             
@@ -469,7 +477,7 @@ module.exports = function(pool, auth, registrarLog) {
             res.json({ success: true, data: { ...acordo.rows[0], parcelas: parcelas.rows } });
         } catch (error) {
             console.error('[ACORDOS] Erro ao buscar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao buscar acordo' });
+            res.status(500).json({ success: false, error: 'Erro ao buscar acordo: ' + error.message });
         }
     });
 
@@ -486,13 +494,11 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
             
-            if (registrarLog) {
-                await registrarLog(req.user?.id, 'ACORDO_ATUALIZADO', 'acordos', id, b);
-            }
+            await logSeguro(req.user?.id, 'ACORDO_ATUALIZADO', 'acordos', id, b);
             res.json({ success: true, data: resultado.rows[0] });
         } catch (error) {
             console.error('[ACORDOS] Erro ao atualizar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao atualizar acordo' });
+            res.status(500).json({ success: false, error: 'Erro ao atualizar acordo: ' + error.message });
         }
     });
 
@@ -504,37 +510,58 @@ module.exports = function(pool, auth, registrarLog) {
             const { id } = req.params;
             const { motivo } = req.body || {};
             
+            console.log('[ACORDOS] Quebrando acordo:', id, 'Motivo:', motivo);
+            
             await client.query('BEGIN');
             
-            const acordo = await client.query(`
-                UPDATE acordos SET status = 'quebrado', observacoes = CONCAT(COALESCE(observacoes, ''), ' | QUEBRADO: ', $1), updated_at = NOW()
-                WHERE id = $2 RETURNING cobranca_id
-            `, [motivo || 'Não informado', id]);
+            // Primeiro buscar o acordo para pegar cobranca_id e observacoes
+            const acordoAtual = await client.query('SELECT cobranca_id, observacoes FROM acordos WHERE id = $1', [id]);
             
-            if (!acordo.rowCount) {
+            if (!acordoAtual.rowCount) {
                 await client.query('ROLLBACK');
                 return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
             }
             
-            // Cancelar parcelas pendentes
-            await client.query('UPDATE parcelas SET status = \'cancelado\', updated_at = NOW() WHERE acordo_id = $1 AND status = \'pendente\'', [id]);
+            const cobrancaId = acordoAtual.rows[0].cobranca_id;
+            const obsAtual = acordoAtual.rows[0].observacoes || '';
+            const motivoTexto = motivo || 'Não informado';
+            const novaObs = obsAtual ? `${obsAtual} | QUEBRADO: ${motivoTexto}` : `QUEBRADO: ${motivoTexto}`;
             
-            // Voltar cobrança para vencido
-            if (acordo.rows[0].cobranca_id) {
-                await client.query('UPDATE cobrancas SET status = \'vencido\', updated_at = NOW() WHERE id = $1', [acordo.rows[0].cobranca_id]);
+            // Atualizar acordo para quebrado
+            await client.query(`
+                UPDATE acordos 
+                SET status = 'quebrado', 
+                    observacoes = $1,
+                    updated_at = NOW()
+                WHERE id = $2
+            `, [novaObs, id]);
+            
+            // Cancelar parcelas pendentes
+            await client.query(`
+                UPDATE parcelas SET status = 'cancelado', updated_at = NOW() 
+                WHERE acordo_id = $1 AND status = 'pendente'
+            `, [id]);
+            
+            // Voltar cobrança para vencido (se existir)
+            if (cobrancaId) {
+                try {
+                    await client.query('UPDATE cobrancas SET status = \'vencido\', updated_at = NOW() WHERE id = $1', [cobrancaId]);
+                } catch (e) {
+                    console.log('[ACORDOS] Erro ao atualizar cobrança (ignorado):', e.message);
+                }
             }
             
             await client.query('COMMIT');
             
-            if (registrarLog) {
-                await registrarLog(req.user?.id, 'ACORDO_QUEBRADO', 'acordos', id, { motivo });
-            }
+            await logSeguro(req.user?.id, 'ACORDO_QUEBRADO', 'acordos', id, { motivo: motivoTexto });
+            
+            console.log('[ACORDOS] Acordo quebrado com sucesso:', id);
             res.json({ success: true, message: 'Acordo quebrado. Cobrança voltou para status vencido.' });
             
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('[ACORDOS] Erro ao quebrar:', error);
-            res.status(500).json({ success: false, error: 'Erro ao quebrar acordo' });
+            res.status(500).json({ success: false, error: 'Erro ao quebrar acordo: ' + error.message });
         } finally {
             client.release();
         }
