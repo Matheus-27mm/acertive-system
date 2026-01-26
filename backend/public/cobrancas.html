@@ -7,228 +7,185 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root{
-      --bg:#09090b;--card:rgba(17,17,21,0.95);--card-hover:rgba(25,25,30,0.95);
-      --text:#fafafa;--muted:#71717a;
-      --gold:#ca9b3c;--gold-glow:rgba(202,155,60,0.12);
-      --border:rgba(255,255,255,0.08);
-      --green:#22c55e;--green-bg:rgba(34,197,94,0.15);
-      --red:#ef4444;--red-bg:rgba(239,68,68,0.15);
-      --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);
-      --orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);
-      --purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);
-      --sidebar:240px;--radius:12px
+    :root {
+      --bg: #09090b;
+      --card: rgba(17,17,21,0.95);
+      --text: #fafafa;
+      --muted: #71717a;
+      --gold: #ca9b3c;
+      --gold-glow: rgba(202,155,60,0.12);
+      --border: rgba(255,255,255,0.08);
+      --green: #22c55e;
+      --green-bg: rgba(34,197,94,0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239,68,68,0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59,130,246,0.15);
+      --orange: #f59e0b;
+      --orange-bg: rgba(245,158,11,0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168,85,247,0.15);
+      --sidebar: 240px;
+      --radius: 12px;
     }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
     
-    /* SIDEBAR */
-    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar);height:100vh;background:var(--bg);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
-    .sidebar-header{padding:24px 20px;display:flex;align-items:center;gap:12px}
-    .logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--bg)}
-    .logo-text{font-size:18px;font-weight:700}.logo-text span{color:var(--gold)}
-    .sidebar-nav{flex:1;padding:8px 12px}
-    .nav-link{display:flex;align-items:center;gap:12px;padding:12px 16px;color:var(--muted);text-decoration:none;border-radius:10px;font-weight:500;font-size:14px;margin-bottom:4px;transition:all 0.15s}
-    .nav-link:hover{color:var(--text);background:rgba(255,255,255,0.05)}
-    .nav-link.active{color:var(--gold);background:var(--gold-glow)}
-    .nav-link i{width:20px;text-align:center}
-    .nav-divider{height:1px;background:var(--border);margin:16px 12px}
-    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
-    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius)}
-    .user-avatar{width:36px;height:36px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--gold)}
-    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--muted)}
-    .btn-logout{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
-
-    /* MAIN */
-    .main{margin-left:var(--sidebar);padding:24px 32px;min-height:100vh}
-    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
-    .page-title{font-size:24px;font-weight:700;display:flex;align-items:center;gap:12px}.page-title i{color:var(--gold)}
-
-    /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s}
-    .btn-primary{background:var(--gold);color:var(--bg)}.btn-primary:hover{filter:brightness(1.1)}
-    .btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
-    .btn-success{background:var(--green);color:#fff}
-    .btn-sm{padding:6px 12px;font-size:11px}
-    .btn-icon{width:32px;height:32px;padding:0;justify-content:center;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--muted)}
-    .btn-icon:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
-    .btn-icon.whatsapp:hover{border-color:#25d366;color:#25d366;background:rgba(37,211,102,0.1)}
-    .btn-icon.danger:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
-
-    /* STATS */
-    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:16px}
-    .stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
-    .stat-icon.red{background:var(--red-bg);color:var(--red)}
-    .stat-icon.orange{background:var(--orange-bg);color:var(--orange)}
-    .stat-icon.gold{background:var(--gold-glow);color:var(--gold)}
-    .stat-icon.green{background:var(--green-bg);color:var(--green)}
-    .stat-content{flex:1}
-    .stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
-    .stat-value{font-size:24px;font-weight:700;margin-top:2px}
-    .stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
-
-    /* TABS */
-    .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);border-radius:var(--radius);padding:4px;border:1px solid var(--border)}
-    .tab{padding:12px 20px;background:transparent;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px;transition:all 0.15s}
-    .tab:hover{color:var(--text)}.tab.active{background:var(--gold);color:var(--bg)}
-    .tab .badge{padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(0,0,0,0.2)}
-
-    /* TOOLBAR */
-    .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-    .search-box{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;min-width:300px}
-    .search-box:focus-within{border-color:var(--gold)}.search-box i{color:var(--muted)}
-    .search-box input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px}
-    .filter-select{padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;cursor:pointer}
-    .filter-select option{background:var(--bg)}
-
-    /* CLIENTE CARD */
-    .cliente-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;transition:all 0.2s}
-    .cliente-card:hover{border-color:rgba(255,255,255,0.15)}
-    .cliente-header{display:flex;align-items:center;padding:16px 20px;gap:16px;cursor:pointer}
-    .cliente-header:hover{background:rgba(255,255,255,0.02)}
-    .cliente-avatar{width:44px;height:44px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--bg);flex-shrink:0}
-    .cliente-info{flex:1;min-width:0}
-    .cliente-nome{font-weight:700;font-size:15px;margin-bottom:2px}
-    .cliente-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:12px}
-    .cliente-meta i{color:var(--gold)}
-    .cliente-total{text-align:right}
-    .cliente-total-label{font-size:11px;color:var(--muted);text-transform:uppercase}
-    .cliente-total-value{font-size:20px;font-weight:700;color:var(--gold)}
-    .cliente-actions{display:flex;gap:8px}
-    .cliente-toggle{width:32px;height:32px;border:none;background:rgba(255,255,255,0.05);border-radius:8px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-    .cliente-toggle:hover{background:var(--gold-glow);color:var(--gold)}
-    .cliente-toggle i{transition:transform 0.2s}
-    .cliente-card.expanded .cliente-toggle i{transform:rotate(180deg)}
-
-    /* COBRANCAS LIST */
-    .cobrancas-container{display:none;border-top:1px solid var(--border);background:rgba(0,0,0,0.2)}
-    .cliente-card.expanded .cobrancas-container{display:block}
-
-    /* COBRANCA ITEM */
-    .cobranca-item{padding:20px;border-bottom:1px solid var(--border)}
-    .cobranca-item:last-child{border-bottom:none}
-    .cobranca-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-    .cobranca-titulo{display:flex;align-items:center;gap:12px}
-    .cobranca-icon{width:36px;height:36px;background:var(--gold-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold)}
-    .cobranca-nome{font-weight:600;font-size:14px}
-    .cobranca-ref{font-size:11px;color:var(--muted)}
-    .cobranca-valor{font-size:18px;font-weight:700;color:var(--gold)}
-
-    /* TIMELINE DE PARCELAS */
-    .parcelas-timeline{display:flex;align-items:flex-start;gap:0;margin:20px 0;padding:0 10px;overflow-x:auto}
-    .parcela-node{display:flex;flex-direction:column;align-items:center;min-width:80px;position:relative;flex:1}
-    .parcela-node:not(:last-child)::after{
-      content:'';position:absolute;top:16px;left:50%;width:100%;height:3px;
-      background:var(--border);z-index:0
+    /* Sidebar */
+    .sidebar { position:fixed; left:0; top:0; width:var(--sidebar); height:100vh; background:var(--bg); border-right:1px solid var(--border); z-index:1000; display:flex; flex-direction:column; }
+    .sidebar-header { padding:24px 20px; display:flex; align-items:center; gap:12px; }
+    .logo-icon { width:36px; height:36px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; color:var(--bg); }
+    .logo-text { font-size:18px; font-weight:700; }
+    .logo-text span { color:var(--gold); }
+    .sidebar-nav { flex:1; padding:8px 12px; }
+    .nav-link { display:flex; align-items:center; gap:12px; padding:12px 16px; color:var(--muted); text-decoration:none; border-radius:10px; font-weight:500; font-size:14px; margin-bottom:4px; transition:all 0.15s; }
+    .nav-link:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+    .nav-link.active { color:var(--gold); background:var(--gold-glow); }
+    .nav-link i { width:20px; text-align:center; }
+    .nav-divider { height:1px; background:var(--border); margin:16px 12px; }
+    .sidebar-footer { padding:16px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.03); border-radius:var(--radius); }
+    .user-avatar { width:36px; height:36px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--gold); }
+    .user-info { flex:1; }
+    .user-name { font-weight:600; font-size:13px; }
+    .user-role { font-size:11px; color:var(--muted); }
+    .btn-logout { background:none; border:none; color:var(--muted); cursor:pointer; padding:8px; border-radius:6px; }
+    .btn-logout:hover { background:var(--red-bg); color:var(--red); }
+    
+    /* Main */
+    .main { margin-left:var(--sidebar); padding:24px 32px; min-height:100vh; }
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+    .page-title { font-size:24px; font-weight:700; display:flex; align-items:center; gap:12px; }
+    .page-title i { color:var(--gold); }
+    .page-subtitle { font-size:13px; color:var(--muted); margin-top:4px; }
+    
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:10px; font-weight:600; font-size:13px; cursor:pointer; border:none; transition:all 0.15s; }
+    .btn-primary { background:var(--gold); color:var(--bg); }
+    .btn-primary:hover { filter:brightness(1.1); }
+    .btn-secondary { background:var(--card); color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
+    .btn-success { background:var(--green); color:#fff; }
+    .btn-success:hover { filter:brightness(1.1); }
+    .btn-danger { background:var(--red-bg); color:var(--red); border:1px solid transparent; }
+    .btn-danger:hover { border-color:var(--red); }
+    .btn-sm { padding:8px 14px; font-size:12px; }
+    .btn-icon { width:36px; height:36px; padding:0; justify-content:center; }
+    
+    /* Stats */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; }
+    .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .stat-icon.orange { background:var(--orange-bg); color:var(--orange); }
+    .stat-icon.gold { background:var(--gold-glow); color:var(--gold); }
+    .stat-icon.red { background:var(--red-bg); color:var(--red); }
+    .stat-icon.green { background:var(--green-bg); color:var(--green); }
+    .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .stat-value { font-size:24px; font-weight:700; margin-top:2px; }
+    
+    /* Tabs */
+    .tabs { display:flex; gap:4px; margin-bottom:24px; background:var(--card); border-radius:var(--radius); padding:4px; border:1px solid var(--border); width:fit-content; }
+    .tab { padding:12px 20px; background:transparent; border:none; color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; border-radius:8px; display:flex; align-items:center; gap:8px; transition:all 0.15s; }
+    .tab:hover { color:var(--text); }
+    .tab.active { background:var(--gold); color:var(--bg); }
+    .tab .badge { padding:2px 8px; border-radius:10px; font-size:11px; background:rgba(0,0,0,0.2); }
+    
+    /* Toolbar */
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
+    .search-box { display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px; min-width:300px; }
+    .search-box:focus-within { border-color:var(--gold); }
+    .search-box i { color:var(--muted); }
+    .search-box input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:13px; }
+    .filter-group { display:flex; gap:8px; }
+    
+    /* Table */
+    .table-container { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th { text-align:left; padding:14px 20px; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; background:rgba(0,0,0,0.2); border-bottom:1px solid var(--border); }
+    .table td { padding:16px 20px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .table tr:last-child td { border-bottom:none; }
+    .table tr:hover { background:rgba(255,255,255,0.02); }
+    
+    /* Cliente Cell */
+    .cliente-cell { display:flex; align-items:center; gap:12px; }
+    .cliente-avatar { width:40px; height:40px; background:var(--gold); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:var(--bg); flex-shrink:0; }
+    .cliente-info { min-width:0; }
+    .cliente-nome { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cliente-doc { font-size:12px; color:var(--muted); }
+    
+    /* Status Badge */
+    .status { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; }
+    .status.pendente { background:var(--orange-bg); color:var(--orange); }
+    .status.vencido { background:var(--red-bg); color:var(--red); }
+    .status.pago { background:var(--green-bg); color:var(--green); }
+    .status.acordo { background:var(--blue-bg); color:var(--blue); }
+    .status.arquivado { background:rgba(255,255,255,0.1); color:var(--muted); }
+    .status::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+    
+    /* Valor */
+    .valor { font-weight:700; font-size:15px; }
+    .valor.destaque { color:var(--gold); font-size:16px; }
+    
+    /* Vencimento */
+    .vencimento { font-size:13px; }
+    .vencimento.vencido { color:var(--red); }
+    .vencimento .dias { font-size:11px; color:var(--muted); display:block; margin-top:2px; }
+    
+    /* Actions */
+    .actions { display:flex; gap:6px; }
+    
+    /* Empty State */
+    .empty { text-align:center; padding:60px 20px; color:var(--muted); }
+    .empty i { font-size:48px; margin-bottom:16px; opacity:0.3; }
+    .empty h3 { font-size:18px; color:var(--text); margin-bottom:8px; }
+    
+    /* Loading */
+    .loading { display:flex; justify-content:center; padding:40px; }
+    .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    
+    /* Modal */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); width:100%; max-width:500px; max-height:90vh; display:flex; flex-direction:column; }
+    .modal-header { padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .modal-header h3 { font-size:18px; font-weight:700; display:flex; align-items:center; gap:10px; }
+    .modal-header h3 i { color:var(--gold); }
+    .modal-close { background:none; border:none; color:var(--muted); font-size:24px; cursor:pointer; }
+    .modal-close:hover { color:var(--red); }
+    .modal-body { padding:20px; overflow-y:auto; flex:1; }
+    .modal-footer { padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:12px; }
+    
+    /* Form */
+    .form-group { margin-bottom:16px; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-group label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; }
+    .form-control { width:100%; padding:12px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; }
+    .form-control:focus { outline:none; border-color:var(--gold); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .input-prefix { position:relative; }
+    .input-prefix span { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-weight:600; }
+    .input-prefix input { padding-left:40px; }
+    
+    /* Cliente Search */
+    .cliente-search-results { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:10; display:none; }
+    .cliente-search-results.show { display:block; }
+    .cliente-search-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--border); }
+    .cliente-search-item:hover { background:var(--gold-glow); }
+    .cliente-search-item:last-child { border-bottom:none; }
+    
+    /* Responsive */
+    @media(max-width:1200px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:1024px) { .sidebar { transform:translateX(-100%); } .main { margin-left:0; } }
+    @media(max-width:768px) { 
+      .stats-grid { grid-template-columns:1fr; } 
+      .form-row { grid-template-columns:1fr; }
+      .table-container { overflow-x:auto; }
     }
-    .parcela-node.pago:not(:last-child)::after{background:var(--green)}
-    .parcela-node.atual:not(:last-child)::after{background:linear-gradient(90deg,var(--green) 0%,var(--border) 100%)}
-    
-    .parcela-circle{
-      width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-      font-size:11px;font-weight:700;z-index:1;position:relative;cursor:pointer;transition:all 0.2s;
-      border:3px solid var(--border);background:var(--bg);color:var(--muted)
-    }
-    .parcela-circle:hover{transform:scale(1.1)}
-    .parcela-node.pago .parcela-circle{background:var(--green);border-color:var(--green);color:#fff}
-    .parcela-node.atual .parcela-circle{background:var(--orange);border-color:var(--orange);color:#fff;animation:pulse 2s infinite}
-    .parcela-node.vencido .parcela-circle{background:var(--red);border-color:var(--red);color:#fff}
-    .parcela-node.futuro .parcela-circle{background:var(--bg);border-color:var(--border);color:var(--muted)}
-    
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
-    
-    .parcela-info{margin-top:10px;text-align:center}
-    .parcela-num{font-size:11px;font-weight:600;color:var(--text)}
-    .parcela-valor{font-size:12px;font-weight:700;color:var(--gold);margin-top:2px}
-    .parcela-data{font-size:10px;color:var(--muted);margin-top:2px}
-    .parcela-status{font-size:9px;font-weight:600;text-transform:uppercase;margin-top:4px;padding:2px 6px;border-radius:4px}
-    .parcela-node.pago .parcela-status{background:var(--green-bg);color:var(--green)}
-    .parcela-node.atual .parcela-status{background:var(--orange-bg);color:var(--orange)}
-    .parcela-node.vencido .parcela-status{background:var(--red-bg);color:var(--red)}
-    .parcela-node.futuro .parcela-status{background:rgba(255,255,255,0.05);color:var(--muted)}
-
-    /* COBRANCA SIMPLES (sem parcelas) */
-    .cobranca-simples{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(0,0,0,0.2);border-radius:8px;margin-top:12px}
-    .cobranca-simples-info{display:flex;align-items:center;gap:12px}
-    .cobranca-simples-status{width:10px;height:10px;border-radius:50%}
-    .cobranca-simples-status.pago{background:var(--green)}
-    .cobranca-simples-status.pendente{background:var(--orange)}
-    .cobranca-simples-status.vencido{background:var(--red)}
-
-    /* COBRANCA ACTIONS */
-    .cobranca-actions{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
-
-    /* EMPTY & LOADING */
-    .empty{text-align:center;padding:60px 20px;color:var(--muted)}
-    .empty i{font-size:48px;margin-bottom:16px;opacity:0.3}
-    .loading{display:flex;justify-content:center;padding:40px}
-    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* MODAL */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
-    .modal-overlay.show{display:flex}
-    .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column}
-    .modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .modal-header h3{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}
-    .modal-header h3 i{color:var(--gold)}
-    .modal-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:4px}
-    .modal-close:hover{color:var(--red)}
-    .modal-body{padding:20px;overflow-y:auto;flex:1}
-    .modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
-
-    /* FORM */
-    .form-section{margin-bottom:20px;padding:16px;background:rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}
-    .form-section-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-    .form-group{margin-bottom:16px}
-    .form-group:last-child{margin-bottom:0}
-    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
-    .form-control{width:100%;padding:12px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px}
-    .form-control:focus{outline:none;border-color:var(--gold)}
-    .input-prefix{position:relative}
-    .input-prefix span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
-    .input-prefix input{padding-left:40px}
-
-    /* CATEGORIA BADGES */
-    .categoria-grid{display:flex;flex-wrap:wrap;gap:8px}
-    .categoria-badge{padding:8px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px}
-    .categoria-badge:hover{border-color:var(--gold);color:var(--gold)}
-    .categoria-badge.selected{border-color:var(--gold);background:var(--gold-glow);color:var(--gold)}
-
-    /* TIPO COBRANÇA */
-    .tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .tipo-card{padding:16px;background:rgba(0,0,0,0.3);border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all 0.15s}
-    .tipo-card:hover{border-color:var(--gold)}
-    .tipo-card.selected{border-color:var(--gold);background:var(--gold-glow)}
-    .tipo-card i{font-size:24px;color:var(--gold);margin-bottom:8px}
-    .tipo-card span{display:block;font-size:12px;font-weight:600}
-
-    /* TOGGLE */
-    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:8px}
-    .toggle-label{font-size:13px;display:flex;align-items:center;gap:8px}
-    .toggle-label i{color:var(--gold)}
-    .toggle-switch{width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;position:relative;transition:all 0.2s}
-    .toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:all 0.2s}
-    .toggle-switch.active{background:var(--gold)}
-    .toggle-switch.active::after{left:22px}
-
-    /* PARCELAS PREVIEW */
-    .parcelas-preview{margin-top:12px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;display:none}
-    .parcelas-preview.show{display:block}
-    .parcela-preview-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
-    .parcela-preview-row:last-child{border-bottom:none}
-
-    /* RESPONSIVE */
-    @media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
-    @media(max-width:768px){.stats-grid{grid-template-columns:1fr}.form-row,.form-row-3{grid-template-columns:1fr}.tipo-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <!-- SIDEBAR -->
+  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo-icon">A</div>
@@ -246,7 +203,7 @@
       <div class="user-card">
         <div class="user-avatar" id="userAvatar">A</div>
         <div class="user-info">
-          <div class="user-name" id="userName">Administrador</div>
+          <div class="user-name" id="userName">Admin</div>
           <div class="user-role" id="userRole">admin</div>
         </div>
         <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
@@ -254,81 +211,95 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- Main Content -->
   <main class="main">
     <div class="page-header">
-      <h1 class="page-title"><i class="fas fa-file-invoice-dollar"></i> Cobranças</h1>
-      <button class="btn btn-primary" onclick="abrirModalNova()"><i class="fas fa-plus"></i> Nova Cobrança</button>
+      <div>
+        <h1 class="page-title"><i class="fas fa-file-invoice-dollar"></i> Cobranças</h1>
+        <p class="page-subtitle">Gerencie as dívidas dos seus clientes</p>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalNova()">
+        <i class="fas fa-plus"></i> Nova Cobrança
+      </button>
     </div>
 
-    <!-- STATS -->
+    <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
+        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+        <div>
+          <div class="stat-label">Pendentes</div>
+          <div class="stat-value" id="statPendentes">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
         <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="stat-content">
+        <div>
           <div class="stat-label">Vencidas</div>
           <div class="stat-value" id="statVencidas">0</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
-        <div class="stat-content">
-          <div class="stat-label">Vence Hoje</div>
-          <div class="stat-value" id="statHoje">0</div>
-        </div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon gold"><i class="fas fa-coins"></i></div>
-        <div class="stat-content">
-          <div class="stat-label">Valor Pendente</div>
-          <div class="stat-value" id="statPendente">R$ 0</div>
+        <div>
+          <div class="stat-label">Total a Receber</div>
+          <div class="stat-value" id="statTotal">R$ 0</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-        <div class="stat-content">
-          <div class="stat-label">Recuperado (Mês)</div>
-          <div class="stat-value" id="statRecuperado">R$ 0</div>
+        <div>
+          <div class="stat-label">Recebido (mês)</div>
+          <div class="stat-value" id="statRecebido">R$ 0</div>
         </div>
       </div>
     </div>
 
-    <!-- TABS -->
+    <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" onclick="trocarTab('pendentes')">
         <i class="fas fa-clock"></i> Pendentes <span class="badge" id="countPendentes">0</span>
       </button>
-      <button class="tab" onclick="trocarTab('todas')">
-        <i class="fas fa-list"></i> Todas
+      <button class="tab" onclick="trocarTab('vencidas')">
+        <i class="fas fa-exclamation-triangle"></i> Vencidas
       </button>
       <button class="tab" onclick="trocarTab('pagas')">
         <i class="fas fa-check"></i> Pagas
       </button>
-      <button class="tab" onclick="trocarTab('arquivadas')">
-        <i class="fas fa-archive"></i> Arquivadas
+      <button class="tab" onclick="trocarTab('todas')">
+        <i class="fas fa-list"></i> Todas
       </button>
     </div>
 
-    <!-- TOOLBAR -->
+    <!-- Toolbar -->
     <div class="toolbar">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="busca" placeholder="Buscar cliente, descrição..." oninput="filtrar()">
+        <input type="text" id="busca" placeholder="Buscar cliente ou descrição..." oninput="filtrar()">
       </div>
-      <select class="filter-select" id="filtroOrdem" onchange="filtrar()">
-        <option value="vencimento">📅 Por Vencimento</option>
-        <option value="valor">💰 Por Valor</option>
-        <option value="nome">🔤 Por Nome</option>
-      </select>
     </div>
 
-    <!-- LISTA -->
-    <div id="listaCobrancas">
-      <div class="loading"><div class="spinner"></div></div>
+    <!-- Table -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Vencimento</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCobrancas">
+          <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+        </tbody>
+      </table>
     </div>
   </main>
 
-  <!-- MODAL NOVA COBRANÇA -->
+  <!-- Modal Nova Cobrança -->
   <div class="modal-overlay" id="modalNova">
     <div class="modal">
       <div class="modal-header">
@@ -336,154 +307,157 @@
         <button class="modal-close" onclick="fecharModal('modalNova')">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- DEVEDOR -->
-        <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-user"></i> Devedor</div>
-          <div class="form-group" style="position:relative">
-            <label>Buscar Cliente *</label>
-            <input type="text" class="form-control" id="novaDevedor" placeholder="Digite nome ou CPF..." oninput="buscarCliente(this.value)">
-            <div id="resultadosCliente" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:10"></div>
-          </div>
-          <div id="clienteSelecionado" style="display:none;padding:12px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:8px;margin-top:-8px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:40px;height:40px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg)" id="selAvatar">--</div>
-              <div style="flex:1"><div style="font-weight:700" id="selNome">-</div><div style="font-size:12px;color:var(--muted)" id="selDoc">-</div></div>
-              <button onclick="limparCliente()" style="background:none;border:none;color:var(--muted);cursor:pointer"><i class="fas fa-times"></i></button>
-            </div>
-          </div>
-          <input type="hidden" id="novaClienteId">
+        <div class="form-group" style="position:relative">
+          <label>Cliente *</label>
+          <input type="text" class="form-control" id="novoCliente" placeholder="Buscar cliente..." oninput="buscarCliente(this.value)" autocomplete="off">
+          <div class="cliente-search-results" id="resultadosCliente"></div>
+          <input type="hidden" id="novoClienteId">
         </div>
-
-        <!-- CREDOR E CATEGORIA -->
-        <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-building"></i> Credor e Categoria</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Credor</label>
-              <select class="form-control" id="novaCredor"><option value="">Selecione...</option></select>
+        <div id="clienteSelecionado" style="display:none; margin-bottom:16px; padding:12px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="cliente-avatar" id="selAvatar">--</div>
+            <div style="flex:1">
+              <div style="font-weight:600" id="selNome">-</div>
+              <div style="font-size:12px; color:var(--muted)" id="selDoc">-</div>
             </div>
-            <div class="form-group">
-              <label>Referência</label>
-              <input type="text" class="form-control" id="novaReferencia" placeholder="Nº contrato, NF...">
+            <button onclick="limparCliente()" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:8px;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descrição *</label>
+          <input type="text" class="form-control" id="novoDescricao" placeholder="Ex: Fatura de celular, Empréstimo...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor *</label>
+            <div class="input-prefix">
+              <span>R$</span>
+              <input type="text" class="form-control" id="novoValor" placeholder="0,00" oninput="formatarMoeda(this)">
             </div>
           </div>
           <div class="form-group">
-            <label>Categoria</label>
-            <div class="categoria-grid">
-              <div class="categoria-badge selected" data-cat="outros" onclick="selCategoria(this)"><i class="fas fa-ellipsis-h"></i> Outros</div>
-              <div class="categoria-badge" data-cat="produto" onclick="selCategoria(this)"><i class="fas fa-box"></i> Produto</div>
-              <div class="categoria-badge" data-cat="servico" onclick="selCategoria(this)"><i class="fas fa-tools"></i> Serviço</div>
-              <div class="categoria-badge" data-cat="mensalidade" onclick="selCategoria(this)"><i class="fas fa-calendar"></i> Mensalidade</div>
-              <div class="categoria-badge" data-cat="emprestimo" onclick="selCategoria(this)"><i class="fas fa-hand-holding-usd"></i> Empréstimo</div>
-            </div>
-            <input type="hidden" id="novaCategoria" value="outros">
+            <label>Vencimento *</label>
+            <input type="date" class="form-control" id="novoVencimento">
           </div>
         </div>
-
-        <!-- VALOR E PARCELAS -->
-        <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-dollar-sign"></i> Valor e Parcelas</div>
-          <div class="form-group">
-            <label>Descrição *</label>
-            <input type="text" class="form-control" id="novaDescricao" placeholder="Ex: Celular Samsung, Mensalidade...">
-          </div>
-          <div class="form-row-3">
-            <div class="form-group">
-              <label>Valor Total *</label>
-              <div class="input-prefix"><span>R$</span><input type="text" class="form-control" id="novaValor" placeholder="0,00" oninput="formatarMoeda(this);calcularParcelas()"></div>
-            </div>
-            <div class="form-group">
-              <label>Vencimento *</label>
-              <input type="date" class="form-control" id="novaVencimento" onchange="calcularParcelas()">
-            </div>
-            <div class="form-group">
-              <label>Parcelas</label>
-              <select class="form-control" id="novaParcelas" onchange="calcularParcelas()">
-                <option value="1">1x (À vista)</option>
-                <option value="2">2x</option>
-                <option value="3">3x</option>
-                <option value="4">4x</option>
-                <option value="5">5x</option>
-                <option value="6">6x</option>
-                <option value="10">10x</option>
-                <option value="12">12x</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row-3">
-            <div class="form-group">
-              <label>Multa (%)</label>
-              <input type="number" class="form-control" id="novaMulta" value="2" min="0" max="20">
-            </div>
-            <div class="form-group">
-              <label>Juros (% a.m.)</label>
-              <input type="number" class="form-control" id="novaJuros" value="1" min="0" max="20" step="0.1" oninput="calcularParcelas()">
-            </div>
-            <div class="form-group">
-              <label>Correção</label>
-              <select class="form-control" id="novaCorrecao">
-                <option value="nenhuma">Nenhuma</option>
-                <option value="ipca">IPCA</option>
-                <option value="igpm">IGP-M</option>
-              </select>
-            </div>
-          </div>
-          <div class="parcelas-preview" id="parcelasPreview"></div>
-        </div>
-
-        <!-- TIPO COBRANÇA -->
-        <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-credit-card"></i> Tipo de Cobrança</div>
-          <div class="tipo-grid">
-            <div class="tipo-card selected" data-tipo="boleto" onclick="selTipo(this)"><i class="fas fa-barcode"></i><span>Boleto</span></div>
-            <div class="tipo-card" data-tipo="pix" onclick="selTipo(this)"><i class="fas fa-qrcode"></i><span>PIX</span></div>
-            <div class="tipo-card" data-tipo="cartao" onclick="selTipo(this)"><i class="fas fa-credit-card"></i><span>Cartão</span></div>
-          </div>
-          <input type="hidden" id="novaTipo" value="boleto">
-        </div>
-
-        <!-- AUTOMAÇÃO -->
-        <div class="form-section">
-          <div class="form-section-title"><i class="fas fa-magic"></i> Automação</div>
-          <div class="toggle-row">
-            <div class="toggle-label"><i class="fas fa-robot"></i> Gerar no Asaas automaticamente</div>
-            <div class="toggle-switch" id="toggleAsaas" onclick="toggleSwitch(this)"></div>
-          </div>
-          <div class="toggle-row">
-            <div class="toggle-label"><i class="fab fa-whatsapp"></i> Enviar WhatsApp ao cliente</div>
-            <div class="toggle-switch" id="toggleWhatsapp" onclick="toggleSwitch(this)"></div>
-          </div>
+        <div class="form-group">
+          <label>Observações</label>
+          <textarea class="form-control" id="novoObs" rows="2" placeholder="Observações opcionais..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="fecharModal('modalNova')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarCobranca()"><i class="fas fa-save"></i> Criar Cobrança</button>
+        <button class="btn btn-primary" onclick="criarCobranca()">
+          <i class="fas fa-check"></i> Criar Cobrança
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL PAGAR PARCELA -->
+  <!-- Modal Pagar -->
   <div class="modal-overlay" id="modalPagar">
     <div class="modal" style="max-width:400px">
       <div class="modal-header">
-        <h3><i class="fas fa-check-circle"></i> Confirmar Pagamento</h3>
+        <h3><i class="fas fa-check-circle"></i> Registrar Pagamento</h3>
         <button class="modal-close" onclick="fecharModal('modalPagar')">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="text-align:center;padding:20px 0">
-          <div style="font-size:14px;color:var(--muted);margin-bottom:8px" id="pagarDesc">Parcela 1/4</div>
-          <div style="font-size:32px;font-weight:700;color:var(--gold)" id="pagarValor">R$ 0,00</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:8px" id="pagarVenc">Vencimento: 00/00/0000</div>
+        <div style="text-align:center; padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:20px;">
+          <div style="font-size:14px; color:var(--muted)" id="pagarDescricao">-</div>
+          <div style="font-size:32px; font-weight:700; color:var(--gold); margin:8px 0" id="pagarValor">R$ 0,00</div>
         </div>
         <div class="form-group">
           <label>Data do Pagamento</label>
           <input type="date" class="form-control" id="pagarData">
         </div>
+        <div class="form-group">
+          <label>Forma de Pagamento</label>
+          <select class="form-control" id="pagarForma">
+            <option value="pix">PIX</option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="cartao">Cartão</option>
+            <option value="boleto">Boleto</option>
+            <option value="transferencia">Transferência</option>
+          </select>
+        </div>
         <input type="hidden" id="pagarId">
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="fecharModal('modalPagar')">Cancelar</button>
-        <button class="btn btn-success" onclick="confirmarPagamento()"><i class="fas fa-check"></i> Confirmar</button>
+        <button class="btn btn-success" onclick="confirmarPagamento()">
+          <i class="fas fa-check"></i> Confirmar Pagamento
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Acordo -->
+  <div class="modal-overlay" id="modalAcordo">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-handshake"></i> Criar Acordo</h3>
+        <button class="modal-close" onclick="fecharModal('modalAcordo')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="padding:16px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:20px;">
+          <div style="font-size:12px; color:var(--muted)">Dívida Original</div>
+          <div style="font-size:24px; font-weight:700; color:var(--gold)" id="acordoValorOriginal">R$ 0,00</div>
+          <div style="font-size:13px; color:var(--muted); margin-top:4px" id="acordoDescricao">-</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Desconto (%)</label>
+            <input type="number" class="form-control" id="acordoDesconto" value="0" min="0" max="100" oninput="calcularAcordo()">
+          </div>
+          <div class="form-group">
+            <label>Parcelas</label>
+            <select class="form-control" id="acordoParcelas" onchange="calcularAcordo()">
+              <option value="1">1x (à vista)</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="6" selected>6x</option>
+              <option value="10">10x</option>
+              <option value="12">12x</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Entrada (R$)</label>
+          <div class="input-prefix">
+            <span>R$</span>
+            <input type="text" class="form-control" id="acordoEntrada" value="0,00" oninput="formatarMoeda(this); calcularAcordo()">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Primeiro Vencimento</label>
+          <input type="date" class="form-control" id="acordoPrimeiroVenc">
+        </div>
+        <div style="padding:16px; background:var(--gold-glow); border:1px solid var(--gold); border-radius:8px; margin-top:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:var(--muted)">Valor com desconto:</span>
+            <span style="font-weight:600" id="acordoValorFinal">R$ 0,00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:var(--muted)">Entrada:</span>
+            <span style="font-weight:600" id="acordoEntradaRes">R$ 0,00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.2);">
+            <span style="font-weight:600">Parcelas:</span>
+            <span style="font-weight:700; color:var(--gold); font-size:18px" id="acordoParcelasRes">6x de R$ 0,00</span>
+          </div>
+        </div>
+        <input type="hidden" id="acordoCobrancaId">
+        <input type="hidden" id="acordoClienteId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalAcordo')">Cancelar</button>
+        <button class="btn btn-primary" onclick="criarAcordo()">
+          <i class="fas fa-handshake"></i> Criar Acordo
+        </button>
       </div>
     </div>
   </div>
@@ -492,24 +466,33 @@
     const API = window.location.origin;
     let token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
-
-    let todasCobrancas = [], credoresLista = [], currentTab = 'pendentes';
-
+    
+    let cobrancas = [];
+    let currentTab = 'pendentes';
+    
     const H = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
     const logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
     const fmtMoney = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
     const parseMoney = s => parseFloat((s || '0').toString().replace(/[^\d,]/g, '').replace(',', '.')) || 0;
     const initials = n => (n || '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
-
-    function formatarMoeda(el) {
+    const formatarMoeda = el => {
       let v = el.value.replace(/\D/g, '');
       v = (parseInt(v || 0) / 100).toFixed(2);
       el.value = parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    };
+    const fecharModal = id => document.getElementById(id).classList.remove('show');
+    
+    // Calcular dias de vencimento
+    function diasVencimento(dataVenc) {
+      if (!dataVenc) return null;
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const venc = new Date(dataVenc + 'T00:00:00');
+      const diff = Math.floor((venc - hoje) / (1000 * 60 * 60 * 24));
+      return diff;
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CARREGAR DADOS
-    // ═══════════════════════════════════════════════════════════════
+    
+    // Carregar usuário
     async function carregarUsuario() {
       try {
         const r = await fetch(API + '/api/auth/me', { headers: H() });
@@ -517,520 +500,278 @@
           const d = await r.json();
           if (d.user) {
             document.getElementById('userName').textContent = d.user.nome;
-            document.getElementById('userRole').textContent = d.user.perfil;
             document.getElementById('userAvatar').textContent = initials(d.user.nome);
           }
         }
       } catch (e) {}
     }
-
+    
+    // Carregar estatísticas
     async function carregarEstatisticas() {
       try {
-        const r = await fetch(API + '/api/cobrancas/estatisticas', { headers: H() });
+        const r = await fetch(API + '/api/cobrancas/stats', { headers: H() });
         const d = await r.json();
         if (d.success && d.data) {
+          document.getElementById('statPendentes').textContent = d.data.pendentes || 0;
           document.getElementById('statVencidas').textContent = d.data.vencidas || 0;
-          document.getElementById('statHoje').textContent = d.data.vence_hoje || 0;
-          document.getElementById('statPendente').textContent = fmtMoney(d.data.valor_pendente);
-          document.getElementById('statRecuperado').textContent = fmtMoney(d.data.valor_pago_mes || d.data.valor_pago);
+          document.getElementById('statTotal').textContent = fmtMoney(d.data.totalPendente);
+          document.getElementById('statRecebido').textContent = fmtMoney(d.data.recebidoMes);
+          document.getElementById('countPendentes').textContent = d.data.pendentes || 0;
         }
       } catch (e) {}
     }
-
-    async function carregarCredores() {
-      try {
-        const r = await fetch(API + '/api/credores', { headers: H() });
-        const d = await r.json();
-        if (d.success) {
-          credoresLista = d.data || [];
-          const sel = document.getElementById('novaCredor');
-          sel.innerHTML = '<option value="">Selecione...</option>' + credoresLista.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-        }
-      } catch (e) {}
-    }
-
+    
+    // Carregar cobranças
     async function carregarCobrancas() {
       try {
-        const r = await fetch(API + '/api/cobrancas?limit=500', { headers: H() });
+        const r = await fetch(API + '/api/cobrancas?limit=200', { headers: H() });
         const d = await r.json();
         if (d.success) {
-          todasCobrancas = d.data || [];
+          cobrancas = d.data || [];
           renderizar();
         }
       } catch (e) {
-        document.getElementById('listaCobrancas').innerHTML = '<div class="empty"><i class="fas fa-exclamation-circle"></i><p>Erro ao carregar</p></div>';
+        document.getElementById('tabelaCobrancas').innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-exclamation-circle"></i><p>Erro ao carregar</p></div></td></tr>';
       }
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // RENDERIZAR LISTA
-    // ═══════════════════════════════════════════════════════════════
+    
+    // Renderizar tabela
     function renderizar() {
-      const container = document.getElementById('listaCobrancas');
+      const tbody = document.getElementById('tabelaCobrancas');
       const busca = document.getElementById('busca').value.toLowerCase();
       const hoje = new Date().toISOString().split('T')[0];
-
-      // Filtrar por tab
-      let filtradas = todasCobrancas.filter(c => {
-        if (currentTab === 'pendentes') return c.status !== 'pago' && !c.arquivado;
+      
+      let filtradas = cobrancas.filter(c => {
+        // Ignorar cobranças que já viraram acordo
+        if (c.status === 'acordo') return false;
+        
+        if (currentTab === 'pendentes') {
+          const venc = c.vencimento || c.data_vencimento;
+          return c.status === 'pendente' && (!venc || venc >= hoje);
+        }
+        if (currentTab === 'vencidas') {
+          const venc = c.vencimento || c.data_vencimento;
+          return (c.status === 'pendente' || c.status === 'vencido') && venc && venc < hoje;
+        }
         if (currentTab === 'pagas') return c.status === 'pago';
-        if (currentTab === 'arquivadas') return c.arquivado;
-        return !c.arquivado;
+        return c.status !== 'acordo'; // todas menos acordos
       });
-
-      // Filtrar por busca
+      
       if (busca) {
         filtradas = filtradas.filter(c => 
-          c.cliente?.toLowerCase().includes(busca) || 
+          c.cliente_nome?.toLowerCase().includes(busca) ||
           c.descricao?.toLowerCase().includes(busca)
         );
       }
-
-      // Agrupar por cliente
-      const porCliente = {};
-      filtradas.forEach(c => {
-        const key = c.cliente_id || 'sem';
-        if (!porCliente[key]) {
-          porCliente[key] = {
-            id: c.cliente_id,
-            nome: c.cliente || 'Sem cliente',
-            telefone: c.cliente_telefone,
-            cobrancas: []
-          };
-        }
-        porCliente[key].cobrancas.push(c);
-      });
-
-      // Atualizar contador
-      document.getElementById('countPendentes').textContent = todasCobrancas.filter(c => c.status !== 'pago' && !c.arquivado).length;
-
-      if (Object.keys(porCliente).length === 0) {
-        container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i><p>Nenhuma cobrança encontrada</p></div>';
+      
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="6">
+            <div class="empty">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <h3>Nenhuma cobrança</h3>
+              <p>Clique em "Nova Cobrança" para começar</p>
+            </div>
+          </td></tr>`;
         return;
       }
-
-      // Renderizar
-      container.innerHTML = Object.values(porCliente).map(cliente => {
-        // Agrupar cobranças do cliente por descrição base (sem o número da parcela)
-        const grupos = agruparPorDescricao(cliente.cobrancas);
-        const totalCliente = cliente.cobrancas.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
-
+      
+      tbody.innerHTML = filtradas.map(c => {
+        const venc = c.vencimento || c.data_vencimento;
+        const dias = diasVencimento(venc);
+        const vencido = dias !== null && dias < 0;
+        const venceHoje = dias === 0;
+        
+        let statusClass = c.status;
+        if (c.status === 'pendente' && vencido) statusClass = 'vencido';
+        
+        let diasTexto = '';
+        if (dias !== null && c.status !== 'pago') {
+          if (dias < 0) diasTexto = `${Math.abs(dias)} dias atrás`;
+          else if (dias === 0) diasTexto = 'Vence hoje';
+          else diasTexto = `em ${dias} dias`;
+        }
+        
         return `
-          <div class="cliente-card" data-id="${cliente.id}">
-            <div class="cliente-header" onclick="toggleCliente(this)">
-              <div class="cliente-avatar">${initials(cliente.nome)}</div>
-              <div class="cliente-info">
-                <div class="cliente-nome">${cliente.nome}</div>
-                <div class="cliente-meta">
-                  <span><i class="fas fa-file-invoice"></i> ${cliente.cobrancas.length} cobrança(s)</span>
-                  ${cliente.telefone ? `<span><i class="fas fa-phone"></i> ${cliente.telefone}</span>` : ''}
+          <tr>
+            <td>
+              <div class="cliente-cell">
+                <div class="cliente-avatar">${initials(c.cliente_nome)}</div>
+                <div class="cliente-info">
+                  <div class="cliente-nome">${c.cliente_nome || '-'}</div>
+                  <div class="cliente-doc">${c.cliente_cpf || ''}</div>
                 </div>
               </div>
-              <div class="cliente-total">
-                <div class="cliente-total-label">Total</div>
-                <div class="cliente-total-value">${fmtMoney(totalCliente)}</div>
+            </td>
+            <td>${c.descricao || '-'}</td>
+            <td><span class="valor destaque">${fmtMoney(c.valor || c.valor_original)}</span></td>
+            <td>
+              <div class="vencimento ${vencido ? 'vencido' : ''}">
+                ${venc ? new Date(venc + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}
+                ${diasTexto ? `<span class="dias">${diasTexto}</span>` : ''}
               </div>
-              <div class="cliente-actions">
-                <button class="btn-icon whatsapp" onclick="event.stopPropagation();enviarWhatsapp('${cliente.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-                <button class="cliente-toggle"><i class="fas fa-chevron-down"></i></button>
+            </td>
+            <td><span class="status ${statusClass}">${statusClass}</span></td>
+            <td>
+              <div class="actions">
+                ${c.status !== 'pago' ? `
+                  <button class="btn btn-sm btn-success" onclick="abrirModalPagar('${c.id}', '${c.descricao || ''}', ${c.valor || c.valor_original})" title="Pagar">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="abrirModalAcordo('${c.id}', '${c.cliente_id}', '${c.descricao || ''}', ${c.valor || c.valor_original})" title="Criar Acordo">
+                    <i class="fas fa-handshake"></i>
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="enviarWhatsapp('${c.id}')" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                  </button>
+                ` : `
+                  <span style="color:var(--muted); font-size:12px">
+                    <i class="fas fa-check-circle"></i> Pago
+                  </span>
+                `}
               </div>
-            </div>
-            <div class="cobrancas-container">
-              ${grupos.map(g => renderizarGrupo(g)).join('')}
-            </div>
-          </div>
-        `;
+            </td>
+          </tr>`;
       }).join('');
     }
-
-    function agruparPorDescricao(cobrancas) {
-      const grupos = {};
-      
-      cobrancas.forEach(c => {
-        // Extrair descrição base (remover " (1/4)" etc)
-        let descBase = c.descricao || 'Sem descrição';
-        descBase = descBase.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
-        
-        // Chave única: descrição + referência
-        const key = `${descBase}|${c.referencia || ''}`;
-        
-        if (!grupos[key]) {
-          grupos[key] = {
-            descricao: descBase,
-            referencia: c.referencia,
-            categoria: c.categoria,
-            parcelas: []
-          };
-        }
-        grupos[key].parcelas.push(c);
-      });
-
-      // Ordenar parcelas dentro de cada grupo
-      Object.values(grupos).forEach(g => {
-        g.parcelas.sort((a, b) => (a.numero_parcela || 1) - (b.numero_parcela || 1));
-        g.totalParcelas = g.parcelas[0]?.total_parcelas || g.parcelas.length;
-        g.valorTotal = g.parcelas.reduce((s, p) => s + parseFloat(p.valor || 0), 0);
-      });
-
-      return Object.values(grupos);
-    }
-
-    function renderizarGrupo(grupo) {
-      const hoje = new Date().toISOString().split('T')[0];
-      const temParcelas = grupo.parcelas.length > 1 || (grupo.parcelas[0]?.total_parcelas || 1) > 1;
-      
-      if (temParcelas) {
-        // TIMELINE DE PARCELAS
-        return `
-          <div class="cobranca-item">
-            <div class="cobranca-header">
-              <div class="cobranca-titulo">
-                <div class="cobranca-icon"><i class="fas fa-${getCategoriaIcon(grupo.categoria)}"></i></div>
-                <div>
-                  <div class="cobranca-nome">${grupo.descricao}</div>
-                  ${grupo.referencia ? `<div class="cobranca-ref">Ref: ${grupo.referencia}</div>` : ''}
-                </div>
-              </div>
-              <div class="cobranca-valor">${fmtMoney(grupo.valorTotal)}</div>
-            </div>
-            <div class="parcelas-timeline">
-              ${grupo.parcelas.map((p, i) => {
-                const venc = p.vencimento || p.data_vencimento;
-                const vencDate = venc?.split('T')[0];
-                const status = getStatusParcela(p.status, vencDate, hoje);
-                return `
-                  <div class="parcela-node ${status}" data-id="${p.id}">
-                    <div class="parcela-circle" onclick="abrirParcela('${p.id}')">${p.numero_parcela || i + 1}</div>
-                    <div class="parcela-info">
-                      <div class="parcela-num">${p.numero_parcela || i + 1}/${grupo.totalParcelas}</div>
-                      <div class="parcela-valor">${fmtMoney(p.valor)}</div>
-                      <div class="parcela-data">${formatarData(vencDate)}</div>
-                      <div class="parcela-status">${getStatusLabel(status)}</div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            <div class="cobranca-actions">
-              ${renderizarAcoesParcela(grupo.parcelas)}
-            </div>
-          </div>
-        `;
-      } else {
-        // COBRANÇA SIMPLES
-        const c = grupo.parcelas[0];
-        const venc = c.vencimento || c.data_vencimento;
-        const vencDate = venc?.split('T')[0];
-        const status = getStatusParcela(c.status, vencDate, hoje);
-        
-        return `
-          <div class="cobranca-item">
-            <div class="cobranca-header">
-              <div class="cobranca-titulo">
-                <div class="cobranca-icon"><i class="fas fa-${getCategoriaIcon(grupo.categoria)}"></i></div>
-                <div>
-                  <div class="cobranca-nome">${grupo.descricao}</div>
-                  ${grupo.referencia ? `<div class="cobranca-ref">Ref: ${grupo.referencia}</div>` : ''}
-                </div>
-              </div>
-              <div style="text-align:right">
-                <div class="cobranca-valor">${fmtMoney(c.valor)}</div>
-                <div style="font-size:11px;color:var(--muted)">${formatarData(vencDate)}</div>
-              </div>
-            </div>
-            <div class="cobranca-simples">
-              <div class="cobranca-simples-info">
-                <div class="cobranca-simples-status ${status}"></div>
-                <span style="font-size:13px">${getStatusLabel(status)}</span>
-              </div>
-              <div style="display:flex;gap:8px">
-                ${c.status !== 'pago' ? `
-                  <button class="btn btn-sm btn-secondary" onclick="abrirModalPagar('${c.id}','${c.descricao}',${c.valor},'${vencDate}')"><i class="fas fa-check"></i> Pagar</button>
-                  <button class="btn btn-sm btn-secondary" onclick="gerarBoleto('${c.id}')"><i class="fas fa-barcode"></i></button>
-                  <button class="btn btn-sm btn-secondary whatsapp" onclick="enviarWhatsappCobranca('${c.id}')"><i class="fab fa-whatsapp"></i></button>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    function renderizarAcoesParcela(parcelas) {
-      const pendente = parcelas.find(p => p.status !== 'pago');
-      if (!pendente) return '<span style="color:var(--green);font-size:12px"><i class="fas fa-check-circle"></i> Todas pagas</span>';
-      
-      const venc = pendente.vencimento || pendente.data_vencimento;
-      return `
-        <button class="btn btn-sm btn-success" onclick="abrirModalPagar('${pendente.id}','Parcela ${pendente.numero_parcela}/${pendente.total_parcelas}',${pendente.valor},'${venc?.split('T')[0]}')">
-          <i class="fas fa-check"></i> Pagar Parcela ${pendente.numero_parcela}
-        </button>
-        <button class="btn btn-sm btn-secondary" onclick="gerarBoleto('${pendente.id}')"><i class="fas fa-barcode"></i> Boleto</button>
-        <button class="btn btn-sm btn-secondary" onclick="enviarWhatsappCobranca('${pendente.id}')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-      `;
-    }
-
-    function getStatusParcela(status, vencDate, hoje) {
-      if (status === 'pago') return 'pago';
-      if (!vencDate) return 'futuro';
-      if (vencDate < hoje) return 'vencido';
-      if (vencDate === hoje) return 'atual';
-      return 'futuro';
-    }
-
-    function getStatusLabel(status) {
-      const labels = { pago: 'Pago', atual: 'Hoje', vencido: 'Vencido', futuro: 'Futuro' };
-      return labels[status] || status;
-    }
-
-    function getCategoriaIcon(cat) {
-      const icons = { produto: 'box', servico: 'tools', mensalidade: 'calendar-alt', emprestimo: 'hand-holding-usd' };
-      return icons[cat] || 'file-invoice';
-    }
-
-    function formatarData(d) {
-      if (!d) return '-';
-      const [y, m, day] = d.split('-');
-      return `${day}/${m}`;
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // INTERAÇÕES
-    // ═══════════════════════════════════════════════════════════════
-    function toggleCliente(header) {
-      header.closest('.cliente-card').classList.toggle('expanded');
-    }
-
+    
+    // Trocar tab
     function trocarTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`.tab[onclick="trocarTab('${tab}')"]`).classList.add('active');
       renderizar();
     }
-
-    function filtrar() {
-      renderizar();
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // MODAL NOVA COBRANÇA
-    // ═══════════════════════════════════════════════════════════════
+    
+    function filtrar() { renderizar(); }
+    
+    // ========== NOVA COBRANÇA ==========
     function abrirModalNova() {
-      document.getElementById('novaClienteId').value = '';
-      document.getElementById('novaDevedor').value = '';
-      document.getElementById('novaDevedor').style.display = 'block';
+      document.getElementById('novoClienteId').value = '';
+      document.getElementById('novoCliente').value = '';
+      document.getElementById('novoCliente').style.display = 'block';
       document.getElementById('clienteSelecionado').style.display = 'none';
-      document.getElementById('novaDescricao').value = '';
-      document.getElementById('novaValor').value = '';
-      document.getElementById('novaReferencia').value = '';
-      document.getElementById('novaParcelas').value = '1';
-      document.getElementById('parcelasPreview').classList.remove('show');
+      document.getElementById('novoDescricao').value = '';
+      document.getElementById('novoValor').value = '';
+      document.getElementById('novoObs').value = '';
       
-      const hoje = new Date();
-      hoje.setDate(hoje.getDate() + 7);
-      document.getElementById('novaVencimento').value = hoje.toISOString().split('T')[0];
+      // Data padrão: hoje + 30 dias
+      const data = new Date();
+      data.setDate(data.getDate() + 30);
+      document.getElementById('novoVencimento').value = data.toISOString().split('T')[0];
       
       document.getElementById('modalNova').classList.add('show');
     }
-
+    
     let buscaTimeout;
     async function buscarCliente(termo) {
       clearTimeout(buscaTimeout);
-      if (termo.length < 2) { document.getElementById('resultadosCliente').style.display = 'none'; return; }
+      const container = document.getElementById('resultadosCliente');
+      
+      if (termo.length < 2) {
+        container.classList.remove('show');
+        return;
+      }
       
       buscaTimeout = setTimeout(async () => {
         try {
           const r = await fetch(API + '/api/clientes?q=' + encodeURIComponent(termo), { headers: H() });
           const d = await r.json();
-          const container = document.getElementById('resultadosCliente');
           
           if (d.success && d.data?.length > 0) {
             container.innerHTML = d.data.slice(0, 8).map(c => `
-              <div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px" 
-                   onmouseover="this.style.background='var(--gold-glow)'" 
-                   onmouseout="this.style.background=''" 
-                   onclick="selecionarCliente('${c.id}','${c.nome}','${c.cpf_cnpj || ''}')">
-                <div style="width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:var(--bg)">${initials(c.nome)}</div>
-                <div><div style="font-weight:600;font-size:13px">${c.nome}</div><div style="font-size:11px;color:var(--muted)">${c.cpf_cnpj || '-'}</div></div>
+              <div class="cliente-search-item" onclick="selecionarCliente('${c.id}', '${c.nome}', '${c.cpf_cnpj || ''}')">
+                <div style="font-weight:600">${c.nome}</div>
+                <div style="font-size:11px; color:var(--muted)">${c.cpf_cnpj || '-'}</div>
               </div>
             `).join('');
-            container.style.display = 'block';
           } else {
-            container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum encontrado</div>';
-            container.style.display = 'block';
+            container.innerHTML = '<div style="padding:16px; text-align:center; color:var(--muted)">Nenhum cliente encontrado</div>';
           }
+          container.classList.add('show');
         } catch (e) {}
       }, 300);
     }
-
+    
     function selecionarCliente(id, nome, doc) {
-      document.getElementById('novaClienteId').value = id;
+      document.getElementById('novoClienteId').value = id;
       document.getElementById('selAvatar').textContent = initials(nome);
       document.getElementById('selNome').textContent = nome;
       document.getElementById('selDoc').textContent = doc || '-';
-      document.getElementById('novaDevedor').style.display = 'none';
+      document.getElementById('novoCliente').style.display = 'none';
       document.getElementById('clienteSelecionado').style.display = 'block';
-      document.getElementById('resultadosCliente').style.display = 'none';
+      document.getElementById('resultadosCliente').classList.remove('show');
     }
-
+    
     function limparCliente() {
-      document.getElementById('novaClienteId').value = '';
-      document.getElementById('novaDevedor').value = '';
-      document.getElementById('novaDevedor').style.display = 'block';
+      document.getElementById('novoClienteId').value = '';
+      document.getElementById('novoCliente').value = '';
+      document.getElementById('novoCliente').style.display = 'block';
       document.getElementById('clienteSelecionado').style.display = 'none';
     }
-
-    function selCategoria(el) {
-      document.querySelectorAll('.categoria-badge').forEach(b => b.classList.remove('selected'));
-      el.classList.add('selected');
-      document.getElementById('novaCategoria').value = el.dataset.cat;
-    }
-
-    function selTipo(el) {
-      document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      document.getElementById('novaTipo').value = el.dataset.tipo;
-    }
-
-    function toggleSwitch(el) {
-      el.classList.toggle('active');
-    }
-
-    function calcularParcelas() {
-      const valor = parseMoney(document.getElementById('novaValor').value);
-      const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
-      const vencimento = document.getElementById('novaVencimento').value;
-      const juros = parseFloat(document.getElementById('novaJuros').value) || 0;
+    
+    async function criarCobranca() {
+      const clienteId = document.getElementById('novoClienteId').value;
+      const descricao = document.getElementById('novoDescricao').value.trim();
+      const valor = parseMoney(document.getElementById('novoValor').value);
+      const vencimento = document.getElementById('novoVencimento').value;
+      const obs = document.getElementById('novoObs').value.trim();
       
-      const preview = document.getElementById('parcelasPreview');
-      
-      if (parcelas > 1 && valor > 0 && vencimento) {
-        let valorParcela, valorTotal;
-        
-        if (juros > 0) {
-          const taxa = juros / 100;
-          const fator = Math.pow(1 + taxa, parcelas);
-          valorParcela = valor * (taxa * fator) / (fator - 1);
-          valorTotal = valorParcela * parcelas;
-        } else {
-          valorParcela = valor / parcelas;
-          valorTotal = valor;
-        }
-        
-        let html = '';
-        if (juros > 0) {
-          html += `<div style="padding:8px;background:var(--gold-glow);border-radius:6px;margin-bottom:8px;font-size:11px">
-            <div style="display:flex;justify-content:space-between"><span>Valor original:</span><span>${fmtMoney(valor)}</span></div>
-            <div style="display:flex;justify-content:space-between"><span>Juros (${juros}% a.m.):</span><span style="color:var(--orange)">+ ${fmtMoney(valorTotal - valor)}</span></div>
-            <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total:</span><span style="color:var(--gold)">${fmtMoney(valorTotal)}</span></div>
-          </div>`;
-        }
-        
-        const dataBase = new Date(vencimento + 'T12:00:00');
-        for (let i = 0; i < Math.min(parcelas, 6); i++) {
-          const data = new Date(dataBase);
-          data.setMonth(data.getMonth() + i);
-          html += `<div class="parcela-preview-row">
-            <span style="color:var(--gold);font-weight:600">${i + 1}/${parcelas}</span>
-            <span>${fmtMoney(valorParcela)}</span>
-            <span style="color:var(--muted)">${data.toLocaleDateString('pt-BR')}</span>
-          </div>`;
-        }
-        if (parcelas > 6) html += `<div style="text-align:center;font-size:11px;color:var(--muted);padding:8px">... +${parcelas - 6} parcelas</div>`;
-        
-        preview.innerHTML = html;
-        preview.classList.add('show');
-      } else {
-        preview.classList.remove('show');
-      }
-    }
-
-    async function salvarCobranca() {
-      const clienteId = document.getElementById('novaClienteId').value;
-      const credorId = document.getElementById('novaCredor').value;
-      const descricao = document.getElementById('novaDescricao').value;
-      const valor = parseMoney(document.getElementById('novaValor').value);
-      const vencimento = document.getElementById('novaVencimento').value;
-      const parcelas = parseInt(document.getElementById('novaParcelas').value) || 1;
-      const multa = parseFloat(document.getElementById('novaMulta').value) || 2;
-      const juros = parseFloat(document.getElementById('novaJuros').value) || 1;
-      const categoria = document.getElementById('novaCategoria').value;
-      const referencia = document.getElementById('novaReferencia').value;
-      const tipo = document.getElementById('novaTipo').value;
-      const gerarAsaas = document.getElementById('toggleAsaas').classList.contains('active');
-      const enviarWhatsapp = document.getElementById('toggleWhatsapp').classList.contains('active');
-
       if (!clienteId) { alert('Selecione um cliente'); return; }
       if (!descricao) { alert('Informe a descrição'); return; }
-      if (!valor) { alert('Informe o valor'); return; }
+      if (valor <= 0) { alert('Informe o valor'); return; }
       if (!vencimento) { alert('Informe o vencimento'); return; }
-
+      
       try {
         const r = await fetch(API + '/api/cobrancas', {
           method: 'POST',
           headers: H(),
           body: JSON.stringify({
             cliente_id: clienteId,
-            credor_id: credorId || null,
             descricao,
             valor,
             vencimento,
-            data_vencimento: vencimento,
-            numero_parcelas: parcelas,
-            multa,
-            juros,
-            categoria,
-            referencia,
-            tipo_cobranca: tipo,
-            gerar_asaas: gerarAsaas,
-            notificar_cliente: enviarWhatsapp,
-            canais_notificacao: enviarWhatsapp ? ['whatsapp'] : []
+            observacoes: obs,
+            status: 'pendente'
           })
         });
+        
         const d = await r.json();
-
         if (d.success) {
           fecharModal('modalNova');
           carregarCobrancas();
           carregarEstatisticas();
-          
-          if (d.whatsapp_link && enviarWhatsapp) {
-            window.open(d.whatsapp_link, '_blank');
-          }
-          
-          alert(parcelas > 1 ? `✅ ${parcelas} parcelas criadas!` : '✅ Cobrança criada!');
+          alert('✅ Cobrança criada!');
         } else {
-          alert(d.error || 'Erro ao criar');
+          alert(d.error || 'Erro ao criar cobrança');
         }
       } catch (e) {
         alert('Erro ao criar cobrança');
       }
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // MODAL PAGAR
-    // ═══════════════════════════════════════════════════════════════
-    function abrirModalPagar(id, desc, valor, venc) {
+    
+    // ========== PAGAR ==========
+    function abrirModalPagar(id, descricao, valor) {
       document.getElementById('pagarId').value = id;
-      document.getElementById('pagarDesc').textContent = desc;
+      document.getElementById('pagarDescricao').textContent = descricao || '-';
       document.getElementById('pagarValor').textContent = fmtMoney(valor);
-      document.getElementById('pagarVenc').textContent = 'Vencimento: ' + (venc ? new Date(venc + 'T12:00:00').toLocaleDateString('pt-BR') : '-');
       document.getElementById('pagarData').value = new Date().toISOString().split('T')[0];
       document.getElementById('modalPagar').classList.add('show');
     }
-
+    
     async function confirmarPagamento() {
       const id = document.getElementById('pagarId').value;
       const data = document.getElementById('pagarData').value;
-
+      const forma = document.getElementById('pagarForma').value;
+      
       try {
-        const r = await fetch(API + '/api/cobrancas/' + id + '/status', {
+        const r = await fetch(API + '/api/cobrancas/' + id + '/pagar', {
           method: 'PUT',
           headers: H(),
-          body: JSON.stringify({ status: 'pago', data_pagamento: data })
+          body: JSON.stringify({ data_pagamento: data, forma_pagamento: forma })
         });
+        
         const d = await r.json();
-
         if (d.success) {
           fecharModal('modalPagar');
           carregarCobrancas();
@@ -1043,64 +784,102 @@
         alert('Erro ao registrar pagamento');
       }
     }
-
-    function abrirParcela(id) {
-      const c = todasCobrancas.find(x => x.id === id);
-      if (!c) return;
+    
+    // ========== ACORDO ==========
+    let acordoValorOriginal = 0;
+    
+    function abrirModalAcordo(cobrancaId, clienteId, descricao, valor) {
+      acordoValorOriginal = valor;
+      document.getElementById('acordoCobrancaId').value = cobrancaId;
+      document.getElementById('acordoClienteId').value = clienteId;
+      document.getElementById('acordoValorOriginal').textContent = fmtMoney(valor);
+      document.getElementById('acordoDescricao').textContent = descricao || '-';
+      document.getElementById('acordoDesconto').value = 0;
+      document.getElementById('acordoParcelas').value = '6';
+      document.getElementById('acordoEntrada').value = '0,00';
       
-      if (c.status === 'pago') {
-        alert(`Parcela já paga em ${c.data_pagamento ? new Date(c.data_pagamento).toLocaleDateString('pt-BR') : '-'}`);
-      } else {
-        const venc = c.vencimento || c.data_vencimento;
-        abrirModalPagar(c.id, `Parcela ${c.numero_parcela || 1}/${c.total_parcelas || 1}`, c.valor, venc?.split('T')[0]);
-      }
+      const data = new Date();
+      data.setDate(data.getDate() + 7);
+      document.getElementById('acordoPrimeiroVenc').value = data.toISOString().split('T')[0];
+      
+      calcularAcordo();
+      document.getElementById('modalAcordo').classList.add('show');
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // AÇÕES
-    // ═══════════════════════════════════════════════════════════════
-    async function enviarWhatsapp(clienteId) {
-      const cob = todasCobrancas.find(c => c.cliente_id === clienteId && c.status !== 'pago');
-      if (cob) enviarWhatsappCobranca(cob.id);
+    
+    function calcularAcordo() {
+      const desconto = parseFloat(document.getElementById('acordoDesconto').value) || 0;
+      const parcelas = parseInt(document.getElementById('acordoParcelas').value) || 1;
+      const entrada = parseMoney(document.getElementById('acordoEntrada').value);
+      
+      const valorComDesconto = acordoValorOriginal * (1 - desconto / 100);
+      const valorRestante = valorComDesconto - entrada;
+      const valorParcela = parcelas > 0 ? valorRestante / parcelas : 0;
+      
+      document.getElementById('acordoValorFinal').textContent = fmtMoney(valorComDesconto);
+      document.getElementById('acordoEntradaRes').textContent = fmtMoney(entrada);
+      document.getElementById('acordoParcelasRes').textContent = `${parcelas}x de ${fmtMoney(valorParcela)}`;
     }
-
-    async function enviarWhatsappCobranca(id) {
+    
+    async function criarAcordo() {
+      const cobrancaId = document.getElementById('acordoCobrancaId').value;
+      const clienteId = document.getElementById('acordoClienteId').value;
+      const desconto = parseFloat(document.getElementById('acordoDesconto').value) || 0;
+      const parcelas = parseInt(document.getElementById('acordoParcelas').value) || 1;
+      const entrada = parseMoney(document.getElementById('acordoEntrada').value);
+      const primeiroVenc = document.getElementById('acordoPrimeiroVenc').value;
+      
+      if (!primeiroVenc) { alert('Informe o primeiro vencimento'); return; }
+      
+      const valorAcordo = acordoValorOriginal * (1 - desconto / 100);
+      
       try {
-        const r = await fetch(API + '/api/cobrancas/' + id + '/whatsapp', { headers: H() });
+        const r = await fetch(API + '/api/acordos', {
+          method: 'POST',
+          headers: H(),
+          body: JSON.stringify({
+            cobranca_id: cobrancaId,
+            cliente_id: clienteId,
+            valor_original: acordoValorOriginal,
+            valor_acordo: valorAcordo,
+            desconto_percentual: desconto,
+            valor_entrada: entrada,
+            numero_parcelas: parcelas,
+            data_primeiro_vencimento: primeiroVenc
+          })
+        });
+        
         const d = await r.json();
-        if (d.success && d.link) window.open(d.link, '_blank');
-        else alert(d.error || 'Erro');
-      } catch (e) {
-        alert('Erro ao gerar link');
-      }
-    }
-
-    async function gerarBoleto(id) {
-      try {
-        const r = await fetch(API + '/api/cobrancas/' + id + '/gerar-asaas', { method: 'POST', headers: H() });
-        const d = await r.json();
-        if (d.success || d.invoiceUrl) {
-          if (d.invoiceUrl) window.open(d.invoiceUrl, '_blank');
-          alert('✅ Boleto gerado!');
+        if (d.success) {
+          fecharModal('modalAcordo');
           carregarCobrancas();
+          carregarEstatisticas();
+          alert('✅ Acordo criado! Veja na tela de Acordos.');
         } else {
-          alert(d.error || 'Erro ao gerar');
+          alert(d.error || 'Erro ao criar acordo');
         }
       } catch (e) {
-        alert('Erro ao gerar boleto');
+        alert('Erro ao criar acordo');
       }
     }
-
-    function fecharModal(id) {
-      document.getElementById(id).classList.remove('show');
+    
+    // ========== WHATSAPP ==========
+    async function enviarWhatsapp(cobrancaId) {
+      try {
+        const r = await fetch(API + '/api/cobrancas/' + cobrancaId + '/whatsapp', { headers: H() });
+        const d = await r.json();
+        if (d.success && d.link) {
+          window.open(d.link, '_blank');
+        } else {
+          alert(d.error || 'Erro ao gerar link');
+        }
+      } catch (e) {
+        alert('Erro');
+      }
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // INIT
-    // ═══════════════════════════════════════════════════════════════
+    
+    // Inicializar
     carregarUsuario();
     carregarEstatisticas();
-    carregarCredores();
     carregarCobrancas();
   </script>
 </body>
