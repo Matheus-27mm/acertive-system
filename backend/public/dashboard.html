@@ -39,7 +39,6 @@
       letter-spacing: -0.01em;
     }
 
-    /* ========== SIDEBAR SIMPLIFICADA ========== */
     .sidebar {
       position: fixed;
       left: 0;
@@ -179,14 +178,12 @@
       color: var(--red); 
     }
 
-    /* ========== MAIN ========== */
     .main {
       margin-left: var(--sidebar-width);
       min-height: 100vh;
       background: var(--bg-primary);
     }
 
-    /* ========== HEADER ========== */
     .header {
       height: 64px;
       padding: 0 32px;
@@ -272,13 +269,11 @@
       background: var(--accent-light);
     }
 
-    /* ========== CONTENT ========== */
     .content {
       padding: 32px;
       max-width: 1400px;
     }
 
-    /* ========== HERO CARDS ========== */
     .hero-section {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -344,7 +339,6 @@
     }
     .hero-stat.positive { color: var(--green); }
 
-    /* ========== QUICK STATS ========== */
     .quick-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -387,14 +381,12 @@
     }
     .quick-stat-change.up { color: var(--green); }
 
-    /* ========== MAIN GRID ========== */
     .main-grid {
       display: grid;
       grid-template-columns: 1.5fr 1fr;
       gap: 24px;
     }
 
-    /* ========== CARD ========== */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
@@ -436,7 +428,6 @@
 
     .card-body { padding: 20px 24px; }
 
-    /* ========== LISTA DE COBRANÇAS ========== */
     .cobranca-item {
       display: flex;
       align-items: center;
@@ -520,7 +511,6 @@
     }
     .empty-state p { font-size: 13px; }
 
-    /* ========== METAS ========== */
     .meta-item {
       margin-bottom: 20px;
     }
@@ -557,7 +547,6 @@
       transition: width 0.5s ease;
     }
 
-    /* ========== NOTIFICAÇÕES ========== */
     .notif-wrapper { position: relative; }
     
     .notif-dropdown {
@@ -621,6 +610,7 @@
     }
     .notif-icon.danger { background: rgba(239,68,68,0.1); color: var(--red); }
     .notif-icon.warning { background: rgba(249,115,22,0.1); color: #f97316; }
+    .notif-icon.success { background: rgba(34,197,94,0.1); color: var(--green); }
 
     .notif-content { flex: 1; min-width: 0; }
     .notif-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
@@ -633,7 +623,6 @@
     }
     .notif-empty i { font-size: 24px; margin-bottom: 8px; display: block; }
 
-    /* ========== RESPONSIVO ========== */
     @media (max-width: 1200px) {
       .hero-section { grid-template-columns: 1fr; }
       .quick-stats { grid-template-columns: repeat(2, 1fr); }
@@ -649,7 +638,6 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar Simplificada - 5 Menus -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">A</div>
@@ -660,22 +648,17 @@
       <a href="dashboard.html" class="nav-link active">
         <i class="fas fa-chart-pie"></i> Dashboard
       </a>
-      
       <a href="cobrancas.html" class="nav-link">
         <i class="fas fa-file-invoice-dollar"></i> Cobranças
         <span class="nav-badge" id="badgeCobrancas"></span>
       </a>
-      
       <a href="acordos.html" class="nav-link">
         <i class="fas fa-handshake"></i> Acordos
       </a>
-      
       <a href="financeiro.html" class="nav-link">
         <i class="fas fa-wallet"></i> Financeiro
       </a>
-      
       <div class="nav-divider"></div>
-      
       <a href="configuracoes.html" class="nav-link">
         <i class="fas fa-cog"></i> Configurações
       </a>
@@ -695,7 +678,6 @@
     </div>
   </aside>
 
-  <!-- Main -->
   <main class="main">
     <header class="header">
       <div class="greeting">Bem-vindo, <strong id="greetingName">Usuário</strong></div>
@@ -721,14 +703,13 @@
             </div>
           </div>
         </div>
-        <a href="cobrancas.html?fila=1" class="btn btn-primary">
+        <a href="cobrancas.html" class="btn btn-primary">
           <i class="fas fa-play"></i> Iniciar
         </a>
       </div>
     </header>
 
     <div class="content">
-      <!-- Hero Section - 2 números principais -->
       <div class="hero-section">
         <div class="hero-card">
           <div class="hero-label"><i class="fas fa-wallet"></i> Total em Carteira</div>
@@ -742,13 +723,12 @@
           <div class="hero-label"><i class="fas fa-hand-holding-usd"></i> Recuperado no Mês</div>
           <div class="hero-value" id="totalRecuperado">R$ 0,00</div>
           <div class="hero-meta">
-            <div class="hero-stat"><span id="qtdAcordos">0</span> acordos fechados</div>
+            <div class="hero-stat"><span id="qtdAcordos">0</span> acordos ativos</div>
             <div class="hero-stat positive"><i class="fas fa-arrow-up"></i> <span id="pctRecuperado">0%</span> vs mês anterior</div>
           </div>
         </div>
       </div>
 
-      <!-- Quick Stats - 4 métricas secundárias -->
       <div class="quick-stats">
         <div class="quick-stat">
           <div class="quick-stat-label">Taxa de Recuperação</div>
@@ -756,29 +736,27 @@
           <div class="quick-stat-change up"><i class="fas fa-arrow-up"></i> Meta: 25%</div>
         </div>
         <div class="quick-stat">
-          <div class="quick-stat-label">Comissão do Mês</div>
-          <div class="quick-stat-value" id="totalComissao">R$ 0</div>
-          <div class="quick-stat-change" id="comissaoPendente">R$ 0 pendente</div>
+          <div class="quick-stat-label">Cobranças Pagas</div>
+          <div class="quick-stat-value" id="totalPagas">0</div>
+          <div class="quick-stat-change" id="comissaoPendente">Este mês</div>
         </div>
         <div class="quick-stat">
-          <div class="quick-stat-label">Acionamentos Hoje</div>
-          <div class="quick-stat-value" id="totalAcionamentos">0</div>
-          <div class="quick-stat-change" id="taxaCPC">0% CPC</div>
+          <div class="quick-stat-label">Cobranças Pendentes</div>
+          <div class="quick-stat-value" id="totalPendentes">0</div>
+          <div class="quick-stat-change" id="taxaCPC">Aguardando</div>
         </div>
         <div class="quick-stat">
-          <div class="quick-stat-label">Vencendo Hoje</div>
+          <div class="quick-stat-label">Cobranças Vencidas</div>
           <div class="quick-stat-value" id="vencendoHoje">0</div>
           <div class="quick-stat-change" id="vencendoValor">R$ 0</div>
         </div>
       </div>
 
-      <!-- Main Grid -->
       <div class="main-grid">
-        <!-- Próximas Cobranças -->
         <div class="card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-list-check"></i> Próximas Cobranças</h3>
-            <a href="cobrancas.html?fila=1" class="card-link">Ver todas <i class="fas fa-arrow-right"></i></a>
+            <a href="cobrancas.html" class="card-link">Ver todas <i class="fas fa-arrow-right"></i></a>
           </div>
           <div class="card-body" id="listaCobrancas">
             <div class="empty-state">
@@ -788,7 +766,6 @@
           </div>
         </div>
 
-        <!-- Metas do Mês -->
         <div class="card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-bullseye"></i> Metas do Mês</h3>
@@ -814,11 +791,11 @@
             </div>
             <div class="meta-item">
               <div class="meta-header">
-                <span class="meta-label">Acionamentos</span>
-                <span class="meta-value" id="metaAcionamentos">0 / 800</span>
+                <span class="meta-label">Quitados</span>
+                <span class="meta-value" id="metaQuitados">0</span>
               </div>
               <div class="meta-bar">
-                <div class="meta-progress" id="progressAcionamentos" style="width:0%;background:var(--accent);"></div>
+                <div class="meta-progress" id="progressQuitados" style="width:0%;background:var(--accent);"></div>
               </div>
             </div>
           </div>
@@ -855,7 +832,6 @@
       window.location.href = 'login.html';
     }
 
-    // Notificações
     function toggleNotif() {
       document.getElementById('notifDropdown').classList.toggle('show');
     }
@@ -867,7 +843,6 @@
       }
     });
 
-    // Carregar usuário
     async function carregarUsuario() {
       try {
         const stored = localStorage.getItem('user');
@@ -884,77 +859,86 @@
       }
     }
 
-    // Carregar dados do dashboard
+    // ========== CARREGAR DADOS DO DASHBOARD ==========
     async function carregarDados() {
       try {
-        // Dashboard stats
-        const res = await fetch(API + '/api/integracoes/dashboard', { headers: getHeaders() });
-        const data = await res.json();
+        // ========== COBRANÇAS STATS ==========
+        const resCobrancas = await fetch(API + '/api/cobrancas/stats', { headers: getHeaders() });
+        const dataCobrancas = await resCobrancas.json();
         
-        if (data.cobrancas) {
-          const carteira = parseFloat(data.cobrancas.valor_pendente || 0) + parseFloat(data.cobrancas.valor_pago || 0);
-          document.getElementById('totalCarteira').textContent = fmtMoney(carteira);
-          document.getElementById('qtdDividas').textContent = data.cobrancas.pendentes || 0;
-          document.getElementById('totalRecuperado').textContent = fmtMoney(data.cobrancas.valor_pago || 0);
-        }
-
-        if (data.acordos_mes) {
-          document.getElementById('qtdAcordos').textContent = data.acordos_mes.count || 0;
+        if (dataCobrancas.success && dataCobrancas.data) {
+          const stats = dataCobrancas.data;
           
-          // Metas
-          const metaAcordos = 50;
-          const acordos = parseInt(data.acordos_mes.count) || 0;
-          const pctAcordos = Math.min(100, (acordos / metaAcordos) * 100);
-          document.getElementById('metaAcordos').textContent = `${acordos} / ${metaAcordos}`;
-          document.getElementById('progressAcordos').style.width = pctAcordos + '%';
-        }
-
-        // Alertas
-        const alertas = await fetch(API + '/api/integracoes/dashboard/alertas', { headers: getHeaders() });
-        const alertasData = await alertas.json();
-        
-        if (alertasData) {
-          const venceHoje = alertasData.vence_hoje || 0;
-          const vencidas = alertasData.vencidas || 0;
+          // Total em carteira (pendentes)
+          const totalCarteira = parseFloat(stats.totalPendente || 0);
+          document.getElementById('totalCarteira').textContent = fmtMoney(totalCarteira);
           
-          document.getElementById('vencendoHoje').textContent = venceHoje;
+          // Quantidade de dívidas ativas
+          const pendentes = parseInt(stats.pendentes) || 0;
+          const vencidas = parseInt(stats.vencidas) || 0;
+          const pagas = parseInt(stats.pagas) || 0;
+          const qtdDividas = pendentes + vencidas;
+          document.getElementById('qtdDividas').textContent = qtdDividas;
           
-          // Badge de notificações
-          const total = venceHoje + vencidas;
-          const badge = document.getElementById('notifBadge');
-          const badgeCobrancas = document.getElementById('badgeCobrancas');
+          // Recuperado no mês
+          const recebidoMes = parseFloat(stats.recebidoMes || 0);
+          document.getElementById('totalRecuperado').textContent = fmtMoney(recebidoMes);
           
-          if (total > 0) {
-            badge.style.display = 'flex';
-            badge.textContent = total;
-            if (badgeCobrancas) badgeCobrancas.textContent = total;
-            
-            // Popular notificações
-            let notifHtml = '';
-            if (vencidas > 0) {
-              notifHtml += `
-                <div class="notif-item" onclick="location.href='cobrancas.html?status=vencido'">
-                  <div class="notif-icon danger"><i class="fas fa-exclamation-circle"></i></div>
-                  <div class="notif-content">
-                    <div class="notif-title">${vencidas} cobrança(s) vencida(s)</div>
-                    <div class="notif-desc">Requer atenção imediata</div>
-                  </div>
-                </div>
-              `;
-            }
-            if (venceHoje > 0) {
-              notifHtml += `
-                <div class="notif-item" onclick="location.href='cobrancas.html?fila=1'">
-                  <div class="notif-icon warning"><i class="fas fa-clock"></i></div>
-                  <div class="notif-content">
-                    <div class="notif-title">${venceHoje} cobrança(s) vence(m) hoje</div>
-                    <div class="notif-desc">Inicie os acionamentos</div>
-                  </div>
-                </div>
-              `;
-            }
-            document.getElementById('notifBody').innerHTML = notifHtml;
+          // Cards rápidos
+          document.getElementById('totalPagas').textContent = pagas;
+          document.getElementById('totalPendentes').textContent = pendentes;
+          document.getElementById('vencendoHoje').textContent = vencidas;
+          
+          // Taxa de recuperação
+          if (totalCarteira > 0 || recebidoMes > 0) {
+            const taxa = ((recebidoMes / (totalCarteira + recebidoMes)) * 100).toFixed(1);
+            document.getElementById('taxaRecuperacao').textContent = taxa + '%';
+            document.getElementById('metaRecuperacao').textContent = taxa + '%';
+            document.getElementById('progressRecuperacao').style.width = Math.min(100, parseFloat(taxa) * 4) + '%';
           }
+          
+          // Badge de notificações (vencidas)
+          if (vencidas > 0) {
+            const badge = document.getElementById('notifBadge');
+            const badgeCobrancas = document.getElementById('badgeCobrancas');
+            badge.style.display = 'flex';
+            badge.textContent = vencidas;
+            if (badgeCobrancas) badgeCobrancas.textContent = vencidas;
+            
+            document.getElementById('notifBody').innerHTML = `
+              <div class="notif-item" onclick="location.href='cobrancas.html'">
+                <div class="notif-icon danger"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="notif-content">
+                  <div class="notif-title">${vencidas} cobrança(s) vencida(s)</div>
+                  <div class="notif-desc">Requer atenção imediata</div>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // ========== ACORDOS STATS ==========
+        const resAcordos = await fetch(API + '/api/acordos/stats', { headers: getHeaders() });
+        const dataAcordos = await resAcordos.json();
+        
+        if (dataAcordos.success && dataAcordos.data) {
+          const stats = dataAcordos.data;
+          
+          // Acordos ativos
+          const acordosAtivos = parseInt(stats.acordosAtivos) || 0;
+          const acordosQuitados = parseInt(stats.acordosQuitados) || 0;
+          document.getElementById('qtdAcordos').textContent = acordosAtivos;
+          
+          // Metas de acordos
+          const metaAcordos = 50;
+          const totalAcordos = acordosAtivos + acordosQuitados;
+          const pctAcordos = Math.min(100, (totalAcordos / metaAcordos) * 100);
+          document.getElementById('metaAcordos').textContent = `${totalAcordos} / ${metaAcordos}`;
+          document.getElementById('progressAcordos').style.width = pctAcordos + '%';
+          
+          // Quitados
+          document.getElementById('metaQuitados').textContent = acordosQuitados;
+          document.getElementById('progressQuitados').style.width = Math.min(100, acordosQuitados * 5) + '%';
         }
 
       } catch (e) {
@@ -962,42 +946,44 @@
       }
     }
 
-    // Carregar fila de cobranças
+    // ========== CARREGAR FILA DE COBRANÇAS ==========
     async function carregarFila() {
       try {
-        const res = await fetch(API + '/api/cobrancas?status=pendente&limit=5', { headers: getHeaders() });
+        const res = await fetch(API + '/api/cobrancas?limit=5', { headers: getHeaders() });
         const data = await res.json();
         
         if (data.success && data.data && data.data.length > 0) {
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          
           const html = data.data.map(c => {
-            const nome = c.cliente || c.cliente_nome || 'Cliente';
+            const nome = c.cliente_nome || 'Cliente';
             const iniciais = nome.substring(0, 2).toUpperCase();
-            const valor = c.valor_atualizado || c.valor_original || c.valor || 0;
-            const desc = c.descricao || c.credor_nome || 'Cobrança';
+            const valor = c.valor || c.valor_original || 0;
+            const desc = c.descricao || 'Cobrança';
             
-            // Calcular status
             let statusClass = 'pendente';
             let statusText = 'Pendente';
             
-            if (c.data_vencimento) {
-              const venc = new Date(c.data_vencimento);
-              const hoje = new Date();
-              hoje.setHours(0, 0, 0, 0);
-              venc.setHours(0, 0, 0, 0);
-              
-              const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
-              
-              if (diff > 0) {
-                statusClass = 'vencida';
-                statusText = diff + 'd atraso';
-              } else if (diff === 0) {
-                statusClass = 'hoje';
-                statusText = 'Vence hoje';
+            const vencStr = (c.data_vencimento || c.vencimento || '').toString().split('T')[0];
+            if (vencStr) {
+              const partes = vencStr.split('-');
+              if (partes.length === 3) {
+                const venc = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+                const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
+                
+                if (diff > 0) {
+                  statusClass = 'vencida';
+                  statusText = diff + 'd atraso';
+                } else if (diff === 0) {
+                  statusClass = 'hoje';
+                  statusText = 'Vence hoje';
+                }
               }
             }
             
             return `
-              <div class="cobranca-item" onclick="location.href='cobrancas.html?id=${c.id}'">
+              <div class="cobranca-item" onclick="location.href='cobrancas.html'">
                 <div class="cobranca-avatar">${iniciais}</div>
                 <div class="cobranca-info">
                   <div class="cobranca-nome">${nome}</div>
