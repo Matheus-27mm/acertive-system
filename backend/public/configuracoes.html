@@ -102,7 +102,6 @@
       <a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
       <a href="acordos.html" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
       <a href="financeiro.html" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
-      <a href="clientes.html" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
       <div class="nav-divider"></div>
       <a href="configuracoes.html" class="nav-link active"><i class="fas fa-cog"></i> Configurações</a>
     </nav>
@@ -121,6 +120,7 @@
       <button class="tab" onclick="switchTab('lembretes',this)"><i class="fas fa-bell"></i> Lembretes</button>
       <button class="tab" onclick="switchTab('sync',this)"><i class="fas fa-sync"></i> Sync Asaas</button>
     </div>
+
     <!-- TAB GERAL -->
     <div class="tab-content active" id="tabGeral">
       <div class="card">
@@ -273,6 +273,7 @@
       </div>
     </div>
   </main>
+
   <!-- MODALS -->
   <div class="modal-overlay" id="modalEmpresa">
     <div class="modal">
@@ -281,10 +282,10 @@
         <input type="hidden" id="empresaId">
         <div class="form-row">
           <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" class="form-control" id="empresaNome"></div>
-          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="empresaCnpj"></div>
+          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="empresaCnpj" data-mask="cnpj" placeholder="00.000.000/0000-00"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="empresaTelefone"></div>
+          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="empresaTelefone" data-mask="telefone" placeholder="(00) 00000-0000"></div>
           <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="empresaEmail"></div>
         </div>
         <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px"><label style="color:var(--gold);font-weight:600"><i class="fas fa-university"></i> Dados Bancários (PIX)</label></div>
@@ -305,16 +306,16 @@
         <input type="hidden" id="credorId">
         <div class="form-row">
           <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" class="form-control" id="credorNome"></div>
-          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="credorCnpj"></div>
+          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="credorCnpj" data-mask="cnpj" placeholder="00.000.000/0000-00"></div>
         </div>
         <div class="form-row cols-3">
-          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="credorTelefone"></div>
+          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="credorTelefone" data-mask="telefone" placeholder="(00) 00000-0000"></div>
           <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="credorEmail"></div>
-          <div class="form-group"><label>Comissão %</label><input type="number" class="form-control" id="credorComissao" value="10" min="0" max="100"></div>
+          <div class="form-group"><label>Comissão %</label><input type="text" class="form-control" id="credorComissao" value="10,00" data-mask="decimal" placeholder="0,00"></div>
         </div>
         <div class="form-row cols-3">
-          <div class="form-group"><label>Desconto Máx %</label><input type="number" class="form-control" id="credorDesconto" value="30"></div>
-          <div class="form-group"><label>Máx Parcelas</label><input type="number" class="form-control" id="credorParcelas" value="12"></div>
+          <div class="form-group"><label>Desconto Máx %</label><input type="text" class="form-control" id="credorDesconto" value="30,00" data-mask="decimal" placeholder="0,00"></div>
+          <div class="form-group"><label>Máx Parcelas</label><input type="number" class="form-control" id="credorParcelas" value="24"></div>
           <div class="form-group"><label>Status</label><select class="form-control" id="credorStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
         </div>
         <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px"><label style="color:var(--gold);font-weight:600"><i class="fas fa-university"></i> Dados Bancários</label></div>
@@ -357,6 +358,7 @@
       <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalTemplate')">Cancelar</button><button class="btn btn-success" onclick="salvarTemplate()"><i class="fas fa-save"></i> Salvar</button></div>
     </div>
   </div>
+
   <script>
     const API=window.location.origin;let token=localStorage.getItem('token');if(!token)window.location.href='login.html';
     const H=()=>({'Content-Type':'application/json','Authorization':'Bearer '+token});
@@ -366,19 +368,86 @@
     const initials=n=>n?(n.split(' ').length>=2?(n.split(' ')[0][0]+n.split(' ').pop()[0]).toUpperCase():n.substring(0,2).toUpperCase()):'?';
     const fmtMoney=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0);
 
+    // ===== MÁSCARAS DE FORMATAÇÃO =====
+    function maskCNPJ(v) {
+      v = v.replace(/\D/g, '').substring(0, 14);
+      v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+      v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      v = v.replace(/(\d{4})(\d)/, '$1-$2');
+      return v;
+    }
+
+    function maskCPF(v) {
+      v = v.replace(/\D/g, '').substring(0, 11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      return v;
+    }
+
+    function maskCPFCNPJ(v) {
+      v = v.replace(/\D/g, '');
+      if (v.length <= 11) return maskCPF(v);
+      return maskCNPJ(v);
+    }
+
+    function maskTelefone(v) {
+      v = v.replace(/\D/g, '').substring(0, 11);
+      if (v.length <= 10) {
+        v = v.replace(/(\d{2})(\d)/, '($1) $2');
+        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+      } else {
+        v = v.replace(/(\d{2})(\d)/, '($1) $2');
+        v = v.replace(/(\d{5})(\d)/, '$1-$2');
+      }
+      return v;
+    }
+
+    function maskDecimal(v) {
+      v = v.replace(/[^\d]/g, '');
+      if (v.length === 0) return '';
+      v = (parseInt(v) / 100).toFixed(2);
+      return v.replace('.', ',');
+    }
+
+    function unmask(v) {
+      return (v || '').replace(/\D/g, '');
+    }
+
+    function parseDecimal(v) {
+      return parseFloat((v || '0').replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    // Aplicar máscaras nos inputs
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('[data-mask="cnpj"]').forEach(el => {
+        el.addEventListener('input', function() { this.value = maskCNPJ(this.value); });
+      });
+      document.querySelectorAll('[data-mask="cpfcnpj"]').forEach(el => {
+        el.addEventListener('input', function() { this.value = maskCPFCNPJ(this.value); });
+      });
+      document.querySelectorAll('[data-mask="telefone"]').forEach(el => {
+        el.addEventListener('input', function() { this.value = maskTelefone(this.value); });
+      });
+      document.querySelectorAll('[data-mask="decimal"]').forEach(el => {
+        el.addEventListener('input', function() { this.value = maskDecimal(this.value); });
+      });
+    });
+
     function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');}
 
     async function carregarUsuario(){try{const u=JSON.parse(localStorage.getItem('user')||'{}');document.getElementById('userName').textContent=u.nome||'Usuário';document.getElementById('userRole').textContent=u.nivel==='admin'?'Admin':'Operador';document.getElementById('userAvatar').textContent=initials(u.nome||'U');}catch(e){}}
 
     // ===== EMPRESAS =====
     async function carregarEmpresas(){try{const r=await fetch(API+'/api/empresas',{headers:H()});const d=await r.json();const lista=document.getElementById('listaEmpresas');if(!d.success||!d.data||!d.data.length){lista.innerHTML='<div class="empty"><i class="fas fa-building"></i>Nenhuma empresa</div>';return;}
-    lista.innerHTML=d.data.map(e=>`<div class="item-row ${e.padrao?'highlight':''}"><div class="item-icon purple"><i class="fas fa-building"></i></div><div class="item-info"><h4>${e.nome} ${e.padrao?'<span class="badge badge-gold">PADRÃO</span>':''}</h4><p>${e.cnpj||'Sem CNPJ'} ${e.chave_pix?'• PIX: '+e.chave_pix:''}</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarEmpresa('${e.id}')"><i class="fas fa-edit"></i></button>${!e.padrao?`<button class="btn-icon" onclick="definirPadrao('${e.id}')" title="Definir padrão"><i class="fas fa-star"></i></button>`:''}<button class="btn-icon delete" onclick="excluirEmpresa('${e.id}')"><i class="fas fa-trash"></i></button></div></div>`).join('');}catch(e){document.getElementById('listaEmpresas').innerHTML='<div class="empty" style="color:var(--red)">Erro</div>';}}
+    lista.innerHTML=d.data.map(e=>`<div class="item-row ${e.padrao?'highlight':''}"><div class="item-icon purple"><i class="fas fa-building"></i></div><div class="item-info"><h4>${e.nome} ${e.padrao?'<span class="badge badge-gold">PADRÃO</span>':''}</h4><p>${e.cnpj?maskCNPJ(e.cnpj):'Sem CNPJ'} ${e.chave_pix?'• PIX: '+e.chave_pix:''}</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarEmpresa('${e.id}')"><i class="fas fa-edit"></i></button>${!e.padrao?`<button class="btn-icon" onclick="definirPadrao('${e.id}')" title="Definir padrão"><i class="fas fa-star"></i></button>`:''}<button class="btn-icon delete" onclick="excluirEmpresa('${e.id}')"><i class="fas fa-trash"></i></button></div></div>`).join('');}catch(e){document.getElementById('listaEmpresas').innerHTML='<div class="empty" style="color:var(--red)">Erro</div>';}}
 
     function abrirModalEmpresa(){document.getElementById('empresaId').value='';document.getElementById('empresaNome').value='';document.getElementById('empresaCnpj').value='';document.getElementById('empresaTelefone').value='';document.getElementById('empresaEmail').value='';document.getElementById('empresaTipoPix').value='';document.getElementById('empresaChavePix').value='';document.getElementById('toggleEmpresaPadrao').classList.remove('active');document.getElementById('modalEmpresaTitulo').textContent='Nova Empresa';document.getElementById('modalEmpresa').classList.add('show');}
 
-    async function editarEmpresa(id){try{const r=await fetch(API+'/api/empresas/'+id,{headers:H()});const d=await r.json();if(d.success&&d.data){const e=d.data;document.getElementById('empresaId').value=e.id;document.getElementById('empresaNome').value=e.nome||'';document.getElementById('empresaCnpj').value=e.cnpj||'';document.getElementById('empresaTelefone').value=e.telefone||'';document.getElementById('empresaEmail').value=e.email||'';document.getElementById('empresaTipoPix').value=e.tipo_chave_pix||'';document.getElementById('empresaChavePix').value=e.chave_pix||'';if(e.padrao)document.getElementById('toggleEmpresaPadrao').classList.add('active');else document.getElementById('toggleEmpresaPadrao').classList.remove('active');document.getElementById('modalEmpresaTitulo').textContent='Editar Empresa';document.getElementById('modalEmpresa').classList.add('show');}}catch(e){toast('Erro');}}
+    async function editarEmpresa(id){try{const r=await fetch(API+'/api/empresas/'+id,{headers:H()});const d=await r.json();if(d.success&&d.data){const e=d.data;document.getElementById('empresaId').value=e.id;document.getElementById('empresaNome').value=e.nome||'';document.getElementById('empresaCnpj').value=e.cnpj?maskCNPJ(e.cnpj):'';document.getElementById('empresaTelefone').value=e.telefone?maskTelefone(e.telefone):'';document.getElementById('empresaEmail').value=e.email||'';document.getElementById('empresaTipoPix').value=e.tipo_chave_pix||'';document.getElementById('empresaChavePix').value=e.chave_pix||'';if(e.padrao)document.getElementById('toggleEmpresaPadrao').classList.add('active');else document.getElementById('toggleEmpresaPadrao').classList.remove('active');document.getElementById('modalEmpresaTitulo').textContent='Editar Empresa';document.getElementById('modalEmpresa').classList.add('show');}}catch(e){toast('Erro');}}
 
-    async function salvarEmpresa(){const id=document.getElementById('empresaId').value;const dados={nome:document.getElementById('empresaNome').value,cnpj:document.getElementById('empresaCnpj').value,telefone:document.getElementById('empresaTelefone').value,email:document.getElementById('empresaEmail').value,tipo_chave_pix:document.getElementById('empresaTipoPix').value,chave_pix:document.getElementById('empresaChavePix').value,padrao:document.getElementById('toggleEmpresaPadrao').classList.contains('active')};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/empresas/'+id:API+'/api/empresas';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Empresa salva!');fecharModal('modalEmpresa');carregarEmpresas();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
+    async function salvarEmpresa(){const id=document.getElementById('empresaId').value;const dados={nome:document.getElementById('empresaNome').value,cnpj:unmask(document.getElementById('empresaCnpj').value),telefone:unmask(document.getElementById('empresaTelefone').value),email:document.getElementById('empresaEmail').value,tipo_chave_pix:document.getElementById('empresaTipoPix').value,chave_pix:document.getElementById('empresaChavePix').value,padrao:document.getElementById('toggleEmpresaPadrao').classList.contains('active')};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/empresas/'+id:API+'/api/empresas';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Empresa salva!');fecharModal('modalEmpresa');carregarEmpresas();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
 
     async function definirPadrao(id){try{await fetch(API+'/api/empresas/'+id,{method:'PUT',headers:H(),body:JSON.stringify({padrao:true})});carregarEmpresas();}catch(e){}}
 
@@ -386,15 +455,15 @@
 
     // ===== CREDORES =====
     async function carregarCredores(){try{const r=await fetch(API+'/api/credores',{headers:H()});const d=await r.json();const credores=d.success?d.data:(Array.isArray(d)?d:[]);const lista=document.getElementById('listaCredores');if(!credores.length){lista.innerHTML='<div class="empty"><i class="fas fa-building"></i>Nenhum credor</div>';return;}
-    lista.innerHTML=credores.map((c,i)=>`<div class="item-row"><div class="item-icon ${['blue','green','purple','orange'][i%4]}"><i class="fas fa-building"></i></div><div class="item-info"><h4>${c.nome} <span class="badge badge-${c.status==='ativo'?'green':'red'}">${c.status||'ativo'}</span></h4><p>${c.cnpj||'Sem CNPJ'} • Comissão: ${c.comissao_percentual||10}%</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarCredor('${c.id}')"><i class="fas fa-edit"></i></button><button class="btn-icon delete" onclick="excluirCredor('${c.id}')"><i class="fas fa-trash"></i></button></div></div>`).join('');populateCredorSelect(credores);}catch(e){document.getElementById('listaCredores').innerHTML='<div class="empty">Erro</div>';}}
+    lista.innerHTML=credores.map((c,i)=>`<div class="item-row"><div class="item-icon ${['blue','green','purple','orange'][i%4]}"><i class="fas fa-building"></i></div><div class="item-info"><h4>${c.nome} <span class="badge badge-${c.status==='ativo'?'green':'red'}">${c.status||'ativo'}</span></h4><p>${c.cnpj?maskCNPJ(c.cnpj):'Sem CNPJ'} • Comissão: ${(c.comissao_percentual||10).toFixed(2).replace('.',',')}%</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarCredor('${c.id}')"><i class="fas fa-edit"></i></button><button class="btn-icon delete" onclick="excluirCredor('${c.id}')"><i class="fas fa-trash"></i></button></div></div>`).join('');populateCredorSelect(credores);}catch(e){document.getElementById('listaCredores').innerHTML='<div class="empty">Erro</div>';}}
 
     function populateCredorSelect(credores){const sel=document.getElementById('syncCredor');sel.innerHTML='<option value="">Nenhum</option>'+credores.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');}
 
-    function abrirModalCredor(){document.getElementById('credorId').value='';document.getElementById('credorNome').value='';document.getElementById('credorCnpj').value='';document.getElementById('credorTelefone').value='';document.getElementById('credorEmail').value='';document.getElementById('credorComissao').value='10';document.getElementById('credorDesconto').value='30';document.getElementById('credorParcelas').value='12';document.getElementById('credorStatus').value='ativo';document.getElementById('credorBanco').value='';document.getElementById('credorPix').value='';document.getElementById('credorConta').value='';document.getElementById('modalCredorTitulo').textContent='Novo Credor';document.getElementById('modalCredor').classList.add('show');}
+    function abrirModalCredor(){document.getElementById('credorId').value='';document.getElementById('credorNome').value='';document.getElementById('credorCnpj').value='';document.getElementById('credorTelefone').value='';document.getElementById('credorEmail').value='';document.getElementById('credorComissao').value='10,00';document.getElementById('credorDesconto').value='30,00';document.getElementById('credorParcelas').value='24';document.getElementById('credorStatus').value='ativo';document.getElementById('credorBanco').value='';document.getElementById('credorPix').value='';document.getElementById('credorConta').value='';document.getElementById('modalCredorTitulo').textContent='Novo Credor';document.getElementById('modalCredor').classList.add('show');}
 
-    async function editarCredor(id){try{const r=await fetch(API+'/api/credores/'+id,{headers:H()});const d=await r.json();const c=d.data||d;if(c){document.getElementById('credorId').value=c.id;document.getElementById('credorNome').value=c.nome||'';document.getElementById('credorCnpj').value=c.cnpj||'';document.getElementById('credorTelefone').value=c.telefone||'';document.getElementById('credorEmail').value=c.email||'';document.getElementById('credorComissao').value=c.comissao_percentual||10;document.getElementById('credorDesconto').value=c.desconto_maximo||30;document.getElementById('credorParcelas').value=c.parcelas_maximo||12;document.getElementById('credorStatus').value=c.status||'ativo';document.getElementById('credorBanco').value=c.banco||'';document.getElementById('credorPix').value=c.pix||'';document.getElementById('credorConta').value=c.conta||'';document.getElementById('modalCredorTitulo').textContent='Editar Credor';document.getElementById('modalCredor').classList.add('show');}}catch(e){toast('Erro');}}
+    async function editarCredor(id){try{const r=await fetch(API+'/api/credores/'+id,{headers:H()});const d=await r.json();const c=d.data||d;if(c){document.getElementById('credorId').value=c.id;document.getElementById('credorNome').value=c.nome||'';document.getElementById('credorCnpj').value=c.cnpj?maskCNPJ(c.cnpj):'';document.getElementById('credorTelefone').value=c.telefone?maskTelefone(c.telefone):'';document.getElementById('credorEmail').value=c.email||'';document.getElementById('credorComissao').value=(c.comissao_percentual||10).toFixed(2).replace('.',',');document.getElementById('credorDesconto').value=(c.desconto_maximo||30).toFixed(2).replace('.',',');document.getElementById('credorParcelas').value=c.parcelas_maximo||24;document.getElementById('credorStatus').value=c.status||'ativo';document.getElementById('credorBanco').value=c.banco||'';document.getElementById('credorPix').value=c.pix||'';document.getElementById('credorConta').value=c.conta||'';document.getElementById('modalCredorTitulo').textContent='Editar Credor';document.getElementById('modalCredor').classList.add('show');}}catch(e){toast('Erro');}}
 
-    async function salvarCredor(){const id=document.getElementById('credorId').value;const dados={nome:document.getElementById('credorNome').value,cnpj:document.getElementById('credorCnpj').value,telefone:document.getElementById('credorTelefone').value,email:document.getElementById('credorEmail').value,comissao_percentual:parseFloat(document.getElementById('credorComissao').value)||10,desconto_maximo:parseFloat(document.getElementById('credorDesconto').value)||30,parcelas_maximo:parseInt(document.getElementById('credorParcelas').value)||12,status:document.getElementById('credorStatus').value,banco:document.getElementById('credorBanco').value,pix:document.getElementById('credorPix').value,conta:document.getElementById('credorConta').value};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/credores/'+id:API+'/api/credores';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Credor salvo!');fecharModal('modalCredor');carregarCredores();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
+    async function salvarCredor(){const id=document.getElementById('credorId').value;const dados={nome:document.getElementById('credorNome').value,cnpj:unmask(document.getElementById('credorCnpj').value),telefone:unmask(document.getElementById('credorTelefone').value),email:document.getElementById('credorEmail').value,comissao_percentual:parseDecimal(document.getElementById('credorComissao').value),desconto_maximo:parseDecimal(document.getElementById('credorDesconto').value),parcelas_maximo:parseInt(document.getElementById('credorParcelas').value)||24,status:document.getElementById('credorStatus').value,banco:document.getElementById('credorBanco').value,pix:document.getElementById('credorPix').value,conta:document.getElementById('credorConta').value};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/credores/'+id:API+'/api/credores';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Credor salvo!');fecharModal('modalCredor');carregarCredores();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
 
     async function excluirCredor(id){if(!confirm('Excluir credor?'))return;try{await fetch(API+'/api/credores/'+id,{method:'DELETE',headers:H()});carregarCredores();}catch(e){}}
 
@@ -407,6 +476,7 @@
     async function editarUsuario(id){try{const r=await fetch(API+'/api/usuarios',{headers:H()});const d=await r.json();const u=(d.data||[]).find(x=>x.id===id);if(u){document.getElementById('usuarioId').value=u.id;document.getElementById('usuarioNome').value=u.nome||'';document.getElementById('usuarioEmail').value=u.email||'';document.getElementById('usuarioSenha').value='';document.getElementById('usuarioNivel').value=u.nivel||'operador';document.getElementById('senhaReq').textContent='(vazio=manter)';document.getElementById('modalUsuarioTitulo').textContent='Editar Usuário';document.getElementById('modalUsuario').classList.add('show');}}catch(e){toast('Erro');}}
 
     async function salvarUsuario(){const id=document.getElementById('usuarioId').value;const dados={nome:document.getElementById('usuarioNome').value,email:document.getElementById('usuarioEmail').value,nivel:document.getElementById('usuarioNivel').value};const senha=document.getElementById('usuarioSenha').value;if(senha)dados.senha=senha;if(!dados.nome||!dados.email){toast('Preencha nome e email');return;}if(!id&&(!senha||senha.length<6)){toast('Senha mín 6 caracteres');return;}try{const url=id?API+'/api/usuarios/'+id:API+'/api/usuarios';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Usuário salvo!');fecharModal('modalUsuario');carregarUsuarios();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
+
     // ===== TEMPLATES =====
     const templatesDefault=[{id:'d1',nome:'Lembrete Vencimento',tipo:'whatsapp',mensagem:'Olá {devedor_nome}! 👋\n\nCobrança de {valor} vence em {vencimento}.\n\n{credor}',padrao:true},{id:'d2',nome:'Cobrança Vencida',tipo:'whatsapp',mensagem:'Olá {devedor_nome}! ⚠️\n\nSua cobrança está {dias_atraso} dias em atraso.\n\nValor: {valor}\n\n{credor}',padrao:true},{id:'d3',nome:'Lembrete E-mail',tipo:'email',assunto:'Lembrete - {descricao}',mensagem:'Prezado(a) {devedor_nome},\n\nCobrança pendente:\n• {descricao}\n• Valor: {valor}\n• Vencimento: {vencimento}\n\nAtt,\n{credor}',padrao:true}];
     let templates=[];
