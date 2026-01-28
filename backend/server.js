@@ -12,6 +12,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const multer = require('multer');
@@ -379,11 +380,15 @@ app.get('*', (req, res) => {
     }
     
     // Tenta servir o arquivo HTML solicitado
-    const filePath = path.join(__dirname, 'public', req.path);
+    let filePath = path.join(__dirname, 'public', req.path);
     
-    // Verifica se o arquivo existe
-    const fs = require('fs');
-    if (fs.existsSync(filePath)) {
+    // Se não tem extensão, adiciona .html
+    if (!path.extname(filePath)) {
+        filePath += '.html';
+    }
+    
+    // Verifica se o arquivo existe E é um arquivo (não diretório)
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         return res.sendFile(filePath);
     }
     
