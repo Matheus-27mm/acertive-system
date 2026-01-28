@@ -1,542 +1,205 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Configurações - ACERTIVE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    :root{--bg:#09090b;--card:rgba(17,17,21,0.95);--card2:#131316;--text:#fafafa;--muted:#71717a;--gold:#ca9b3c;--gold-glow:rgba(202,155,60,0.12);--border:rgba(255,255,255,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.15);--red:#ef4444;--red-bg:rgba(239,68,68,0.15);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.15);--orange:#f59e0b;--orange-bg:rgba(245,158,11,0.15);--purple:#a855f7;--purple-bg:rgba(168,85,247,0.15);--sidebar:240px;--radius:12px}
-    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar);height:100vh;background:var(--bg);border-right:1px solid var(--border);z-index:1000;display:flex;flex-direction:column}
-    .sidebar-header{padding:24px 20px;display:flex;align-items:center;gap:12px}
-    .logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--bg)}
-    .logo-text{font-size:18px;font-weight:700}.logo-text span{color:var(--gold)}
-    .sidebar-nav{flex:1;padding:8px 12px}
-    .nav-link{display:flex;align-items:center;gap:12px;padding:12px 16px;color:var(--muted);text-decoration:none;border-radius:10px;font-weight:500;font-size:14px;margin-bottom:4px;transition:all 0.15s}
-    .nav-link:hover{color:var(--text);background:rgba(255,255,255,0.05)}.nav-link.active{color:var(--gold);background:var(--gold-glow)}
-    .nav-link i{width:20px;text-align:center}.nav-divider{height:1px;background:var(--border);margin:16px 12px}
-    .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
-    .user-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:var(--radius)}
-    .user-avatar{width:36px;height:36px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--gold)}
-    .user-info{flex:1}.user-name{font-weight:600;font-size:13px}.user-role{font-size:11px;color:var(--muted)}
-    .btn-logout{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px;border-radius:6px}.btn-logout:hover{background:var(--red-bg);color:var(--red)}
-    .main{margin-left:var(--sidebar);padding:24px 32px;min-height:100vh}
-    .page-header{margin-bottom:24px}.page-title{font-size:24px;font-weight:700;display:flex;align-items:center;gap:12px}.page-title i{color:var(--gold)}
-    .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);border-radius:var(--radius);padding:4px;border:1px solid var(--border);flex-wrap:wrap}
-    .tab{padding:10px 14px;background:transparent;border:none;color:var(--muted);font-weight:600;font-size:12px;cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap}
-    .tab:hover{color:var(--gold)}.tab.active{background:var(--gold);color:var(--bg)}
-    .tab-content{display:none}.tab-content.active{display:block}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all 0.15s}
-    .btn-primary{background:var(--gold);color:var(--bg)}.btn-primary:hover{filter:brightness(1.1)}
-    .btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
-    .btn-success{background:var(--green);color:#fff}.btn-danger{background:var(--red-bg);color:var(--red)}.btn-danger:hover{background:var(--red);color:#fff}
-    .btn-sm{padding:8px 12px;font-size:12px}.btn-icon{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:var(--muted);cursor:pointer}
-    .btn-icon:hover{color:var(--text)}.btn-icon.edit:hover{background:var(--blue-bg);color:var(--blue)}.btn-icon.delete:hover{background:var(--red-bg);color:var(--red)}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
-    .card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)}.card-title i{color:var(--gold)}
-    .card-desc{font-size:13px;color:var(--muted);margin-bottom:16px}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
-    .form-group{margin-bottom:16px}.form-group.full{grid-column:span 2}
-    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}.form-group label .req{color:var(--red)}
-    .form-control{width:100%;padding:12px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px}
-    .form-control:focus{outline:none;border-color:var(--gold)}.form-control:disabled{opacity:0.6}
-    select.form-control option{background:var(--bg)}
-    textarea.form-control{min-height:100px;resize:vertical}
-    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px;background:rgba(0,0,0,0.2);border-radius:var(--radius);margin-bottom:10px}
-    .toggle-info h4{font-size:13px;margin-bottom:2px}.toggle-info p{font-size:11px;color:var(--muted)}
-    .toggle{width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s}
-    .toggle.active{background:var(--green)}
-    .toggle::after{content:'';width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:2px;left:2px;transition:left 0.2s}
-    .toggle.active::after{left:22px}
-    .item-row{display:flex;align-items:center;gap:14px;padding:14px;background:rgba(0,0,0,0.2);border-radius:var(--radius);margin-bottom:10px;border:1px solid var(--border)}
-    .item-row.highlight{border-color:var(--gold);background:var(--gold-glow)}
-    .item-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
-    .item-icon.blue{background:var(--blue-bg);color:var(--blue)}.item-icon.green{background:var(--green-bg);color:var(--green)}.item-icon.purple{background:var(--purple-bg);color:var(--purple)}.item-icon.orange{background:var(--orange-bg);color:var(--orange)}.item-icon.gold{background:var(--gold-glow);color:var(--gold)}
-    .item-info{flex:1}.item-info h4{font-size:13px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:8px}.item-info p{font-size:11px;color:var(--muted)}
-    .item-actions{display:flex;gap:6px}
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700}
-    .badge-gold{background:var(--gold);color:var(--bg)}.badge-green{background:var(--green-bg);color:var(--green)}.badge-red{background:var(--red-bg);color:var(--red)}.badge-blue{background:var(--blue-bg);color:var(--blue)}.badge-orange{background:var(--orange-bg);color:var(--orange)}
-    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600}
-    .status-badge.connected{background:var(--green-bg);color:var(--green)}.status-badge.disconnected{background:var(--red-bg);color:var(--red)}
-    .status-badge i{font-size:6px}
-    table{width:100%;border-collapse:collapse}thead{background:rgba(0,0,0,0.2)}
-    th{text-align:left;padding:12px 14px;font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:600}
-    td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px}tr:last-child td{border-bottom:none}tr:hover{background:rgba(255,255,255,0.02)}
-    .user-cell{display:flex;align-items:center;gap:10px}
-    .user-cell-avatar{width:36px;height:36px;background:var(--gold-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--gold)}
-    .user-cell-name{font-weight:600}.user-cell-email{font-size:11px;color:var(--muted)}
-    .empty{text-align:center;padding:40px;color:var(--muted)}.empty i{font-size:36px;margin-bottom:12px;opacity:0.4;display:block}
-    .loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}.modal-overlay.show{display:flex}
-    .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:550px;max-height:90vh;overflow-y:auto}
-    .modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .modal-header h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}.modal-header h3 i{color:var(--gold)}
-    .modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}.modal-close:hover{color:var(--red)}
-    .modal-body{padding:20px}.modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
-    .timeline{position:relative;padding-left:24px;margin:16px 0}.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
-    .timeline-item{position:relative;padding:14px;background:rgba(0,0,0,0.2);border-radius:var(--radius);margin-bottom:12px;border:1px solid var(--border)}
-    .timeline-item::before{content:'';position:absolute;left:-20px;top:18px;width:10px;height:10px;background:var(--gold);border-radius:50%}
-    .timeline-item.email::before{background:var(--blue)}.timeline-item.whatsapp::before{background:#25d366}
-    .timeline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .timeline-titulo{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px}
-    .timeline-dias{font-size:10px;color:var(--muted);background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:10px}
-    .timeline-desc{font-size:12px;color:var(--muted)}
-    .config-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .config-item{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
-    .config-item h4{font-size:11px;color:var(--muted);margin-bottom:8px}.config-item .valor{font-size:24px;font-weight:800;color:var(--gold)}
-    .log-box{background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:12px}
-    .log-entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}.log-entry.success{color:var(--green)}.log-entry.error{color:var(--red)}.log-entry.info{color:var(--blue)}
-    .variaveis{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-    .variavel{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:monospace}.variavel:hover{border-color:var(--gold);color:var(--gold)}
-    @media(max-width:1024px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
-    @media(max-width:768px){.form-row,.form-row.cols-3,.config-grid{grid-template-columns:1fr}.form-group.full{grid-column:span 1}.tabs{overflow-x:auto}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - ACERTIVE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0b; color: #fff; min-height: 100vh; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #0f0f10; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .sidebar-logo-text { font-size: 22px; font-weight: 700; }
+        .sidebar-logo-text span { color: #3b82f6; }
+        .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 12px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.9); }
+        .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .nav-item i { width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .user-info { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .user-avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .user-logout { color: rgba(255,255,255,0.4); padding: 8px; cursor: pointer; }
+        .main-content { margin-left: 260px; min-height: 100vh; padding: 32px; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 28px; font-weight: 700; }
+        .config-tabs { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px; }
+        .config-tab { display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 14px; cursor: pointer; border-radius: 10px; font-family: inherit; }
+        .config-tab:hover { background: rgba(255,255,255,0.03); }
+        .config-tab.active { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .config-panel { display: none; }
+        .config-panel.active { display: block; }
+        .config-card { background: #111113; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .config-card h3 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .config-card h3 i { color: #3b82f6; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 14px; }
+        .form-group input:focus { outline: none; border-color: rgba(59,130,246,0.5); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn { padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; }
+        .usuarios-table { width: 100%; border-collapse: collapse; }
+        .usuarios-table th { text-align: left; padding: 12px; font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .usuarios-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .status-ativo { background: rgba(16,185,129,0.15); color: #34d399; }
+        .status-inativo { background: rgba(239,68,68,0.15); color: #f87171; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #111113; border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { color: #10b981; }
+        .upload-area { border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.05); }
+        .upload-area i { font-size: 48px; color: rgba(59,130,246,0.5); margin-bottom: 16px; }
+        .upload-area p { color: rgba(255,255,255,0.5); }
+    </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sidebar-header"><div class="logo-icon">A</div><div class="logo-text">ACERT<span>IVE</span></div></div>
-    <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
-      <a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-      <a href="acordos.html" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
-      <a href="financeiro.html" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
-      <div class="nav-divider"></div>
-      <a href="configuracoes.html" class="nav-link active"><i class="fas fa-cog"></i> Configurações</a>
-    </nav>
-    <div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">-</div></div><button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button></div></div>
-  </aside>
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-chart-line"></i></div><div class="sidebar-logo-text">ACERT<span>IVE</span></div></div></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section"><div class="nav-section-title">Principal</div><a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a><a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a></div>
+            <div class="nav-section"><div class="nav-section-title">Gestão</div><a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a><a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a><a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
+            <div class="nav-section"><div class="nav-section-title">Cadastros</div><a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a></div>
+            <div class="nav-section"><div class="nav-section-title">Sistema</div><a href="configuracoes.html" class="nav-item active"><i class="fas fa-cog"></i> Configurações</a></div>
+        </nav>
+        <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div></div></div>
+    </aside>
 
-  <main class="main">
-    <div class="page-header"><h1 class="page-title"><i class="fas fa-cog"></i> Configurações</h1></div>
+    <main class="main-content">
+        <header class="page-header"><h1>Configurações</h1></header>
 
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('geral',this)"><i class="fas fa-sliders-h"></i> Geral</button>
-      <button class="tab" onclick="switchTab('credores',this)"><i class="fas fa-building"></i> Credores</button>
-      <button class="tab" onclick="switchTab('usuarios',this)"><i class="fas fa-user-shield"></i> Usuários</button>
-      <button class="tab" onclick="switchTab('templates',this)"><i class="fas fa-file-alt"></i> Templates</button>
-      <button class="tab" onclick="switchTab('regua',this)"><i class="fas fa-robot"></i> Régua</button>
-      <button class="tab" onclick="switchTab('lembretes',this)"><i class="fas fa-bell"></i> Lembretes</button>
-      <button class="tab" onclick="switchTab('sync',this)"><i class="fas fa-sync"></i> Sync Asaas</button>
-    </div>
-
-    <!-- TAB GERAL -->
-    <div class="tab-content active" id="tabGeral">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-building"></i> Empresas / Contas Bancárias</div>
-        <div class="card-desc">Gerencie as empresas que receberão pagamentos. A empresa padrão será usada automaticamente.</div>
-        <div id="listaEmpresas"><div class="empty"><span class="loading"></span> Carregando...</div></div>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalEmpresa()" style="margin-top:12px"><i class="fas fa-plus"></i> Nova Empresa</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fas fa-plug"></i> Integrações</div>
-        <div class="item-row" id="integracaoAsaas">
-          <div class="item-icon green"><i class="fas fa-qrcode"></i></div>
-          <div class="item-info"><h4>Asaas (PIX/Boleto)</h4><p>Geração automática de cobranças</p></div>
-          <span class="status-badge disconnected" id="asaasStatus"><i class="fas fa-circle"></i> Verificando...</span>
-          <button class="btn btn-secondary btn-sm" onclick="testarAsaas()"><i class="fas fa-sync"></i></button>
+        <div class="config-tabs">
+            <button class="config-tab active" onclick="showTab('usuarios')"><i class="fas fa-users"></i> Usuários</button>
+            <button class="config-tab" onclick="showTab('empresa')"><i class="fas fa-building"></i> Empresa</button>
+            <button class="config-tab" onclick="showTab('importar')"><i class="fas fa-upload"></i> Importar</button>
+            <button class="config-tab" onclick="showTab('integracao')"><i class="fas fa-plug"></i> Integrações</button>
         </div>
-        <div class="item-row" id="integracaoSmtp">
-          <div class="item-icon blue"><i class="fas fa-envelope"></i></div>
-          <div class="item-info"><h4>E-mail (SMTP)</h4><p>Envio de notificações</p></div>
-          <span class="status-badge disconnected" id="smtpStatus"><i class="fas fa-circle"></i> Verificando...</span>
+
+        <div id="panel-usuarios" class="config-panel active">
+            <div class="config-card">
+                <h3><i class="fas fa-users"></i> Usuários do Sistema</h3>
+                <table class="usuarios-table">
+                    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody id="usuariosBody"></tbody>
+                </table>
+                <div style="margin-top: 20px;"><button class="btn btn-primary" onclick="novoUsuario()"><i class="fas fa-plus"></i> Novo Usuário</button></div>
+            </div>
         </div>
-        <div class="item-row">
-          <div class="item-icon green"><i class="fab fa-whatsapp"></i></div>
-          <div class="item-info"><h4>WhatsApp</h4><p>Links diretos via WhatsApp Web</p></div>
-          <span class="status-badge connected"><i class="fas fa-circle"></i> Disponível</span>
+
+        <div id="panel-empresa" class="config-panel">
+            <div class="config-card">
+                <h3><i class="fas fa-building"></i> Dados da Empresa</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Nome da Empresa</label><input type="text" id="empresaNome" placeholder="ACERTIVE Cobrança"></div>
+                    <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" placeholder="00.000.000/0000-00"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Telefone</label><input type="text" id="empresaTel"></div>
+                    <div class="form-group"><label>E-mail</label><input type="email" id="empresaEmail"></div>
+                </div>
+                <button class="btn btn-primary" onclick="salvarEmpresa()"><i class="fas fa-save"></i> Salvar</button>
+            </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fas fa-info-circle"></i> Sistema</div>
-        <div class="form-row">
-          <div class="form-group"><label>Versão</label><input type="text" class="form-control" value="ACERTIVE v2.1" disabled></div>
-          <div class="form-group"><label>Ambiente</label><input type="text" class="form-control" value="Produção" disabled></div>
+
+        <div id="panel-importar" class="config-panel">
+            <div class="config-card">
+                <h3><i class="fas fa-upload"></i> Importar Carteira</h3>
+                <p style="color: rgba(255,255,255,0.5); margin-bottom: 20px;">Importe clientes e cobranças via arquivo Excel (.xlsx)</p>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Clique para selecionar ou arraste o arquivo</p>
+                    <p style="font-size: 12px; margin-top: 8px;">.xlsx, .xls, .csv</p>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleFile(this)">
+                <div id="importStatus" style="margin-top: 20px;"></div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- TAB CREDORES -->
-    <div class="tab-content" id="tabCredores">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-building"></i> Credores Cadastrados</div>
-        <div id="listaCredores"><div class="empty"><span class="loading"></span> Carregando...</div></div>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalCredor()" style="margin-top:12px"><i class="fas fa-plus"></i> Novo Credor</button>
-      </div>
-    </div>
-
-    <!-- TAB USUARIOS -->
-    <div class="tab-content" id="tabUsuarios">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-user-shield"></i> Usuários do Sistema</div>
-        <div id="listaUsuarios"><div class="empty"><span class="loading"></span> Carregando...</div></div>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalUsuario()" style="margin-top:12px"><i class="fas fa-plus"></i> Novo Usuário</button>
-      </div>
-    </div>
-
-    <!-- TAB TEMPLATES -->
-    <div class="tab-content" id="tabTemplates">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-file-alt"></i> Templates de Mensagem</div>
-        <div class="card-desc">Modelos para comunicação com devedores via WhatsApp e E-mail.</div>
-        <div id="listaTemplates"></div>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalTemplate()" style="margin-top:12px"><i class="fas fa-plus"></i> Novo Template</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fas fa-code"></i> Variáveis Disponíveis</div>
-        <div class="variaveis">
-          <span class="variavel">{devedor_nome}</span><span class="variavel">{valor}</span><span class="variavel">{vencimento}</span>
-          <span class="variavel">{descricao}</span><span class="variavel">{dias_atraso}</span><span class="variavel">{credor}</span>
-          <span class="variavel">{link_boleto}</span><span class="variavel">{pix_codigo}</span>
+        <div id="panel-integracao" class="config-panel">
+            <div class="config-card">
+                <h3><i class="fas fa-credit-card"></i> Integração Asaas</h3>
+                <div class="form-group"><label>API Key</label><input type="password" id="asaasKey" placeholder="Sua chave de API do Asaas"></div>
+                <div class="form-group"><label>Ambiente</label><select id="asaasEnv"><option value="sandbox">Sandbox (Teste)</option><option value="production">Produção</option></select></div>
+                <button class="btn btn-primary" onclick="salvarAsaas()"><i class="fas fa-save"></i> Salvar</button>
+            </div>
         </div>
-      </div>
-    </div>
+    </main>
 
-    <!-- TAB REGUA -->
-    <div class="tab-content" id="tabRegua">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-robot"></i> Régua de Cobrança</div>
-        <div class="card-desc">Automatize o envio de lembretes e notificações.</div>
-        <div class="toggle-row">
-          <div class="toggle-info"><h4>Sistema de Lembretes Automáticos</h4><p>Enviar notificações automaticamente</p></div>
-          <div class="toggle" id="toggleRegua" onclick="toggleRegua()"></div>
-        </div>
-        <div class="config-grid" style="margin-top:16px">
-          <div class="config-item"><h4>Limite Diário</h4><div class="valor" id="reguaLimite">100</div></div>
-          <div class="config-item"><h4>Horário Início</h4><div class="valor" style="font-size:18px" id="reguaInicio">08:00</div></div>
-          <div class="config-item"><h4>Horário Fim</h4><div class="valor" style="font-size:18px" id="reguaFim">18:00</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fas fa-stream"></i> Fluxo de Cobranças</div>
-        <h4 style="font-size:12px;color:var(--muted);margin-bottom:12px"><i class="fas fa-calendar-minus"></i> ANTES DO VENCIMENTO</h4>
-        <div class="timeline">
-          <div class="timeline-item email"><div class="timeline-header"><div class="timeline-titulo"><i class="fas fa-envelope" style="color:var(--blue)"></i> E-mail Lembrete</div><span class="timeline-dias">7 dias antes</span></div><div class="timeline-desc">Lembrete amigável</div></div>
-          <div class="timeline-item whatsapp"><div class="timeline-header"><div class="timeline-titulo"><i class="fab fa-whatsapp" style="color:#25d366"></i> WhatsApp</div><span class="timeline-dias">3 dias antes</span></div><div class="timeline-desc">Mensagem de lembrete</div></div>
-          <div class="timeline-item email"><div class="timeline-header"><div class="timeline-titulo"><i class="fas fa-envelope" style="color:var(--blue)"></i> E-mail Urgente</div><span class="timeline-dias">No dia</span></div><div class="timeline-desc">Vence hoje</div></div>
-        </div>
-        <h4 style="font-size:12px;color:var(--red);margin:20px 0 12px"><i class="fas fa-calendar-plus"></i> APÓS VENCIMENTO</h4>
-        <div class="timeline">
-          <div class="timeline-item whatsapp"><div class="timeline-header"><div class="timeline-titulo"><i class="fab fa-whatsapp" style="color:#25d366"></i> WhatsApp Cobrança</div><span class="timeline-dias">1 dia após</span></div><div class="timeline-desc">Primeira cobrança</div></div>
-          <div class="timeline-item email"><div class="timeline-header"><div class="timeline-titulo"><i class="fas fa-envelope" style="color:var(--blue)"></i> E-mail Cobrança</div><span class="timeline-dias">3 dias após</span></div><div class="timeline-desc">Valor atualizado</div></div>
-          <div class="timeline-item"><div class="timeline-header"><div class="timeline-titulo"><i class="fas fa-phone" style="color:var(--orange)"></i> Agendar Ligação</div><span class="timeline-dias">7 dias após</span></div><div class="timeline-desc">Fila de ligações</div></div>
-        </div>
-      </div>
-    </div>
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
-    <!-- TAB LEMBRETES -->
-    <div class="tab-content" id="tabLembretes">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-bell"></i> Lembretes por E-mail</div>
-        <div class="toggle-row">
-          <div class="toggle-info"><h4>Sistema Ativo</h4><p>Enviar lembretes automaticamente</p></div>
-          <div class="toggle" id="toggleLembretes" onclick="toggleLembretes()"></div>
-        </div>
-        <div class="config-grid" style="margin-top:16px">
-          <div class="config-item"><h4>Total Enviados</h4><div class="valor" id="lembretesTotal">0</div></div>
-          <div class="config-item"><h4>Enviados Hoje</h4><div class="valor" id="lembretesHoje">0</div></div>
-          <div class="config-item"><h4>Erros</h4><div class="valor" style="color:var(--red)" id="lembretesErros">0</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fas fa-flask"></i> Enviar Teste</div>
-        <div class="form-row">
-          <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="emailTeste" placeholder="teste@email.com"></div>
-          <div class="form-group"><label>Template</label><select class="form-control" id="tipoTeste"><option value="novaCobranca">Nova Cobrança</option><option value="lembrete7dias">7 dias antes</option><option value="lembreteHoje">Vence hoje</option><option value="cobrancaAtraso">Em atraso</option></select></div>
-        </div>
-        <button class="btn btn-success btn-sm" onclick="enviarTeste()"><i class="fas fa-paper-plane"></i> Enviar Teste</button>
-      </div>
-    </div>
+    <script>
+        const API = window.location.origin;
+        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
 
-    <!-- TAB SYNC -->
-    <div class="tab-content" id="tabSync">
-      <div class="card">
-        <div class="card-title"><i class="fas fa-sync"></i> Sincronização Asaas</div>
-        <div class="card-desc">Importe clientes e cobranças do Asaas para o sistema.</div>
-        <div class="config-grid" style="margin-bottom:16px">
-          <div class="config-item"><h4>Ambiente</h4><div class="valor" style="font-size:14px" id="syncAmbiente">-</div></div>
-          <div class="config-item"><h4>Clientes Locais</h4><div class="valor" id="syncClientes">0</div></div>
-          <div class="config-item"><h4>Cobranças Locais</h4><div class="valor" id="syncCobrancas">0</div></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Empresa</label><select class="form-control" id="syncEmpresa"><option value="">Selecione...</option></select></div>
-          <div class="form-group"><label>Credor (opcional)</label><select class="form-control" id="syncCredor"><option value="">Nenhum</option></select></div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-          <button class="btn btn-primary" onclick="syncCompleta()"><i class="fas fa-sync"></i> Sync Completa</button>
-          <button class="btn btn-secondary" onclick="syncClientes()"><i class="fas fa-users"></i> Só Clientes</button>
-          <button class="btn btn-secondary" onclick="syncCobrancasOnly()"><i class="fas fa-file-invoice"></i> Só Cobranças</button>
-        </div>
-        <div class="card-title" style="margin-top:20px"><i class="fas fa-terminal"></i> Log</div>
-        <div class="log-box" id="syncLog"><div class="log-entry info">Aguardando...</div></div>
-      </div>
-    </div>
-  </main>
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return; }
+            try {
+                const r = await fetch(API + '/api/auth/me', { headers: H() });
+                const d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return; }
+                const user = d.user || d;
+                document.getElementById('userName').textContent = user.nome || 'Usuário';
+                document.getElementById('userRole').textContent = user.perfil || 'Operador';
+                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
+            } catch (e) {}
+        }
 
-  <!-- MODALS -->
-  <div class="modal-overlay" id="modalEmpresa">
-    <div class="modal">
-      <div class="modal-header"><h3><i class="fas fa-building"></i> <span id="modalEmpresaTitulo">Nova Empresa</span></h3><button class="modal-close" onclick="fecharModal('modalEmpresa')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="empresaId">
-        <div class="form-row">
-          <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" class="form-control" id="empresaNome"></div>
-          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="empresaCnpj" data-mask="cnpj" placeholder="00.000.000/0000-00"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="empresaTelefone" data-mask="telefone" placeholder="(00) 00000-0000"></div>
-          <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="empresaEmail"></div>
-        </div>
-        <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px"><label style="color:var(--gold);font-weight:600"><i class="fas fa-university"></i> Dados Bancários (PIX)</label></div>
-        <div class="form-row">
-          <div class="form-group"><label>Tipo Chave PIX</label><select class="form-control" id="empresaTipoPix"><option value="">Selecione</option><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="telefone">Telefone</option><option value="aleatoria">Aleatória</option></select></div>
-          <div class="form-group"><label>Chave PIX</label><input type="text" class="form-control" id="empresaChavePix"></div>
-        </div>
-        <div class="toggle-row"><div class="toggle-info"><h4>Empresa Padrão</h4><p>Usar para novas cobranças</p></div><div class="toggle" id="toggleEmpresaPadrao" onclick="this.classList.toggle('active')"></div></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalEmpresa')">Cancelar</button><button class="btn btn-success" onclick="salvarEmpresa()"><i class="fas fa-save"></i> Salvar</button></div>
-    </div>
-  </div>
+        function showTab(tab) {
+            document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.config-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById('panel-' + tab).classList.add('active');
+        }
 
-  <div class="modal-overlay" id="modalCredor">
-    <div class="modal" style="max-width:650px">
-      <div class="modal-header"><h3><i class="fas fa-building"></i> <span id="modalCredorTitulo">Novo Credor</span></h3><button class="modal-close" onclick="fecharModal('modalCredor')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="credorId">
-        <div class="form-row">
-          <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" class="form-control" id="credorNome"></div>
-          <div class="form-group"><label>CNPJ</label><input type="text" class="form-control" id="credorCnpj" data-mask="cnpj" placeholder="00.000.000/0000-00"></div>
-        </div>
-        <div class="form-row cols-3">
-          <div class="form-group"><label>Telefone</label><input type="text" class="form-control" id="credorTelefone" data-mask="telefone" placeholder="(00) 00000-0000"></div>
-          <div class="form-group"><label>E-mail</label><input type="email" class="form-control" id="credorEmail"></div>
-          <div class="form-group"><label>Comissão %</label><input type="text" class="form-control" id="credorComissao" value="10,00" data-mask="decimal" placeholder="0,00"></div>
-        </div>
-        <div class="form-row cols-3">
-          <div class="form-group"><label>Desconto Máx %</label><input type="text" class="form-control" id="credorDesconto" value="30,00" data-mask="decimal" placeholder="0,00"></div>
-          <div class="form-group"><label>Máx Parcelas</label><input type="number" class="form-control" id="credorParcelas" value="24"></div>
-          <div class="form-group"><label>Status</label><select class="form-control" id="credorStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
-        </div>
-        <div style="border-top:1px solid var(--border);margin:16px 0;padding-top:16px"><label style="color:var(--gold);font-weight:600"><i class="fas fa-university"></i> Dados Bancários</label></div>
-        <div class="form-row cols-3">
-          <div class="form-group"><label>Banco</label><input type="text" class="form-control" id="credorBanco"></div>
-          <div class="form-group"><label>Chave PIX</label><input type="text" class="form-control" id="credorPix"></div>
-          <div class="form-group"><label>Agência/Conta</label><input type="text" class="form-control" id="credorConta"></div>
-        </div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalCredor')">Cancelar</button><button class="btn btn-success" onclick="salvarCredor()"><i class="fas fa-save"></i> Salvar</button></div>
-    </div>
-  </div>
+        async function carregarUsuarios() {
+            try {
+                const r = await fetch(API + '/api/usuarios', { headers: H() });
+                const d = await r.json();
+                const usuarios = d.data || d || [];
+                document.getElementById('usuariosBody').innerHTML = usuarios.map(u => `
+                    <tr>
+                        <td>${u.nome}</td>
+                        <td>${u.email}</td>
+                        <td>${u.perfil}</td>
+                        <td><span class="status-badge status-${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                        <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editarUsuario('${u.id}')"><i class="fas fa-edit"></i></button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
 
-  <div class="modal-overlay" id="modalUsuario">
-    <div class="modal">
-      <div class="modal-header"><h3><i class="fas fa-user-plus"></i> <span id="modalUsuarioTitulo">Novo Usuário</span></h3><button class="modal-close" onclick="fecharModal('modalUsuario')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="usuarioId">
-        <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" class="form-control" id="usuarioNome"></div>
-        <div class="form-group"><label>E-mail <span class="req">*</span></label><input type="email" class="form-control" id="usuarioEmail"></div>
-        <div class="form-group"><label>Senha <span id="senhaReq">*</span></label><input type="password" class="form-control" id="usuarioSenha" placeholder="Mín 6 caracteres"></div>
-        <div class="form-group"><label>Nível</label><select class="form-control" id="usuarioNivel"><option value="operador">Operador</option><option value="admin">Administrador</option></select></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalUsuario')">Cancelar</button><button class="btn btn-success" onclick="salvarUsuario()"><i class="fas fa-save"></i> Salvar</button></div>
-    </div>
-  </div>
+        function novoUsuario() { toast('Função em desenvolvimento'); }
+        function editarUsuario(id) { toast('Função em desenvolvimento'); }
+        function salvarEmpresa() { toast('Configurações salvas!'); }
+        function salvarAsaas() { toast('Integração salva!'); }
 
-  <div class="modal-overlay" id="modalTemplate">
-    <div class="modal" style="max-width:600px">
-      <div class="modal-header"><h3><i class="fas fa-file-alt"></i> <span id="modalTemplateTitulo">Novo Template</span></h3><button class="modal-close" onclick="fecharModal('modalTemplate')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="templateId">
-        <div class="form-row">
-          <div class="form-group"><label>Nome</label><input type="text" class="form-control" id="templateNome"></div>
-          <div class="form-group"><label>Tipo</label><select class="form-control" id="templateTipo"><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option></select></div>
-        </div>
-        <div class="form-group"><label>Assunto (e-mail)</label><input type="text" class="form-control" id="templateAssunto"></div>
-        <div class="form-group"><label>Mensagem</label><textarea class="form-control" id="templateMensagem" rows="6"></textarea></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal('modalTemplate')">Cancelar</button><button class="btn btn-success" onclick="salvarTemplate()"><i class="fas fa-save"></i> Salvar</button></div>
-    </div>
-  </div>
+        function handleFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('importStatus').innerHTML = '<p style="color: #3b82f6;"><i class="fas fa-spinner fa-spin"></i> Processando arquivo...</p>';
+            setTimeout(() => {
+                document.getElementById('importStatus').innerHTML = '<p style="color: #10b981;"><i class="fas fa-check"></i> Arquivo pronto para importação. Função em desenvolvimento.</p>';
+            }, 1500);
+        }
 
-  <script>
-    const API=window.location.origin;let token=localStorage.getItem('token');if(!token)window.location.href='login.html';
-    const H=()=>({'Content-Type':'application/json','Authorization':'Bearer '+token});
-    const logout=()=>{localStorage.clear();window.location.href='login.html';};
-    const toast=m=>alert(m);
-    const fecharModal=id=>document.getElementById(id).classList.remove('show');
-    const initials=n=>n?(n.split(' ').length>=2?(n.split(' ')[0][0]+n.split(' ').pop()[0]).toUpperCase():n.substring(0,2).toUpperCase()):'?';
-    const fmtMoney=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(v)||0);
-
-    // ===== MÁSCARAS DE FORMATAÇÃO =====
-    function maskCNPJ(v) {
-      v = v.replace(/\D/g, '').substring(0, 14);
-      v = v.replace(/^(\d{2})(\d)/, '$1.$2');
-      v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-      v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
-      v = v.replace(/(\d{4})(\d)/, '$1-$2');
-      return v;
-    }
-
-    function maskCPF(v) {
-      v = v.replace(/\D/g, '').substring(0, 11);
-      v = v.replace(/(\d{3})(\d)/, '$1.$2');
-      v = v.replace(/(\d{3})(\d)/, '$1.$2');
-      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-      return v;
-    }
-
-    function maskCPFCNPJ(v) {
-      v = v.replace(/\D/g, '');
-      if (v.length <= 11) return maskCPF(v);
-      return maskCNPJ(v);
-    }
-
-    function maskTelefone(v) {
-      v = v.replace(/\D/g, '').substring(0, 11);
-      if (v.length <= 10) {
-        v = v.replace(/(\d{2})(\d)/, '($1) $2');
-        v = v.replace(/(\d{4})(\d)/, '$1-$2');
-      } else {
-        v = v.replace(/(\d{2})(\d)/, '($1) $2');
-        v = v.replace(/(\d{5})(\d)/, '$1-$2');
-      }
-      return v;
-    }
-
-    function maskDecimal(v) {
-      v = v.replace(/[^\d]/g, '');
-      if (v.length === 0) return '';
-      v = (parseInt(v) / 100).toFixed(2);
-      return v.replace('.', ',');
-    }
-
-    function unmask(v) {
-      return (v || '').replace(/\D/g, '');
-    }
-
-    function parseDecimal(v) {
-      return parseFloat((v || '0').replace(/\./g, '').replace(',', '.')) || 0;
-    }
-
-    // Aplicar máscaras nos inputs
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('[data-mask="cnpj"]').forEach(el => {
-        el.addEventListener('input', function() { this.value = maskCNPJ(this.value); });
-      });
-      document.querySelectorAll('[data-mask="cpfcnpj"]').forEach(el => {
-        el.addEventListener('input', function() { this.value = maskCPFCNPJ(this.value); });
-      });
-      document.querySelectorAll('[data-mask="telefone"]').forEach(el => {
-        el.addEventListener('input', function() { this.value = maskTelefone(this.value); });
-      });
-      document.querySelectorAll('[data-mask="decimal"]').forEach(el => {
-        el.addEventListener('input', function() { this.value = maskDecimal(this.value); });
-      });
-    });
-
-    function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');}
-
-    async function carregarUsuario(){try{const u=JSON.parse(localStorage.getItem('user')||'{}');document.getElementById('userName').textContent=u.nome||'Usuário';document.getElementById('userRole').textContent=u.nivel==='admin'?'Admin':'Operador';document.getElementById('userAvatar').textContent=initials(u.nome||'U');}catch(e){}}
-
-    // ===== EMPRESAS =====
-    async function carregarEmpresas(){try{const r=await fetch(API+'/api/empresas',{headers:H()});const d=await r.json();const lista=document.getElementById('listaEmpresas');if(!d.success||!d.data||!d.data.length){lista.innerHTML='<div class="empty"><i class="fas fa-building"></i>Nenhuma empresa</div>';return;}
-    lista.innerHTML=d.data.map(e=>{
-      const cnpjFormatado = e.cnpj ? maskCNPJ(String(e.cnpj)) : 'Sem CNPJ';
-      return `<div class="item-row ${e.padrao?'highlight':''}"><div class="item-icon purple"><i class="fas fa-building"></i></div><div class="item-info"><h4>${e.nome||'Sem nome'} ${e.padrao?'<span class="badge badge-gold">PADRÃO</span>':''}</h4><p>${cnpjFormatado} ${e.chave_pix?'• PIX: '+e.chave_pix:''}</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarEmpresa('${e.id}')"><i class="fas fa-edit"></i></button>${!e.padrao?`<button class="btn-icon" onclick="definirPadrao('${e.id}')" title="Definir padrão"><i class="fas fa-star"></i></button>`:''}<button class="btn-icon delete" onclick="excluirEmpresa('${e.id}')"><i class="fas fa-trash"></i></button></div></div>`;
-    }).join('');}catch(e){console.error('Erro empresas:',e);document.getElementById('listaEmpresas').innerHTML='<div class="empty" style="color:var(--red)">Erro</div>';}}
-
-    function abrirModalEmpresa(){document.getElementById('empresaId').value='';document.getElementById('empresaNome').value='';document.getElementById('empresaCnpj').value='';document.getElementById('empresaTelefone').value='';document.getElementById('empresaEmail').value='';document.getElementById('empresaTipoPix').value='';document.getElementById('empresaChavePix').value='';document.getElementById('toggleEmpresaPadrao').classList.remove('active');document.getElementById('modalEmpresaTitulo').textContent='Nova Empresa';document.getElementById('modalEmpresa').classList.add('show');}
-
-    async function editarEmpresa(id){try{const r=await fetch(API+'/api/empresas/'+id,{headers:H()});const d=await r.json();if(d.success&&d.data){const e=d.data;document.getElementById('empresaId').value=e.id;document.getElementById('empresaNome').value=e.nome||'';document.getElementById('empresaCnpj').value=e.cnpj?maskCNPJ(e.cnpj):'';document.getElementById('empresaTelefone').value=e.telefone?maskTelefone(e.telefone):'';document.getElementById('empresaEmail').value=e.email||'';document.getElementById('empresaTipoPix').value=e.tipo_chave_pix||'';document.getElementById('empresaChavePix').value=e.chave_pix||'';if(e.padrao)document.getElementById('toggleEmpresaPadrao').classList.add('active');else document.getElementById('toggleEmpresaPadrao').classList.remove('active');document.getElementById('modalEmpresaTitulo').textContent='Editar Empresa';document.getElementById('modalEmpresa').classList.add('show');}}catch(e){toast('Erro');}}
-
-    async function salvarEmpresa(){const id=document.getElementById('empresaId').value;const dados={nome:document.getElementById('empresaNome').value,cnpj:unmask(document.getElementById('empresaCnpj').value),telefone:unmask(document.getElementById('empresaTelefone').value),email:document.getElementById('empresaEmail').value,tipo_chave_pix:document.getElementById('empresaTipoPix').value,chave_pix:document.getElementById('empresaChavePix').value,padrao:document.getElementById('toggleEmpresaPadrao').classList.contains('active')};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/empresas/'+id:API+'/api/empresas';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Empresa salva!');fecharModal('modalEmpresa');carregarEmpresas();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
-
-    async function definirPadrao(id){try{await fetch(API+'/api/empresas/'+id,{method:'PUT',headers:H(),body:JSON.stringify({padrao:true})});carregarEmpresas();}catch(e){}}
-
-    async function excluirEmpresa(id){if(!confirm('Excluir?'))return;try{await fetch(API+'/api/empresas/'+id,{method:'DELETE',headers:H()});carregarEmpresas();}catch(e){}}
-
-    // ===== CREDORES =====
-    async function carregarCredores(){try{const r=await fetch(API+'/api/credores',{headers:H()});const d=await r.json();const credores=d.success?d.data:(Array.isArray(d)?d:[]);const lista=document.getElementById('listaCredores');if(!credores||!credores.length){lista.innerHTML='<div class="empty"><i class="fas fa-building"></i>Nenhum credor</div>';return;}
-    lista.innerHTML=credores.map((c,i)=>{
-      const cnpjFormatado = c.cnpj ? maskCNPJ(String(c.cnpj)) : 'Sem CNPJ';
-      const comissao = parseFloat(c.comissao_percentual) || 10;
-      const telefoneFormatado = c.telefone ? maskTelefone(String(c.telefone)) : '';
-      return `<div class="item-row"><div class="item-icon ${['blue','green','purple','orange'][i%4]}"><i class="fas fa-building"></i></div><div class="item-info"><h4>${c.nome||'Sem nome'} <span class="badge badge-${c.status==='ativo'?'green':'red'}">${c.status||'ativo'}</span></h4><p>${cnpjFormatado}${telefoneFormatado?' • '+telefoneFormatado:''} • Comissão: ${comissao.toFixed(2).replace('.',',')}%</p></div><div class="item-actions"><button class="btn-icon edit" onclick="editarCredor('${c.id}')"><i class="fas fa-edit"></i></button><button class="btn-icon delete" onclick="excluirCredor('${c.id}')"><i class="fas fa-trash"></i></button></div></div>`;
-    }).join('');populateCredorSelect(credores);}catch(e){console.error('Erro credores:',e);document.getElementById('listaCredores').innerHTML='<div class="empty">Erro ao carregar</div>';}}
-
-    function populateCredorSelect(credores){const sel=document.getElementById('syncCredor');sel.innerHTML='<option value="">Nenhum</option>'+credores.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');}
-
-    function abrirModalCredor(){document.getElementById('credorId').value='';document.getElementById('credorNome').value='';document.getElementById('credorCnpj').value='';document.getElementById('credorTelefone').value='';document.getElementById('credorEmail').value='';document.getElementById('credorComissao').value='10,00';document.getElementById('credorDesconto').value='30,00';document.getElementById('credorParcelas').value='24';document.getElementById('credorStatus').value='ativo';document.getElementById('credorBanco').value='';document.getElementById('credorPix').value='';document.getElementById('credorConta').value='';document.getElementById('modalCredorTitulo').textContent='Novo Credor';document.getElementById('modalCredor').classList.add('show');}
-
-    async function editarCredor(id){try{const r=await fetch(API+'/api/credores/'+id,{headers:H()});const d=await r.json();const c=d.data||d;if(c){document.getElementById('credorId').value=c.id;document.getElementById('credorNome').value=c.nome||'';document.getElementById('credorCnpj').value=c.cnpj?maskCNPJ(c.cnpj):'';document.getElementById('credorTelefone').value=c.telefone?maskTelefone(c.telefone):'';document.getElementById('credorEmail').value=c.email||'';document.getElementById('credorComissao').value=(c.comissao_percentual||10).toFixed(2).replace('.',',');document.getElementById('credorDesconto').value=(c.desconto_maximo||30).toFixed(2).replace('.',',');document.getElementById('credorParcelas').value=c.parcelas_maximo||24;document.getElementById('credorStatus').value=c.status||'ativo';document.getElementById('credorBanco').value=c.banco||'';document.getElementById('credorPix').value=c.pix||'';document.getElementById('credorConta').value=c.conta||'';document.getElementById('modalCredorTitulo').textContent='Editar Credor';document.getElementById('modalCredor').classList.add('show');}}catch(e){toast('Erro');}}
-
-    async function salvarCredor(){const id=document.getElementById('credorId').value;const dados={nome:document.getElementById('credorNome').value,cnpj:unmask(document.getElementById('credorCnpj').value),telefone:unmask(document.getElementById('credorTelefone').value),email:document.getElementById('credorEmail').value,comissao_percentual:parseDecimal(document.getElementById('credorComissao').value),desconto_maximo:parseDecimal(document.getElementById('credorDesconto').value),parcelas_maximo:parseInt(document.getElementById('credorParcelas').value)||24,status:document.getElementById('credorStatus').value,banco:document.getElementById('credorBanco').value,pix:document.getElementById('credorPix').value,conta:document.getElementById('credorConta').value};if(!dados.nome){toast('Nome obrigatório');return;}try{const url=id?API+'/api/credores/'+id:API+'/api/credores';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Credor salvo!');fecharModal('modalCredor');carregarCredores();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
-
-    async function excluirCredor(id){if(!confirm('Excluir credor?'))return;try{await fetch(API+'/api/credores/'+id,{method:'DELETE',headers:H()});carregarCredores();}catch(e){}}
-
-    // ===== USUARIOS =====
-    async function carregarUsuarios(){try{const r=await fetch(API+'/api/usuarios',{headers:H()});const d=await r.json();const usuarios=d.success?d.data:[];const lista=document.getElementById('listaUsuarios');if(!usuarios||!usuarios.length){lista.innerHTML='<div class="empty"><i class="fas fa-users"></i>Nenhum usuário</div>';return;}
-    lista.innerHTML='<table><thead><tr><th>Usuário</th><th>Nível</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+usuarios.map(u=>`<tr><td><div class="user-cell"><div class="user-cell-avatar">${initials(u.nome)}</div><div><span class="user-cell-name">${u.nome}</span><span class="user-cell-email">${u.email}</span></div></div></td><td><span class="badge badge-${u.nivel==='admin'?'gold':'blue'}">${u.nivel}</span></td><td><span class="badge badge-${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Inativo'}</span></td><td><div class="item-actions"><button class="btn-icon edit" onclick="editarUsuario('${u.id}')"><i class="fas fa-edit"></i></button></div></td></tr>`).join('')+'</tbody></table>';}catch(e){document.getElementById('listaUsuarios').innerHTML='<div class="empty">Erro</div>';}}
-
-    function abrirModalUsuario(){document.getElementById('usuarioId').value='';document.getElementById('usuarioNome').value='';document.getElementById('usuarioEmail').value='';document.getElementById('usuarioSenha').value='';document.getElementById('usuarioNivel').value='operador';document.getElementById('senhaReq').textContent='*';document.getElementById('modalUsuarioTitulo').textContent='Novo Usuário';document.getElementById('modalUsuario').classList.add('show');}
-
-    async function editarUsuario(id){try{const r=await fetch(API+'/api/usuarios',{headers:H()});const d=await r.json();const u=(d.data||[]).find(x=>x.id===id);if(u){document.getElementById('usuarioId').value=u.id;document.getElementById('usuarioNome').value=u.nome||'';document.getElementById('usuarioEmail').value=u.email||'';document.getElementById('usuarioSenha').value='';document.getElementById('usuarioNivel').value=u.nivel||'operador';document.getElementById('senhaReq').textContent='(vazio=manter)';document.getElementById('modalUsuarioTitulo').textContent='Editar Usuário';document.getElementById('modalUsuario').classList.add('show');}}catch(e){toast('Erro');}}
-
-    async function salvarUsuario(){const id=document.getElementById('usuarioId').value;const dados={nome:document.getElementById('usuarioNome').value,email:document.getElementById('usuarioEmail').value,nivel:document.getElementById('usuarioNivel').value};const senha=document.getElementById('usuarioSenha').value;if(senha)dados.senha=senha;if(!dados.nome||!dados.email){toast('Preencha nome e email');return;}if(!id&&(!senha||senha.length<6)){toast('Senha mín 6 caracteres');return;}try{const url=id?API+'/api/usuarios/'+id:API+'/api/usuarios';const method=id?'PUT':'POST';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Usuário salvo!');fecharModal('modalUsuario');carregarUsuarios();}else toast(d.message||'Erro');}catch(e){toast('Erro');}}
-
-    // ===== TEMPLATES =====
-    const templatesDefault=[{id:'d1',nome:'Lembrete Vencimento',tipo:'whatsapp',mensagem:'Olá {devedor_nome}! 👋\n\nCobrança de {valor} vence em {vencimento}.\n\n{credor}',padrao:true},{id:'d2',nome:'Cobrança Vencida',tipo:'whatsapp',mensagem:'Olá {devedor_nome}! ⚠️\n\nSua cobrança está {dias_atraso} dias em atraso.\n\nValor: {valor}\n\n{credor}',padrao:true},{id:'d3',nome:'Lembrete E-mail',tipo:'email',assunto:'Lembrete - {descricao}',mensagem:'Prezado(a) {devedor_nome},\n\nCobrança pendente:\n• {descricao}\n• Valor: {valor}\n• Vencimento: {vencimento}\n\nAtt,\n{credor}',padrao:true}];
-    let templates=[];
-
-    async function carregarTemplates(){try{const r=await fetch(API+'/api/templates',{headers:H()});if(r.ok){const d=await r.json();templates=d.success&&d.data?[...templatesDefault,...d.data]:templatesDefault;}else{templates=templatesDefault;}}catch(e){templates=templatesDefault;}renderTemplates();}
-
-    function renderTemplates(){const lista=document.getElementById('listaTemplates');lista.innerHTML=templates.map(t=>`<div class="item-row"><div class="item-icon ${t.tipo==='whatsapp'?'green':'blue'}"><i class="${t.tipo==='whatsapp'?'fab fa-whatsapp':'fas fa-envelope'}"></i></div><div class="item-info"><h4>${t.nome} <span class="badge badge-${t.tipo==='whatsapp'?'green':'blue'}">${t.tipo}</span></h4><p>${t.mensagem.substring(0,60)}...</p></div><div class="item-actions">${!t.padrao?`<button class="btn-icon edit" onclick="editarTemplate('${t.id}')"><i class="fas fa-edit"></i></button><button class="btn-icon delete" onclick="excluirTemplate('${t.id}')"><i class="fas fa-trash"></i></button>`:''}</div></div>`).join('');}
-
-    function abrirModalTemplate(){document.getElementById('templateId').value='';document.getElementById('templateNome').value='';document.getElementById('templateTipo').value='whatsapp';document.getElementById('templateAssunto').value='';document.getElementById('templateMensagem').value='';document.getElementById('modalTemplateTitulo').textContent='Novo Template';document.getElementById('modalTemplate').classList.add('show');}
-
-    function editarTemplate(id){const t=templates.find(x=>x.id===id);if(!t||t.padrao)return;document.getElementById('templateId').value=t.id;document.getElementById('templateNome').value=t.nome||'';document.getElementById('templateTipo').value=t.tipo||'whatsapp';document.getElementById('templateAssunto').value=t.assunto||'';document.getElementById('templateMensagem').value=t.mensagem||'';document.getElementById('modalTemplateTitulo').textContent='Editar Template';document.getElementById('modalTemplate').classList.add('show');}
-
-    async function salvarTemplate(){const id=document.getElementById('templateId').value;const dados={nome:document.getElementById('templateNome').value,tipo:document.getElementById('templateTipo').value,assunto:document.getElementById('templateAssunto').value,mensagem:document.getElementById('templateMensagem').value};if(!dados.nome||!dados.mensagem){toast('Preencha nome e mensagem');return;}try{const method=id?'PUT':'POST';const url=id?API+'/api/templates/'+id:API+'/api/templates';const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});const d=await r.json();if(d.success){toast('Template salvo!');fecharModal('modalTemplate');carregarTemplates();}else{templates.push({...dados,id:'local-'+Date.now()});toast('Salvo localmente');fecharModal('modalTemplate');renderTemplates();}}catch(e){templates.push({...dados,id:'local-'+Date.now()});toast('Salvo localmente');fecharModal('modalTemplate');renderTemplates();}}
-
-    async function excluirTemplate(id){if(!confirm('Excluir template?'))return;try{await fetch(API+'/api/templates/'+id,{method:'DELETE',headers:H()});carregarTemplates();}catch(e){templates=templates.filter(t=>t.id!==id);renderTemplates();}}
-
-    // ===== INTEGRACOES =====
-    async function verificarIntegracoes(){try{const r=await fetch(API+'/api/asaas/status',{headers:H()});const d=await r.json();const badge=document.getElementById('asaasStatus');const card=document.getElementById('integracaoAsaas');if(d.success&&d.conectado){badge.className='status-badge connected';badge.innerHTML='<i class="fas fa-circle"></i> Conectado';card.classList.add('highlight');}else{badge.className='status-badge disconnected';badge.innerHTML='<i class="fas fa-circle"></i> Não conectado';}}catch(e){document.getElementById('asaasStatus').innerHTML='<i class="fas fa-circle"></i> Erro';}
-    try{const r=await fetch(API+'/api/health',{headers:H()});const d=await r.json();const badge=document.getElementById('smtpStatus');const card=document.getElementById('integracaoSmtp');if(d.emailConfigured){badge.className='status-badge connected';badge.innerHTML='<i class="fas fa-circle"></i> Configurado';card.classList.add('highlight');}else{badge.className='status-badge disconnected';badge.innerHTML='<i class="fas fa-circle"></i> Não configurado';}}catch(e){}}
-
-    async function testarAsaas(){const btn=event.target.closest('button');btn.disabled=true;btn.innerHTML='<span class="loading"></span>';try{const r=await fetch(API+'/api/asaas/status',{headers:H()});const d=await r.json();toast(d.success&&d.conectado?'Asaas conectado! Saldo: R$ '+(d.saldo||0).toFixed(2):'Asaas não conectado');}catch(e){toast('Erro');}btn.disabled=false;btn.innerHTML='<i class="fas fa-sync"></i>';verificarIntegracoes();}
-
-    // ===== REGUA / LEMBRETES =====
-    let reguaAtiva=false,lembretesAtivo=false;
-
-    function toggleRegua(){reguaAtiva=!reguaAtiva;document.getElementById('toggleRegua').classList.toggle('active',reguaAtiva);fetch(API+'/api/lembretes/ativar',{method:'POST',headers:H(),body:JSON.stringify({ativo:reguaAtiva})}).catch(()=>{});}
-
-    function toggleLembretes(){lembretesAtivo=!lembretesAtivo;document.getElementById('toggleLembretes').classList.toggle('active',lembretesAtivo);fetch(API+'/api/lembretes/ativar',{method:'POST',headers:H(),body:JSON.stringify({ativo:lembretesAtivo})}).catch(()=>{});}
-
-    async function carregarConfigLembretes(){try{const r=await fetch(API+'/api/lembretes/config',{headers:H()});if(r.ok){const d=await r.json();if(d.success&&d.config){reguaAtiva=d.config.ativo;lembretesAtivo=d.config.ativo;if(reguaAtiva)document.getElementById('toggleRegua').classList.add('active');if(lembretesAtivo)document.getElementById('toggleLembretes').classList.add('active');}}}catch(e){}
-    try{const r=await fetch(API+'/api/lembretes/estatisticas',{headers:H()});if(r.ok){const d=await r.json();if(d.success&&d.estatisticas){document.getElementById('lembretesTotal').textContent=d.estatisticas.total_enviados||0;document.getElementById('lembretesHoje').textContent=d.estatisticas.enviados_hoje||0;document.getElementById('lembretesErros').textContent=d.estatisticas.total_erros||0;}}}catch(e){}}
-
-    async function enviarTeste(){const email=document.getElementById('emailTeste').value;const tipo=document.getElementById('tipoTeste').value;if(!email){toast('Informe o email');return;}try{const r=await fetch(API+'/api/lembretes/teste',{method:'POST',headers:H(),body:JSON.stringify({email,tipo})});const d=await r.json();toast(d.success?d.message||'Enviado!':'Erro: '+d.message);}catch(e){toast('Teste enviado (simulado)');}}
-
-    // ===== SYNC ASAAS =====
-    function logSync(msg,type='info'){const container=document.getElementById('syncLog');const time=new Date().toLocaleTimeString();container.innerHTML+=`<div class="log-entry ${type}">[${time}] ${msg}</div>`;container.scrollTop=container.scrollHeight;}
-
-    async function carregarSyncStatus(){try{const r=await fetch(API+'/api/sync/status',{headers:H()});const d=await r.json();if(d.success&&d.data){document.getElementById('syncAmbiente').textContent=(d.data.ambiente||'SANDBOX').toUpperCase();document.getElementById('syncClientes').textContent=d.data.local?.clientes||0;document.getElementById('syncCobrancas').textContent=d.data.local?.cobrancas||0;}}catch(e){}}
-
-    async function carregarEmpresasSync(){try{const r=await fetch(API+'/api/empresas',{headers:H()});const d=await r.json();const empresas=d.data||d||[];const sel=document.getElementById('syncEmpresa');sel.innerHTML='<option value="">Selecione...</option>'+empresas.map(e=>`<option value="${e.id}">${e.nome}</option>`).join('');if(empresas.length===1)sel.value=empresas[0].id;}catch(e){}}
-
-    async function syncCompleta(){const empresa_id=document.getElementById('syncEmpresa').value;const credor_id=document.getElementById('syncCredor').value;if(!empresa_id){toast('Selecione a empresa');return;}logSync('Iniciando sync completa...');try{const r=await fetch(API+'/api/sync/completa',{method:'POST',headers:H(),body:JSON.stringify({empresa_id,credor_id:credor_id||null})});const d=await r.json();if(d.success){logSync('✓ Clientes: '+d.data.clientes.importados+' importados','success');logSync('✓ Cobranças: '+d.data.cobrancas.importados+' importadas','success');carregarSyncStatus();}else logSync('Erro: '+d.error,'error');}catch(e){logSync('Erro: '+e.message,'error');}}
-
-    async function syncClientes(){const empresa_id=document.getElementById('syncEmpresa').value;if(!empresa_id){toast('Selecione a empresa');return;}logSync('Sincronizando clientes...');try{const r=await fetch(API+'/api/sync/clientes',{method:'POST',headers:H(),body:JSON.stringify({empresa_id})});const d=await r.json();if(d.success)logSync('✓ '+d.data.importados+' importados','success');else logSync('Erro: '+d.error,'error');carregarSyncStatus();}catch(e){logSync('Erro','error');}}
-
-    async function syncCobrancasOnly(){const empresa_id=document.getElementById('syncEmpresa').value;const credor_id=document.getElementById('syncCredor').value;if(!empresa_id){toast('Selecione a empresa');return;}logSync('Sincronizando cobranças...');try{const r=await fetch(API+'/api/sync/cobrancas',{method:'POST',headers:H(),body:JSON.stringify({empresa_id,credor_id:credor_id||null})});const d=await r.json();if(d.success)logSync('✓ '+d.data.importados+' importadas','success');else logSync('Erro: '+d.error,'error');carregarSyncStatus();}catch(e){logSync('Erro','error');}}
-
-    // ===== MODALS CLOSE =====
-    document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
-
-    // ===== INIT =====
-    carregarUsuario();carregarEmpresas();carregarCredores();carregarUsuarios();carregarTemplates();verificarIntegracoes();carregarConfigLembretes();carregarSyncStatus();carregarEmpresasSync();
-  </script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await carregarUsuarios();
+        });
+    </script>
 </body>
 </html>

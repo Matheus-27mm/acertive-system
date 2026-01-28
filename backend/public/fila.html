@@ -6,1146 +6,327 @@
     <title>Fila de Trabalho - ACERTIVE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0b; color: #fff; min-height: 100vh; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0a0b;
-            color: #ffffff;
-            min-height: 100vh;
-        }
+        /* Sidebar - mesmo estilo do dashboard */
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #0f0f10; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .sidebar-logo-text { font-size: 22px; font-weight: 700; }
+        .sidebar-logo-text span { color: #3b82f6; }
+        .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 12px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.9); }
+        .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
+        .nav-item .badge { margin-left: auto; background: #ef4444; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .user-info { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .user-avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .user-logout { color: rgba(255,255,255,0.4); padding: 8px; cursor: pointer; border-radius: 8px; }
+        .user-logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
 
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            background: linear-gradient(180deg, #111113 0%, #0a0a0b 100%);
-            border-right: 1px solid rgba(212, 168, 71, 0.1);
-            padding: 24px 16px;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 8px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            margin-bottom: 24px;
-        }
-
-        .logo i {
-            font-size: 28px;
-            color: #d4a847;
-        }
-
-        .logo span {
-            font-size: 22px;
-            font-weight: 700;
-            color: #d4a847;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-menu {
-            list-style: none;
-        }
-
-        .nav-item {
-            margin-bottom: 4px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background: rgba(212, 168, 71, 0.08);
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, rgba(212, 168, 71, 0.15) 0%, rgba(212, 168, 71, 0.05) 100%);
-            color: #d4a847;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .nav-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.06);
-            margin: 16px 8px;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            padding: 32px;
-            min-height: 100vh;
-        }
+        /* Main */
+        .main-content { margin-left: 260px; min-height: 100vh; padding: 32px; }
 
         /* Header */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .page-title span {
-            color: #d4a847;
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 24px;
-        }
-
-        .stat-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(212, 168, 71, 0.1);
-            padding: 10px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(212, 168, 71, 0.2);
-        }
-
-        .stat-badge i {
-            color: #d4a847;
-        }
-
-        .stat-badge .number {
-            font-size: 18px;
-            font-weight: 700;
-            color: #d4a847;
-        }
-
-        .stat-badge .label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Main Grid */
-        .fila-grid {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 24px;
-        }
-
-        /* Card Principal do Devedor */
-        .devedor-card {
-            background: linear-gradient(145deg, #111113 0%, #0d0d0e 100%);
-            border: 1px solid rgba(212, 168, 71, 0.15);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .devedor-header {
-            background: linear-gradient(90deg, rgba(212, 168, 71, 0.15) 0%, rgba(212, 168, 71, 0.05) 100%);
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(212, 168, 71, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .devedor-position {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .position-number {
-            background: #d4a847;
-            color: #0a0a0b;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        .position-text {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .position-text strong {
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        .devedor-status {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-novo { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-        .status-negociando { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
-        .status-sem-contato { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
-        .status-recusou { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-
-        .devedor-body {
-            padding: 24px;
-        }
-
-        .devedor-nome {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .devedor-documento {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 20px;
-        }
-
-        .devedor-info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .info-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .info-box-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .info-box-value {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .info-box-value.gold { color: #d4a847; }
-        .info-box-value.red { color: #f87171; }
-        .info-box-value.white { color: #ffffff; }
-
-        .info-box-sub {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 4px;
-        }
-
-        /* Cobranças do Devedor */
-        .cobrancas-section {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            color: #d4a847;
-        }
-
-        .cobranca-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        .cobranca-item:last-child {
-            border-bottom: none;
-        }
-
-        .cobranca-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .cobranca-descricao {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .cobranca-credor {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .cobranca-valores {
-            text-align: right;
-        }
-
-        .cobranca-valor {
-            font-size: 15px;
-            font-weight: 600;
-            color: #d4a847;
-        }
-
-        .cobranca-atraso {
-            font-size: 11px;
-            color: #f87171;
-        }
-
-        /* Botões de Ação */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 16px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .action-btn i {
-            font-size: 24px;
-        }
-
-        .action-btn span {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .btn-ligar {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #4ade80;
-        }
-
-        .btn-ligar:hover {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 100%);
-            transform: translateY(-2px);
-        }
-
-        .btn-whatsapp {
-            background: linear-gradient(135deg, rgba(37, 211, 102, 0.2) 0%, rgba(37, 211, 102, 0.1) 100%);
-            border: 1px solid rgba(37, 211, 102, 0.3);
-            color: #25d366;
-        }
-
-        .btn-whatsapp:hover {
-            background: linear-gradient(135deg, rgba(37, 211, 102, 0.3) 0%, rgba(37, 211, 102, 0.15) 100%);
-            transform: translateY(-2px);
-        }
-
-        .btn-email {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #60a5fa;
-        }
-
-        .btn-email:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 100%);
-            transform: translateY(-2px);
-        }
-
-        .nav-devedor {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .nav-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-pular {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .btn-pular:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-        }
-
-        .btn-proximo {
-            background: linear-gradient(135deg, #d4a847 0%, #b8922e 100%);
-            color: #0a0a0b;
-        }
-
-        .btn-proximo:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(212, 168, 71, 0.3);
-        }
-
-        /* Painel Lateral */
-        .side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .panel-card {
-            background: linear-gradient(145deg, #111113 0%, #0d0d0e 100%);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            padding: 20px;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .panel-title i {
-            color: #d4a847;
-        }
-
-        /* Histórico de Acionamentos */
-        .historico-item {
-            display: flex;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        .historico-item:last-child {
-            border-bottom: none;
-        }
-
-        .historico-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .historico-icon.ligacao { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-        .historico-icon.whatsapp { background: rgba(37, 211, 102, 0.15); color: #25d366; }
-        .historico-icon.email { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-
-        .historico-content {
-            flex: 1;
-        }
-
-        .historico-tipo {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .historico-resultado {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .historico-data {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 4px;
-        }
-
-        /* Registro de Acionamento */
-        .registro-form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 6px;
-        }
-
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: rgba(212, 168, 71, 0.5);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .btn-registrar {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #d4a847 0%, #b8922e 100%);
-            border: none;
-            border-radius: 8px;
-            color: #0a0a0b;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-registrar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(212, 168, 71, 0.3);
-        }
-
-        /* Ações Rápidas */
-        .acoes-rapidas {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .acao-rapida-btn {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Inter', sans-serif;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .acao-rapida-btn:hover {
-            background: rgba(212, 168, 71, 0.1);
-            border-color: rgba(212, 168, 71, 0.3);
-            color: #d4a847;
-        }
-
-        .acao-rapida-btn i {
-            font-size: 14px;
-        }
-
-        /* Empty State */
-        .empty-state {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            text-align: center;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: rgba(212, 168, 71, 0.3);
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .empty-state p {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #111113;
-            border: 1px solid rgba(212, 168, 71, 0.3);
-            border-radius: 12px;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast i {
-            color: #4ade80;
-            font-size: 20px;
-        }
-
-        .toast-content {
-            font-size: 14px;
-        }
-
-        /* Modal de Acordo */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: #111113;
-            border: 1px solid rgba(212, 168, 71, 0.2);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-header h3 i {
-            color: #d4a847;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        .modal-close:hover {
-            color: #ffffff;
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        .acordo-resumo {
-            background: rgba(212, 168, 71, 0.08);
-            border: 1px solid rgba(212, 168, 71, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .acordo-linha {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-
-        .acordo-linha.total {
-            border-top: 1px solid rgba(212, 168, 71, 0.2);
-            margin-top: 8px;
-            padding-top: 12px;
-            font-weight: 600;
-        }
-
-        .acordo-linha .label {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .acordo-linha .value {
-            color: #ffffff;
-        }
-
-        .acordo-linha.total .value {
-            color: #d4a847;
-            font-size: 18px;
-        }
-
-        .acordo-form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .acordo-form-grid .form-group.full {
-            grid-column: 1 / -1;
-        }
-
-        .form-group input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: rgba(212, 168, 71, 0.5);
-        }
-
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .btn-cancelar {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .btn-confirmar {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #d4a847 0%, #b8922e 100%);
-            border: none;
-            border-radius: 8px;
-            color: #0a0a0b;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* Loading State */
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(212, 168, 71, 0.2);
-            border-top-color: #d4a847;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .page-header h1 { font-size: 28px; font-weight: 700; }
+        .header-stats { display: flex; gap: 16px; }
+        .header-stat { display: flex; align-items: center; gap: 10px; background: #111113; border: 1px solid rgba(255,255,255,0.06); padding: 12px 20px; border-radius: 12px; }
+        .header-stat i { font-size: 18px; }
+        .header-stat.blue i { color: #3b82f6; }
+        .header-stat.green i { color: #10b981; }
+        .header-stat.yellow i { color: #f59e0b; }
+        .header-stat .value { font-size: 20px; font-weight: 700; }
+        .header-stat .label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+        /* Grid principal */
+        .fila-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+        /* Card do Devedor */
+        .devedor-card { background: #111113; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; overflow: hidden; }
+        .devedor-header { background: linear-gradient(90deg, rgba(59,130,246,0.1) 0%, transparent 100%); padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; }
+        .devedor-position { display: flex; align-items: center; gap: 14px; }
+        .position-number { width: 44px; height: 44px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .position-text { font-size: 14px; color: rgba(255,255,255,0.6); }
+        .position-text strong { color: #fff; }
+        .devedor-status { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .status-novo { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .status-negociando { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-sem_contato { background: rgba(156,163,175,0.2); color: #9ca3af; }
+        .status-recusou { background: rgba(239,68,68,0.2); color: #f87171; }
+
+        .devedor-body { padding: 24px; }
+        .devedor-nome { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .devedor-doc { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .info-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; }
+        .info-box-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 6px; }
+        .info-box-value { font-size: 20px; font-weight: 600; }
+        .info-box-value.blue { color: #3b82f6; }
+        .info-box-value.red { color: #ef4444; }
+        .info-box-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+        /* Cobranças */
+        .cobrancas-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+        .section-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: #3b82f6; }
+        .cobranca-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .cobranca-item:last-child { border-bottom: none; }
+        .cobranca-desc { font-size: 14px; font-weight: 500; }
+        .cobranca-credor { font-size: 12px; color: rgba(255,255,255,0.4); }
+        .cobranca-valor { font-size: 15px; font-weight: 600; color: #3b82f6; text-align: right; }
+        .cobranca-atraso { font-size: 11px; color: #ef4444; }
+
+        /* Botões de ação */
+        .action-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .action-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .action-btn i { font-size: 24px; }
+        .action-btn span { font-size: 13px; font-weight: 600; }
+        .btn-ligar { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; }
+        .btn-ligar:hover { background: rgba(16,185,129,0.25); transform: translateY(-2px); }
+        .btn-whatsapp { background: rgba(37,211,102,0.15); border: 1px solid rgba(37,211,102,0.3); color: #25d366; }
+        .btn-whatsapp:hover { background: rgba(37,211,102,0.25); transform: translateY(-2px); }
+        .btn-email { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
+        .btn-email:hover { background: rgba(59,130,246,0.25); transform: translateY(-2px); }
+
+        .nav-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .nav-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .btn-pular { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+        .btn-pular:hover { background: rgba(255,255,255,0.08); }
+        .btn-proximo { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+        .btn-proximo:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(59,130,246,0.3); }
+
+        /* Painel lateral */
+        .side-panel { display: flex; flex-direction: column; gap: 20px; }
+        .panel-card { background: #111113; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 20px; }
+        .panel-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .panel-title i { color: #3b82f6; }
+
+        /* Histórico */
+        .historico-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .historico-item:last-child { border-bottom: none; }
+        .historico-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .historico-icon.ligacao { background: rgba(16,185,129,0.15); color: #34d399; }
+        .historico-icon.whatsapp { background: rgba(37,211,102,0.15); color: #25d366; }
+        .historico-icon.email { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .historico-tipo { font-size: 13px; font-weight: 600; }
+        .historico-resultado { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .historico-data { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+        /* Formulário */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+        .form-group select, .form-group textarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; }
+        .form-group select:focus, .form-group textarea:focus { outline: none; border-color: rgba(59,130,246,0.5); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .btn-registrar { width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; border-radius: 8px; color: white; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-registrar:hover { box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+
+        /* Ações rápidas */
+        .acoes-rapidas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .acao-btn { padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+        .acao-btn:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #3b82f6; }
+
+        /* Empty state */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; text-align: center; }
+        .empty-state i { font-size: 64px; color: rgba(59,130,246,0.3); margin-bottom: 20px; }
+        .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
+        .empty-state p { color: rgba(255,255,255,0.5); }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #111113; border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { color: #10b981; font-size: 20px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #111113; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .modal-header h3 i { color: #3b82f6; }
+        .modal-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 12px; justify-content: flex-end; }
+
+        /* Acordo resumo */
+        .acordo-resumo { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .acordo-linha { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .acordo-linha .label { color: rgba(255,255,255,0.6); }
+        .acordo-linha.total { border-top: 1px solid rgba(59,130,246,0.2); margin-top: 8px; padding-top: 12px; font-weight: 600; }
+        .acordo-linha.total .value { color: #3b82f6; font-size: 18px; }
+
+        .acordo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .acordo-grid .full { grid-column: 1 / -1; }
+        .form-group input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; }
+        .form-group input:focus { outline: none; border-color: rgba(59,130,246,0.5); }
+
+        .btn-cancelar { padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; }
+        .btn-confirmar { padding: 10px 20px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; border-radius: 8px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+        /* Loading */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 60px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(59,130,246,0.2); border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Responsive */
-        @media (max-width: 1200px) {
-            .fila-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .side-panel {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .panel-card {
-                flex: 1;
-                min-width: 300px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .devedor-info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 1200px) { .fila-grid { grid-template-columns: 1fr; } .side-panel { flex-direction: row; flex-wrap: wrap; } .panel-card { flex: 1; min-width: 300px; } }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } .info-grid { grid-template-columns: 1fr; } .action-buttons { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="logo">
-            <i class="fas fa-scale-balanced"></i>
-            <span>ACERTIVE</span>
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
+            </div>
         </div>
-        
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="dashboard.html" class="nav-link">
-                        <i class="fas fa-chart-line"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="fila.html" class="nav-link active">
-                        <i class="fas fa-headset"></i>
-                        Fila de Trabalho
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="devedores.html" class="nav-link">
-                        <i class="fas fa-users"></i>
-                        Devedores
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="cobrancas.html" class="nav-link">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        Cobranças
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="acordos.html" class="nav-link">
-                        <i class="fas fa-handshake"></i>
-                        Acordos
-                    </a>
-                </li>
-                
-                <div class="nav-divider"></div>
-                
-                <li class="nav-item">
-                    <a href="credores.html" class="nav-link">
-                        <i class="fas fa-building"></i>
-                        Credores
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="importar.html" class="nav-link">
-                        <i class="fas fa-upload"></i>
-                        Importar Carteira
-                    </a>
-                </li>
-                
-                <div class="nav-divider"></div>
-                
-                <li class="nav-item">
-                    <a href="configuracoes.html" class="nav-link">
-                        <i class="fas fa-cog"></i>
-                        Configurações
-                    </a>
-                </li>
-            </ul>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item active"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
         </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Usuário</div>
+                    <div class="user-role" id="userRole">Operador</div>
+                </div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="main-content">
         <header class="page-header">
-            <h1 class="page-title">Fila de <span>Trabalho</span></h1>
+            <h1>Fila de Trabalho</h1>
             <div class="header-stats">
-                <div class="stat-badge">
+                <div class="header-stat blue">
                     <i class="fas fa-list-check"></i>
-                    <div>
-                        <div class="number" id="totalFila">47</div>
-                        <div class="label">na fila hoje</div>
-                    </div>
+                    <div><div class="value" id="totalFila">0</div><div class="label">Na fila</div></div>
                 </div>
-                <div class="stat-badge">
+                <div class="header-stat green">
                     <i class="fas fa-phone-volume"></i>
-                    <div>
-                        <div class="number" id="acionamentosHoje">12</div>
-                        <div class="label">acionamentos</div>
-                    </div>
+                    <div><div class="value" id="acionamentosHoje">0</div><div class="label">Acionamentos</div></div>
                 </div>
-                <div class="stat-badge">
+                <div class="header-stat yellow">
                     <i class="fas fa-handshake"></i>
-                    <div>
-                        <div class="number" id="acordosHoje">3</div>
-                        <div class="label">acordos</div>
-                    </div>
+                    <div><div class="value" id="acordosHoje">0</div><div class="label">Acordos</div></div>
                 </div>
             </div>
         </header>
 
         <div class="fila-grid">
-            <!-- Card Principal do Devedor -->
+            <!-- Card Devedor -->
             <div class="devedor-card" id="devedorCard">
-                <div class="devedor-header">
-                    <div class="devedor-position">
-                        <div class="position-number" id="posicaoAtual">3</div>
-                        <div class="position-text">
-                            Devedor <strong id="posicaoTexto">3 de 47</strong>
-                        </div>
-                    </div>
-                    <span class="devedor-status status-negociando" id="devedorStatus">Negociando</span>
+                <div class="loading" id="loadingState">
+                    <div class="spinner"></div>
                 </div>
-                
-                <div class="devedor-body">
-                    <h2 class="devedor-nome" id="devedorNome">Maria Silva Santos</h2>
-                    <p class="devedor-documento" id="devedorDocumento">CPF: 123.456.789-00</p>
-                    
-                    <div class="devedor-info-grid">
-                        <div class="info-box">
-                            <div class="info-box-label">Valor Total</div>
-                            <div class="info-box-value gold" id="valorTotal">R$ 4.580,00</div>
-                            <div class="info-box-sub">3 cobranças</div>
+
+                <div id="devedorContent" style="display: none;">
+                    <div class="devedor-header">
+                        <div class="devedor-position">
+                            <div class="position-number" id="posicaoAtual">1</div>
+                            <div class="position-text">Devedor <strong id="posicaoTexto">1 de 0</strong></div>
                         </div>
-                        <div class="info-box">
-                            <div class="info-box-label">Dias em Atraso</div>
-                            <div class="info-box-value red" id="diasAtraso">45 dias</div>
-                            <div class="info-box-sub">Venc: 14/12/2024</div>
-                        </div>
-                        <div class="info-box">
-                            <div class="info-box-label">Credor</div>
-                            <div class="info-box-value white" id="credorNome">Bemol</div>
-                            <div class="info-box-sub">Varejo</div>
-                        </div>
+                        <span class="devedor-status status-novo" id="devedorStatus">Novo</span>
                     </div>
 
-                    <!-- Cobranças do Devedor -->
-                    <div class="cobrancas-section">
-                        <div class="section-title">
-                            <i class="fas fa-file-invoice"></i>
-                            Cobranças em Aberto
-                        </div>
-                        <div id="cobrancasLista">
-                            <div class="cobranca-item">
-                                <div class="cobranca-info">
-                                    <span class="cobranca-descricao">Compra Eletrodomésticos</span>
-                                    <span class="cobranca-credor">Bemol - Parcela 3/6</span>
-                                </div>
-                                <div class="cobranca-valores">
-                                    <div class="cobranca-valor">R$ 1.580,00</div>
-                                    <div class="cobranca-atraso">45 dias atraso</div>
-                                </div>
+                    <div class="devedor-body">
+                        <h2 class="devedor-nome" id="devedorNome">-</h2>
+                        <p class="devedor-doc" id="devedorDoc">-</p>
+
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <div class="info-box-label">Valor Total</div>
+                                <div class="info-box-value blue" id="valorTotal">R$ 0</div>
+                                <div class="info-box-sub" id="qtdCobrancas">0 cobranças</div>
                             </div>
-                            <div class="cobranca-item">
-                                <div class="cobranca-info">
-                                    <span class="cobranca-descricao">Carnê Móveis</span>
-                                    <span class="cobranca-credor">Bemol - Parcela 5/12</span>
-                                </div>
-                                <div class="cobranca-valores">
-                                    <div class="cobranca-valor">R$ 2.200,00</div>
-                                    <div class="cobranca-atraso">30 dias atraso</div>
-                                </div>
+                            <div class="info-box">
+                                <div class="info-box-label">Dias em Atraso</div>
+                                <div class="info-box-value red" id="diasAtraso">0 dias</div>
+                                <div class="info-box-sub" id="vencimento">-</div>
                             </div>
-                            <div class="cobranca-item">
-                                <div class="cobranca-info">
-                                    <span class="cobranca-descricao">Crediário Geral</span>
-                                    <span class="cobranca-credor">Bemol - Parcela 2/4</span>
-                                </div>
-                                <div class="cobranca-valores">
-                                    <div class="cobranca-valor">R$ 800,00</div>
-                                    <div class="cobranca-atraso">15 dias atraso</div>
-                                </div>
+                            <div class="info-box">
+                                <div class="info-box-label">Credor</div>
+                                <div class="info-box-value" id="credorNome">-</div>
+                                <div class="info-box-sub" id="credorCategoria">-</div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Botões de Ação -->
-                    <div class="action-buttons">
-                        <button class="action-btn btn-ligar" onclick="registrarLigacao()">
-                            <i class="fas fa-phone"></i>
-                            <span>Ligar</span>
-                        </button>
-                        <button class="action-btn btn-whatsapp" onclick="abrirWhatsApp()">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>WhatsApp</span>
-                        </button>
-                        <button class="action-btn btn-email" onclick="abrirEmail()">
-                            <i class="fas fa-envelope"></i>
-                            <span>E-mail</span>
-                        </button>
-                    </div>
+                        <div class="cobrancas-section">
+                            <div class="section-title"><i class="fas fa-file-invoice"></i> Cobranças em Aberto</div>
+                            <div id="cobrancasLista"></div>
+                        </div>
 
-                    <!-- Navegação -->
-                    <div class="nav-devedor">
-                        <button class="nav-btn btn-pular" onclick="pularDevedor()">
-                            <i class="fas fa-forward"></i>
-                            Pular
-                        </button>
-                        <button class="nav-btn btn-proximo" onclick="proximoDevedor()">
-                            Próximo
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-ligar" onclick="ligar()"><i class="fas fa-phone"></i><span>Ligar</span></button>
+                            <button class="action-btn btn-whatsapp" onclick="whatsapp()"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>
+                            <button class="action-btn btn-email" onclick="enviarEmail()"><i class="fas fa-envelope"></i><span>E-mail</span></button>
+                        </div>
+
+                        <div class="nav-buttons">
+                            <button class="nav-btn btn-pular" onclick="pular()"><i class="fas fa-forward"></i> Pular</button>
+                            <button class="nav-btn btn-proximo" onclick="proximo()">Próximo <i class="fas fa-arrow-right"></i></button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Empty State (escondido por padrão) -->
-                <div class="empty-state" id="emptyState">
+                <div class="empty-state" id="emptyState" style="display: none;">
                     <i class="fas fa-check-circle"></i>
                     <h3>Fila concluída!</h3>
-                    <p>Você trabalhou todos os devedores de hoje. Parabéns!</p>
+                    <p>Você trabalhou todos os devedores. Parabéns!</p>
                 </div>
             </div>
 
             <!-- Painel Lateral -->
             <div class="side-panel">
-                <!-- Histórico de Acionamentos -->
                 <div class="panel-card">
-                    <h3 class="panel-title">
-                        <i class="fas fa-history"></i>
-                        Histórico de Acionamentos
-                    </h3>
+                    <h3 class="panel-title"><i class="fas fa-history"></i> Histórico de Acionamentos</h3>
                     <div id="historicoLista">
-                        <div class="historico-item">
-                            <div class="historico-icon ligacao">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="historico-content">
-                                <div class="historico-tipo">Ligação</div>
-                                <div class="historico-resultado">Não atendeu - Caixa postal</div>
-                                <div class="historico-data">Ontem às 14:32</div>
-                            </div>
-                        </div>
-                        <div class="historico-item">
-                            <div class="historico-icon whatsapp">
-                                <i class="fab fa-whatsapp"></i>
-                            </div>
-                            <div class="historico-content">
-                                <div class="historico-tipo">WhatsApp</div>
-                                <div class="historico-resultado">Mensagem enviada - Aguardando</div>
-                                <div class="historico-data">25/01 às 10:15</div>
-                            </div>
-                        </div>
-                        <div class="historico-item">
-                            <div class="historico-icon ligacao">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="historico-content">
-                                <div class="historico-tipo">Ligação</div>
-                                <div class="historico-resultado">Atendeu - Prometeu retornar</div>
-                                <div class="historico-data">22/01 às 16:45</div>
-                            </div>
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-inbox" style="font-size: 32px;"></i>
+                            <p>Nenhum acionamento</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Registrar Acionamento -->
                 <div class="panel-card">
-                    <h3 class="panel-title">
-                        <i class="fas fa-plus-circle"></i>
-                        Registrar Acionamento
-                    </h3>
-                    <form class="registro-form" onsubmit="registrarAcionamento(event)">
+                    <h3 class="panel-title"><i class="fas fa-plus-circle"></i> Registrar Acionamento</h3>
+                    <form onsubmit="registrarAcionamento(event)">
                         <div class="form-group">
                             <label>Tipo de Contato</label>
                             <select id="tipoContato" required>
@@ -1166,545 +347,446 @@
                                 <option value="numero_errado">🚫 Número errado</option>
                                 <option value="prometeu_pagar">💰 Prometeu pagar</option>
                                 <option value="quer_negociar">🤝 Quer negociar</option>
-                                <option value="recusou">👎 Recusou proposta</option>
-                                <option value="aguardando">⏳ Aguardando retorno</option>
+                                <option value="recusou">👎 Recusou</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Observação</label>
-                            <textarea id="observacaoContato" placeholder="Detalhes do contato..."></textarea>
+                            <textarea id="observacao" placeholder="Detalhes do contato..."></textarea>
                         </div>
-                        <button type="submit" class="btn-registrar">
-                            <i class="fas fa-save"></i> Salvar Acionamento
-                        </button>
+                        <button type="submit" class="btn-registrar"><i class="fas fa-save"></i> Salvar</button>
                     </form>
                 </div>
 
-                <!-- Ações Rápidas -->
                 <div class="panel-card">
-                    <h3 class="panel-title">
-                        <i class="fas fa-bolt"></i>
-                        Ações Rápidas
-                    </h3>
+                    <h3 class="panel-title"><i class="fas fa-bolt"></i> Ações Rápidas</h3>
                     <div class="acoes-rapidas">
-                        <button class="acao-rapida-btn" onclick="abrirModalAcordo()">
-                            <i class="fas fa-handshake"></i>
-                            Fazer Acordo
-                        </button>
-                        <button class="acao-rapida-btn" onclick="marcarIncobravel()">
-                            <i class="fas fa-ban"></i>
-                            Incobrável
-                        </button>
-                        <button class="acao-rapida-btn" onclick="enviarParaJuridico()">
-                            <i class="fas fa-gavel"></i>
-                            Jurídico
-                        </button>
-                        <button class="acao-rapida-btn" onclick="verDetalhes()">
-                            <i class="fas fa-eye"></i>
-                            Ver Detalhes
-                        </button>
+                        <button class="acao-btn" onclick="abrirModalAcordo()"><i class="fas fa-handshake"></i> Acordo</button>
+                        <button class="acao-btn" onclick="marcarIncobravel()"><i class="fas fa-ban"></i> Incobrável</button>
+                        <button class="acao-btn" onclick="enviarJuridico()"><i class="fas fa-gavel"></i> Jurídico</button>
+                        <button class="acao-btn" onclick="verDetalhes()"><i class="fas fa-eye"></i> Detalhes</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Acordo Rápido -->
+    <!-- Modal Acordo -->
     <div class="modal-overlay" id="modalAcordo">
         <div class="modal">
             <div class="modal-header">
                 <h3><i class="fas fa-handshake"></i> Simulador de Acordo</h3>
-                <button class="modal-close" onclick="fecharModalAcordo()">&times;</button>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="acordo-resumo">
-                    <div class="acordo-linha">
-                        <span class="label">Valor Original</span>
-                        <span class="value" id="acordoValorOriginal">R$ 4.580,00</span>
-                    </div>
-                    <div class="acordo-linha">
-                        <span class="label">+ Multa (2%)</span>
-                        <span class="value" id="acordoMulta">R$ 91,60</span>
-                    </div>
-                    <div class="acordo-linha">
-                        <span class="label">+ Juros (1% a.m.)</span>
-                        <span class="value" id="acordoJuros">R$ 68,70</span>
-                    </div>
-                    <div class="acordo-linha">
-                        <span class="label">+ Honorários (10%)</span>
-                        <span class="value" id="acordoHonorarios">R$ 458,00</span>
-                    </div>
-                    <div class="acordo-linha">
-                        <span class="label">- Desconto</span>
-                        <span class="value" id="acordoDesconto">- R$ 0,00</span>
-                    </div>
-                    <div class="acordo-linha total">
-                        <span class="label">TOTAL DO ACORDO</span>
-                        <span class="value" id="acordoTotal">R$ 5.198,30</span>
-                    </div>
+                    <div class="acordo-linha"><span class="label">Valor Original</span><span class="value" id="acordoOriginal">R$ 0</span></div>
+                    <div class="acordo-linha"><span class="label">+ Multa (2%)</span><span class="value" id="acordoMulta">R$ 0</span></div>
+                    <div class="acordo-linha"><span class="label">+ Juros (1% a.m.)</span><span class="value" id="acordoJuros">R$ 0</span></div>
+                    <div class="acordo-linha"><span class="label">+ Honorários (10%)</span><span class="value" id="acordoHonorarios">R$ 0</span></div>
+                    <div class="acordo-linha"><span class="label">- Desconto</span><span class="value" id="acordoDesconto">- R$ 0</span></div>
+                    <div class="acordo-linha total"><span class="label">TOTAL</span><span class="value" id="acordoTotal">R$ 0</span></div>
                 </div>
-
-                <div class="acordo-form-grid">
-                    <div class="form-group">
-                        <label>Multa (%)</label>
-                        <input type="number" id="inputMulta" value="2" min="0" max="100" step="0.1" onchange="calcularAcordo()">
-                    </div>
-                    <div class="form-group">
-                        <label>Juros (% a.m.)</label>
-                        <input type="number" id="inputJuros" value="1" min="0" max="100" step="0.1" onchange="calcularAcordo()">
-                    </div>
-                    <div class="form-group">
-                        <label>Honorários (%)</label>
-                        <input type="number" id="inputHonorarios" value="10" min="0" max="100" step="0.1" onchange="calcularAcordo()">
-                    </div>
-                    <div class="form-group">
-                        <label>Desconto (%)</label>
-                        <input type="number" id="inputDesconto" value="0" min="0" max="100" step="0.1" onchange="calcularAcordo()">
-                    </div>
-                    <div class="form-group full">
-                        <label>Parcelas</label>
-                        <select id="inputParcelas" onchange="calcularAcordo()">
-                            <option value="1">À Vista</option>
-                            <option value="2">2x de R$ 2.599,15</option>
-                            <option value="3">3x de R$ 1.732,77</option>
-                            <option value="4">4x de R$ 1.299,58</option>
-                            <option value="5">5x de R$ 1.039,66</option>
-                            <option value="6">6x de R$ 866,38</option>
-                        </select>
-                    </div>
+                <div class="acordo-grid">
+                    <div class="form-group"><label>Multa (%)</label><input type="number" id="inputMulta" value="2" step="0.1" onchange="calcularAcordo()"></div>
+                    <div class="form-group"><label>Juros (% a.m.)</label><input type="number" id="inputJuros" value="1" step="0.1" onchange="calcularAcordo()"></div>
+                    <div class="form-group"><label>Honorários (%)</label><input type="number" id="inputHonorarios" value="10" step="0.1" onchange="calcularAcordo()"></div>
+                    <div class="form-group"><label>Desconto (%)</label><input type="number" id="inputDesconto" value="0" step="0.1" onchange="calcularAcordo()"></div>
+                    <div class="form-group full"><label>Parcelas</label><select id="inputParcelas" onchange="calcularAcordo()"><option value="1">À Vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option></select></div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancelar" onclick="fecharModalAcordo()">Cancelar</button>
-                <button class="btn-confirmar" onclick="confirmarAcordo()">
-                    <i class="fas fa-check"></i> Criar Acordo
-                </button>
+                <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirmar" onclick="criarAcordo()"><i class="fas fa-check"></i> Criar Acordo</button>
             </div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span class="toast-content">Acionamento registrado com sucesso!</span>
-    </div>
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
     <script>
-        // Dados mockados para demonstração
-        let filaDevedores = [
-            {
-                id: 1,
-                nome: 'Maria Silva Santos',
-                documento: '123.456.789-00',
-                telefone: '92991234567',
-                email: 'maria@email.com',
-                valorTotal: 4580.00,
-                diasAtraso: 45,
-                credor: 'Bemol',
-                credorCategoria: 'Varejo',
-                status: 'negociando',
-                cobrancas: [
-                    { descricao: 'Compra Eletrodomésticos', parcela: '3/6', valor: 1580.00, atraso: 45 },
-                    { descricao: 'Carnê Móveis', parcela: '5/12', valor: 2200.00, atraso: 30 },
-                    { descricao: 'Crediário Geral', parcela: '2/4', valor: 800.00, atraso: 15 }
-                ],
-                historico: [
-                    { tipo: 'ligacao', resultado: 'Não atendeu - Caixa postal', data: 'Ontem às 14:32' },
-                    { tipo: 'whatsapp', resultado: 'Mensagem enviada - Aguardando', data: '25/01 às 10:15' },
-                    { tipo: 'ligacao', resultado: 'Atendeu - Prometeu retornar', data: '22/01 às 16:45' }
-                ]
-            },
-            {
-                id: 2,
-                nome: 'João Carlos Oliveira',
-                documento: '987.654.321-00',
-                telefone: '92998765432',
-                email: 'joao@email.com',
-                valorTotal: 2350.00,
-                diasAtraso: 32,
-                credor: 'Casas Bahia',
-                credorCategoria: 'Varejo',
-                status: 'novo',
-                cobrancas: [
-                    { descricao: 'TV 55 polegadas', parcela: '4/10', valor: 2350.00, atraso: 32 }
-                ],
-                historico: []
-            },
-            {
-                id: 3,
-                nome: 'Ana Paula Rodrigues',
-                documento: '456.789.123-00',
-                telefone: '92997654321',
-                email: 'ana@email.com',
-                valorTotal: 8920.00,
-                diasAtraso: 67,
-                credor: 'Bemol',
-                credorCategoria: 'Varejo',
-                status: 'sem-contato',
-                cobrancas: [
-                    { descricao: 'Financiamento Móveis', parcela: '2/24', valor: 5000.00, atraso: 67 },
-                    { descricao: 'Cartão de Crédito', parcela: 'Fatura', valor: 3920.00, atraso: 45 }
-                ],
-                historico: [
-                    { tipo: 'ligacao', resultado: 'Número inexistente', data: '20/01 às 09:30' }
-                ]
+        const API = window.location.origin;
+        let fila = [];
+        let posicao = 0;
+        let devedorAtual = null;
+
+        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+        function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return false; }
+            try {
+                const r = await fetch(API + '/api/auth/me', { headers: H() });
+                const d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
+                const user = d.user || d;
+                document.getElementById('userName').textContent = user.nome || 'Usuário';
+                document.getElementById('userRole').textContent = user.perfil || 'Operador';
+                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
+                return true;
+            } catch (e) { return true; }
+        }
+
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+
+        async function carregarFila() {
+            try {
+                // Buscar cobranças pendentes/vencidas
+                const r = await fetch(API + '/api/cobrancas?limit=500', { headers: H() });
+                if (!r.ok) throw new Error('Erro ao carregar');
+                const d = await r.json();
+                const cobrancas = d.data || d || [];
+
+                // Agrupar por cliente
+                const porCliente = {};
+                const hoje = new Date();
+
+                cobrancas.forEach(c => {
+                    if (!['pendente', 'vencido'].includes(c.status)) return;
+                    if (!c.cliente_id) return;
+
+                    if (!porCliente[c.cliente_id]) {
+                        porCliente[c.cliente_id] = {
+                            cliente_id: c.cliente_id,
+                            nome: c.cliente_nome || 'Cliente',
+                            cpf_cnpj: c.cliente_cpf || c.cpf_cnpj || '-',
+                            telefone: c.cliente_telefone || c.telefone || '',
+                            email: c.cliente_email || c.email || '',
+                            credor_nome: c.credor_nome || 'Credor',
+                            cobrancas: [],
+                            valor_total: 0,
+                            maior_atraso: 0,
+                            status: c.status_cobranca || 'novo'
+                        };
+                    }
+
+                    const venc = new Date(c.data_vencimento);
+                    const atraso = Math.max(0, Math.floor((hoje - venc) / (1000*60*60*24)));
+                    
+                    porCliente[c.cliente_id].cobrancas.push({
+                        ...c,
+                        dias_atraso: atraso
+                    });
+                    porCliente[c.cliente_id].valor_total += parseFloat(c.valor) || 0;
+                    if (atraso > porCliente[c.cliente_id].maior_atraso) {
+                        porCliente[c.cliente_id].maior_atraso = atraso;
+                        porCliente[c.cliente_id].vencimento = c.data_vencimento;
+                    }
+                });
+
+                // Converter para array e ordenar
+                fila = Object.values(porCliente).sort((a, b) => b.maior_atraso - a.maior_atraso || b.valor_total - a.valor_total);
+
+                document.getElementById('totalFila').textContent = fila.length;
+                document.getElementById('filaBadge').textContent = fila.length;
+
+                if (fila.length > 0) {
+                    posicao = 0;
+                    mostrarDevedor();
+                } else {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'flex';
+                }
+
+            } catch (e) {
+                console.error('Erro:', e);
+                document.getElementById('loadingState').innerHTML = '<p style="color: rgba(255,255,255,0.5);">Erro ao carregar fila</p>';
             }
-        ];
+        }
 
-        let posicaoAtual = 0;
-        let totalFila = filaDevedores.length;
-
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarDevedor(posicaoAtual);
-            atualizarContadores();
-        });
-
-        function carregarDevedor(index) {
-            if (index >= filaDevedores.length) {
-                mostrarFilaConcluida();
+        function mostrarDevedor() {
+            if (posicao >= fila.length) {
+                document.getElementById('devedorContent').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'flex';
                 return;
             }
 
-            const devedor = filaDevedores[index];
+            devedorAtual = fila[posicao];
             
-            document.getElementById('posicaoAtual').textContent = index + 1;
-            document.getElementById('posicaoTexto').textContent = `${index + 1} de ${totalFila}`;
-            document.getElementById('devedorNome').textContent = devedor.nome;
-            document.getElementById('devedorDocumento').textContent = `CPF: ${devedor.documento}`;
-            document.getElementById('valorTotal').textContent = formatarMoeda(devedor.valorTotal);
-            document.getElementById('diasAtraso').textContent = `${devedor.diasAtraso} dias`;
-            document.getElementById('credorNome').textContent = devedor.credor;
-            
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('devedorContent').style.display = 'block';
+
+            document.getElementById('posicaoAtual').textContent = posicao + 1;
+            document.getElementById('posicaoTexto').textContent = `${posicao + 1} de ${fila.length}`;
+            document.getElementById('devedorNome').textContent = devedorAtual.nome;
+            document.getElementById('devedorDoc').textContent = `CPF/CNPJ: ${devedorAtual.cpf_cnpj}`;
+            document.getElementById('valorTotal').textContent = fmtMoney(devedorAtual.valor_total);
+            document.getElementById('qtdCobrancas').textContent = `${devedorAtual.cobrancas.length} cobranças`;
+            document.getElementById('diasAtraso').textContent = `${devedorAtual.maior_atraso} dias`;
+            document.getElementById('credorNome').textContent = devedorAtual.credor_nome;
+
+            if (devedorAtual.vencimento) {
+                const v = new Date(devedorAtual.vencimento);
+                document.getElementById('vencimento').textContent = `Venc: ${v.toLocaleDateString('pt-BR')}`;
+            }
+
             // Status
             const statusEl = document.getElementById('devedorStatus');
-            statusEl.className = `devedor-status status-${devedor.status}`;
-            statusEl.textContent = formatarStatus(devedor.status);
+            statusEl.className = 'devedor-status status-' + (devedorAtual.status || 'novo');
+            statusEl.textContent = formatStatus(devedorAtual.status);
 
             // Cobranças
-            renderizarCobrancas(devedor.cobrancas);
-            
-            // Histórico
-            renderizarHistorico(devedor.historico);
-        }
-
-        function renderizarCobrancas(cobrancas) {
-            const container = document.getElementById('cobrancasLista');
-            container.innerHTML = cobrancas.map(c => `
+            document.getElementById('cobrancasLista').innerHTML = devedorAtual.cobrancas.slice(0, 5).map(c => `
                 <div class="cobranca-item">
-                    <div class="cobranca-info">
-                        <span class="cobranca-descricao">${c.descricao}</span>
-                        <span class="cobranca-credor">Parcela ${c.parcela}</span>
+                    <div>
+                        <div class="cobranca-desc">${c.descricao || 'Cobrança'}</div>
+                        <div class="cobranca-credor">${c.credor_nome || ''}</div>
                     </div>
-                    <div class="cobranca-valores">
-                        <div class="cobranca-valor">${formatarMoeda(c.valor)}</div>
-                        <div class="cobranca-atraso">${c.atraso} dias atraso</div>
+                    <div>
+                        <div class="cobranca-valor">${fmtMoney(c.valor)}</div>
+                        <div class="cobranca-atraso">${c.dias_atraso > 0 ? c.dias_atraso + ' dias atraso' : 'A vencer'}</div>
                     </div>
                 </div>
             `).join('');
+
+            // Histórico
+            carregarHistorico();
         }
 
-        function renderizarHistorico(historico) {
-            const container = document.getElementById('historicoLista');
+        function formatStatus(s) {
+            const map = { 'novo': 'Novo', 'negociando': 'Negociando', 'sem_contato': 'Sem Contato', 'recusou': 'Recusou', 'acordo': 'Acordo', 'juridico': 'Jurídico', 'incobravel': 'Incobrável' };
+            return map[s] || 'Novo';
+        }
+
+        async function carregarHistorico() {
+            if (!devedorAtual) return;
             
-            if (historico.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.4);">
-                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
-                        Nenhum acionamento registrado
-                    </div>
-                `;
-                return;
-            }
+            try {
+                const r = await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '?limit=5', { headers: H() });
+                if (!r.ok) return;
+                
+                const d = await r.json();
+                const acionamentos = d.data || [];
 
-            container.innerHTML = historico.slice(0, 3).map(h => `
-                <div class="historico-item">
-                    <div class="historico-icon ${h.tipo}">
-                        <i class="${getIconeTipo(h.tipo)}"></i>
+                if (acionamentos.length === 0) {
+                    document.getElementById('historicoLista').innerHTML = `<div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.4);"><i class="fas fa-inbox" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>Nenhum acionamento</div>`;
+                    return;
+                }
+
+                document.getElementById('historicoLista').innerHTML = acionamentos.map(a => `
+                    <div class="historico-item">
+                        <div class="historico-icon ${a.tipo}">${getIconTipo(a.tipo)}</div>
+                        <div>
+                            <div class="historico-tipo">${formatTipo(a.tipo)}</div>
+                            <div class="historico-resultado">${formatResultado(a.resultado)}</div>
+                            <div class="historico-data">${new Date(a.created_at).toLocaleString('pt-BR')}</div>
+                        </div>
                     </div>
-                    <div class="historico-content">
-                        <div class="historico-tipo">${formatarTipo(h.tipo)}</div>
-                        <div class="historico-resultado">${h.resultado}</div>
-                        <div class="historico-data">${h.data}</div>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (e) {
+                console.error('Erro histórico:', e);
+            }
         }
 
-        function proximoDevedor() {
-            if (posicaoAtual < filaDevedores.length - 1) {
-                posicaoAtual++;
-                carregarDevedor(posicaoAtual);
+        function getIconTipo(t) {
+            const map = { 'ligacao': '<i class="fas fa-phone"></i>', 'whatsapp': '<i class="fab fa-whatsapp"></i>', 'email': '<i class="fas fa-envelope"></i>', 'sms': '<i class="fas fa-sms"></i>' };
+            return map[t] || '<i class="fas fa-comment"></i>';
+        }
+
+        function formatTipo(t) {
+            const map = { 'ligacao': 'Ligação', 'whatsapp': 'WhatsApp', 'email': 'E-mail', 'sms': 'SMS' };
+            return map[t] || t;
+        }
+
+        function formatResultado(r) {
+            const map = { 'atendeu': 'Atendeu', 'nao_atendeu': 'Não atendeu', 'caixa_postal': 'Caixa postal', 'numero_errado': 'Número errado', 'prometeu_pagar': 'Prometeu pagar', 'quer_negociar': 'Quer negociar', 'recusou': 'Recusou' };
+            return map[r] || r;
+        }
+
+        function proximo() {
+            if (posicao < fila.length - 1) {
+                posicao++;
+                mostrarDevedor();
             } else {
-                mostrarFilaConcluida();
+                document.getElementById('devedorContent').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'flex';
             }
         }
 
-        function pularDevedor() {
-            // Move o devedor atual para o final da fila
-            const devedorAtual = filaDevedores.splice(posicaoAtual, 1)[0];
-            filaDevedores.push(devedorAtual);
-            carregarDevedor(posicaoAtual);
-            mostrarToast('Devedor movido para o final da fila');
+        function pular() {
+            const dev = fila.splice(posicao, 1)[0];
+            fila.push(dev);
+            mostrarDevedor();
+            toast('Devedor movido para o final');
         }
 
-        function mostrarFilaConcluida() {
-            document.querySelector('.devedor-body').style.display = 'none';
-            document.querySelector('.devedor-header').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'flex';
+        function ligar() {
+            if (devedorAtual?.telefone) {
+                window.open('tel:' + devedorAtual.telefone.replace(/\D/g, ''), '_blank');
+                document.getElementById('tipoContato').value = 'ligacao';
+            } else {
+                toast('Telefone não cadastrado');
+            }
         }
 
-        function registrarAcionamento(event) {
-            event.preventDefault();
-            
+        function whatsapp() {
+            if (devedorAtual?.telefone) {
+                let tel = devedorAtual.telefone.replace(/\D/g, '');
+                if (tel.length <= 11) tel = '55' + tel;
+                const msg = encodeURIComponent(`Olá ${devedorAtual.nome.split(' ')[0]}, aqui é da ACERTIVE.`);
+                window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+                document.getElementById('tipoContato').value = 'whatsapp';
+            } else {
+                toast('Telefone não cadastrado');
+            }
+        }
+
+        function enviarEmail() {
+            if (devedorAtual?.email) {
+                const assunto = encodeURIComponent('ACERTIVE - Regularização');
+                const corpo = encodeURIComponent(`Prezado(a) ${devedorAtual.nome},\n\nEntramos em contato sobre sua pendência.\n\nAtenciosamente,\nEquipe ACERTIVE`);
+                window.open(`mailto:${devedorAtual.email}?subject=${assunto}&body=${corpo}`, '_blank');
+                document.getElementById('tipoContato').value = 'email';
+            } else {
+                toast('E-mail não cadastrado');
+            }
+        }
+
+        async function registrarAcionamento(e) {
+            e.preventDefault();
+            if (!devedorAtual) return;
+
             const tipo = document.getElementById('tipoContato').value;
             const resultado = document.getElementById('resultadoContato').value;
-            const observacao = document.getElementById('observacaoContato').value;
+            const obs = document.getElementById('observacao').value;
 
-            if (!tipo || !resultado) {
-                alert('Preencha todos os campos obrigatórios');
-                return;
+            if (!tipo || !resultado) { toast('Preencha tipo e resultado'); return; }
+
+            try {
+                const r = await fetch(API + '/api/acionamentos', {
+                    method: 'POST',
+                    headers: H(),
+                    body: JSON.stringify({
+                        cliente_id: devedorAtual.cliente_id,
+                        tipo, resultado, descricao: obs
+                    })
+                });
+
+                if (r.ok) {
+                    toast('Acionamento registrado!');
+                    document.getElementById('tipoContato').value = '';
+                    document.getElementById('resultadoContato').value = '';
+                    document.getElementById('observacao').value = '';
+                    
+                    const hoje = parseInt(document.getElementById('acionamentosHoje').textContent) + 1;
+                    document.getElementById('acionamentosHoje').textContent = hoje;
+                    
+                    carregarHistorico();
+                } else {
+                    toast('Erro ao registrar');
+                }
+            } catch (e) {
+                console.error(e);
+                toast('Erro ao registrar');
             }
-
-            // Adiciona ao histórico do devedor atual
-            const agora = new Date();
-            const dataFormatada = `Hoje às ${agora.getHours().toString().padStart(2, '0')}:${agora.getMinutes().toString().padStart(2, '0')}`;
-            
-            filaDevedores[posicaoAtual].historico.unshift({
-                tipo: tipo,
-                resultado: formatarResultado(resultado) + (observacao ? ` - ${observacao}` : ''),
-                data: dataFormatada
-            });
-
-            renderizarHistorico(filaDevedores[posicaoAtual].historico);
-            
-            // Limpa o formulário
-            document.getElementById('tipoContato').value = '';
-            document.getElementById('resultadoContato').value = '';
-            document.getElementById('observacaoContato').value = '';
-
-            // Atualiza contadores
-            const acionamentos = parseInt(document.getElementById('acionamentosHoje').textContent) + 1;
-            document.getElementById('acionamentosHoje').textContent = acionamentos;
-
-            mostrarToast('Acionamento registrado com sucesso!');
         }
 
-        function registrarLigacao() {
-            document.getElementById('tipoContato').value = 'ligacao';
-            document.querySelector('.panel-card:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
-            
-            // Simula abrir discador
-            const devedor = filaDevedores[posicaoAtual];
-            window.open(`tel:${devedor.telefone}`, '_blank');
-        }
-
-        function abrirWhatsApp() {
-            const devedor = filaDevedores[posicaoAtual];
-            const mensagem = encodeURIComponent(`Olá ${devedor.nome.split(' ')[0]}, tudo bem? Aqui é da ACERTIVE, estamos entrando em contato sobre sua pendência.`);
-            window.open(`https://wa.me/55${devedor.telefone}?text=${mensagem}`, '_blank');
-            
-            document.getElementById('tipoContato').value = 'whatsapp';
-        }
-
-        function abrirEmail() {
-            const devedor = filaDevedores[posicaoAtual];
-            const assunto = encodeURIComponent('ACERTIVE - Regularização de Pendência');
-            const corpo = encodeURIComponent(`Prezado(a) ${devedor.nome},\n\nEntramos em contato para tratar sobre sua pendência no valor de ${formatarMoeda(devedor.valorTotal)}.\n\nPara regularizar sua situação, entre em contato conosco.\n\nAtenciosamente,\nEquipe ACERTIVE`);
-            window.open(`mailto:${devedor.email}?subject=${assunto}&body=${corpo}`, '_blank');
-            
-            document.getElementById('tipoContato').value = 'email';
-        }
-
-        // Modal de Acordo
         function abrirModalAcordo() {
-            const devedor = filaDevedores[posicaoAtual];
-            document.getElementById('acordoValorOriginal').textContent = formatarMoeda(devedor.valorTotal);
+            if (!devedorAtual) return;
+            document.getElementById('acordoOriginal').textContent = fmtMoney(devedorAtual.valor_total);
             calcularAcordo();
             document.getElementById('modalAcordo').classList.add('active');
         }
 
-        function fecharModalAcordo() {
+        function fecharModal() {
             document.getElementById('modalAcordo').classList.remove('active');
         }
 
         function calcularAcordo() {
-            const devedor = filaDevedores[posicaoAtual];
-            const valorOriginal = devedor.valorTotal;
+            if (!devedorAtual) return;
             
+            const original = devedorAtual.valor_total;
             const multa = parseFloat(document.getElementById('inputMulta').value) || 0;
             const juros = parseFloat(document.getElementById('inputJuros').value) || 0;
             const honorarios = parseFloat(document.getElementById('inputHonorarios').value) || 0;
             const desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
             const parcelas = parseInt(document.getElementById('inputParcelas').value) || 1;
 
-            const meses = devedor.diasAtraso / 30;
-            
-            const valorMulta = valorOriginal * (multa / 100);
-            const valorJuros = valorOriginal * (juros / 100) * meses;
-            const valorHonorarios = valorOriginal * (honorarios / 100);
-            const subtotal = valorOriginal + valorMulta + valorJuros + valorHonorarios;
-            const valorDesconto = subtotal * (desconto / 100);
-            const total = subtotal - valorDesconto;
+            const meses = devedorAtual.maior_atraso / 30;
+            const vMulta = original * (multa / 100);
+            const vJuros = original * (juros / 100) * meses;
+            const vHonorarios = original * (honorarios / 100);
+            const subtotal = original + vMulta + vJuros + vHonorarios;
+            const vDesconto = subtotal * (desconto / 100);
+            const total = subtotal - vDesconto;
 
-            document.getElementById('acordoMulta').textContent = formatarMoeda(valorMulta);
-            document.getElementById('acordoJuros').textContent = formatarMoeda(valorJuros);
-            document.getElementById('acordoHonorarios').textContent = formatarMoeda(valorHonorarios);
-            document.getElementById('acordoDesconto').textContent = `- ${formatarMoeda(valorDesconto)}`;
-            document.getElementById('acordoTotal').textContent = formatarMoeda(total);
+            document.getElementById('acordoMulta').textContent = fmtMoney(vMulta);
+            document.getElementById('acordoJuros').textContent = fmtMoney(vJuros);
+            document.getElementById('acordoHonorarios').textContent = fmtMoney(vHonorarios);
+            document.getElementById('acordoDesconto').textContent = '- ' + fmtMoney(vDesconto);
+            document.getElementById('acordoTotal').textContent = fmtMoney(total);
 
-            // Atualiza opções de parcelas
-            const selectParcelas = document.getElementById('inputParcelas');
-            const valorParcela = total / parcelas;
-            
-            for (let i = 1; i <= 6; i++) {
-                const option = selectParcelas.options[i - 1];
-                if (i === 1) {
-                    option.text = `À Vista - ${formatarMoeda(total)}`;
-                } else {
-                    option.text = `${i}x de ${formatarMoeda(total / i)}`;
-                }
+            // Atualizar parcelas
+            const sel = document.getElementById('inputParcelas');
+            for (let i = 0; i < sel.options.length; i++) {
+                const p = i + 1;
+                sel.options[i].text = p === 1 ? `À Vista - ${fmtMoney(total)}` : `${p}x de ${fmtMoney(total / p)}`;
             }
         }
 
-        function confirmarAcordo() {
-            const devedor = filaDevedores[posicaoAtual];
-            const total = document.getElementById('acordoTotal').textContent;
-            const parcelas = document.getElementById('inputParcelas').value;
+        async function criarAcordo() {
+            if (!devedorAtual) return;
             
-            // Aqui faria a chamada para a API
-            alert(`Acordo criado!\n\nDevedor: ${devedor.nome}\nValor: ${total}\nParcelas: ${parcelas}x`);
+            // Por enquanto só mostra toast - integrar com API depois
+            toast('Acordo criado com sucesso!');
+            fecharModal();
             
-            fecharModalAcordo();
-            
-            // Atualiza contador de acordos
             const acordos = parseInt(document.getElementById('acordosHoje').textContent) + 1;
             document.getElementById('acordosHoje').textContent = acordos;
             
-            // Atualiza status do devedor
-            devedor.status = 'acordo';
-            
-            mostrarToast('Acordo criado com sucesso!');
-            
-            // Vai para próximo devedor
-            setTimeout(() => proximoDevedor(), 1000);
+            setTimeout(() => proximo(), 1000);
         }
 
-        function marcarIncobravel() {
-            if (confirm('Tem certeza que deseja marcar este devedor como INCOBRÁVEL?')) {
-                filaDevedores[posicaoAtual].status = 'incobravel';
-                mostrarToast('Devedor marcado como incobrável');
-                proximoDevedor();
+        async function marcarIncobravel() {
+            if (!devedorAtual) return;
+            if (!confirm('Marcar como INCOBRÁVEL?')) return;
+            
+            try {
+                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', {
+                    method: 'PUT', headers: H(),
+                    body: JSON.stringify({ status_cobranca: 'incobravel' })
+                });
+                toast('Marcado como incobrável');
+                proximo();
+            } catch (e) {
+                toast('Erro ao atualizar');
             }
         }
 
-        function enviarParaJuridico() {
-            if (confirm('Enviar este devedor para cobrança JURÍDICA?')) {
-                filaDevedores[posicaoAtual].status = 'juridico';
-                mostrarToast('Devedor enviado para jurídico');
-                proximoDevedor();
+        async function enviarJuridico() {
+            if (!devedorAtual) return;
+            if (!confirm('Enviar para JURÍDICO?')) return;
+            
+            try {
+                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', {
+                    method: 'PUT', headers: H(),
+                    body: JSON.stringify({ status_cobranca: 'juridico' })
+                });
+                toast('Enviado para jurídico');
+                proximo();
+            } catch (e) {
+                toast('Erro ao atualizar');
             }
         }
 
         function verDetalhes() {
-            const devedor = filaDevedores[posicaoAtual];
-            window.location.href = `devedores.html?id=${devedor.id}`;
-        }
-
-        function atualizarContadores() {
-            document.getElementById('totalFila').textContent = totalFila;
-        }
-
-        // Funções auxiliares
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function formatarStatus(status) {
-            const statusMap = {
-                'novo': 'Novo',
-                'negociando': 'Negociando',
-                'acordo': 'Acordo',
-                'sem-contato': 'Sem Contato',
-                'recusou': 'Recusou',
-                'juridico': 'Jurídico',
-                'incobravel': 'Incobrável'
-            };
-            return statusMap[status] || status;
-        }
-
-        function formatarTipo(tipo) {
-            const tipoMap = {
-                'ligacao': 'Ligação',
-                'whatsapp': 'WhatsApp',
-                'email': 'E-mail',
-                'sms': 'SMS'
-            };
-            return tipoMap[tipo] || tipo;
-        }
-
-        function formatarResultado(resultado) {
-            const resultadoMap = {
-                'atendeu': 'Atendeu',
-                'nao_atendeu': 'Não atendeu',
-                'caixa_postal': 'Caixa postal',
-                'numero_errado': 'Número errado',
-                'prometeu_pagar': 'Prometeu pagar',
-                'quer_negociar': 'Quer negociar',
-                'recusou': 'Recusou proposta',
-                'aguardando': 'Aguardando retorno'
-            };
-            return resultadoMap[resultado] || resultado;
-        }
-
-        function getIconeTipo(tipo) {
-            const iconeMap = {
-                'ligacao': 'fas fa-phone',
-                'whatsapp': 'fab fa-whatsapp',
-                'email': 'fas fa-envelope',
-                'sms': 'fas fa-sms'
-            };
-            return iconeMap[tipo] || 'fas fa-comment';
-        }
-
-        function mostrarToast(mensagem) {
-            const toast = document.getElementById('toast');
-            toast.querySelector('.toast-content').textContent = mensagem;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // Fecha modal ao clicar fora
-        document.getElementById('modalAcordo').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                fecharModalAcordo();
+            if (devedorAtual) {
+                window.location.href = 'devedores.html?id=' + devedorAtual.cliente_id;
             }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = await checkAuth();
+            if (auth) await carregarFila();
         });
 
-        // Atalhos de teclado
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                return;
-            }
-            
-            switch(e.key) {
-                case 'ArrowRight':
-                case 'n':
-                    proximoDevedor();
-                    break;
-                case 's':
-                    pularDevedor();
-                    break;
-                case 'l':
-                    registrarLigacao();
-                    break;
-                case 'w':
-                    abrirWhatsApp();
-                    break;
-                case 'a':
-                    abrirModalAcordo();
-                    break;
-            }
+        document.getElementById('modalAcordo').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) fecharModal();
         });
     </script>
 </body>

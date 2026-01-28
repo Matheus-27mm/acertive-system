@@ -1,894 +1,495 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ACERTIVE - Credores</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    :root {
-      --bg-primary: #09090b;
-      --bg-secondary: #0f0f12;
-      --bg-card: #141417;
-      --text-primary: #fafafa;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
-      --gold: #F6C84C;
-      --gold-light: #FFD56A;
-      --gold-glow: rgba(246,200,76,0.15);
-      --border: rgba(255,255,255,0.08);
-      --green: #22c55e;
-      --green-bg: rgba(34,197,94,0.15);
-      --red: #ef4444;
-      --red-bg: rgba(239,68,68,0.15);
-      --blue: #3b82f6;
-      --blue-bg: rgba(59,130,246,0.15);
-      --orange: #f59e0b;
-      --orange-bg: rgba(245,158,11,0.12);
-      --purple: #a855f7;
-      --purple-bg: rgba(168,85,247,0.15);
-      --sidebar-width: 260px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Inter, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
-    .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
-    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    .logo { width: 38px; height: 38px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: var(--bg-primary); }
-    .logo-text { font-size: 20px; font-weight: 800; }
-    .logo-text span { color: var(--gold); }
-    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
-    .nav-section { margin-bottom: 24px; }
-    .nav-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; transition: all 0.15s; margin-bottom: 2px; }
-    .nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
-    .nav-link.active { background: var(--gold-glow); color: var(--gold); }
-    .nav-link i { width: 20px; text-align: center; font-size: 15px; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .user-info { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; }
-    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--bg-primary); }
-    .user-details { flex: 1; }
-    .user-name { font-weight: 600; font-size: 13px; }
-    .user-role { font-size: 11px; color: var(--gold); }
-    .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 6px; }
-    .btn-logout:hover { background: var(--red-bg); color: var(--red); }
-    .main { margin-left: var(--sidebar-width); min-height: 100vh; }
-    .header { height: 64px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .page-icon { width: 36px; height: 36px; background: var(--blue-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--blue); font-size: 16px; }
-    .page-title { font-size: 20px; font-weight: 700; }
-    .header-right { display: flex; align-items: center; gap: 10px; }
-    .content { padding: 24px; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
-    .btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--bg-primary); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(246,200,76,0.3); }
-    .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.05); }
-    .btn-icon { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; }
-    .btn-icon:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
-    .btn-icon.danger:hover { color: var(--red); background: var(--red-bg); }
-    .btn-danger { background: var(--red); color: white; }
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
-    .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 16px; }
-    .stat-icon.blue { background: var(--blue-bg); color: var(--blue); }
-    .stat-icon.green { background: var(--green-bg); color: var(--green); }
-    .stat-icon.orange { background: var(--orange-bg); color: var(--orange); }
-    .stat-icon.purple { background: var(--purple-bg); color: var(--purple); }
-    .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-    .stat-value { font-size: 28px; font-weight: 700; }
-    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .search-box { flex: 1; min-width: 300px; position: relative; }
-    .search-box input { width: 100%; padding: 12px 12px 12px 44px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-size: 14px; }
-    .search-box input:focus { outline: none; border-color: var(--gold); }
-    .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-    .filter-select { padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-size: 14px; min-width: 160px; }
-    .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .table-title { font-weight: 600; }
-    .table-count { font-size: 13px; color: var(--text-muted); }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-    td { font-size: 14px; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    .credor-info { display: flex; align-items: center; gap: 12px; }
-    .credor-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; }
-    .credor-avatar.c1 { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-    .credor-avatar.c2 { background: linear-gradient(135deg, #22c55e, #4ade80); }
-    .credor-avatar.c3 { background: linear-gradient(135deg, #a855f7, #c084fc); }
-    .credor-avatar.c4 { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-    .credor-name { font-weight: 600; }
-    .credor-cnpj { font-size: 12px; color: var(--text-muted); }
-    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .badge-green { background: var(--green-bg); color: var(--green); }
-    .badge-red { background: var(--red-bg); color: var(--red); }
-    .badge-orange { background: var(--orange-bg); color: var(--orange); }
-    .comissao-value { font-weight: 700; color: var(--gold); }
-    .progress-bar { width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--green); border-radius: 3px; }
-    .empty-state { padding: 60px 20px; text-align: center; }
-    .empty-state i { font-size: 48px; color: var(--text-muted); margin-bottom: 16px; }
-    .empty-state p { color: var(--text-muted); margin-bottom: 20px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
-    .modal-overlay.show { display: flex; }
-    .modal { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 720px; margin: auto; }
-    .modal-sm { max-width: 440px; }
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-    .modal-title i { color: var(--gold); }
-    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px; }
-    .modal-close:hover { color: var(--red); }
-    .modal-body { padding: 24px; max-height: calc(100vh - 200px); overflow-y: auto; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; }
-    .tab { flex: 1; padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: all 0.15s; }
-    .tab:hover { color: var(--text-primary); }
-    .tab.active { background: var(--bg-card); color: var(--gold); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .form-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .form-card.highlight { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03)); border-color: rgba(245,158,11,0.2); }
-    .form-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .form-card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-    .form-card-icon.blue { background: var(--blue-bg); color: var(--blue); }
-    .form-card-icon.green { background: var(--green-bg); color: var(--green); }
-    .form-card-icon.orange { background: var(--orange-bg); color: var(--orange); }
-    .form-card-icon.purple { background: var(--purple-bg); color: var(--purple); }
-    .form-card-icon.gold { background: var(--gold-glow); color: var(--gold); }
-    .form-card-title { font-size: 14px; font-weight: 600; }
-    .form-card-subtitle { font-size: 12px; color: var(--text-muted); }
-    .form-row { display: grid; gap: 16px; margin-bottom: 16px; }
-    .form-row:last-child { margin-bottom: 0; }
-    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
-    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-    .form-group { position: relative; }
-    .form-group label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
-    .form-group label i { color: var(--text-muted); font-size: 11px; }
-    .form-group label .req { color: var(--red); }
-    .form-input, .form-select { width: 100%; padding: 12px 14px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; transition: all 0.15s; }
-    .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
-    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
-    .taxa-preview { background: var(--bg-secondary); border-radius: 8px; padding: 14px; margin-top: 16px; display: flex; align-items: center; gap: 12px; }
-    .taxa-preview-icon { width: 40px; height: 40px; background: var(--orange-bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 16px; }
-    .taxa-preview-text { flex: 1; }
-    .taxa-preview-title { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
-    .taxa-preview-value { font-size: 14px; font-weight: 600; }
-    .taxa-preview-value span { color: var(--orange); }
-    .delete-warning { display: flex; gap: 16px; padding: 16px; background: var(--red-bg); border-radius: 12px; margin-bottom: 16px; }
-    .delete-warning-icon { width: 44px; height: 44px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
-    .delete-warning-text h4 { font-size: 14px; margin-bottom: 4px; }
-    .delete-warning-text p { font-size: 13px; color: var(--text-secondary); }
-    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .stats-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 768px) { .stats-row { grid-template-columns: 1fr; } .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; } .tabs { flex-wrap: wrap; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credores - ACERTIVE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0b; color: #fff; min-height: 100vh; }
+
+        /* Sidebar - Mesmo padrão */
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #0f0f10; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+        .sidebar-logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .sidebar-logo-text { font-size: 22px; font-weight: 700; }
+        .sidebar-logo-text span { color: #3b82f6; }
+        .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 12px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.9); }
+        .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
+        .nav-item .badge { margin-left: auto; background: #ef4444; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .user-info { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .user-avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .user-logout { color: rgba(255,255,255,0.4); padding: 8px; cursor: pointer; border-radius: 8px; }
+        .user-logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+        /* Main */
+        .main-content { margin-left: 260px; min-height: 100vh; padding: 32px; }
+
+        /* Header */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .page-header h1 { font-size: 28px; font-weight: 700; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; border: none; font-family: 'Inter', sans-serif; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(59,130,246,0.3); }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+        .stat-card { background: #111113; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 20px; }
+        .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
+        .stat-card.blue .stat-icon { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .stat-card.green .stat-icon { background: rgba(16,185,129,0.15); color: #10b981; }
+        .stat-card.yellow .stat-icon { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .stat-card.red .stat-icon { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .stat-value { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+        /* Search */
+        .search-bar { margin-bottom: 24px; }
+        .search-box { position: relative; max-width: 400px; }
+        .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); }
+        .search-box input { width: 100%; padding: 12px 16px 12px 44px; background: #111113; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 14px; }
+        .search-box input:focus { outline: none; border-color: rgba(59,130,246,0.5); }
+
+        /* Grid de Cards */
+        .credores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        
+        .credor-card { background: #111113; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 24px; transition: all 0.2s; }
+        .credor-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
+        
+        .credor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .credor-avatar { width: 56px; height: 56px; background: rgba(59,130,246,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #3b82f6; }
+        .credor-info h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .credor-info p { font-size: 13px; color: rgba(255,255,255,0.5); }
+        
+        .credor-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .credor-stat { background: rgba(255,255,255,0.02); border-radius: 10px; padding: 12px; text-align: center; }
+        .credor-stat-value { font-size: 18px; font-weight: 700; color: #3b82f6; }
+        .credor-stat-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; }
+        
+        .credor-actions { display: flex; gap: 10px; }
+        .credor-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+        .credor-btn.edit { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .credor-btn.edit:hover { background: rgba(59,130,246,0.25); }
+        .credor-btn.delete { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .credor-btn.delete:hover { background: rgba(239,68,68,0.25); }
+
+        /* Empty */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 40px; text-align: center; background: #111113; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; }
+        .empty-state i { font-size: 64px; color: rgba(59,130,246,0.3); margin-bottom: 20px; }
+        .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
+        .empty-state p { color: rgba(255,255,255,0.4); margin-bottom: 24px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #111113; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 500px; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .modal-header h3 i { color: #3b82f6; }
+        .modal-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 12px; justify-content: flex-end; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: rgba(59,130,246,0.5); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .btn-cancelar { padding: 12px 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .btn-salvar { padding: 12px 24px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #111113; border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { color: #10b981; font-size: 20px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">A</div>
-      <div class="logo-text">ACERT<span>IVE</span></div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item active"><i class="fas fa-building"></i> Credores</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Usuário</div>
+                    <div class="user-role" id="userRole">Operador</div>
+                </div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Credores</h1>
+            <button class="btn btn-primary" onclick="abrirModal()">
+                <i class="fas fa-plus"></i>
+                Novo Credor
+            </button>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fas fa-building"></i></div>
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total de Credores</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value" id="statAtivos">0</div>
+                <div class="stat-label">Credores Ativos</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                <div class="stat-value" id="statCarteira">R$ 0</div>
+                <div class="stat-label">Total em Carteira</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                <div class="stat-value" id="statRecuperado">R$ 0</div>
+                <div class="stat-label">Total Recuperado</div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar credor..." onkeyup="filtrar()">
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="credores-grid" id="credoresGrid">
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <h3>Nenhum credor cadastrado</h3>
+                <p>Cadastre seu primeiro credor para começar</p>
+                <button class="btn btn-primary" onclick="abrirModal()">
+                    <i class="fas fa-plus"></i> Novo Credor
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalCredor">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-building"></i> <span id="modalTitle">Novo Credor</span></h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <form id="formCredor" onsubmit="salvar(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="credorId">
+                    
+                    <div class="form-group">
+                        <label>Nome / Razão Social *</label>
+                        <input type="text" id="nome" required placeholder="Ex: Loja Bemol">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CNPJ</label>
+                            <input type="text" id="cnpj" placeholder="00.000.000/0000-00">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" id="telefone" placeholder="(00) 0000-0000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="email" placeholder="contato@empresa.com">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Comissão (%)</label>
+                            <input type="number" id="comissao" value="10" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="status">
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-salvar"><i class="fas fa-check"></i> Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-title">Principal</div>
-        <a href="/dashboard" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="/fila-cobranca" class="nav-link"><i class="fas fa-headset"></i> Fila de Cobranca</a>
-        <a href="/atendimento" class="nav-link"><i class="fas fa-phone-volume"></i> Atendimento</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">Cadastros</div>
-        <a href="/credores" class="nav-link active"><i class="fas fa-building"></i> Credores</a>
-        <a href="/clientes" class="nav-link"><i class="fas fa-users"></i> Clientes</a>
-        <a href="/cobrancas" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobrancas</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">Negociacao</div>
-        <a href="/acordos" class="nav-link"><i class="fas fa-handshake"></i> Acordos</a>
-        <a href="/parcelas" class="nav-link"><i class="fas fa-calendar-check"></i> Parcelas</a>
-        <a href="/simulador" class="nav-link"><i class="fas fa-calculator"></i> Simulador</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">Financeiro</div>
-        <a href="/financeiro" class="nav-link"><i class="fas fa-wallet"></i> Financeiro</a>
-        <a href="/relatorios" class="nav-link"><i class="fas fa-chart-bar"></i> Relatorios</a>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar" id="userAvatar">A</div>
-        <div class="user-details">
-          <div class="user-name" id="userName">Administrador</div>
-          <div class="user-role" id="userRole">Administrador</div>
-        </div>
-        <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
-      </div>
-    </div>
-  </aside>
 
-  <main class="main">
-    <header class="header">
-      <div class="header-left">
-        <div class="page-icon"><i class="fas fa-building"></i></div>
-        <h1 class="page-title">Credores</h1>
-      </div>
-      <div class="header-right">
-        <button class="btn btn-secondary" onclick="exportarCredores()"><i class="fas fa-download"></i> Exportar</button>
-        <button class="btn btn-primary" onclick="abrirModalCredor()"><i class="fas fa-plus"></i> Novo Credor</button>
-      </div>
-    </header>
+    <!-- Toast -->
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
-    <div class="content">
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-building"></i></div><div class="stat-label">Total de Credores</div><div class="stat-value" id="statTotal">0</div></div>
-        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div class="stat-label">Credores Ativos</div><div class="stat-value" id="statAtivos">0</div></div>
-        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-wallet"></i></div><div class="stat-label">Total em Carteira</div><div class="stat-value" id="statCarteira">R$ 0</div></div>
-        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-hand-holding-dollar"></i></div><div class="stat-label">Total Recuperado</div><div class="stat-value" id="statRecuperado">R$ 0</div></div>
-      </div>
+    <script>
+        const API = window.location.origin;
+        let credores = [];
 
-      <div class="filters">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchCredor" placeholder="Buscar por nome, CNPJ..." oninput="filtrarCredores()">
-        </div>
-        <select class="filter-select" id="filterStatus" onchange="filtrarCredores()">
-          <option value="">Todos os Status</option>
-          <option value="ativo">Ativos</option>
-          <option value="inativo">Inativos</option>
-        </select>
-        <select class="filter-select" id="filterOrdem" onchange="filtrarCredores()">
-          <option value="">Ordenar por Nome</option>
-          <option value="carteira">Maior Carteira</option>
-          <option value="recuperado">Maior Recuperacao</option>
-          <option value="recente">Mais Recente</option>
-        </select>
-      </div>
+        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+        function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
 
-      <div class="table-container">
-        <div class="table-header">
-          <div class="table-title">Lista de Credores</div>
-          <div class="table-count"><span id="countCredores">0</span> credores encontrados</div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Credor</th>
-              <th>Contato</th>
-              <th>Comissao</th>
-              <th>Carteira</th>
-              <th>Recuperacao</th>
-              <th>Status</th>
-              <th>Acoes</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCredores"></tbody>
-        </table>
-        <div class="empty-state" id="emptyState" style="display:none;">
-          <i class="fas fa-building"></i>
-          <p>Nenhum credor cadastrado</p>
-          <button class="btn btn-primary" onclick="abrirModalCredor()"><i class="fas fa-plus"></i> Cadastrar Primeiro Credor</button>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <div class="modal-overlay" id="modalCredor">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title"><i class="fas fa-building"></i> <span id="modalCredorTitulo">Novo Credor</span></h3>
-        <button class="modal-close" onclick="fecharModal('modalCredor')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="credorId">
-        
-        <div class="tabs">
-          <div class="tab active" data-tab="dados">Dados</div>
-          <div class="tab" data-tab="financeiro">Financeiro</div>
-          <div class="tab" data-tab="taxas">Taxas</div>
-          <div class="tab" data-tab="banco">Banco</div>
-        </div>
-
-        <div class="tab-content active" id="tab-dados">
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon blue"><i class="fas fa-building"></i></div>
-              <div>
-                <div class="form-card-title">Dados da Empresa</div>
-                <div class="form-card-subtitle">Informacoes principais do credor</div>
-              </div>
-            </div>
-            <div class="form-row cols-2">
-              <div class="form-group">
-                <label><i class="fas fa-store"></i> Nome Fantasia <span class="req">*</span></label>
-                <input type="text" class="form-input" id="credorNome" placeholder="Ex: Magazine Luiza">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-file-contract"></i> Razao Social</label>
-                <input type="text" class="form-input" id="credorRazao" placeholder="Razao social completa">
-              </div>
-            </div>
-            <div class="form-row cols-3">
-              <div class="form-group">
-                <label><i class="fas fa-id-card"></i> CNPJ</label>
-                <input type="text" class="form-input" id="credorCnpj" placeholder="00.000.000/0000-00">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-phone"></i> Telefone</label>
-                <input type="text" class="form-input" id="credorTelefone" placeholder="(00) 0000-0000">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-envelope"></i> E-mail</label>
-                <input type="email" class="form-input" id="credorEmail" placeholder="email@empresa.com">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon green"><i class="fas fa-user-tie"></i></div>
-              <div>
-                <div class="form-card-title">Contato Principal</div>
-                <div class="form-card-subtitle">Responsavel pelo relacionamento</div>
-              </div>
-            </div>
-            <div class="form-row cols-3">
-              <div class="form-group">
-                <label><i class="fas fa-user"></i> Nome</label>
-                <input type="text" class="form-input" id="credorContatoNome" placeholder="Nome do contato">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-phone"></i> Telefone</label>
-                <input type="text" class="form-input" id="credorContatoTel" placeholder="(00) 00000-0000">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-envelope"></i> E-mail</label>
-                <input type="email" class="form-input" id="credorContatoEmail" placeholder="contato@empresa.com">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon purple"><i class="fas fa-cog"></i></div>
-              <div><div class="form-card-title">Status</div></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="fas fa-toggle-on"></i> Status do Credor</label>
-                <select class="form-select" id="credorStatus">
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                  <option value="suspenso">Suspenso</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-financeiro">
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon gold"><i class="fas fa-percent"></i></div>
-              <div>
-                <div class="form-card-title">Comissao</div>
-                <div class="form-card-subtitle">Sua remuneracao sobre valores recuperados</div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="fas fa-hand-holding-dollar"></i> Percentual de Comissao (%)</label>
-                <input type="number" class="form-input" id="credorComissao" value="10" min="0" max="100" step="0.5">
-                <div class="form-hint">Percentual sobre o valor recuperado</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon blue"><i class="fas fa-handshake"></i></div>
-              <div>
-                <div class="form-card-title">Regras de Negociacao</div>
-                <div class="form-card-subtitle">Limites permitidos para acordos</div>
-              </div>
-            </div>
-            <div class="form-row cols-2">
-              <div class="form-group">
-                <label><i class="fas fa-percentage"></i> Desconto Maximo (%)</label>
-                <input type="number" class="form-input" id="descontoMax" value="30" min="0" max="100">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-layer-group"></i> Maximo de Parcelas</label>
-                <input type="number" class="form-input" id="parcelasMax" value="12" min="1" max="48">
-              </div>
-            </div>
-            <div class="form-row cols-2">
-              <div class="form-group">
-                <label><i class="fas fa-chart-line"></i> Juros no Parcelamento (% a.m.)</label>
-                <input type="number" class="form-input" id="jurosParcelamento" value="1" min="0" max="10" step="0.1">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-money-bill-wave"></i> Entrada Minima (%)</label>
-                <input type="number" class="form-input" id="entradaMinima" value="0" min="0" max="100">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-taxas">
-          <div class="form-card highlight">
-            <div class="form-card-header">
-              <div class="form-card-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
-              <div>
-                <div class="form-card-title">Taxas de Atraso</div>
-                <div class="form-card-subtitle">Aplicadas automaticamente quando o devedor atrasa</div>
-              </div>
-            </div>
-            <div class="form-row cols-3">
-              <div class="form-group">
-                <label><i class="fas fa-gavel"></i> Multa por Atraso (%)</label>
-                <input type="number" class="form-input" id="multaAtraso" value="2" min="0" max="10" step="0.5" oninput="atualizarPreviewTaxa()">
-                <div class="form-hint">Aplicada uma unica vez</div>
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-chart-line"></i> Juros por Atraso (% a.m.)</label>
-                <input type="number" class="form-input" id="jurosAtraso" value="1" min="0" max="10" step="0.1" oninput="atualizarPreviewTaxa()">
-                <div class="form-hint">Aplicado por mes</div>
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-calculator"></i> Tipo de Juros</label>
-                <select class="form-select" id="tipoJurosAtraso">
-                  <option value="simples">Juros Simples</option>
-                  <option value="composto">Juros Composto</option>
-                </select>
-                <div class="form-hint">Metodo de calculo</div>
-              </div>
-            </div>
-            <div class="taxa-preview">
-              <div class="taxa-preview-icon"><i class="fas fa-receipt"></i></div>
-              <div class="taxa-preview-text">
-                <div class="taxa-preview-title">Exemplo: Divida de R$ 1.000 com 30 dias de atraso</div>
-                <div class="taxa-preview-value" id="taxaPreviewValue">Total: <span>R$ 1.030,00</span> (+R$ 20 multa +R$ 10 juros)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-banco">
-          <div class="form-card">
-            <div class="form-card-header">
-              <div class="form-card-icon green"><i class="fas fa-university"></i></div>
-              <div>
-                <div class="form-card-title">Dados Bancarios</div>
-                <div class="form-card-subtitle">Para repasse de valores recuperados</div>
-              </div>
-            </div>
-            <div class="form-row cols-2">
-              <div class="form-group">
-                <label><i class="fas fa-university"></i> Banco</label>
-                <input type="text" class="form-input" id="credorBanco" placeholder="Ex: Banco do Brasil">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-qrcode"></i> Chave PIX</label>
-                <input type="text" class="form-input" id="credorPix" placeholder="CPF, CNPJ, E-mail ou Telefone">
-              </div>
-            </div>
-            <div class="form-row cols-3">
-              <div class="form-group">
-                <label><i class="fas fa-hashtag"></i> Agencia</label>
-                <input type="text" class="form-input" id="credorAgencia" placeholder="0000">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-credit-card"></i> Conta</label>
-                <input type="text" class="form-input" id="credorConta" placeholder="00000-0">
-              </div>
-              <div class="form-group">
-                <label><i class="fas fa-wallet"></i> Tipo de Conta</label>
-                <select class="form-select" id="credorTipoConta">
-                  <option value="corrente">Conta Corrente</option>
-                  <option value="poupanca">Poupanca</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="fecharModal('modalCredor')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarCredor()"><i class="fas fa-check"></i> Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="modalExcluir">
-    <div class="modal modal-sm">
-      <div class="modal-header">
-        <h3 class="modal-title" style="color:var(--red)"><i class="fas fa-trash"></i> Excluir Credor</h3>
-        <button class="modal-close" onclick="fecharModal('modalExcluir')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="delete-warning">
-          <div class="delete-warning-icon"><i class="fas fa-exclamation"></i></div>
-          <div class="delete-warning-text">
-            <h4>Tem certeza?</h4>
-            <p>Esta acao nao pode ser desfeita.</p>
-          </div>
-        </div>
-        <p style="font-size:14px;color:var(--text-secondary)">Credor: <strong id="deleteCredorNome"></strong></p>
-        <input type="hidden" id="deleteCredorId">
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">Cancelar</button>
-        <button class="btn btn-danger" onclick="executarExclusao()"><i class="fas fa-trash"></i> Excluir</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var API = window.location.origin;
-    var token = localStorage.getItem('token');
-    if (!token) window.location.href = '/login';
-    
-    var credores = [];
-    var credoresOriginal = [];
-    var avatarColors = ['c1', 'c2', 'c3', 'c4'];
-
-    function getHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      };
-    }
-
-    function fmtMoney(v) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(v) || 0);
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-
-    function fecharModal(id) {
-      document.getElementById(id).classList.remove('show');
-    }
-
-    // Tabs
-    document.querySelectorAll('.tab').forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        var tabId = this.getAttribute('data-tab');
-        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
-        this.classList.add('active');
-        document.getElementById('tab-' + tabId).classList.add('active');
-      });
-    });
-
-    function atualizarPreviewTaxa() {
-      var multa = parseFloat(document.getElementById('multaAtraso').value) || 0;
-      var juros = parseFloat(document.getElementById('jurosAtraso').value) || 0;
-      var valorBase = 1000;
-      var valorMulta = valorBase * (multa / 100);
-      var valorJuros = valorBase * (juros / 100);
-      var total = valorBase + valorMulta + valorJuros;
-      document.getElementById('taxaPreviewValue').innerHTML = 'Total: <span>' + fmtMoney(total) + '</span> (+' + fmtMoney(valorMulta) + ' multa +' + fmtMoney(valorJuros) + ' juros)';
-    }
-
-    async function carregarCredores() {
-      try {
-        var credoresRes = await fetch(API + '/api/credores', { headers: getHeaders() });
-        var statsRes = await fetch(API + '/api/credores/stats', { headers: getHeaders() });
-        var credoresData = await credoresRes.json();
-        var statsData = await statsRes.json();
-        
-        if (credoresData.success) {
-          credoresOriginal = credoresData.data || [];
-          credores = credoresOriginal.slice();
-          renderizarCredores();
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return false; }
+            try {
+                const r = await fetch(API + '/api/auth/me', { headers: H() });
+                const d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
+                const user = d.user || d;
+                document.getElementById('userName').textContent = user.nome || 'Usuário';
+                document.getElementById('userRole').textContent = user.perfil || 'Operador';
+                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
+                return true;
+            } catch (e) { return true; }
         }
-        
-        if (statsData.success) {
-          var s = statsData.data;
-          document.getElementById('statTotal').textContent = s.totalCredores || 0;
-          document.getElementById('statAtivos').textContent = s.credoresAtivos || 0;
-          document.getElementById('statCarteira').textContent = fmtMoney(s.totalCarteira);
-          document.getElementById('statRecuperado').textContent = fmtMoney(s.totalRecuperado);
+
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+
+        async function carregarCredores() {
+            try {
+                const r = await fetch(API + '/api/credores', { headers: H() });
+                const d = await r.json();
+                credores = d.data || d || [];
+
+                atualizarStats();
+                renderizar();
+            } catch (e) {
+                console.error('Erro:', e);
+            }
         }
-      } catch (e) {
-        console.error(e);
-      }
-    }
 
-    function renderizarCredores() {
-      var tbody = document.getElementById('tabelaCredores');
-      var empty = document.getElementById('emptyState');
-      document.getElementById('countCredores').textContent = credores.length;
-      
-      if (credores.length === 0) {
-        tbody.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-      
-      empty.style.display = 'none';
-      var html = '';
-      
-      for (var i = 0; i < credores.length; i++) {
-        var c = credores[i];
-        var nome = c.nome || '??';
-        var initials = nome.split(' ').map(function(p) { return p[0]; }).join('').substring(0, 2).toUpperCase();
-        var color = avatarColors[i % 4];
-        var taxa = parseFloat(c.taxa_recuperacao) || 0;
-        var statusClass = c.status === 'ativo' ? 'green' : (c.status === 'inativo' ? 'red' : 'orange');
-        
-        html += '<tr>';
-        html += '<td><div class="credor-info"><div class="credor-avatar ' + color + '">' + initials + '</div><div><div class="credor-name">' + nome + '</div><div class="credor-cnpj">' + (c.cnpj || 'Sem CNPJ') + '</div></div></div></td>';
-        html += '<td><div>' + (c.contato_nome || '-') + '</div><div style="font-size:12px;color:var(--text-muted)">' + (c.telefone || '') + '</div></td>';
-        html += '<td><span class="comissao-value">' + (c.comissao_percentual || 10) + '%</span></td>';
-        html += '<td><div style="font-weight:600">' + fmtMoney(c.valor_carteira) + '</div><div style="font-size:12px;color:var(--text-muted)">' + (c.total_cobrancas || 0) + ' cobrancas</div></td>';
-        html += '<td><div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-weight:600">' + taxa + '%</span><div class="progress-bar"><div class="progress-fill" style="width:' + taxa + '%"></div></div></div><div style="font-size:12px;color:var(--text-muted)">' + fmtMoney(c.valor_recuperado) + '</div></td>';
-        html += '<td><span class="badge badge-' + statusClass + '">' + (c.status || 'ativo') + '</span></td>';
-        html += '<td><button class="btn-icon" onclick="editarCredor(\x27' + c.id + '\x27)" title="Editar"><i class="fas fa-edit"></i></button>';
-        html += '<button class="btn-icon" onclick="verCobrancas(\x27' + c.id + '\x27)" title="Ver Cobrancas"><i class="fas fa-file-invoice"></i></button>';
-        html += '<button class="btn-icon danger" onclick="confirmarExclusao(\x27' + c.id + '\x27)" title="Excluir"><i class="fas fa-trash"></i></button></td>';
-        html += '</tr>';
-      }
-      
-      tbody.innerHTML = html;
-    }
+        function atualizarStats() {
+            const ativos = credores.filter(c => c.status !== 'inativo' && c.ativo !== false).length;
+            const carteira = credores.reduce((s, c) => s + (parseFloat(c.valor_carteira) || 0), 0);
+            const recuperado = credores.reduce((s, c) => s + (parseFloat(c.valor_recuperado) || 0), 0);
 
-    function filtrarCredores() {
-      var busca = document.getElementById('searchCredor').value.toLowerCase();
-      var status = document.getElementById('filterStatus').value;
-      var ordem = document.getElementById('filterOrdem').value;
-      
-      var filtrados = credoresOriginal.slice();
-      
-      if (busca) {
-        filtrados = filtrados.filter(function(c) {
-          return (c.nome || '').toLowerCase().indexOf(busca) >= 0 || (c.cnpj || '').indexOf(busca) >= 0;
+            document.getElementById('statTotal').textContent = credores.length;
+            document.getElementById('statAtivos').textContent = ativos;
+            document.getElementById('statCarteira').textContent = fmtMoney(carteira);
+            document.getElementById('statRecuperado').textContent = fmtMoney(recuperado);
+        }
+
+        function filtrar() {
+            renderizar();
+        }
+
+        function renderizar() {
+            const busca = document.getElementById('searchInput').value.toLowerCase();
+            const filtrados = credores.filter(c => !busca || c.nome?.toLowerCase().includes(busca));
+
+            if (filtrados.length === 0) {
+                document.getElementById('credoresGrid').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <h3>Nenhum credor encontrado</h3>
+                        <p>Cadastre seu primeiro credor para começar</p>
+                        <button class="btn btn-primary" onclick="abrirModal()">
+                            <i class="fas fa-plus"></i> Novo Credor
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('credoresGrid').innerHTML = filtrados.map(c => `
+                <div class="credor-card">
+                    <div class="credor-header">
+                        <div class="credor-avatar"><i class="fas fa-building"></i></div>
+                        <div class="credor-info">
+                            <h3>${c.nome || '-'}</h3>
+                            <p>${c.cnpj || c.email || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="credor-stats">
+                        <div class="credor-stat">
+                            <div class="credor-stat-value">${c.total_cobrancas || 0}</div>
+                            <div class="credor-stat-label">Cobranças</div>
+                        </div>
+                        <div class="credor-stat">
+                            <div class="credor-stat-value">${fmtMoney(c.valor_carteira || 0)}</div>
+                            <div class="credor-stat-label">Carteira</div>
+                        </div>
+                    </div>
+                    <div class="credor-actions">
+                        <button class="credor-btn edit" onclick="editar('${c.id}')"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="credor-btn delete" onclick="excluir('${c.id}')"><i class="fas fa-trash"></i> Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function abrirModal(id = null) {
+            document.getElementById('credorId').value = '';
+            document.getElementById('modalTitle').textContent = 'Novo Credor';
+            document.getElementById('formCredor').reset();
+            document.getElementById('comissao').value = 10;
+            document.getElementById('modalCredor').classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalCredor').classList.remove('active');
+        }
+
+        function editar(id) {
+            const c = credores.find(x => x.id === id);
+            if (!c) return;
+
+            document.getElementById('credorId').value = c.id;
+            document.getElementById('modalTitle').textContent = 'Editar Credor';
+            document.getElementById('nome').value = c.nome || '';
+            document.getElementById('cnpj').value = c.cnpj || '';
+            document.getElementById('telefone').value = c.telefone || '';
+            document.getElementById('email').value = c.email || '';
+            document.getElementById('comissao').value = c.comissao_percentual || c.comissao || 10;
+            document.getElementById('status').value = c.status || (c.ativo === false ? 'inativo' : 'ativo');
+
+            document.getElementById('modalCredor').classList.add('active');
+        }
+
+        async function salvar(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('credorId').value;
+            const dados = {
+                nome: document.getElementById('nome').value,
+                cnpj: document.getElementById('cnpj').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                comissao_percentual: parseFloat(document.getElementById('comissao').value) || 10,
+                status: document.getElementById('status').value,
+                ativo: document.getElementById('status').value === 'ativo'
+            };
+
+            try {
+                const url = id ? `${API}/api/credores/${id}` : `${API}/api/credores`;
+                const method = id ? 'PUT' : 'POST';
+
+                const r = await fetch(url, {
+                    method,
+                    headers: H(),
+                    body: JSON.stringify(dados)
+                });
+
+                if (r.ok) {
+                    toast(id ? 'Credor atualizado!' : 'Credor cadastrado!');
+                    fecharModal();
+                    await carregarCredores();
+                } else {
+                    const err = await r.json();
+                    toast(err.error || 'Erro ao salvar');
+                }
+            } catch (e) {
+                console.error(e);
+                toast('Erro ao salvar');
+            }
+        }
+
+        async function excluir(id) {
+            if (!confirm('Tem certeza que deseja excluir este credor?')) return;
+
+            try {
+                const r = await fetch(`${API}/api/credores/${id}`, {
+                    method: 'DELETE',
+                    headers: H()
+                });
+
+                if (r.ok) {
+                    toast('Credor excluído');
+                    await carregarCredores();
+                } else {
+                    toast('Erro ao excluir');
+                }
+            } catch (e) {
+                console.error(e);
+                toast('Erro ao excluir');
+            }
+        }
+
+        // Máscaras
+        document.getElementById('cnpj')?.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 14) v = v.slice(0, 14);
+            if (v.length > 12) v = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            else if (v.length > 8) v = v.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+            else if (v.length > 5) v = v.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+            else if (v.length > 2) v = v.replace(/(\d{2})(\d+)/, '$1.$2');
+            e.target.value = v;
         });
-      }
-      
-      if (status) {
-        filtrados = filtrados.filter(function(c) {
-          return (c.status || 'ativo') === status;
+
+        document.getElementById('telefone')?.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            if (v.length > 6) v = v.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3');
+            else if (v.length > 2) v = v.replace(/(\d{2})(\d+)/, '($1) $2');
+            e.target.value = v;
         });
-      }
-      
-      if (ordem === 'carteira') {
-        filtrados.sort(function(a, b) { return (parseFloat(b.valor_carteira) || 0) - (parseFloat(a.valor_carteira) || 0); });
-      } else if (ordem === 'recuperado') {
-        filtrados.sort(function(a, b) { return (parseFloat(b.valor_recuperado) || 0) - (parseFloat(a.valor_recuperado) || 0); });
-      } else if (ordem === 'recente') {
-        filtrados.sort(function(a, b) { return new Date(b.created_at || 0) - new Date(a.created_at || 0); });
-      } else {
-        filtrados.sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || ''); });
-      }
-      
-      credores = filtrados;
-      renderizarCredores();
-    }
 
-    function abrirModalCredor() {
-      document.getElementById('modalCredorTitulo').textContent = 'Novo Credor';
-      limparFormulario();
-      resetTabs();
-      document.getElementById('modalCredor').classList.add('show');
-    }
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = await checkAuth();
+            if (auth) await carregarCredores();
+        });
 
-    function resetTabs() {
-      document.querySelectorAll('.tab').forEach(function(t, i) { t.classList.toggle('active', i === 0); });
-      document.querySelectorAll('.tab-content').forEach(function(t, i) { t.classList.toggle('active', i === 0); });
-    }
-
-    function editarCredor(id) {
-      var c = null;
-      for (var i = 0; i < credoresOriginal.length; i++) {
-        if (credoresOriginal[i].id === id) {
-          c = credoresOriginal[i];
-          break;
-        }
-      }
-      if (!c) return;
-      
-      document.getElementById('modalCredorTitulo').textContent = 'Editar Credor';
-      document.getElementById('credorId').value = c.id;
-      document.getElementById('credorNome').value = c.nome || '';
-      document.getElementById('credorRazao').value = c.razao_social || '';
-      document.getElementById('credorCnpj').value = c.cnpj || '';
-      document.getElementById('credorTelefone').value = c.telefone || '';
-      document.getElementById('credorEmail').value = c.email || '';
-      document.getElementById('credorContatoNome').value = c.contato_nome || '';
-      document.getElementById('credorContatoTel').value = c.contato_telefone || '';
-      document.getElementById('credorContatoEmail').value = c.contato_email || '';
-      document.getElementById('credorStatus').value = c.status || 'ativo';
-      document.getElementById('credorComissao').value = c.comissao_percentual || 10;
-      document.getElementById('descontoMax').value = c.desconto_maximo || 30;
-      document.getElementById('parcelasMax').value = c.parcelas_maximo || 12;
-      document.getElementById('jurosParcelamento').value = c.juros_parcelamento || 1;
-      document.getElementById('entradaMinima').value = c.entrada_minima || 0;
-      document.getElementById('multaAtraso').value = c.multa_atraso || 2;
-      document.getElementById('jurosAtraso').value = c.juros_atraso || 1;
-      document.getElementById('tipoJurosAtraso').value = c.tipo_juros || 'simples';
-      document.getElementById('credorBanco').value = c.banco || '';
-      document.getElementById('credorPix').value = c.pix || '';
-      document.getElementById('credorAgencia').value = c.agencia || '';
-      document.getElementById('credorConta').value = c.conta || '';
-      document.getElementById('credorTipoConta').value = c.tipo_conta || 'corrente';
-      
-      atualizarPreviewTaxa();
-      resetTabs();
-      document.getElementById('modalCredor').classList.add('show');
-    }
-
-    function limparFormulario() {
-      document.getElementById('credorId').value = '';
-      document.getElementById('credorNome').value = '';
-      document.getElementById('credorRazao').value = '';
-      document.getElementById('credorCnpj').value = '';
-      document.getElementById('credorTelefone').value = '';
-      document.getElementById('credorEmail').value = '';
-      document.getElementById('credorContatoNome').value = '';
-      document.getElementById('credorContatoTel').value = '';
-      document.getElementById('credorContatoEmail').value = '';
-      document.getElementById('credorStatus').value = 'ativo';
-      document.getElementById('credorComissao').value = 10;
-      document.getElementById('descontoMax').value = 30;
-      document.getElementById('parcelasMax').value = 12;
-      document.getElementById('jurosParcelamento').value = 1;
-      document.getElementById('entradaMinima').value = 0;
-      document.getElementById('multaAtraso').value = 2;
-      document.getElementById('jurosAtraso').value = 1;
-      document.getElementById('tipoJurosAtraso').value = 'simples';
-      document.getElementById('credorBanco').value = '';
-      document.getElementById('credorPix').value = '';
-      document.getElementById('credorAgencia').value = '';
-      document.getElementById('credorConta').value = '';
-      document.getElementById('credorTipoConta').value = 'corrente';
-      atualizarPreviewTaxa();
-    }
-
-    async function salvarCredor() {
-      var id = document.getElementById('credorId').value;
-      var nome = document.getElementById('credorNome').value.trim();
-      
-      if (!nome) {
-        alert('Informe o nome do credor');
-        return;
-      }
-      
-      var dados = {
-        nome: nome,
-        razao_social: document.getElementById('credorRazao').value.trim(),
-        cnpj: document.getElementById('credorCnpj').value.trim(),
-        telefone: document.getElementById('credorTelefone').value.trim(),
-        email: document.getElementById('credorEmail').value.trim(),
-        contato_nome: document.getElementById('credorContatoNome').value.trim(),
-        contato_telefone: document.getElementById('credorContatoTel').value.trim(),
-        contato_email: document.getElementById('credorContatoEmail').value.trim(),
-        status: document.getElementById('credorStatus').value,
-        comissao_percentual: parseFloat(document.getElementById('credorComissao').value) || 10,
-        desconto_maximo: parseFloat(document.getElementById('descontoMax').value) || 30,
-        parcelas_maximo: parseInt(document.getElementById('parcelasMax').value) || 12,
-        juros_parcelamento: parseFloat(document.getElementById('jurosParcelamento').value) || 1,
-        entrada_minima: parseFloat(document.getElementById('entradaMinima').value) || 0,
-        multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2,
-        juros_atraso: parseFloat(document.getElementById('jurosAtraso').value) || 1,
-        tipo_juros: document.getElementById('tipoJurosAtraso').value || 'simples',
-        banco: document.getElementById('credorBanco').value.trim(),
-        pix: document.getElementById('credorPix').value.trim(),
-        agencia: document.getElementById('credorAgencia').value.trim(),
-        conta: document.getElementById('credorConta').value.trim(),
-        tipo_conta: document.getElementById('credorTipoConta').value
-      };
-      
-      try {
-        var url = id ? API + '/api/credores/' + id : API + '/api/credores';
-        var method = id ? 'PUT' : 'POST';
-        var res = await fetch(url, { method: method, headers: getHeaders(), body: JSON.stringify(dados) });
-        var data = await res.json();
-        
-        if (data.success) {
-          fecharModal('modalCredor');
-          carregarCredores();
-          alert(id ? 'Credor atualizado!' : 'Credor cadastrado!');
-        } else {
-          alert(data.message || 'Erro ao salvar');
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Erro ao salvar credor');
-      }
-    }
-
-    function confirmarExclusao(id) {
-      var c = null;
-      for (var i = 0; i < credoresOriginal.length; i++) {
-        if (credoresOriginal[i].id === id) {
-          c = credoresOriginal[i];
-          break;
-        }
-      }
-      if (!c) return;
-      
-      document.getElementById('deleteCredorId').value = id;
-      document.getElementById('deleteCredorNome').textContent = c.nome || 'Credor';
-      document.getElementById('modalExcluir').classList.add('show');
-    }
-
-    async function executarExclusao() {
-      var id = document.getElementById('deleteCredorId').value;
-      
-      try {
-        var res = await fetch(API + '/api/credores/' + id, { method: 'DELETE', headers: getHeaders() });
-        var data = await res.json();
-        
-        if (data.success) {
-          fecharModal('modalExcluir');
-          carregarCredores();
-          alert(data.message || 'Credor removido!');
-        } else {
-          alert(data.message || 'Erro ao excluir');
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Erro ao excluir');
-      }
-    }
-
-    function verCobrancas(id) {
-      window.location.href = '/cobrancas?credor=' + id;
-    }
-
-    function exportarCredores() {
-      var headers = ['Nome', 'CNPJ', 'Telefone', 'Email', 'Status', 'Comissao', 'Carteira', 'Recuperado'];
-      var rows = credoresOriginal.map(function(c) {
-        return [
-          c.nome || '',
-          c.cnpj || '',
-          c.telefone || '',
-          c.email || '',
-          c.status || 'ativo',
-          (c.comissao_percentual || 10) + '%',
-          fmtMoney(c.valor_carteira || 0),
-          fmtMoney(c.valor_recuperado || 0)
-        ];
-      });
-      
-      var csv = [headers].concat(rows).map(function(r) { return r.join(';'); }).join('\n');
-      var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-      var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'credores_' + new Date().toISOString().split('T')[0] + '.csv';
-      link.click();
-    }
-
-    async function carregarUsuario() {
-      try {
-        var res = await fetch(API + '/api/usuarios/me', { headers: getHeaders() });
-        var data = await res.json();
-        
-        if (data.success && data.data) {
-          document.getElementById('userName').textContent = data.data.nome || 'Usuario';
-          document.getElementById('userRole').textContent = data.data.nivel === 'admin' ? 'Administrador' : 'Operador';
-          document.getElementById('userAvatar').textContent = (data.data.nome || 'U').charAt(0).toUpperCase();
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    // Fechar modal ao clicar fora
-    document.querySelectorAll('.modal-overlay').forEach(function(o) {
-      o.addEventListener('click', function(e) {
-        if (e.target === this) this.classList.remove('show');
-      });
-    });
-
-    // Inicializar
-    carregarUsuario();
-    carregarCredores();
-    atualizarPreviewTaxa();
-  </script>
+        document.getElementById('modalCredor').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) fecharModal();
+        });
+    </script>
 </body>
 </html>
