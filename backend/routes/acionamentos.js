@@ -10,6 +10,308 @@ const express = require('express');
 
 module.exports = function(pool, auth, authAdmin, registrarLog) {
     const router = express.Router();
+// ═══════════════════════════════════════════════════════════════
+    // FILA DE TRABALHO - Rotas principais
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/acionamentos/fila/devedores - Lista devedores para trabalhar
+    router.get('/fila/devedores', auth, async (req, res) => {
+        try {
+            const { credor_id, status_cobranca, min_atraso, max_atraso, limit = 50, offset = 0 } = req.query;
+
+            let query = `
+                SELECT 
+                    c.id as cliente_id,
+                    c.nome,
+                    c.cpf_cnpj,
+                    c.telefone,
+                    c.celular,
+                    c.email,
+                    c.status_cobranca,
+                    c.data_ultimo_contato,
+                    COALESCE(
+                        (SELECT cr.nome FROM credores cr 
+                         JOIN cobrancas cob2 ON cob2.credor_id = cr.id 
+                         WHERE cob2.cliente_id = c.id 
+                         LIMIT 1), 
+                        'Sem credor'
+                    ) as credor_nome,
+                    COUNT(cob.id)::int as total_cobrancas,
+                    COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0)::numeric as valor_total,
+                    COALESCE(MAX(CASE 
+                        WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido')
+                        THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int 
+                        ELSE 0 
+                    END), 0)::int as maior_atraso,
+                    MIN(cob.data_vencimento) FILTER (WHERE cob.status IN ('pendente', 'vencido')) as vencimento_mais_antigo,
+                    (SELECT COUNT(*)::int FROM acionamentos a WHERE a.cliente_id = c.id OR a.devedor_id = c.id) as total_acionamentos,
+                    (SELECT MAX(created_at) FROM acionamentos a WHERE a.cliente_id = c.id OR a.devedor_id = c.id) as ultimo_acionamento
+                FROM clientes c
+                LEFT JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')
+                WHERE c.ativo = true
+            `;
+
+            const params = [];
+            let paramIndex = 1;
+
+            if (credor_id) {
+                query += ` AND EXISTS (SELECT 1 FROM cobrancas cob3 WHERE cob3.cliente_id = c.id AND cob3.credor_id = $${paramIndex})`;
+                params.push(credor_id);
+                paramIndex++;
+            }
+
+            if (status_cobranca) {
+                query += ` AND c.status_cobranca = $${paramIndex}`;
+                params.push(status_cobranca);
+                paramIndex++;
+            }
+
+            query += ` GROUP BY c.id, c.nome, c.cpf_cnpj, c.telefone, c.celular, c.email, c.status_cobranca, c.data_ultimo_contato`;
+            query += ` HAVING COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0) > 0`;
+
+            if (min_atraso) {
+                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) >= $${paramIndex}`;
+                params.push(parseInt(min_atraso));
+                paramIndex++;
+            }
+
+            if (max_atraso) {
+                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) <= $${paramIndex}`;
+                params.push(parseInt(max_atraso));
+                paramIndex++;
+            }
+
+            query += ` ORDER BY 
+                COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) DESC,
+                COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0) DESC,
+                c.data_ultimo_contato ASC NULLS FIRST`;
+
+            query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+            params.push(parseInt(limit), parseInt(offset));
+
+            const result = await pool.query(query, params);
+
+            res.json({
+                success: true,
+                data: result.rows,
+                total: result.rowCount,
+                limit: parseInt(limit),
+                offset: parseInt(offset)
+            });
+
+        } catch (error) {
+            console.error('[FILA] Erro ao listar devedores:', error);
+            res.status(500).json({ success: false, error: 'Erro ao listar fila: ' + error.message });
+        }
+    });
+
+    // GET /api/acionamentos/fila/devedor/:id - Detalhes de um devedor
+    router.get('/fila/devedor/:id', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            const cliente = await pool.query(`
+                SELECT c.*, 
+                       (SELECT COUNT(*)::int FROM acionamentos a WHERE a.cliente_id = c.id OR a.devedor_id = c.id) as total_acionamentos
+                FROM clientes c WHERE c.id = $1
+            `, [id]);
+
+            if (!cliente.rowCount) {
+                return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
+            }
+
+            const cobrancas = await pool.query(`
+                SELECT cob.*, cr.nome as credor_nome,
+                       CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido')
+                            THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END as dias_atraso
+                FROM cobrancas cob
+                LEFT JOIN credores cr ON cr.id = cob.credor_id
+                WHERE cob.cliente_id = $1
+                ORDER BY cob.data_vencimento ASC
+            `, [id]);
+
+            const acionamentos = await pool.query(`
+                SELECT a.*, u.nome as operador_nome
+                FROM acionamentos a
+                LEFT JOIN usuarios u ON u.id = a.operador_id
+                WHERE a.cliente_id = $1 OR a.devedor_id = $1
+                ORDER BY a.created_at DESC LIMIT 10
+            `, [id]);
+
+            const acordos = await pool.query(`
+                SELECT ac.*, 
+                       (SELECT COUNT(*)::int FROM parcelas p WHERE p.acordo_id = ac.id AND p.status = 'pago') as parcelas_pagas,
+                       (SELECT COUNT(*)::int FROM parcelas p WHERE p.acordo_id = ac.id) as total_parcelas
+                FROM acordos ac WHERE ac.cliente_id = $1 ORDER BY ac.created_at DESC
+            `, [id]);
+
+            const cobPendentes = cobrancas.rows.filter(c => ['pendente', 'vencido'].includes(c.status));
+            const valorTotal = cobPendentes.reduce((sum, c) => sum + parseFloat(c.valor || 0), 0);
+            const maiorAtraso = Math.max(...cobPendentes.map(c => c.dias_atraso || 0), 0);
+
+            res.json({
+                success: true,
+                data: {
+                    cliente: cliente.rows[0],
+                    cobrancas: cobrancas.rows,
+                    acionamentos: acionamentos.rows,
+                    acordos: acordos.rows,
+                    resumo: { valor_total: valorTotal, maior_atraso: maiorAtraso, total_cobrancas: cobPendentes.length }
+                }
+            });
+
+        } catch (error) {
+            console.error('[FILA] Erro ao buscar devedor:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar devedor: ' + error.message });
+        }
+    });
+
+    // GET /api/acionamentos/fila/stats - Estatísticas da fila
+    router.get('/fila/stats', auth, async (req, res) => {
+        try {
+            const stats = await pool.query(`
+                SELECT 
+                    COUNT(DISTINCT c.id)::int as total_devedores,
+                    COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0)::numeric as valor_total,
+                    COUNT(DISTINCT CASE WHEN c.status_cobranca = 'novo' THEN c.id END)::int as novos,
+                    COUNT(DISTINCT CASE WHEN c.status_cobranca = 'negociando' THEN c.id END)::int as negociando,
+                    COUNT(DISTINCT CASE WHEN c.status_cobranca = 'sem_contato' THEN c.id END)::int as sem_contato
+                FROM clientes c
+                JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')
+                WHERE c.ativo = true
+            `);
+
+            const acionamentosHoje = await pool.query(`SELECT COUNT(*)::int as total FROM acionamentos WHERE DATE(created_at) = CURRENT_DATE`);
+            const acordosHoje = await pool.query(`SELECT COUNT(*)::int as total FROM acordos WHERE DATE(created_at) = CURRENT_DATE`);
+
+            res.json({
+                success: true,
+                data: {
+                    ...stats.rows[0],
+                    acionamentos_hoje: acionamentosHoje.rows[0].total,
+                    acordos_hoje: acordosHoje.rows[0].total
+                }
+            });
+
+        } catch (error) {
+            console.error('[FILA] Erro stats:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas' });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // ACIONAMENTOS - CRUD
+    // ═══════════════════════════════════════════════════════════════
+
+    // GET /api/acionamentos/cliente/:id - Acionamentos de um cliente
+    router.get('/cliente/:id', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { limit = 20 } = req.query;
+
+            const result = await pool.query(`
+                SELECT a.*, u.nome as operador_nome
+                FROM acionamentos a
+                LEFT JOIN usuarios u ON u.id = a.operador_id
+                WHERE a.cliente_id = $1 OR a.devedor_id = $1
+                ORDER BY a.created_at DESC LIMIT $2
+            `, [id, parseInt(limit)]);
+
+            res.json({ success: true, data: result.rows });
+
+        } catch (error) {
+            console.error('[ACIONAMENTOS] Erro ao buscar:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar acionamentos' });
+        }
+    });
+
+    // POST /api/acionamentos - Criar acionamento
+    router.post('/', auth, async (req, res) => {
+        try {
+            const {
+                cliente_id, devedor_id, divida_id, tipo, canal, resultado,
+                descricao, contato_utilizado, promessa_valor, promessa_data,
+                agendar_retorno, data_retorno
+            } = req.body;
+
+            if (!cliente_id && !devedor_id) {
+                return res.status(400).json({ success: false, error: 'Cliente é obrigatório' });
+            }
+            if (!tipo) {
+                return res.status(400).json({ success: false, error: 'Tipo de acionamento é obrigatório' });
+            }
+            if (!resultado) {
+                return res.status(400).json({ success: false, error: 'Resultado é obrigatório' });
+            }
+
+            const clienteIdFinal = cliente_id || devedor_id;
+
+            const result = await pool.query(`
+                INSERT INTO acionamentos (
+                    cliente_id, devedor_id, divida_id, operador_id,
+                    tipo, canal, resultado, descricao, contato_utilizado,
+                    promessa_valor, promessa_data, promessa_cumprida,
+                    agendar_retorno, data_retorno, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, $13, NOW())
+                RETURNING *
+            `, [
+                clienteIdFinal, devedor_id || clienteIdFinal, divida_id, req.user?.id,
+                tipo, canal, resultado, descricao, contato_utilizado,
+                promessa_valor, promessa_data, agendar_retorno || false, data_retorno
+            ]);
+
+            // Atualizar data_ultimo_contato no cliente
+            await pool.query(`UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1`, [clienteIdFinal]);
+
+            // Se tem promessa, atualizar status para negociando
+            if (promessa_valor && promessa_data) {
+                await pool.query(`UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1 AND status_cobranca = 'novo'`, [clienteIdFinal]);
+            }
+
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'ACIONAMENTO_CRIADO', 'acionamentos', result.rows[0].id, { tipo, resultado });
+            }
+
+            res.status(201).json({ success: true, data: result.rows[0], message: 'Acionamento registrado!' });
+
+        } catch (error) {
+            console.error('[ACIONAMENTOS] Erro ao criar:', error);
+            res.status(500).json({ success: false, error: 'Erro ao registrar acionamento: ' + error.message });
+        }
+    });
+
+    // PUT /api/acionamentos/cliente/:id/status - Atualizar status do cliente
+    router.put('/cliente/:id/status', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status_cobranca } = req.body;
+
+            const statusValidos = ['novo', 'negociando', 'acordo', 'sem_contato', 'recusou', 'juridico', 'incobravel'];
+            
+            if (!statusValidos.includes(status_cobranca)) {
+                return res.status(400).json({ success: false, error: `Status inválido. Use: ${statusValidos.join(', ')}` });
+            }
+
+            const result = await pool.query(`
+                UPDATE clientes SET status_cobranca = $2, updated_at = NOW()
+                WHERE id = $1 RETURNING id, nome, status_cobranca
+            `, [id, status_cobranca]);
+
+            if (!result.rowCount) {
+                return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
+            }
+
+            if (registrarLog) {
+                await registrarLog(req.user?.id, 'STATUS_ALTERADO', 'clientes', id, { status_cobranca });
+            }
+
+            res.json({ success: true, data: result.rows[0], message: 'Status atualizado!' });
+
+        } catch (error) {
+            console.error('[ACIONAMENTOS] Erro ao atualizar status:', error);
+            res.status(500).json({ success: false, error: 'Erro ao atualizar status' });
+        }
+    });
 
     // ═══════════════════════════════════════════════════════════════
     // RÉGUA DE COBRANÇA
