@@ -3,88 +3,100 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ACERTIVE • Dashboard</title>
+  <title>ACERTIVE - Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg-primary: #09090b;
-      --bg-elevated: #111113;
-      --bg-card: #161618;
-      --bg-hover: #1c1c1f;
-      --text-primary: #fafafa;
-      --text-secondary: #71717a;
-      --text-muted: #3f3f46;
-      --accent: #ca9b3c;
-      --accent-light: #e2b955;
-      --accent-glow: rgba(202, 155, 60, 0.12);
-      --accent-glow-strong: rgba(202, 155, 60, 0.25);
-      --border: #27272a;
-      --border-subtle: #1f1f23;
+      --bg: #0a0a0b;
+      --bg-card: #111113;
+      --bg-card-hover: #161618;
+      --border: #1e1e22;
+      --border-light: #2a2a2e;
+      --text: #fafafa;
+      --text-muted: #71717a;
+      --text-secondary: #a1a1aa;
+      --gold: #d4a847;
+      --gold-dark: #b8922e;
+      --gold-glow: rgba(212,168,71,0.1);
       --green: #22c55e;
-      --green-muted: #166534;
+      --green-bg: rgba(34,197,94,0.1);
       --red: #ef4444;
-      --red-muted: #991b1b;
-      --sidebar-width: 240px;
+      --red-bg: rgba(239,68,68,0.1);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59,130,246,0.1);
+      --orange: #f97316;
+      --orange-bg: rgba(249,115,22,0.1);
+      --purple: #a855f7;
+      --purple-bg: rgba(168,85,247,0.1);
+      --sidebar: 260px;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      letter-spacing: -0.01em;
+      overflow-x: hidden;
     }
 
+    /* SIDEBAR */
     .sidebar {
       position: fixed;
       left: 0;
       top: 0;
-      width: var(--sidebar-width);
+      width: var(--sidebar);
       height: 100vh;
-      background: var(--bg-primary);
-      border-right: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       z-index: 100;
     }
-
     .sidebar-header {
-      padding: 24px 20px;
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
-    .logo {
-      width: 36px;
-      height: 36px;
-      background: var(--accent);
-      border-radius: 8px;
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 16px;
-      color: var(--bg-primary);
-    }
-
-    .logo-text {
       font-size: 18px;
-      font-weight: 700;
+      color: var(--bg);
+    }
+    .logo-text {
+      font-size: 22px;
+      font-weight: 800;
       letter-spacing: -0.5px;
     }
-    .logo-text span { color: var(--accent); }
+    .logo-text span { color: var(--gold); }
 
     .sidebar-nav {
       flex: 1;
-      padding: 8px 12px;
+      padding: 16px 12px;
       overflow-y: auto;
     }
-
+    .nav-section {
+      margin-bottom: 24px;
+    }
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      letter-spacing: 0.5px;
+    }
     .nav-link {
       display: flex;
       align-items: center;
@@ -92,28 +104,25 @@
       padding: 12px 16px;
       color: var(--text-secondary);
       text-decoration: none;
-      border-radius: 10px;
+      border-radius: 8px;
       font-weight: 500;
       font-size: 14px;
-      transition: all 0.15s ease;
-      margin-bottom: 4px;
+      transition: all 0.15s;
+      margin-bottom: 2px;
     }
     .nav-link:hover {
-      color: var(--text-primary);
-      background: var(--bg-hover);
+      background: var(--bg-card-hover);
+      color: var(--text);
     }
     .nav-link.active {
-      color: var(--accent);
-      background: var(--accent-glow);
+      background: var(--gold-glow);
+      color: var(--gold);
     }
-    .nav-link i { 
-      width: 20px; 
-      text-align: center; 
+    .nav-link i {
+      width: 20px;
+      text-align: center;
       font-size: 15px;
-      opacity: 0.8;
     }
-    .nav-link.active i { opacity: 1; }
-    
     .nav-badge {
       margin-left: auto;
       padding: 2px 8px;
@@ -122,48 +131,35 @@
       font-weight: 600;
       background: var(--red);
       color: white;
-      display: none;
-    }
-    .nav-badge:not(:empty) { display: inline-block; }
-
-    .nav-divider {
-      height: 1px;
-      background: var(--border-subtle);
-      margin: 16px 12px;
     }
 
     .sidebar-footer {
       padding: 16px;
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid var(--border);
     }
-    
-    .user-info {
+    .user-card {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px;
+      background: var(--bg);
       border-radius: 10px;
-      transition: background 0.15s;
     }
-    .user-info:hover { background: var(--bg-hover); }
-    
     .user-avatar {
-      width: 36px;
-      height: 36px;
-      background: var(--accent-glow);
-      border: 1px solid var(--accent);
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--gold-glow) 0%, transparent 100%);
+      border: 2px solid var(--gold);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--accent);
+      font-weight: 700;
+      color: var(--gold);
     }
-    .user-details { flex: 1; }
+    .user-info { flex: 1; }
     .user-name { font-weight: 600; font-size: 13px; }
-    .user-role { font-size: 11px; color: var(--text-secondary); }
-    
+    .user-role { font-size: 11px; color: var(--text-muted); }
     .btn-logout {
       background: none;
       border: none;
@@ -173,86 +169,44 @@
       border-radius: 6px;
       transition: all 0.15s;
     }
-    .btn-logout:hover { 
-      background: rgba(239, 68, 68, 0.1); 
-      color: var(--red); 
+    .btn-logout:hover {
+      background: var(--red-bg);
+      color: var(--red);
     }
 
+    /* MAIN */
     .main {
-      margin-left: var(--sidebar-width);
+      margin-left: var(--sidebar);
       min-height: 100vh;
-      background: var(--bg-primary);
+      padding: 24px 32px;
     }
 
-    .header {
-      height: 64px;
-      padding: 0 32px;
+    /* HEADER */
+    .page-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border-subtle);
-      background: var(--bg-primary);
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      align-items: flex-start;
+      margin-bottom: 32px;
     }
-
-    .greeting {
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .page-subtitle {
+      color: var(--text-muted);
       font-size: 14px;
-      color: var(--text-secondary);
     }
-    .greeting strong {
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .header-right {
+    .header-actions {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
-
-    .header-btn {
-      width: 40px;
-      height: 40px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-      position: relative;
-      font-size: 15px;
-    }
-    .header-btn:hover {
-      background: var(--bg-hover);
-      color: var(--text-primary);
-      border-color: var(--text-muted);
-    }
-    .header-btn .badge {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      min-width: 18px;
-      height: 18px;
-      background: var(--red);
-      border-radius: 9px;
-      font-size: 10px;
-      font-weight: 600;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
+      padding: 12px 20px;
       border-radius: 10px;
       font-weight: 600;
       font-size: 13px;
@@ -262,161 +216,120 @@
       text-decoration: none;
     }
     .btn-primary {
-      background: var(--accent);
-      color: var(--bg-primary);
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--bg);
     }
     .btn-primary:hover {
-      background: var(--accent-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212,168,71,0.3);
     }
-
-    .content {
-      padding: 32px;
-      max-width: 1400px;
-    }
-
-    .hero-section {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-
-    .hero-card {
-      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px;
-      position: relative;
-      overflow: hidden;
     }
-    
-    .hero-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-      pointer-events: none;
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
     }
 
-    .hero-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .hero-label i { color: var(--accent); }
-
-    .hero-value {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-meta {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .hero-stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-    .hero-stat.positive { color: var(--green); }
-
-    .quick-stats {
+    /* STATS GRID */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 32px;
     }
-
-    .quick-stat {
+    .stat-card {
       background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+    }
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      padding: 20px;
-      transition: all 0.2s ease;
-    }
-    .quick-stat:hover {
-      border-color: var(--border);
-      background: var(--bg-hover);
-    }
-
-    .quick-stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    .quick-stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .quick-stat-change {
-      font-size: 12px;
-      margin-top: 6px;
       display: flex;
       align-items: center;
-      gap: 4px;
-      color: var(--text-secondary);
+      justify-content: center;
+      font-size: 20px;
     }
-    .quick-stat-change.up { color: var(--green); }
+    .stat-icon.gold { background: var(--gold-glow); color: var(--gold); }
+    .stat-icon.green { background: var(--green-bg); color: var(--green); }
+    .stat-icon.blue { background: var(--blue-bg); color: var(--blue); }
+    .stat-icon.red { background: var(--red-bg); color: var(--red); }
+    .stat-icon.orange { background: var(--orange-bg); color: var(--orange); }
+    .stat-icon.purple { background: var(--purple-bg); color: var(--purple); }
+    .stat-trend {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .stat-trend.up { background: var(--green-bg); color: var(--green); }
+    .stat-trend.down { background: var(--red-bg); color: var(--red); }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
-    .main-grid {
+    /* GRID LAYOUT */
+    .grid-2 {
       display: grid;
       grid-template-columns: 1.5fr 1fr;
       gap: 24px;
+      margin-bottom: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
     }
 
+    /* CARD */
     .card {
       background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
       overflow: hidden;
     }
-
     .card-header {
       padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
     }
-
     .card-title {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .card-title i { 
-      color: var(--accent); 
-      font-size: 14px;
-    }
-
+    .card-title i { color: var(--gold); }
     .card-link {
       font-size: 12px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       text-decoration: none;
       font-weight: 500;
       display: flex;
@@ -424,252 +337,283 @@
       gap: 6px;
       transition: color 0.15s;
     }
-    .card-link:hover { color: var(--accent); }
-
+    .card-link:hover { color: var(--gold); }
     .card-body { padding: 20px 24px; }
+    .card-body.no-padding { padding: 0; }
 
-    .cobranca-item {
+    /* AGING CHART */
+    .aging-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .aging-item {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .aging-item:hover {
+      border-color: var(--gold);
+      transform: scale(1.02);
+    }
+    .aging-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .aging-value {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .aging-item.green .aging-value { color: var(--green); }
+    .aging-item.orange .aging-value { color: var(--orange); }
+    .aging-item.red .aging-value { color: var(--red); }
+    .aging-item.dark-red .aging-value { color: #dc2626; }
+    .aging-money {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* CREDOR LIST */
+    .credor-item {
       display: flex;
       align-items: center;
       gap: 16px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border-subtle);
-      transition: all 0.15s;
-      cursor: pointer;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
     }
-    .cobranca-item:last-child { border-bottom: none; }
-    .cobranca-item:hover { padding-left: 8px; }
+    .credor-item:last-child { border-bottom: none; }
+    .credor-item:hover { background: var(--bg-card-hover); }
+    .credor-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+    .credor-info { flex: 1; }
+    .credor-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .credor-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .credor-values { text-align: right; }
+    .credor-total {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gold);
+      margin-bottom: 2px;
+    }
+    .credor-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
 
-    .cobranca-avatar {
+    /* FILA DE TRABALHO */
+    .fila-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .fila-item:last-child { border-bottom: none; }
+    .fila-item:hover {
+      background: var(--gold-glow);
+      padding-left: 28px;
+    }
+    .fila-priority {
+      width: 4px;
+      height: 40px;
+      border-radius: 2px;
+    }
+    .fila-priority.high { background: var(--red); }
+    .fila-priority.medium { background: var(--orange); }
+    .fila-priority.low { background: var(--green); }
+    .fila-avatar {
       width: 40px;
       height: 40px;
-      background: var(--bg-hover);
+      background: var(--bg);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 14px;
-      color: var(--text-secondary);
+      font-size: 13px;
+      color: var(--text-muted);
     }
-
-    .cobranca-info { flex: 1; min-width: 0; }
-    
-    .cobranca-nome {
+    .fila-info { flex: 1; }
+    .fila-name {
       font-weight: 600;
       font-size: 14px;
       margin-bottom: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-    
-    .cobranca-desc {
+    .fila-detail {
       font-size: 12px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      color: var(--text-muted);
     }
-
-    .cobranca-valor { text-align: right; }
-    
-    .cobranca-valor-num {
+    .fila-valor {
+      text-align: right;
+    }
+    .fila-valor-num {
       font-weight: 700;
       font-size: 14px;
       margin-bottom: 2px;
     }
-    
-    .cobranca-status {
+    .fila-atraso {
       font-size: 11px;
       padding: 3px 8px;
       border-radius: 6px;
-      font-weight: 500;
-    }
-    .cobranca-status.vencida { 
-      background: rgba(239, 68, 68, 0.1); 
-      color: var(--red); 
-    }
-    .cobranca-status.hoje { 
-      background: rgba(249, 115, 22, 0.1); 
-      color: #f97316; 
-    }
-    .cobranca-status.pendente { 
-      background: rgba(59, 130, 246, 0.1); 
-      color: #3b82f6; 
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--text-muted);
-    }
-    .empty-state i { 
-      font-size: 32px; 
-      margin-bottom: 12px;
-      opacity: 0.5;
-    }
-    .empty-state p { font-size: 13px; }
-
-    .meta-item {
-      margin-bottom: 20px;
-    }
-    .meta-item:last-child { margin-bottom: 0; }
-
-    .meta-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .meta-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .meta-value {
-      font-size: 13px;
       font-weight: 600;
     }
-
-    .meta-bar {
-      height: 6px;
-      background: var(--bg-hover);
-      border-radius: 3px;
-      overflow: hidden;
+    .fila-atraso.vencido {
+      background: var(--red-bg);
+      color: var(--red);
+    }
+    .fila-atraso.hoje {
+      background: var(--orange-bg);
+      color: var(--orange);
+    }
+    .fila-atraso.futuro {
+      background: var(--green-bg);
+      color: var(--green);
     }
 
-    .meta-progress {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.5s ease;
-    }
-
-    .notif-wrapper { position: relative; }
-    
-    .notif-dropdown {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      width: 360px;
-      max-height: 480px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      display: none;
-      overflow: hidden;
-      z-index: 1000;
-    }
-    .notif-dropdown.show { display: block; }
-
-    .notif-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .notif-header h3 { font-size: 14px; font-weight: 600; }
-    
-    .notif-close {
-      font-size: 12px;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-    .notif-close:hover { color: var(--accent); }
-
-    .notif-body {
-      max-height: 320px;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
-    .notif-item {
-      display: flex;
-      align-items: flex-start;
+    /* PRODUTIVIDADE */
+    .prod-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      padding: 12px;
+    }
+    .prod-item {
+      background: var(--bg);
       border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .notif-item:hover { background: var(--bg-hover); }
-
-    .notif-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    .notif-icon.danger { background: rgba(239,68,68,0.1); color: var(--red); }
-    .notif-icon.warning { background: rgba(249,115,22,0.1); color: #f97316; }
-    .notif-icon.success { background: rgba(34,197,94,0.1); color: var(--green); }
-
-    .notif-content { flex: 1; min-width: 0; }
-    .notif-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-    .notif-desc { font-size: 12px; color: var(--text-secondary); }
-
-    .notif-empty {
+      padding: 16px;
       text-align: center;
-      padding: 40px;
+    }
+    .prod-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .prod-value.green { color: var(--green); }
+    .prod-value.blue { color: var(--blue); }
+    .prod-value.gold { color: var(--gold); }
+    .prod-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 48px 24px;
       color: var(--text-muted);
     }
-    .notif-empty i { font-size: 24px; margin-bottom: 8px; display: block; }
-
-    @media (max-width: 1200px) {
-      .hero-section { grid-template-columns: 1fr; }
-      .quick-stats { grid-template-columns: repeat(2, 1fr); }
-      .main-grid { grid-template-columns: 1fr; }
+    .empty i {
+      font-size: 40px;
+      margin-bottom: 16px;
+      opacity: 0.3;
     }
-    @media (max-width: 768px) {
+    .empty p {
+      font-size: 14px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1400px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); }
       .main { margin-left: 0; }
-      .quick-stats { grid-template-columns: 1fr 1fr; }
-      .content { padding: 20px; }
-      .hero-value { font-size: 36px; }
+    }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .aging-grid { grid-template-columns: repeat(2, 1fr); }
+      .main { padding: 16px; }
     }
   </style>
 </head>
 <body>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">A</div>
-      <div class="logo-text">ACERT<span>IVE</span></div>
+      <div class="logo">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">ACERT<span>IVE</span></div>
+      </div>
     </div>
-    
+
     <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-link active">
-        <i class="fas fa-chart-pie"></i> Dashboard
-      </a>
-      <a href="cobrancas.html" class="nav-link">
-        <i class="fas fa-file-invoice-dollar"></i> Cobranças
-        <span class="nav-badge" id="badgeCobrancas"></span>
-      </a>
-      <a href="acordos.html" class="nav-link">
-        <i class="fas fa-handshake"></i> Acordos
-      </a>
-      <a href="financeiro.html" class="nav-link">
-        <i class="fas fa-wallet"></i> Financeiro
-      </a>
-      <div class="nav-divider"></div>
-      <a href="configuracoes.html" class="nav-link">
-        <i class="fas fa-cog"></i> Configurações
-      </a>
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="dashboard.html" class="nav-link active">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="fila.html" class="nav-link">
+          <i class="fas fa-headset"></i> Fila de Trabalho
+          <span class="nav-badge" id="badgeFila">0</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Gestão</div>
+        <a href="devedores.html" class="nav-link">
+          <i class="fas fa-users"></i> Devedores
+        </a>
+        <a href="acordos.html" class="nav-link">
+          <i class="fas fa-handshake"></i> Acordos
+        </a>
+        <a href="cobrancas.html" class="nav-link">
+          <i class="fas fa-file-invoice-dollar"></i> Cobranças
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Carteiras</div>
+        <a href="credores.html" class="nav-link">
+          <i class="fas fa-building"></i> Credores
+        </a>
+        <a href="importar.html" class="nav-link">
+          <i class="fas fa-file-import"></i> Importar
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Sistema</div>
+        <a href="relatorios.html" class="nav-link">
+          <i class="fas fa-chart-bar"></i> Relatórios
+        </a>
+        <a href="configuracoes.html" class="nav-link">
+          <i class="fas fa-cog"></i> Configurações
+        </a>
+      </div>
     </nav>
-    
+
     <div class="sidebar-footer">
-      <div class="user-info">
+      <div class="user-card">
         <div class="user-avatar" id="userAvatar">A</div>
-        <div class="user-details">
-          <div class="user-name" id="userName">Carregando...</div>
-          <div class="user-role" id="userRole">Operador</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">Administrador</div>
         </div>
         <button class="btn-logout" onclick="logout()" title="Sair">
           <i class="fas fa-sign-out-alt"></i>
@@ -679,124 +623,133 @@
   </aside>
 
   <main class="main">
-    <header class="header">
-      <div class="greeting">Bem-vindo, <strong id="greetingName">Usuário</strong></div>
-      <div class="header-right">
-        <button class="header-btn" title="Atualizar" onclick="carregarDados()">
-          <i class="fas fa-sync-alt"></i>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle" id="dataAtual">Carregando...</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="location.href='importar.html'">
+          <i class="fas fa-file-import"></i> Importar Carteira
         </button>
-        <div class="notif-wrapper">
-          <button class="header-btn" title="Notificações" onclick="toggleNotif()">
-            <i class="fas fa-bell"></i>
-            <span class="badge" id="notifBadge" style="display:none;">0</span>
-          </button>
-          <div class="notif-dropdown" id="notifDropdown">
-            <div class="notif-header">
-              <h3>Notificações</h3>
-              <span class="notif-close" onclick="toggleNotif()">Fechar</span>
-            </div>
-            <div class="notif-body" id="notifBody">
-              <div class="notif-empty">
-                <i class="fas fa-check-circle"></i>
-                <p>Nenhuma notificação</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <a href="cobrancas.html" class="btn btn-primary">
-          <i class="fas fa-play"></i> Iniciar
-        </a>
+        <button class="btn btn-primary" onclick="location.href='fila.html'">
+          <i class="fas fa-headset"></i> Iniciar Trabalho
+        </button>
       </div>
-    </header>
+    </div>
 
-    <div class="content">
-      <div class="hero-section">
-        <div class="hero-card">
-          <div class="hero-label"><i class="fas fa-wallet"></i> Total em Carteira</div>
-          <div class="hero-value" id="totalCarteira">R$ 0,00</div>
-          <div class="hero-meta">
-            <div class="hero-stat"><span id="qtdDividas">0</span> dívidas ativas</div>
-            <div class="hero-stat positive" id="trendCarteira"><i class="fas fa-arrow-up"></i> <span id="pctCarteira">0%</span> este mês</div>
-          </div>
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon gold"><i class="fas fa-wallet"></i></div>
+          <span class="stat-trend up" id="trendCarteira">+0%</span>
         </div>
-        <div class="hero-card">
-          <div class="hero-label"><i class="fas fa-hand-holding-usd"></i> Recuperado no Mês</div>
-          <div class="hero-value" id="totalRecuperado">R$ 0,00</div>
-          <div class="hero-meta">
-            <div class="hero-stat"><span id="qtdAcordos">0</span> acordos ativos</div>
-            <div class="hero-stat positive"><i class="fas fa-arrow-up"></i> <span id="pctRecuperado">0%</span> vs mês anterior</div>
+        <div class="stat-value" id="totalCarteira">R$ 0</div>
+        <div class="stat-label">Total em Carteira</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon green"><i class="fas fa-hand-holding-usd"></i></div>
+          <span class="stat-trend up" id="trendRecuperado">+0%</span>
+        </div>
+        <div class="stat-value" id="totalRecuperado">R$ 0</div>
+        <div class="stat-label">Recuperado no Mês</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon blue"><i class="fas fa-handshake"></i></div>
+        </div>
+        <div class="stat-value" id="totalAcordos">0</div>
+        <div class="stat-label">Acordos Ativos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+        </div>
+        <div class="stat-value" id="totalVencidos">0</div>
+        <div class="stat-label">Títulos Vencidos</div>
+      </div>
+    </div>
+
+    <!-- AGING + CREDORES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-clock"></i> Aging da Carteira</h3>
+        </div>
+        <div class="card-body">
+          <div class="aging-grid">
+            <div class="aging-item green">
+              <div class="aging-label">A VENCER</div>
+              <div class="aging-value" id="aging0">0</div>
+              <div class="aging-money" id="agingVal0">R$ 0</div>
+            </div>
+            <div class="aging-item orange">
+              <div class="aging-label">1-30 DIAS</div>
+              <div class="aging-value" id="aging30">0</div>
+              <div class="aging-money" id="agingVal30">R$ 0</div>
+            </div>
+            <div class="aging-item red">
+              <div class="aging-label">31-60 DIAS</div>
+              <div class="aging-value" id="aging60">0</div>
+              <div class="aging-money" id="agingVal60">R$ 0</div>
+            </div>
+            <div class="aging-item dark-red">
+              <div class="aging-label">60+ DIAS</div>
+              <div class="aging-value" id="aging90">0</div>
+              <div class="aging-money" id="agingVal90">R$ 0</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="quick-stats">
-        <div class="quick-stat">
-          <div class="quick-stat-label">Taxa de Recuperação</div>
-          <div class="quick-stat-value" id="taxaRecuperacao">0%</div>
-          <div class="quick-stat-change up"><i class="fas fa-arrow-up"></i> Meta: 25%</div>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-building"></i> Por Credor</h3>
+          <a href="credores.html" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a>
         </div>
-        <div class="quick-stat">
-          <div class="quick-stat-label">Cobranças Pagas</div>
-          <div class="quick-stat-value" id="totalPagas">0</div>
-          <div class="quick-stat-change" id="comissaoPendente">Este mês</div>
+        <div class="card-body no-padding" id="listaCredores">
+          <div class="empty">
+            <i class="fas fa-building"></i>
+            <p>Nenhum credor cadastrado</p>
+          </div>
         </div>
-        <div class="quick-stat">
-          <div class="quick-stat-label">Cobranças Pendentes</div>
-          <div class="quick-stat-value" id="totalPendentes">0</div>
-          <div class="quick-stat-change" id="taxaCPC">Aguardando</div>
+      </div>
+    </div>
+
+    <!-- FILA + PRODUTIVIDADE -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-list-ol"></i> Fila de Trabalho</h3>
+          <a href="fila.html" class="card-link">Ver fila completa <i class="fas fa-arrow-right"></i></a>
         </div>
-        <div class="quick-stat">
-          <div class="quick-stat-label">Cobranças Vencidas</div>
-          <div class="quick-stat-value" id="vencendoHoje">0</div>
-          <div class="quick-stat-change" id="vencendoValor">R$ 0</div>
+        <div class="card-body no-padding" id="listaFila">
+          <div class="empty">
+            <i class="fas fa-check-circle"></i>
+            <p>Nenhuma cobrança na fila</p>
+          </div>
         </div>
       </div>
 
-      <div class="main-grid">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-list-check"></i> Próximas Cobranças</h3>
-            <a href="cobrancas.html" class="card-link">Ver todas <i class="fas fa-arrow-right"></i></a>
-          </div>
-          <div class="card-body" id="listaCobrancas">
-            <div class="empty-state">
-              <i class="fas fa-inbox"></i>
-              <p>Nenhuma cobrança pendente</p>
-            </div>
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-trophy"></i> Produtividade Hoje</h3>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-bullseye"></i> Metas do Mês</h3>
-          </div>
-          <div class="card-body">
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Recuperação</span>
-                <span class="meta-value" id="metaRecuperacao">0%</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" id="progressRecuperacao" style="width:0%;background:var(--green);"></div>
-              </div>
+        <div class="card-body">
+          <div class="prod-grid">
+            <div class="prod-item">
+              <div class="prod-value blue" id="prodAcionamentos">0</div>
+              <div class="prod-label">Acionamentos</div>
             </div>
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Acordos</span>
-                <span class="meta-value" id="metaAcordos">0 / 50</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" id="progressAcordos" style="width:0%;background:#3b82f6;"></div>
-              </div>
+            <div class="prod-item">
+              <div class="prod-value green" id="prodAcordos">0</div>
+              <div class="prod-label">Acordos</div>
             </div>
-            <div class="meta-item">
-              <div class="meta-header">
-                <span class="meta-label">Quitados</span>
-                <span class="meta-value" id="metaQuitados">0</span>
-              </div>
-              <div class="meta-bar">
-                <div class="meta-progress" id="progressQuitados" style="width:0%;background:var(--accent);"></div>
-              </div>
+            <div class="prod-item">
+              <div class="prod-value gold" id="prodRecuperado">R$ 0</div>
+              <div class="prod-label">Recuperado</div>
             </div>
           </div>
         </div>
@@ -807,206 +760,188 @@
   <script>
     const API = window.location.origin;
     let token = localStorage.getItem('token');
-    
-    if (!token) {
-      window.location.href = 'login.html';
-    }
+    if (!token) window.location.href = 'login.html';
 
-    function getHeaders() {
-      return { 
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ' + token 
-      };
-    }
-
-    function fmtMoney(v) {
-      return new Intl.NumberFormat('pt-BR', { 
-        style: 'currency', 
-        currency: 'BRL' 
-      }).format(v || 0);
-    }
+    const H = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
+    const fmtMoney = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+    const fmtMoneyShort = v => {
+      if (v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1) + 'M';
+      if (v >= 1000) return 'R$ ' + (v/1000).toFixed(1) + 'K';
+      return fmtMoney(v);
+    };
+    const initials = n => (n || 'U').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 
     function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.clear();
       window.location.href = 'login.html';
     }
 
-    function toggleNotif() {
-      document.getElementById('notifDropdown').classList.toggle('show');
+    // Data atual
+    function setDataAtual() {
+      const d = new Date();
+      const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      document.getElementById('dataAtual').textContent = `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
     }
 
-    document.addEventListener('click', function(e) {
-      const wrapper = document.querySelector('.notif-wrapper');
-      if (wrapper && !wrapper.contains(e.target)) {
-        document.getElementById('notifDropdown').classList.remove('show');
-      }
-    });
-
+    // Carregar usuário
     async function carregarUsuario() {
       try {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-          const user = JSON.parse(stored);
-          const nome = user.nome || 'Usuário';
-          document.getElementById('userName').textContent = nome;
-          document.getElementById('greetingName').textContent = nome.split(' ')[0];
-          document.getElementById('userAvatar').textContent = nome.charAt(0).toUpperCase();
-          document.getElementById('userRole').textContent = user.nivel === 'admin' ? 'Administrador' : 'Operador';
-        }
-      } catch (e) {
-        console.error('Erro ao carregar usuário:', e);
-      }
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('userName').textContent = u.nome || 'Usuário';
+        document.getElementById('userRole').textContent = u.nivel === 'admin' ? 'Administrador' : 'Operador';
+        document.getElementById('userAvatar').textContent = initials(u.nome);
+      } catch (e) {}
     }
 
-    // ========== CARREGAR DADOS DO DASHBOARD ==========
-    async function carregarDados() {
+    // Carregar estatísticas
+    async function carregarStats() {
       try {
-        // ========== COBRANÇAS STATS ==========
-        const resCobrancas = await fetch(API + '/api/cobrancas/stats', { headers: getHeaders() });
-        const dataCobrancas = await resCobrancas.json();
-        
-        if (dataCobrancas.success && dataCobrancas.data) {
-          const stats = dataCobrancas.data;
-          
-          // Total em carteira (pendentes)
-          const totalCarteira = parseFloat(stats.totalPendente || 0);
-          document.getElementById('totalCarteira').textContent = fmtMoney(totalCarteira);
-          
-          // Quantidade de dívidas ativas
-          const pendentes = parseInt(stats.pendentes) || 0;
-          const vencidas = parseInt(stats.vencidas) || 0;
-          const pagas = parseInt(stats.pagas) || 0;
-          const qtdDividas = pendentes + vencidas;
-          document.getElementById('qtdDividas').textContent = qtdDividas;
-          
-          // Recuperado no mês
-          const recebidoMes = parseFloat(stats.recebidoMes || 0);
-          document.getElementById('totalRecuperado').textContent = fmtMoney(recebidoMes);
-          
-          // Cards rápidos
-          document.getElementById('totalPagas').textContent = pagas;
-          document.getElementById('totalPendentes').textContent = pendentes;
-          document.getElementById('vencendoHoje').textContent = vencidas;
-          
-          // Taxa de recuperação
-          if (totalCarteira > 0 || recebidoMes > 0) {
-            const taxa = ((recebidoMes / (totalCarteira + recebidoMes)) * 100).toFixed(1);
-            document.getElementById('taxaRecuperacao').textContent = taxa + '%';
-            document.getElementById('metaRecuperacao').textContent = taxa + '%';
-            document.getElementById('progressRecuperacao').style.width = Math.min(100, parseFloat(taxa) * 4) + '%';
-          }
-          
-          // Badge de notificações (vencidas)
-          if (vencidas > 0) {
-            const badge = document.getElementById('notifBadge');
-            const badgeCobrancas = document.getElementById('badgeCobrancas');
-            badge.style.display = 'flex';
-            badge.textContent = vencidas;
-            if (badgeCobrancas) badgeCobrancas.textContent = vencidas;
-            
-            document.getElementById('notifBody').innerHTML = `
-              <div class="notif-item" onclick="location.href='cobrancas.html'">
-                <div class="notif-icon danger"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="notif-content">
-                  <div class="notif-title">${vencidas} cobrança(s) vencida(s)</div>
-                  <div class="notif-desc">Requer atenção imediata</div>
-                </div>
-              </div>
-            `;
-          }
+        const r = await fetch(API + '/api/cobrancas/stats', { headers: H() });
+        const d = await r.json();
+        if (d.success && d.data) {
+          const s = d.data;
+          document.getElementById('totalCarteira').textContent = fmtMoneyShort(s.totalPendente || 0);
+          document.getElementById('totalRecuperado').textContent = fmtMoneyShort(s.recebidoMes || 0);
+          document.getElementById('totalVencidos').textContent = s.vencidas || 0;
+          document.getElementById('badgeFila').textContent = (s.pendentes || 0) + (s.vencidas || 0);
         }
+      } catch (e) { console.error('Erro stats:', e); }
 
-        // ========== ACORDOS STATS ==========
-        const resAcordos = await fetch(API + '/api/acordos/stats', { headers: getHeaders() });
-        const dataAcordos = await resAcordos.json();
-        
-        if (dataAcordos.success && dataAcordos.data) {
-          const stats = dataAcordos.data;
-          
-          // Acordos ativos
-          const acordosAtivos = parseInt(stats.acordosAtivos) || 0;
-          const acordosQuitados = parseInt(stats.acordosQuitados) || 0;
-          document.getElementById('qtdAcordos').textContent = acordosAtivos;
-          
-          // Metas de acordos
-          const metaAcordos = 50;
-          const totalAcordos = acordosAtivos + acordosQuitados;
-          const pctAcordos = Math.min(100, (totalAcordos / metaAcordos) * 100);
-          document.getElementById('metaAcordos').textContent = `${totalAcordos} / ${metaAcordos}`;
-          document.getElementById('progressAcordos').style.width = pctAcordos + '%';
-          
-          // Quitados
-          document.getElementById('metaQuitados').textContent = acordosQuitados;
-          document.getElementById('progressQuitados').style.width = Math.min(100, acordosQuitados * 5) + '%';
+      try {
+        const r = await fetch(API + '/api/acordos/stats', { headers: H() });
+        const d = await r.json();
+        if (d.success && d.data) {
+          document.getElementById('totalAcordos').textContent = d.data.acordosAtivos || 0;
         }
-
-      } catch (e) {
-        console.error('Erro ao carregar dados:', e);
-      }
+      } catch (e) {}
     }
 
-    // ========== CARREGAR FILA DE COBRANÇAS ==========
+    // Carregar aging
+    async function carregarAging() {
+      try {
+        const r = await fetch(API + '/api/cobrancas?limit=500', { headers: H() });
+        const d = await r.json();
+        if (!d.success || !d.data) return;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        let aging = { aVencer: { qtd: 0, valor: 0 }, ate30: { qtd: 0, valor: 0 }, ate60: { qtd: 0, valor: 0 }, mais60: { qtd: 0, valor: 0 } };
+
+        d.data.forEach(c => {
+          if (c.status === 'pago' || c.status === 'acordo') return;
+          const venc = new Date((c.vencimento || c.data_vencimento || '').split('T')[0] + 'T12:00:00');
+          const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
+          const valor = parseFloat(c.valor || c.valor_original) || 0;
+
+          if (diff < 0) { aging.aVencer.qtd++; aging.aVencer.valor += valor; }
+          else if (diff <= 30) { aging.ate30.qtd++; aging.ate30.valor += valor; }
+          else if (diff <= 60) { aging.ate60.qtd++; aging.ate60.valor += valor; }
+          else { aging.mais60.qtd++; aging.mais60.valor += valor; }
+        });
+
+        document.getElementById('aging0').textContent = aging.aVencer.qtd;
+        document.getElementById('agingVal0').textContent = fmtMoneyShort(aging.aVencer.valor);
+        document.getElementById('aging30').textContent = aging.ate30.qtd;
+        document.getElementById('agingVal30').textContent = fmtMoneyShort(aging.ate30.valor);
+        document.getElementById('aging60').textContent = aging.ate60.qtd;
+        document.getElementById('agingVal60').textContent = fmtMoneyShort(aging.ate60.valor);
+        document.getElementById('aging90').textContent = aging.mais60.qtd;
+        document.getElementById('agingVal90').textContent = fmtMoneyShort(aging.mais60.valor);
+      } catch (e) { console.error('Erro aging:', e); }
+    }
+
+    // Carregar credores
+    async function carregarCredores() {
+      try {
+        const r = await fetch(API + '/api/credores', { headers: H() });
+        const d = await r.json();
+        const credores = d.success ? d.data : (Array.isArray(d) ? d : []);
+
+        if (!credores || !credores.length) return;
+
+        // Buscar totais por credor
+        const rCob = await fetch(API + '/api/cobrancas?limit=500', { headers: H() });
+        const dCob = await rCob.json();
+        const cobrancas = dCob.data || [];
+
+        const totais = {};
+        cobrancas.forEach(c => {
+          if (c.status === 'pago') return;
+          const cid = c.credor_id || 'sem';
+          if (!totais[cid]) totais[cid] = { qtd: 0, valor: 0 };
+          totais[cid].qtd++;
+          totais[cid].valor += parseFloat(c.valor || c.valor_original) || 0;
+        });
+
+        const container = document.getElementById('listaCredores');
+        const colors = ['blue', 'green', 'purple', 'orange'];
+        container.innerHTML = credores.slice(0, 5).map((c, i) => {
+          const t = totais[c.id] || { qtd: 0, valor: 0 };
+          return `
+            <div class="credor-item">
+              <div class="credor-avatar" style="background:var(--${colors[i % 4]}-bg);color:var(--${colors[i % 4]})">${initials(c.nome)}</div>
+              <div class="credor-info">
+                <div class="credor-name">${c.nome}</div>
+                <div class="credor-meta">Comissão: ${c.comissao_percentual || 10}%</div>
+              </div>
+              <div class="credor-values">
+                <div class="credor-total">${fmtMoneyShort(t.valor)}</div>
+                <div class="credor-count">${t.qtd} cobranças</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) { console.error('Erro credores:', e); }
+    }
+
+    // Carregar fila
     async function carregarFila() {
       try {
-        const res = await fetch(API + '/api/cobrancas?limit=5', { headers: getHeaders() });
-        const data = await res.json();
-        
-        if (data.success && data.data && data.data.length > 0) {
-          const hoje = new Date();
-          hoje.setHours(0, 0, 0, 0);
+        const r = await fetch(API + '/api/cobrancas?limit=5', { headers: H() });
+        const d = await r.json();
+        if (!d.success || !d.data || !d.data.length) return;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const container = document.getElementById('listaFila');
+        container.innerHTML = d.data.filter(c => c.status !== 'pago' && c.status !== 'acordo').slice(0, 5).map(c => {
+          const nome = c.cliente_nome || 'Cliente';
+          const vencStr = (c.vencimento || c.data_vencimento || '').split('T')[0];
+          const venc = new Date(vencStr + 'T12:00:00');
+          const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
           
-          const html = data.data.map(c => {
-            const nome = c.cliente_nome || 'Cliente';
-            const iniciais = nome.substring(0, 2).toUpperCase();
-            const valor = c.valor || c.valor_original || 0;
-            const desc = c.descricao || 'Cobrança';
-            
-            let statusClass = 'pendente';
-            let statusText = 'Pendente';
-            
-            const vencStr = (c.data_vencimento || c.vencimento || '').toString().split('T')[0];
-            if (vencStr) {
-              const partes = vencStr.split('-');
-              if (partes.length === 3) {
-                const venc = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
-                const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
-                
-                if (diff > 0) {
-                  statusClass = 'vencida';
-                  statusText = diff + 'd atraso';
-                } else if (diff === 0) {
-                  statusClass = 'hoje';
-                  statusText = 'Vence hoje';
-                }
-              }
-            }
-            
-            return `
-              <div class="cobranca-item" onclick="location.href='cobrancas.html'">
-                <div class="cobranca-avatar">${iniciais}</div>
-                <div class="cobranca-info">
-                  <div class="cobranca-nome">${nome}</div>
-                  <div class="cobranca-desc">${desc}</div>
-                </div>
-                <div class="cobranca-valor">
-                  <div class="cobranca-valor-num">${fmtMoney(valor)}</div>
-                  <span class="cobranca-status ${statusClass}">${statusText}</span>
-                </div>
+          let prioridade = 'low', atrasoClass = 'futuro', atrasoText = 'Em dia';
+          if (diff > 30) { prioridade = 'high'; atrasoClass = 'vencido'; atrasoText = diff + 'd atraso'; }
+          else if (diff > 0) { prioridade = 'medium'; atrasoClass = 'vencido'; atrasoText = diff + 'd atraso'; }
+          else if (diff === 0) { prioridade = 'medium'; atrasoClass = 'hoje'; atrasoText = 'Vence hoje'; }
+
+          return `
+            <div class="fila-item" onclick="location.href='devedores.html?id=${c.cliente_id}'">
+              <div class="fila-priority ${prioridade}"></div>
+              <div class="fila-avatar">${initials(nome)}</div>
+              <div class="fila-info">
+                <div class="fila-name">${nome}</div>
+                <div class="fila-detail">${c.descricao || 'Cobrança'}</div>
               </div>
-            `;
-          }).join('');
-          
-          document.getElementById('listaCobrancas').innerHTML = html;
-        }
-      } catch (e) {
-        console.error('Erro ao carregar fila:', e);
-      }
+              <div class="fila-valor">
+                <div class="fila-valor-num">${fmtMoney(c.valor || c.valor_original)}</div>
+                <span class="fila-atraso ${atrasoClass}">${atrasoText}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) { console.error('Erro fila:', e); }
     }
 
-    // Inicialização
+    // Init
+    setDataAtual();
     carregarUsuario();
-    carregarDados();
+    carregarStats();
+    carregarAging();
+    carregarCredores();
     carregarFila();
   </script>
 </body>
