@@ -377,12 +377,18 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'Endpoint não encontrado' });
     }
+    
+    // Tenta servir o arquivo HTML solicitado
+    const filePath = path.join(__dirname, 'public', req.path);
+    
+    // Verifica se o arquivo existe
+    const fs = require('fs');
+    if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath);
+    }
+    
+    // Se não existe, manda pro login
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.use((err, req, res, next) => {
-    console.error('[ERROR]', err);
-    res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
 });
 
 // ═══════════════════════════════════════════════════════════════
