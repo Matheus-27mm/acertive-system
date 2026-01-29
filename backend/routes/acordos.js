@@ -481,6 +481,20 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
+    // GET /api/acordos/:id/parcelas - Listar parcelas de um acordo específico
+    router.get('/:id/parcelas', auth, async (req, res) => {
+        try {
+            const { id } = req.params;
+            
+            const parcelas = await pool.query('SELECT * FROM parcelas WHERE acordo_id = $1 ORDER BY numero ASC', [id]);
+            
+            res.json({ success: true, data: parcelas.rows });
+        } catch (error) {
+            console.error('[ACORDOS] Erro ao buscar parcelas:', error);
+            res.status(500).json({ success: false, error: 'Erro ao buscar parcelas: ' + error.message });
+        }
+    });
+
     // PUT /api/acordos/:id
     router.put('/:id', auth, async (req, res) => {
         try {
@@ -562,6 +576,58 @@ module.exports = function(pool, auth, registrarLog) {
             await client.query('ROLLBACK');
             console.error('[ACORDOS] Erro ao quebrar:', error);
             res.status(500).json({ success: false, error: 'Erro ao quebrar acordo: ' + error.message });
+        } finally {
+            client.release();
+        }
+    });
+
+    // DELETE /api/acordos/:id - Excluir acordo
+    router.delete('/:id', auth, async (req, res) => {
+        const client = await pool.connect();
+        
+        try {
+            const { id } = req.params;
+            
+            console.log('[ACORDOS] Excluindo acordo:', id);
+            
+            await client.query('BEGIN');
+            
+            // Buscar acordo para pegar cobranca_id
+            const acordo = await client.query('SELECT cobranca_id FROM acordos WHERE id = $1', [id]);
+            
+            if (!acordo.rowCount) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
+            }
+            
+            const cobrancaId = acordo.rows[0].cobranca_id;
+            
+            // Excluir parcelas primeiro
+            await client.query('DELETE FROM parcelas WHERE acordo_id = $1', [id]);
+            
+            // Excluir acordo
+            await client.query('DELETE FROM acordos WHERE id = $1', [id]);
+            
+            // Voltar cobrança para vencido (se existir)
+            if (cobrancaId) {
+                try {
+                    await client.query('UPDATE cobrancas SET status = \'vencido\', updated_at = NOW() WHERE id = $1', [cobrancaId]);
+                } catch (e) {
+                    console.log('[ACORDOS] Erro ao atualizar cobrança (ignorado):', e.message);
+                }
+            }
+            
+            await client.query('COMMIT');
+            
+            await logSeguro(req.user?.id, 'ACORDO_EXCLUIDO', 'acordos', id, {});
+            
+            console.log('[ACORDOS] Acordo excluído com sucesso:', id);
+            res.json({ success: true, message: 'Acordo excluído com sucesso' });
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.error('[ACORDOS] Erro ao excluir:', error);
+            res.status(500).json({ success: false, error: 'Erro ao excluir acordo: ' + error.message });
         } finally {
             client.release();
         }
