@@ -299,6 +299,8 @@ app.use('/api/financeiro', financeiroRoutes);
 const integracoesRoutes = require('./routes/integracoes')(pool, auth, registrarLog);
 app.use('/api/integracoes', integracoesRoutes);
 
+const importacaoRoutes = require('./routes/importacao')(pool, auth, upload, registrarLog);
+app.use('/api/importacao', importacaoRoutes);
 // ═══════════════════════════════════════════════════════════════
 // ROTAS LEGADO - Compatibilidade com frontend antigo
 // ═══════════════════════════════════════════════════════════════
