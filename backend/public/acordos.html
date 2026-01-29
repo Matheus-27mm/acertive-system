@@ -553,6 +553,18 @@
             color: var(--danger);
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
+
+        .action-btn.delete { 
+            background: rgba(107, 114, 128, 0.15); 
+            color: #9ca3af;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
         
         .action-btn:hover { 
             transform: scale(1.1);
@@ -1160,6 +1172,7 @@
                         <div class="actions-cell">
                             <button class="action-btn view" onclick="verDetalhes('${a.id}')" title="Ver detalhes"><i class="fas fa-eye"></i></button>
                             ${a.status === 'ativo' ? `<button class="action-btn cancel" onclick="quebrarAcordo('${a.id}')" title="Quebrar acordo"><i class="fas fa-times"></i></button>` : ''}
+                            <button class="action-btn delete" onclick="excluirAcordo('${a.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -1248,6 +1261,28 @@
             } catch (e) {
                 console.error(e);
                 toast('Erro ao quebrar acordo');
+            }
+        }
+
+        async function excluirAcordo(id) {
+            if (!confirm('Tem certeza que deseja EXCLUIR este acordo?\n\nEsta ação não pode ser desfeita e removerá todas as parcelas associadas.')) return;
+
+            try {
+                const r = await fetch(API + '/api/acordos/' + id, {
+                    method: 'DELETE',
+                    headers: H()
+                });
+
+                if (r.ok) {
+                    toast('Acordo excluído!');
+                    await carregarAcordos();
+                } else {
+                    const err = await r.json();
+                    toast(err.error || 'Erro ao excluir acordo');
+                }
+            } catch (e) {
+                console.error(e);
+                toast('Erro ao excluir acordo');
             }
         }
 
