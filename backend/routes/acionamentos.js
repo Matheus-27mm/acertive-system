@@ -4,13 +4,15 @@
  * routes/acionamentos.js
  * ========================================
  * Unifica: regua, agendamentos, historico
+ * CORRIGIDO: Removido EXTRACT() que causava erro no PostgreSQL
  */
 
 const express = require('express');
 
 module.exports = function(pool, auth, authAdmin, registrarLog) {
     const router = express.Router();
-// ═══════════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════════
     // FILA DE TRABALHO - Rotas principais
     // ═══════════════════════════════════════════════════════════════
 
@@ -40,7 +42,7 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
                     COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0)::numeric as valor_total,
                     COALESCE(MAX(CASE 
                         WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido')
-                        THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int 
+                        THEN (CURRENT_DATE - cob.data_vencimento)::int 
                         ELSE 0 
                     END), 0)::int as maior_atraso,
                     MIN(cob.data_vencimento) FILTER (WHERE cob.status IN ('pendente', 'vencido')) as vencimento_mais_antigo,
@@ -70,19 +72,19 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
             query += ` HAVING COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0) > 0`;
 
             if (min_atraso) {
-                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) >= $${paramIndex}`;
+                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN (CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) >= $${paramIndex}`;
                 params.push(parseInt(min_atraso));
                 paramIndex++;
             }
 
             if (max_atraso) {
-                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) <= $${paramIndex}`;
+                query += ` AND COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN (CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) <= $${paramIndex}`;
                 params.push(parseInt(max_atraso));
                 paramIndex++;
             }
 
             query += ` ORDER BY 
-                COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) DESC,
+                COALESCE(MAX(CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido') THEN (CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END), 0) DESC,
                 COALESCE(SUM(CASE WHEN cob.status IN ('pendente', 'vencido') THEN cob.valor ELSE 0 END), 0) DESC,
                 c.data_ultimo_contato ASC NULLS FIRST`;
 
@@ -123,7 +125,7 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
             const cobrancas = await pool.query(`
                 SELECT cob.*, cr.nome as credor_nome,
                        CASE WHEN cob.data_vencimento < CURRENT_DATE AND cob.status IN ('pendente', 'vencido')
-                            THEN EXTRACT(DAY FROM CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END as dias_atraso
+                            THEN (CURRENT_DATE - cob.data_vencimento)::int ELSE 0 END as dias_atraso
                 FROM cobrancas cob
                 LEFT JOIN credores cr ON cr.id = cob.credor_id
                 WHERE cob.cliente_id = $1
@@ -424,14 +426,14 @@ module.exports = function(pool, auth, authAdmin, registrarLog) {
         }
     });
 
-    // GET /api/acionamentos/fila - Fila de cobranças
+    // GET /api/acionamentos/fila - Fila de cobranças (legacy)
     router.get('/fila', auth, async (req, res) => {
         try {
             const result = await pool.query(`
                 SELECT c.*, cl.nome as cliente_nome, cl.telefone as cliente_telefone, cl.email as cliente_email, cr.nome as credor_nome,
                        CASE 
-                           WHEN c.data_vencimento < CURRENT_DATE THEN EXTRACT(DAY FROM CURRENT_DATE - c.data_vencimento)::int
-                           ELSE -EXTRACT(DAY FROM c.data_vencimento - CURRENT_DATE)::int
+                           WHEN c.data_vencimento < CURRENT_DATE THEN (CURRENT_DATE - c.data_vencimento)::int
+                           ELSE -(c.data_vencimento - CURRENT_DATE)::int
                        END as dias_vencimento
                 FROM cobrancas c
                 JOIN clientes cl ON c.cliente_id = cl.id
