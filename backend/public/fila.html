@@ -941,6 +941,21 @@
             .action-buttons { grid-template-columns: 1fr; } 
             .header-stats { display: none; }
         }
+        /* BUSCA */
+.search-container { margin-bottom: 24px; }
+.search-box { position: relative; max-width: 500px; }
+.search-box i.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.search-box input { width: 100%; padding: 14px 18px 14px 48px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-primary); font-size: 14px; font-family: 'DM Sans', sans-serif; }
+.search-box input:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+.search-box input::placeholder { color: var(--text-muted); }
+.search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 12px; margin-top: 8px; max-height: 300px; overflow-y: auto; z-index: 50; display: none; }
+.search-results.show { display: block; }
+.search-result-item { padding: 14px 18px; cursor: pointer; border-bottom: 1px solid var(--border-subtle); transition: all 0.2s; }
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--gold-subtle); }
+.search-result-item .nome { font-weight: 600; margin-bottom: 4px; }
+.search-result-item .info { font-size: 12px; color: var(--text-muted); display: flex; gap: 16px; }
+.search-result-item .valor { color: var(--gold-primary); font-weight: 600; }
     </style>
 </head>
 <body>
@@ -1005,6 +1020,14 @@
                 </div>
             </div>
         </header>
+        <!-- CAMPO DE BUSCA -->
+<div class="search-container">
+    <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Buscar cliente por nome ou CPF..." oninput="buscarCliente(this.value)">
+        <div class="search-results" id="searchResults"></div>
+    </div>
+</div>
 
         <div class="fila-grid">
             <!-- Card Devedor -->
@@ -1165,6 +1188,7 @@
     <script>
         const API = window.location.origin;
         let fila = [];
+        let filaOriginal = [];
         let posicao = 0;
         let devedorAtual = null;
 
@@ -1229,7 +1253,8 @@
                     }
                 });
 
-                fila = Object.values(porCliente).sort((a, b) => b.maior_atraso - a.maior_atraso || b.valor_total - a.valor_total);
+                filaOriginal = Object.values(porCliente).sort((a, b) => b.maior_atraso - a.maior_atraso || b.valor_total - a.valor_total);
+                fila = [...filaOriginal];
 
                 document.getElementById('totalFila').textContent = fila.length;
                 document.getElementById('filaBadge').textContent = fila.length;
@@ -1527,6 +1552,54 @@
         document.getElementById('modalAcordo').addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay')) fecharModal();
         });
+        
+        // FUNÇÃO DE BUSCA
+function buscarCliente(termo) {
+    const results = document.getElementById('searchResults');
+    
+    if (!termo || termo.length < 2) {
+        results.classList.remove('show');
+        return;
+    }
+
+    const termoLower = termo.toLowerCase();
+    const encontrados = filaOriginal.filter(d => 
+        d.nome.toLowerCase().includes(termoLower) || 
+        d.cpf_cnpj.includes(termo.replace(/\D/g, ''))
+    ).slice(0, 10);
+
+    if (encontrados.length === 0) {
+        results.innerHTML = '<div class="search-result-item"><span style="color: var(--text-muted);">Nenhum cliente encontrado</span></div>';
+    } else {
+        results.innerHTML = encontrados.map((d, i) => `
+            <div class="search-result-item" onclick="selecionarCliente(${filaOriginal.indexOf(d)})">
+                <div class="nome">${d.nome}</div>
+                <div class="info">
+                    <span>CPF: ${d.cpf_cnpj}</span>
+                    <span class="valor">${fmtMoney(d.valor_total)}</span>
+                    <span style="color: var(--danger);">${d.maior_atraso} dias</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    results.classList.add('show');
+}
+
+function selecionarCliente(index) {
+    posicao = index;
+    fila = [...filaOriginal];
+    mostrarDevedor();
+    document.getElementById('searchResults').classList.remove('show');
+    document.getElementById('searchInput').value = '';
+}
+
+// Fechar busca ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-box')) {
+        document.getElementById('searchResults').classList.remove('show');
+    }
+});
     </script>
 </body>
 </html>

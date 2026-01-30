@@ -783,6 +783,38 @@
             .search-box { width: 100%; min-width: auto; }
             .filter-select { width: 100%; }
         }
+        /* Botão Secundário */
+.btn-secondary { 
+    background: var(--bg-card); 
+    border: 1px solid var(--gold-primary); 
+    color: var(--gold-primary);
+}
+.btn-secondary:hover { 
+    background: var(--gold-subtle); 
+    transform: translateY(-2px); 
+}
+
+/* Modal Novo Devedor */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { margin-bottom: 20px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+.form-group input::placeholder { color: var(--text-muted); }
+.form-group select option { background: var(--bg-secondary); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-section { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border-subtle); }
+.form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.form-section-title { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--gold-light); }
+.form-section-title i { color: var(--gold-primary); }
+.modal-footer { padding: 20px 28px; border-top: 1px solid var(--border-subtle); display: flex; gap: 14px; justify-content: flex-end; }
+.btn-cancelar { padding: 14px 24px; background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 10px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.btn-cancelar:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.btn-salvar { padding: 14px 28px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border: none; border-radius: 10px; color: var(--bg-primary); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+.btn-salvar:hover { box-shadow: var(--shadow-gold); transform: translateY(-2px); }
+.btn-salvar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     </style>
 </head>
 <body>
@@ -834,11 +866,16 @@
             <div class="page-header-left">
                 <h1>Devedores</h1>
                 <p>Gerencie todos os devedores e suas cobranças</p>
-            </div>
-            <a href="fila.html" class="btn btn-primary">
-                <i class="fas fa-headset"></i>
-                Iniciar Trabalho
-            </a>
+            <div style="display: flex; gap: 12px;">
+    <button class="btn btn-secondary" onclick="abrirModalNovoDevedor()">
+        <i class="fas fa-plus"></i>
+        Novo Devedor
+    </button>
+    <a href="fila.html" class="btn btn-primary">
+        <i class="fas fa-headset"></i>
+        Iniciar Trabalho
+    </a>
+</div>
         </header>
 
         <!-- Filtros -->
@@ -1212,6 +1249,277 @@
         if (idParam) {
             setTimeout(() => verDetalhes(idParam), 1000);
         }
+        // ========== NOVO DEVEDOR ==========
+function abrirModalNovoDevedor() {
+    document.getElementById('formNovoDevedor').reset();
+    carregarCredoresModal();
+    document.getElementById('modalNovoDevedor').classList.add('active');
+}
+
+function fecharModalNovo() {
+    document.getElementById('modalNovoDevedor').classList.remove('active');
+}
+
+async function carregarCredoresModal() {
+    try {
+        const r = await fetch(API + '/api/cadastros/credores', { headers: H() });
+        const d = await r.json();
+        const credores = d.data || d || [];
+        
+        const select = document.getElementById('novoCredor');
+        select.innerHTML = '<option value="">Selecione o credor...</option>';
+        credores.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nome;
+            select.appendChild(opt);
+        });
+    } catch (e) { console.error('Erro credores:', e); }
+}
+
+async function salvarDevedor(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+    try {
+        // 1. Criar cliente
+        const clienteData = {
+            nome: document.getElementById('novoNome').value.toUpperCase(),
+            cpf_cnpj: document.getElementById('novoCpf').value.replace(/\D/g, ''),
+            email: document.getElementById('novoEmail').value || null,
+            telefone: document.getElementById('novoTelefone').value.replace(/\D/g, '') || null,
+            telefone2: document.getElementById('novoTelefone2').value.replace(/\D/g, '') || null,
+            endereco: document.getElementById('novoEndereco').value || null,
+            cep: document.getElementById('novoCep').value.replace(/\D/g, '') || null,
+            cidade: document.getElementById('novoCidade').value || null,
+            estado: document.getElementById('novoEstado').value || null,
+            status: 'ativo',
+            status_cobranca: document.getElementById('novoStatus').value || 'novo'
+        };
+
+        const rCliente = await fetch(API + '/api/cadastros/clientes', {
+            method: 'POST',
+            headers: H(),
+            body: JSON.stringify(clienteData)
+        });
+
+        const dCliente = await rCliente.json();
+        
+        if (!rCliente.ok || !dCliente.success) {
+            throw new Error(dCliente.error || 'Erro ao criar cliente');
+        }
+
+        const clienteId = dCliente.data?.id || dCliente.id;
+
+        // 2. Criar cobrança
+        const valorStr = document.getElementById('novoValor').value;
+        const valor = parseFloat(valorStr.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+
+        const cobrancaData = {
+            cliente_id: clienteId,
+            credor_id: document.getElementById('novoCredor').value,
+            numero_documento: document.getElementById('novoDocumento').value || null,
+            valor: valor,
+            valor_original: valor,
+            data_vencimento: document.getElementById('novoVencimento').value,
+            descricao: document.getElementById('novoDescricao').value || 'Cobrança manual',
+            status: new Date(document.getElementById('novoVencimento').value) < new Date() ? 'vencido' : 'pendente'
+        };
+
+        const rCob = await fetch(API + '/api/cobrancas', {
+            method: 'POST',
+            headers: H(),
+            body: JSON.stringify(cobrancaData)
+        });
+
+        if (!rCob.ok) {
+            const dCob = await rCob.json();
+            throw new Error(dCob.error || 'Erro ao criar cobrança');
+        }
+
+        alert('✅ Devedor cadastrado com sucesso!');
+        fecharModalNovo();
+        await carregarDevedores();
+
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('❌ Erro: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Salvar Devedor';
+    }
+}
+
+// Máscaras
+function mascaraCpfCnpj(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+        v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    input.value = v;
+}
+
+function mascaraTelefone(input) {
+    let v = input.value.replace(/\D/g, '');
+    v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+    v = v.replace(/(\d{5})(\d)/, '$1-$2');
+    input.value = v.substring(0, 15);
+}
+
+function mascaraCep(input) {
+    let v = input.value.replace(/\D/g, '');
+    v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+    input.value = v.substring(0, 9);
+}
+
+function mascaraMoeda(input) {
+    let v = input.value.replace(/\D/g, '');
+    v = (parseInt(v) / 100).toFixed(2);
+    v = v.replace('.', ',');
+    v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    input.value = 'R$ ' + v;
+}
+
+// Fechar modal ao clicar fora
+document.getElementById('modalNovoDevedor').addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) fecharModalNovo();
+});
     </script>
+    <!-- Modal Novo Devedor -->
+<div class="modal-overlay" id="modalNovoDevedor">
+    <div class="modal" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Cadastrar Novo Devedor</h3>
+            <button class="modal-close" onclick="fecharModalNovo()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formNovoDevedor" onsubmit="salvarDevedor(event)">
+                <!-- Dados Pessoais -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fas fa-user"></i> Dados Pessoais</div>
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>Nome Completo *</label>
+                            <input type="text" id="novoNome" required placeholder="Nome do devedor">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CPF / CNPJ *</label>
+                            <input type="text" id="novoCpf" required placeholder="000.000.000-00" oninput="mascaraCpfCnpj(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail</label>
+                            <input type="email" id="novoEmail" placeholder="email@exemplo.com">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Telefone Principal</label>
+                            <input type="text" id="novoTelefone" placeholder="(00) 00000-0000" oninput="mascaraTelefone(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone 2</label>
+                            <input type="text" id="novoTelefone2" placeholder="(00) 00000-0000" oninput="mascaraTelefone(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endereço -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Endereço</div>
+                    <div class="form-row">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Endereço</label>
+                            <input type="text" id="novoEndereco" placeholder="Rua, número, complemento">
+                        </div>
+                        <div class="form-group">
+                            <label>CEP</label>
+                            <input type="text" id="novoCep" placeholder="00000-000" oninput="mascaraCep(this)">
+                        </div>
+                    </div>
+                    <div class="form-row three">
+                        <div class="form-group">
+                            <label>Cidade</label>
+                            <input type="text" id="novoCidade" placeholder="Cidade">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="novoEstado">
+                                <option value="">Selecione...</option>
+                                <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                                <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                                <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                                <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                                <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                                <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                                <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                                <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                                <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dívida -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Dados da Dívida</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Credor *</label>
+                            <select id="novoCredor" required>
+                                <option value="">Selecione o credor...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nº Documento / Contrato</label>
+                            <input type="text" id="novoDocumento" placeholder="Número do documento">
+                        </div>
+                    </div>
+                    <div class="form-row three">
+                        <div class="form-group">
+                            <label>Valor da Dívida *</label>
+                            <input type="text" id="novoValor" required placeholder="R$ 0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>Data de Vencimento *</label>
+                            <input type="date" id="novoVencimento" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="novoStatus">
+                                <option value="novo">Novo</option>
+                                <option value="negociando">Negociando</option>
+                                <option value="sem_contato">Sem Contato</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>Descrição da Dívida</label>
+                            <textarea id="novoDescricao" placeholder="Detalhes sobre a dívida, origem, observações..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancelar" onclick="fecharModalNovo()">Cancelar</button>
+            <button type="submit" form="formNovoDevedor" class="btn-salvar" id="btnSalvar">
+                <i class="fas fa-save"></i> Salvar Devedor
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
