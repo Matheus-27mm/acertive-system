@@ -602,20 +602,18 @@ module.exports = function(pool, auth, registrarLog) {
             
             const cobrancaId = acordo.rows[0].cobranca_id;
             
-            // Excluir parcelas primeiro
+            // Limpar referência na tabela cobrancas (acordo_id = NULL)
+            try {
+                await client.query('UPDATE cobrancas SET acordo_id = NULL, status = \'vencido\', updated_at = NOW() WHERE acordo_id = $1', [id]);
+            } catch (e) {
+                console.log('[ACORDOS] Erro ao limpar acordo_id em cobrancas (ignorado):', e.message);
+            }
+            
+            // Excluir parcelas
             await client.query('DELETE FROM parcelas WHERE acordo_id = $1', [id]);
             
             // Excluir acordo
             await client.query('DELETE FROM acordos WHERE id = $1', [id]);
-            
-            // Voltar cobrança para vencido (se existir)
-            if (cobrancaId) {
-                try {
-                    await client.query('UPDATE cobrancas SET status = \'vencido\', updated_at = NOW() WHERE id = $1', [cobrancaId]);
-                } catch (e) {
-                    console.log('[ACORDOS] Erro ao atualizar cobrança (ignorado):', e.message);
-                }
-            }
             
             await client.query('COMMIT');
             
