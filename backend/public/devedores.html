@@ -253,29 +253,39 @@
             const credor = document.getElementById('filterCredor').value;
             const atraso = document.getElementById('filterAtraso').value;
 
-            devedoresFiltrados = todosDevedores.filter(d => {
-                // Filtro por status
-                if (statusAtual && d.status !== statusAtual) return false;
-                
-                // Filtro por busca - CORRIGIDO
-                if (busca) {
+            // Começar com todos ou filtrar por status
+            let resultado = todosDevedores;
+            
+            if (statusAtual) {
+                resultado = resultado.filter(d => d.status === statusAtual);
+            }
+
+            // Filtro por busca
+            if (busca) {
+                resultado = resultado.filter(d => {
                     const nomeOk = d.nome && d.nome.toLowerCase().includes(busca);
                     const cpfOk = d.cpf_cnpj && d.cpf_cnpj.replace(/\D/g,'').includes(busca.replace(/\D/g,''));
                     const telOk = d.telefone && d.telefone.replace(/\D/g,'').includes(busca.replace(/\D/g,''));
-                    if (!nomeOk && !cpfOk && !telOk) return false;
+                    return nomeOk || cpfOk || telOk;
+                });
+            }
+
+            // Filtro por credor
+            if (credor) {
+                resultado = resultado.filter(d => d.credor === credor);
+            }
+
+            // Filtro por atraso
+            if (atraso) {
+                if (atraso === '90+') {
+                    resultado = resultado.filter(d => d.maiorAtraso > 90);
+                } else {
+                    const [min, max] = atraso.split('-').map(x => parseInt(x) || 0);
+                    resultado = resultado.filter(d => d.maiorAtraso >= min && d.maiorAtraso <= max);
                 }
-                
-                // Filtro por credor
-                if (credor && d.credor !== credor) return false;
-                
-                // Filtro por atraso
-                if (atraso) {
-                    if (atraso === '90+') { if (d.maiorAtraso <= 90) return false; }
-                    else { const [min, max] = atraso.split('-').map(x => parseInt(x) || 0); if (d.maiorAtraso < min || d.maiorAtraso > max) return false; }
-                }
-                
-                return true;
-            });
+            }
+
+            devedoresFiltrados = resultado;
             paginaAtual = 1;
             renderizar();
         }
