@@ -254,13 +254,26 @@
             const atraso = document.getElementById('filterAtraso').value;
 
             devedoresFiltrados = todosDevedores.filter(d => {
+                // Filtro por status
                 if (statusAtual && d.status !== statusAtual) return false;
-                if (busca && !(d.nome?.toLowerCase().includes(busca) || d.cpf_cnpj?.replace(/\D/g,'').includes(busca.replace(/\D/g,'')) || d.telefone?.replace(/\D/g,'').includes(busca.replace(/\D/g,'')))) return false;
+                
+                // Filtro por busca - CORRIGIDO
+                if (busca) {
+                    const nomeOk = d.nome && d.nome.toLowerCase().includes(busca);
+                    const cpfOk = d.cpf_cnpj && d.cpf_cnpj.replace(/\D/g,'').includes(busca.replace(/\D/g,''));
+                    const telOk = d.telefone && d.telefone.replace(/\D/g,'').includes(busca.replace(/\D/g,''));
+                    if (!nomeOk && !cpfOk && !telOk) return false;
+                }
+                
+                // Filtro por credor
                 if (credor && d.credor !== credor) return false;
+                
+                // Filtro por atraso
                 if (atraso) {
                     if (atraso === '90+') { if (d.maiorAtraso <= 90) return false; }
                     else { const [min, max] = atraso.split('-').map(x => parseInt(x) || 0); if (d.maiorAtraso < min || d.maiorAtraso > max) return false; }
                 }
+                
                 return true;
             });
             paginaAtual = 1;
