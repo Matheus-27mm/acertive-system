@@ -12,7 +12,6 @@
  */
 
 var express = require('express');
-var fetch = require('node-fetch');
 
 module.exports = function(pool, auth, registrarLog) {
     var router = express.Router();
