@@ -4,7 +4,7 @@
  * server.js - Servidor Principal
  * ========================================
  * FASE 2: Backend Consolidado (8 módulos)
- * ATUALIZADO: Integração Asaas no módulo de cobranças
+ * ATUALIZADO: Integração Asaas + Suri WhatsApp
  */
 
 require('dotenv').config();
@@ -271,7 +271,7 @@ async function registrarLog(usuario_id, acao, tabela, registro_id, dados = {}) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ROTAS - 8 MÓDULOS CONSOLIDADOS
+// ROTAS - 8 MÓDULOS CONSOLIDADOS + SURI
 // ═══════════════════════════════════════════════════════════════
 
 const authRoutes = require('./routes/auth')(pool, registrarLog);
@@ -301,6 +301,16 @@ app.use('/api/integracoes', integracoesRoutes);
 
 const importacaoRoutes = require('./routes/importacao')(pool, auth, upload, registrarLog);
 app.use('/api/importacao', importacaoRoutes);
+
+// ═══════════════════════════════════════════════════════════════
+// SURI - INTEGRAÇÃO WHATSAPP
+// ═══════════════════════════════════════════════════════════════
+
+const suriRoutes = require('./routes/suri')(pool, auth, registrarLog);
+app.use('/api/suri', suriRoutes);
+
+console.log('[SURI] Integração WhatsApp configurada ✓');
+
 // ═══════════════════════════════════════════════════════════════
 // ROTAS LEGADO - Compatibilidade com frontend antigo
 // ═══════════════════════════════════════════════════════════════
@@ -364,8 +374,9 @@ app.get('/api/health', async (req, res) => {
             database: 'connected',
             asaas: asaasService ? 'configured' : 'not_configured',
             asaas_mode: ASAAS_URL?.includes('sandbox') ? 'sandbox' : 'production',
-            version: '2.1.0',
-            modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes']
+            suri: 'configured',
+            version: '2.2.0',
+            modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes', 'suri']
         });
     } catch (error) {
         res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
@@ -405,7 +416,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log('');
     console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║            ACERTIVE - Sistema de Cobrança v2.1                ║');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.2                ║');
     console.log('╠═══════════════════════════════════════════════════════════════╣');
     console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
     console.log('║                                                               ║');
@@ -418,8 +429,10 @@ app.listen(PORT, () => {
     console.log('║     • acionamentos - Régua, Agendamentos, Histórico           ║');
     console.log('║     • financeiro   - Comissões, Repasses, Relatórios          ║');
     console.log('║     • integracoes  - Asaas, WhatsApp, Email, PDF              ║');
+    console.log('║     • suri         - WhatsApp via Suri (Chatbot Maker)        ║');
     console.log('║                                                               ║');
     console.log(`║  🔗 Asaas: ${asaasService ? (ASAAS_URL.includes('sandbox') ? 'SANDBOX ✓' : 'PRODUÇÃO ✓') : 'NÃO CONFIGURADO'}                                  ║`);
+    console.log('║  💬 Suri:  CONFIGURADO ✓                                      ║');
     console.log('╚═══════════════════════════════════════════════════════════════╝');
     console.log('');
 });

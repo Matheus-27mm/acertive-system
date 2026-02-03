@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integração Suri - ACERTIVE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root{--bg-primary:#07090d;--bg-secondary:#0d1117;--bg-card:#111820;--bg-elevated:#1a222d;--gold-primary:#d4a853;--gold-light:#e8c47c;--gold-dark:#b8923e;--gold-glow:rgba(212,168,83,0.15);--gold-subtle:rgba(212,168,83,0.08);--success:#22c55e;--success-bg:rgba(34,197,94,0.12);--warning:#f59e0b;--warning-bg:rgba(245,158,11,0.12);--danger:#ef4444;--danger-bg:rgba(239,68,68,0.12);--info:#3b82f6;--info-bg:rgba(59,130,246,0.12);--whatsapp:#25d366;--whatsapp-bg:rgba(37,211,102,0.12);--text-primary:#f5f5f5;--text-secondary:#9ca3af;--text-muted:#6b7280;--border-subtle:rgba(212,168,83,0.1);--border-default:rgba(212,168,83,0.15);--border-strong:rgba(212,168,83,0.25)}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
+        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
+        .sidebar-logo{display:flex;align-items:center;gap:14px}
+        .sidebar-logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bg-primary)}
+        .sidebar-logo-text{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
+        .sidebar-logo-text span{color:var(--gold-primary)}
+        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
+        .nav-section{margin-bottom:28px}
+        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px}
+        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all 0.25s;font-size:14px;font-weight:500;border:1px solid transparent}
+        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary)}
+        .nav-item.active{background:var(--gold-subtle);color:var(--gold-light);border-color:var(--border-default)}
+        .nav-item i{width:20px;text-align:center}
+        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
+        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
+        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
+        .user-details{flex:1}
+        .user-name{font-size:14px;font-weight:600}
+        .user-role{font-size:12px;color:var(--text-muted)}
+        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px}
+        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
+        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+        .page-header-left h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:14px}
+        .page-header-left h1 i{color:var(--whatsapp)}
+        .page-header-left p{font-size:14px;color:var(--text-muted)}
+        
+        .status-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;margin-bottom:24px}
+        .status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .status-title{font-family:'Playfair Display',serif;font-size:18px;display:flex;align-items:center;gap:10px}
+        .status-title i{color:var(--gold-primary)}
+        .status-badge{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700}
+        .status-badge.connected{background:var(--success-bg);color:var(--success)}
+        .status-badge.disconnected{background:var(--danger-bg);color:var(--danger)}
+        .status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+        .status-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:20px;text-align:center}
+        .status-item-value{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold-primary);margin-bottom:4px}
+        .status-item-label{font-size:12px;color:var(--text-muted);text-transform:uppercase}
+        
+        .cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:24px}
+        .card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px}
+        .card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+        .card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+        .card-icon.whatsapp{background:var(--whatsapp-bg);color:var(--whatsapp)}
+        .card-icon.disparo{background:var(--warning-bg);color:var(--warning)}
+        .card-icon.chatbot{background:var(--info-bg);color:var(--info)}
+        .card-icon.config{background:var(--gold-subtle);color:var(--gold-primary)}
+        .card-title{font-family:'Playfair Display',serif;font-size:18px}
+        .card-desc{font-size:13px;color:var(--text-muted)}
+        
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;margin-bottom:8px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;font-family:'DM Sans',sans-serif}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--gold-primary)}
+        .form-group select option{background:var(--bg-secondary)}
+        .form-group textarea{resize:vertical;min-height:100px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;border:none;font-family:'DM Sans',sans-serif;width:100%}
+        .btn-whatsapp{background:var(--whatsapp);color:white}
+        .btn-whatsapp:hover{background:#1da851;transform:translateY(-2px)}
+        .btn-primary{background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));color:var(--bg-primary)}
+        .btn-primary:hover{transform:translateY(-2px)}
+        .btn-secondary{background:var(--bg-secondary);border:1px solid var(--border-default);color:var(--text-secondary)}
+        .btn-secondary:hover{background:var(--bg-elevated);color:var(--text-primary)}
+        .btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+        
+        .message-templates{display:grid;gap:12px}
+        .template-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s}
+        .template-item:hover{border-color:var(--gold-primary);background:var(--gold-subtle)}
+        .template-item.selected{border-color:var(--gold-primary);background:var(--gold-subtle)}
+        .template-name{font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+        .template-name i{color:var(--gold-primary)}
+        .template-preview{font-size:12px;color:var(--text-muted);line-height:1.5}
+        
+        .result-box{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:16px;margin-top:16px;display:none}
+        .result-box.show{display:block}
+        .result-box.success{border-color:var(--success);background:var(--success-bg)}
+        .result-box.error{border-color:var(--danger);background:var(--danger-bg)}
+        .result-title{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+        .result-title i{font-size:18px}
+        .result-text{font-size:13px;color:var(--text-secondary)}
+        
+        .toast{position:fixed;bottom:28px;right:28px;background:var(--bg-card);border:1px solid var(--gold-primary);border-radius:14px;padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 30px rgba(212,168,83,0.2);transform:translateY(100px);opacity:0;transition:all 0.4s;z-index:1000}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast i{color:var(--success);font-size:22px}
+        .toast span{font-weight:600}
+        
+        @media(max-width:1200px){.cards-grid{grid-template-columns:1fr}.status-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.form-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div><div class="sidebar-logo-text">ACERT<span>IVE</span></div></div></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section"><div class="nav-section-title">Principal</div><a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a><a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a></div>
+            <div class="nav-section"><div class="nav-section-title">Gestão</div><a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a><a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a><a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
+            <div class="nav-section"><div class="nav-section-title">Integrações</div><a href="suri.html" class="nav-item active"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a></div>
+            <div class="nav-section"><div class="nav-section-title">Sistema</div><a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a></div>
+        </nav>
+        <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div></div></div>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header">
+            <div class="page-header-left">
+                <h1><i class="fab fa-whatsapp"></i> Integração Suri</h1>
+                <p>Envie mensagens de cobrança via WhatsApp automaticamente</p>
+            </div>
+        </header>
+
+        <!-- Status da Conexão -->
+        <div class="status-card">
+            <div class="status-header">
+                <div class="status-title"><i class="fas fa-wifi"></i> Status da Conexão</div>
+                <span class="status-badge" id="statusBadge">Verificando...</span>
+            </div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-item-value" id="statHoje">-</div>
+                    <div class="status-item-label">Mensagens Hoje</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-value" id="statSemana">-</div>
+                    <div class="status-item-label">Últimos 7 dias</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-value" id="statTotal">-</div>
+                    <div class="status-item-label">Total Enviadas</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-value" id="statCanal">WhatsApp</div>
+                    <div class="status-item-label">Canal Ativo</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <!-- Envio Individual -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
+                    <div>
+                        <div class="card-title">Envio Individual</div>
+                        <div class="card-desc">Envie mensagem para um cliente específico</div>
+                    </div>
+                </div>
+                <form onsubmit="enviarMensagemIndividual(event)">
+                    <div class="form-group">
+                        <label>Buscar Cliente</label>
+                        <input type="text" id="buscaCliente" placeholder="Digite nome ou CPF..." oninput="buscarClienteSuri(this.value)">
+                        <div id="resultadoBusca" style="margin-top:8px;"></div>
+                        <input type="hidden" id="clienteSelecionado">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Mensagem</label>
+                        <select id="tipoMensagemIndividual">
+                            <option value="lembrete">📋 Lembrete de Pagamento</option>
+                            <option value="urgente">⚠️ Aviso Urgente</option>
+                            <option value="negociacao">🤝 Proposta de Negociação</option>
+                            <option value="acordo">✅ Convite para Acordo</option>
+                            <option value="personalizada">✏️ Mensagem Personalizada</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="mensagemPersonalizadaGroup" style="display:none;">
+                        <label>Mensagem</label>
+                        <textarea id="mensagemPersonalizada" placeholder="Digite sua mensagem..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-whatsapp" id="btnEnviarIndividual">
+                        <i class="fab fa-whatsapp"></i> Enviar WhatsApp
+                    </button>
+                    <div class="result-box" id="resultIndividual"></div>
+                </form>
+            </div>
+
+            <!-- Disparo em Massa -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon disparo"><i class="fas fa-paper-plane"></i></div>
+                    <div>
+                        <div class="card-title">Disparo em Massa</div>
+                        <div class="card-desc">Envie para múltiplos clientes por filtro</div>
+                    </div>
+                </div>
+                <form onsubmit="disparoEmMassa(event)">
+                    <div class="form-group">
+                        <label>Tipo de Mensagem</label>
+                        <select id="tipoMensagemMassa">
+                            <option value="lembrete">📋 Lembrete de Pagamento</option>
+                            <option value="urgente">⚠️ Aviso Urgente</option>
+                            <option value="negociacao">🤝 Proposta de Negociação</option>
+                            <option value="acordo">✅ Convite para Acordo</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Atraso Mínimo (dias)</label>
+                            <input type="number" id="atrasoMin" value="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Atraso Máximo (dias)</label>
+                            <input type="number" id="atrasoMax" value="90" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Limite de Envios</label>
+                        <select id="limiteEnvios">
+                            <option value="10">10 clientes</option>
+                            <option value="25">25 clientes</option>
+                            <option value="50" selected>50 clientes</option>
+                            <option value="100">100 clientes</option>
+                            <option value="200">200 clientes</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnDisparoMassa">
+                        <i class="fas fa-paper-plane"></i> Iniciar Disparo
+                    </button>
+                    <div class="result-box" id="resultMassa"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Templates de Mensagem -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon config"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <div class="card-title">Templates de Mensagem</div>
+                    <div class="card-desc">Visualize os modelos de mensagem disponíveis</div>
+                </div>
+            </div>
+            <div class="message-templates">
+                <div class="template-item">
+                    <div class="template-name"><i class="fas fa-clipboard-list"></i> Lembrete de Pagamento</div>
+                    <div class="template-preview">Olá {nome}! 👋 Passando para lembrar que você possui cobranças em aberto no valor de {valor}. Entre em contato conosco para regularizar...</div>
+                </div>
+                <div class="template-item">
+                    <div class="template-name"><i class="fas fa-exclamation-triangle"></i> Aviso Urgente</div>
+                    <div class="template-preview">⚠️ AVISO IMPORTANTE ⚠️ Prezado(a) {nome}, Identificamos pendências em seu nome no valor de {valor}. Para evitar medidas judiciais...</div>
+                </div>
+                <div class="template-item">
+                    <div class="template-name"><i class="fas fa-handshake"></i> Proposta de Negociação</div>
+                    <div class="template-preview">Olá {nome}! 🤝 Temos uma proposta especial para você regularizar sua situação! Valor: {valor}. Oferecemos condições facilitadas...</div>
+                </div>
+                <div class="template-item">
+                    <div class="template-name"><i class="fas fa-check-circle"></i> Convite para Acordo</div>
+                    <div class="template-preview">Olá {nome}! ✅ Que tal resolver sua pendência hoje? Valor: {valor}. Temos opções de pagamento à vista com desconto ou parcelamento...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
+
+    <script>
+        var API = window.location.origin;
+
+        function H() { 
+            return { 
+                'Authorization': 'Bearer ' + localStorage.getItem('token'), 
+                'Content-Type': 'application/json' 
+            }; 
+        }
+
+        function toast(msg, tipo) {
+            var t = document.getElementById('toast');
+            var icon = t.querySelector('i');
+            document.getElementById('toastText').textContent = msg;
+            
+            if (tipo === 'error') {
+                icon.className = 'fas fa-times-circle';
+                icon.style.color = 'var(--danger)';
+            } else {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = 'var(--success)';
+            }
+            
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        }
+
+        async function checkAuth() {
+            var token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return false; }
+            try {
+                var r = await fetch(API + '/api/auth/me', { headers: H() });
+                var d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
+                var user = d.user || d;
+                document.getElementById('userName').textContent = user.nome || 'Usuário';
+                document.getElementById('userRole').textContent = user.perfil || 'Operador';
+                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
+                return true;
+            } catch (e) { return true; }
+        }
+
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+
+        // Verificar status da conexão
+        async function verificarStatus() {
+            try {
+                var r = await fetch(API + '/api/suri/status', { headers: H() });
+                var d = await r.json();
+                
+                var badge = document.getElementById('statusBadge');
+                
+                if (d.success && d.data.conectado) {
+                    badge.textContent = 'Conectado';
+                    badge.className = 'status-badge connected';
+                    
+                    if (d.data.estatisticas) {
+                        document.getElementById('statHoje').textContent = d.data.estatisticas.mensagens_hoje || 0;
+                        document.getElementById('statSemana').textContent = d.data.estatisticas.mensagens_semana || 0;
+                        document.getElementById('statTotal').textContent = d.data.estatisticas.mensagens_total || 0;
+                    }
+                } else {
+                    badge.textContent = 'Desconectado';
+                    badge.className = 'status-badge disconnected';
+                }
+            } catch (e) {
+                document.getElementById('statusBadge').textContent = 'Erro';
+                document.getElementById('statusBadge').className = 'status-badge disconnected';
+            }
+        }
+
+        // Buscar cliente
+        var buscaTimeout;
+        async function buscarClienteSuri(termo) {
+            clearTimeout(buscaTimeout);
+            
+            if (!termo || termo.length < 2) {
+                document.getElementById('resultadoBusca').innerHTML = '';
+                return;
+            }
+
+            buscaTimeout = setTimeout(async function() {
+                try {
+                    var r = await fetch(API + '/api/acionamentos/fila/devedores?limit=100', { headers: H() });
+                    var d = await r.json();
+                    var devedores = d.data || [];
+                    
+                    var termoLower = termo.toLowerCase();
+                    var encontrados = [];
+                    
+                    for (var i = 0; i < devedores.length; i++) {
+                        var dev = devedores[i];
+                        var nomeOk = dev.nome && dev.nome.toLowerCase().indexOf(termoLower) !== -1;
+                        var cpfOk = dev.cpf_cnpj && dev.cpf_cnpj.replace(/\D/g, '').indexOf(termo.replace(/\D/g, '')) !== -1;
+                        
+                        if (nomeOk || cpfOk) {
+                            encontrados.push(dev);
+                            if (encontrados.length >= 5) break;
+                        }
+                    }
+
+                    var html = '';
+                    if (encontrados.length > 0) {
+                        for (var j = 0; j < encontrados.length; j++) {
+                            var c = encontrados[j];
+                            html += '<div style="padding:10px;background:var(--bg-secondary);border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="selecionarClienteSuri(\'' + c.cliente_id + '\',\'' + (c.nome || '').replace(/'/g, "\\'") + '\')">';
+                            html += '<strong>' + c.nome + '</strong><br>';
+                            html += '<small style="color:var(--text-muted);">CPF: ' + c.cpf_cnpj + ' | Tel: ' + (c.telefone || 'Sem telefone') + '</small>';
+                            html += '</div>';
+                        }
+                    } else {
+                        html = '<p style="color:var(--text-muted);font-size:13px;">Nenhum cliente encontrado</p>';
+                    }
+                    
+                    document.getElementById('resultadoBusca').innerHTML = html;
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 300);
+        }
+
+        function selecionarClienteSuri(id, nome) {
+            document.getElementById('clienteSelecionado').value = id;
+            document.getElementById('buscaCliente').value = nome;
+            document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check"></i> Cliente selecionado: ' + nome + '</p>';
+        }
+
+        // Mostrar/ocultar campo de mensagem personalizada
+        document.getElementById('tipoMensagemIndividual').addEventListener('change', function() {
+            var grupo = document.getElementById('mensagemPersonalizadaGroup');
+            if (this.value === 'personalizada') {
+                grupo.style.display = 'block';
+            } else {
+                grupo.style.display = 'none';
+            }
+        });
+
+        // Enviar mensagem individual
+        async function enviarMensagemIndividual(e) {
+            e.preventDefault();
+            
+            var clienteId = document.getElementById('clienteSelecionado').value;
+            if (!clienteId) {
+                toast('Selecione um cliente', 'error');
+                return;
+            }
+
+            var tipo = document.getElementById('tipoMensagemIndividual').value;
+            var btn = document.getElementById('btnEnviarIndividual');
+            var resultBox = document.getElementById('resultIndividual');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            try {
+                var endpoint = tipo === 'personalizada' ? '/api/suri/enviar-mensagem' : '/api/suri/enviar-cobranca';
+                var body = { cliente_id: clienteId };
+                
+                if (tipo === 'personalizada') {
+                    body.mensagem = document.getElementById('mensagemPersonalizada').value;
+                } else {
+                    body.tipo_mensagem = tipo;
+                }
+
+                var r = await fetch(API + endpoint, {
+                    method: 'POST',
+                    headers: H(),
+                    body: JSON.stringify(body)
+                });
+
+                var d = await r.json();
+
+                if (d.success) {
+                    resultBox.className = 'result-box show success';
+                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> Enviado com sucesso!</div><div class="result-text">' + (d.message || 'Mensagem enviada via WhatsApp') + '</div>';
+                    toast('Mensagem enviada!');
+                    verificarStatus();
+                } else {
+                    resultBox.className = 'result-box show error';
+                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-times-circle" style="color:var(--danger)"></i> Erro</div><div class="result-text">' + (d.error || 'Erro ao enviar') + '</div>';
+                    toast(d.error || 'Erro ao enviar', 'error');
+                }
+            } catch (error) {
+                resultBox.className = 'result-box show error';
+                resultBox.innerHTML = '<div class="result-title"><i class="fas fa-times-circle" style="color:var(--danger)"></i> Erro</div><div class="result-text">' + error.message + '</div>';
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fab fa-whatsapp"></i> Enviar WhatsApp';
+            }
+        }
+
+        // Disparo em massa
+        async function disparoEmMassa(e) {
+            e.preventDefault();
+
+            if (!confirm('Confirma o disparo em massa? Esta ação enviará mensagens para múltiplos clientes.')) {
+                return;
+            }
+
+            var btn = document.getElementById('btnDisparoMassa');
+            var resultBox = document.getElementById('resultMassa');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            try {
+                var body = {
+                    tipo_mensagem: document.getElementById('tipoMensagemMassa').value,
+                    filtro_atraso_min: parseInt(document.getElementById('atrasoMin').value) || 0,
+                    filtro_atraso_max: parseInt(document.getElementById('atrasoMax').value) || 9999,
+                    limite: parseInt(document.getElementById('limiteEnvios').value) || 50
+                };
+
+                var r = await fetch(API + '/api/suri/disparo-massa', {
+                    method: 'POST',
+                    headers: H(),
+                    body: JSON.stringify(body)
+                });
+
+                var d = await r.json();
+
+                if (d.success) {
+                    resultBox.className = 'result-box show success';
+                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> Disparo concluído!</div>' +
+                        '<div class="result-text">' +
+                        '✅ Enviados: ' + d.data.enviados + '<br>' +
+                        '📊 Total processado: ' + d.data.total_clientes + '<br>' +
+                        (d.data.erros > 0 ? '❌ Erros: ' + d.data.erros : '') +
+                        '</div>';
+                    toast('Disparo concluído! ' + d.data.enviados + ' mensagens enviadas.');
+                    verificarStatus();
+                } else {
+                    resultBox.className = 'result-box show error';
+                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-times-circle" style="color:var(--danger)"></i> Erro</div><div class="result-text">' + (d.error || 'Erro no disparo') + '</div>';
+                    toast(d.error || 'Erro no disparo', 'error');
+                }
+            } catch (error) {
+                resultBox.className = 'result-box show error';
+                resultBox.innerHTML = '<div class="result-title"><i class="fas fa-times-circle" style="color:var(--danger)"></i> Erro</div><div class="result-text">' + error.message + '</div>';
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Iniciar Disparo';
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async function() {
+            var auth = await checkAuth();
+            if (auth) {
+                verificarStatus();
+            }
+        });
+    </script>
+</body>
+</html>
