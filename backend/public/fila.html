@@ -387,65 +387,92 @@
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
     <script>
-        const API = window.location.origin;
-        let fila = [];
-        let filaOriginal = [];
-        let posicao = 0;
-        let devedorAtual = null;
+        var API = window.location.origin;
+        var fila = [];
+        var filaOriginal = [];
+        var posicao = 0;
+        var devedorAtual = null;
 
-        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
-        function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+        function H() { 
+            return { 
+                'Authorization': 'Bearer ' + localStorage.getItem('token'), 
+                'Content-Type': 'application/json' 
+            }; 
+        }
+        
+        function fmtMoney(v) { 
+            return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
+        }
+        
+        function toast(msg) { 
+            document.getElementById('toastText').textContent = msg; 
+            document.getElementById('toast').classList.add('show'); 
+            setTimeout(function() { 
+                document.getElementById('toast').classList.remove('show'); 
+            }, 3000); 
+        }
 
         async function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/login.html'; return false; }
+            var token = localStorage.getItem('token');
+            if (!token) { 
+                window.location.href = '/login.html'; 
+                return false; 
+            }
             try {
-                const r = await fetch(API + '/api/auth/me', { headers: H() });
-                const d = await r.json();
-                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
-                const user = d.user || d;
+                var r = await fetch(API + '/api/auth/me', { headers: H() });
+                var d = await r.json();
+                if (!d.success && !d.user) { 
+                    window.location.href = '/login.html'; 
+                    return false; 
+                }
+                var user = d.user || d;
                 document.getElementById('userName').textContent = user.nome || 'Usuário';
                 document.getElementById('userRole').textContent = user.perfil || 'Operador';
                 document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
                 return true;
-            } catch (e) { return true; }
+            } catch (e) { 
+                return true; 
+            }
         }
 
-        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+        function logout() { 
+            localStorage.removeItem('token'); 
+            window.location.href = '/login.html'; 
+        }
 
-        // ═══════════════════════════════════════════════════════════════
-        // FUNÇÃO CORRIGIDA - Usa dados já agrupados da API
-        // ═══════════════════════════════════════════════════════════════
         async function carregarFila() {
             try {
-                const r = await fetch(API + '/api/acionamentos/fila/devedores?limit=10000', { headers: H() });
+                var r = await fetch(API + '/api/acionamentos/fila/devedores?limit=10000', { headers: H() });
                 if (!r.ok) throw new Error('Erro ao carregar');
-                const d = await r.json();
-                const devedores = d.data || [];
+                var d = await r.json();
+                var devedores = d.data || [];
 
-                // API já retorna devedores agrupados - só mapear os campos
-                filaOriginal = devedores.map(dev => ({
-                    cliente_id: dev.cliente_id,
-                    nome: dev.nome || 'Cliente',
-                    cpf_cnpj: dev.cpf_cnpj || '-',
-                    telefone: dev.telefone || dev.celular || '',
-                    email: dev.email || '',
-                    credor_nome: dev.credor_nome || 'Credor',
-                    cobrancas: [], // Carrega sob demanda
-                    valor_total: parseFloat(dev.valor_total) || 0,
-                    maior_atraso: parseInt(dev.maior_atraso) || 0,
-                    total_cobrancas: parseInt(dev.total_cobrancas) || 0,
-                    status: dev.status_cobranca || 'novo',
-                    vencimento: dev.vencimento_mais_antigo
-                }));
+                filaOriginal = [];
+                for (var i = 0; i < devedores.length; i++) {
+                    var dev = devedores[i];
+                    filaOriginal.push({
+                        cliente_id: dev.cliente_id,
+                        nome: dev.nome || 'Cliente',
+                        cpf_cnpj: dev.cpf_cnpj || '-',
+                        telefone: dev.telefone || dev.celular || '',
+                        email: dev.email || '',
+                        credor_nome: dev.credor_nome || 'Credor',
+                        cobrancas: [],
+                        valor_total: parseFloat(dev.valor_total) || 0,
+                        maior_atraso: parseInt(dev.maior_atraso) || 0,
+                        total_cobrancas: parseInt(dev.total_cobrancas) || 0,
+                        status: dev.status_cobranca || 'novo',
+                        vencimento: dev.vencimento_mais_antigo
+                    });
+                }
 
-                fila = [...filaOriginal];
+                fila = filaOriginal.slice();
+
+                console.log('[FILA] Carregados', fila.length, 'devedores');
 
                 document.getElementById('totalFila').textContent = fila.length;
                 document.getElementById('filaBadge').textContent = fila.length > 999 ? '999+' : fila.length;
 
-                // Carregar estatísticas
                 carregarEstatisticas();
 
                 if (fila.length > 0) {
@@ -464,15 +491,17 @@
 
         async function carregarEstatisticas() {
             try {
-                const r = await fetch(API + '/api/acionamentos/fila/stats', { headers: H() });
+                var r = await fetch(API + '/api/acionamentos/fila/stats', { headers: H() });
                 if (r.ok) {
-                    const d = await r.json();
+                    var d = await r.json();
                     if (d.data) {
                         document.getElementById('acionamentosHoje').textContent = d.data.acionamentos_hoje || 0;
                         document.getElementById('acordosHoje').textContent = d.data.acordos_hoje || 0;
                     }
                 }
-            } catch (e) { console.log('Stats não disponíveis'); }
+            } catch (e) { 
+                console.log('Stats não disponíveis'); 
+            }
         }
 
         async function mostrarDevedor() {
@@ -489,26 +518,25 @@
             document.getElementById('devedorContent').style.display = 'block';
 
             document.getElementById('posicaoAtual').textContent = posicao + 1;
-            document.getElementById('posicaoTexto').textContent = `${posicao + 1} de ${fila.length}`;
+            document.getElementById('posicaoTexto').textContent = (posicao + 1) + ' de ' + fila.length;
             document.getElementById('devedorNome').textContent = devedorAtual.nome;
-            document.getElementById('devedorDoc').textContent = `CPF/CNPJ: ${devedorAtual.cpf_cnpj}`;
+            document.getElementById('devedorDoc').textContent = 'CPF/CNPJ: ' + devedorAtual.cpf_cnpj;
             document.getElementById('valorTotal').textContent = fmtMoney(devedorAtual.valor_total);
-            document.getElementById('qtdCobrancas').textContent = `${devedorAtual.total_cobrancas} cobranças`;
-            document.getElementById('diasAtraso').textContent = `${devedorAtual.maior_atraso} dias`;
+            document.getElementById('qtdCobrancas').textContent = devedorAtual.total_cobrancas + ' cobranças';
+            document.getElementById('diasAtraso').textContent = devedorAtual.maior_atraso + ' dias';
             document.getElementById('credorNome').textContent = devedorAtual.credor_nome;
 
             if (devedorAtual.vencimento) {
-                const v = new Date(devedorAtual.vencimento);
-                document.getElementById('vencimento').textContent = `Venc: ${v.toLocaleDateString('pt-BR')}`;
+                var v = new Date(devedorAtual.vencimento);
+                document.getElementById('vencimento').textContent = 'Venc: ' + v.toLocaleDateString('pt-BR');
             } else {
                 document.getElementById('vencimento').textContent = '-';
             }
 
-            const statusEl = document.getElementById('devedorStatus');
+            var statusEl = document.getElementById('devedorStatus');
             statusEl.className = 'devedor-status status-' + (devedorAtual.status || 'novo');
             statusEl.textContent = formatStatus(devedorAtual.status);
 
-            // Carregar cobranças sob demanda
             await carregarCobrancasDevedor();
             carregarHistorico();
         }
@@ -524,17 +552,29 @@
             document.getElementById('cobrancasLista').innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
 
             try {
-                const r = await fetch(API + '/api/cobrancas?cliente_id=' + devedorAtual.cliente_id + '&limit=20', { headers: H() });
+                var r = await fetch(API + '/api/cobrancas?cliente_id=' + devedorAtual.cliente_id + '&limit=20', { headers: H() });
                 if (r.ok) {
-                    const d = await r.json();
-                    const cobrancas = (d.data || []).filter(c => ['pendente', 'vencido'].includes(c.status));
+                    var d = await r.json();
+                    var cobrancasRaw = d.data || [];
+                    var cobrancas = [];
                     
-                    const hoje = new Date();
-                    devedorAtual.cobrancas = cobrancas.map(c => {
-                        const venc = new Date(c.data_vencimento);
-                        const atraso = Math.max(0, Math.floor((hoje - venc) / (1000*60*60*24)));
-                        return { ...c, dias_atraso: atraso };
-                    });
+                    for (var i = 0; i < cobrancasRaw.length; i++) {
+                        var c = cobrancasRaw[i];
+                        if (c.status === 'pendente' || c.status === 'vencido') {
+                            cobrancas.push(c);
+                        }
+                    }
+                    
+                    var hoje = new Date();
+                    devedorAtual.cobrancas = [];
+                    
+                    for (var j = 0; j < cobrancas.length; j++) {
+                        var cob = cobrancas[j];
+                        var venc = new Date(cob.data_vencimento);
+                        var atraso = Math.max(0, Math.floor((hoje - venc) / (1000*60*60*24)));
+                        cob.dias_atraso = atraso;
+                        devedorAtual.cobrancas.push(cob);
+                    }
 
                     renderizarCobrancas(devedorAtual.cobrancas);
                 }
@@ -550,126 +590,193 @@
                 return;
             }
 
-            document.getElementById('cobrancasLista').innerHTML = cobrancas.slice(0, 5).map(c => `
-                <div class="cobranca-item">
-                    <div>
-                        <div class="cobranca-desc">${c.descricao || 'Cobrança'}</div>
-                        <div class="cobranca-credor">${c.credor_nome || ''}</div>
-                    </div>
-                    <div>
-                        <div class="cobranca-valor">${fmtMoney(c.valor)}</div>
-                        <div class="cobranca-atraso">${c.dias_atraso > 0 ? c.dias_atraso + ' dias atraso' : 'A vencer'}</div>
-                    </div>
-                </div>
-            `).join('');
+            var html = '';
+            var max = Math.min(cobrancas.length, 5);
+            
+            for (var i = 0; i < max; i++) {
+                var c = cobrancas[i];
+                html += '<div class="cobranca-item">';
+                html += '<div>';
+                html += '<div class="cobranca-desc">' + (c.descricao || 'Cobrança') + '</div>';
+                html += '<div class="cobranca-credor">' + (c.credor_nome || '') + '</div>';
+                html += '</div>';
+                html += '<div>';
+                html += '<div class="cobranca-valor">' + fmtMoney(c.valor) + '</div>';
+                html += '<div class="cobranca-atraso">' + (c.dias_atraso > 0 ? c.dias_atraso + ' dias atraso' : 'A vencer') + '</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            document.getElementById('cobrancasLista').innerHTML = html;
         }
 
         function formatStatus(s) {
-            const map = { 'novo': 'Novo', 'negociando': 'Negociando', 'sem_contato': 'Sem Contato', 'recusou': 'Recusou', 'acordo': 'Acordo', 'juridico': 'Jurídico', 'incobravel': 'Incobrável' };
+            var map = { 
+                'novo': 'Novo', 
+                'negociando': 'Negociando', 
+                'sem_contato': 'Sem Contato', 
+                'recusou': 'Recusou', 
+                'acordo': 'Acordo', 
+                'juridico': 'Jurídico', 
+                'incobravel': 'Incobrável' 
+            };
             return map[s] || 'Novo';
         }
 
         async function carregarHistorico() {
             if (!devedorAtual) return;
             try {
-                const r = await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '?limit=5', { headers: H() });
+                var r = await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '?limit=5', { headers: H() });
                 if (!r.ok) return;
-                const d = await r.json();
-                const acionamentos = d.data || [];
+                var d = await r.json();
+                var acionamentos = d.data || [];
 
                 if (acionamentos.length === 0) {
-                    document.getElementById('historicoLista').innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-muted);"><i class="fas fa-inbox" style="font-size: 28px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>Nenhum acionamento</div>`;
+                    document.getElementById('historicoLista').innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-muted);"><i class="fas fa-inbox" style="font-size: 28px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>Nenhum acionamento</div>';
                     return;
                 }
 
-                document.getElementById('historicoLista').innerHTML = acionamentos.map(a => `
-                    <div class="historico-item">
-                        <div class="historico-icon ${a.tipo}">${getIconTipo(a.tipo)}</div>
-                        <div>
-                            <div class="historico-tipo">${formatTipo(a.tipo)}</div>
-                            <div class="historico-resultado">${formatResultado(a.resultado)}</div>
-                            <div class="historico-data">${new Date(a.created_at).toLocaleString('pt-BR')}</div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (e) { console.error('Erro histórico:', e); }
+                var html = '';
+                for (var i = 0; i < acionamentos.length; i++) {
+                    var a = acionamentos[i];
+                    html += '<div class="historico-item">';
+                    html += '<div class="historico-icon ' + a.tipo + '">' + getIconTipo(a.tipo) + '</div>';
+                    html += '<div>';
+                    html += '<div class="historico-tipo">' + formatTipo(a.tipo) + '</div>';
+                    html += '<div class="historico-resultado">' + formatResultado(a.resultado) + '</div>';
+                    html += '<div class="historico-data">' + new Date(a.created_at).toLocaleString('pt-BR') + '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                document.getElementById('historicoLista').innerHTML = html;
+            } catch (e) { 
+                console.error('Erro histórico:', e); 
+            }
         }
 
         function getIconTipo(t) {
-            const map = { 'ligacao': '<i class="fas fa-phone"></i>', 'whatsapp': '<i class="fab fa-whatsapp"></i>', 'email': '<i class="fas fa-envelope"></i>', 'sms': '<i class="fas fa-sms"></i>' };
+            var map = { 
+                'ligacao': '<i class="fas fa-phone"></i>', 
+                'whatsapp': '<i class="fab fa-whatsapp"></i>', 
+                'email': '<i class="fas fa-envelope"></i>', 
+                'sms': '<i class="fas fa-sms"></i>' 
+            };
             return map[t] || '<i class="fas fa-comment"></i>';
         }
 
         function formatTipo(t) {
-            const map = { 'ligacao': 'Ligação', 'whatsapp': 'WhatsApp', 'email': 'E-mail', 'sms': 'SMS' };
+            var map = { 
+                'ligacao': 'Ligação', 
+                'whatsapp': 'WhatsApp', 
+                'email': 'E-mail', 
+                'sms': 'SMS' 
+            };
             return map[t] || t;
         }
 
         function formatResultado(r) {
-            const map = { 'atendeu': 'Atendeu', 'nao_atendeu': 'Não atendeu', 'caixa_postal': 'Caixa postal', 'numero_errado': 'Número errado', 'prometeu_pagar': 'Prometeu pagar', 'quer_negociar': 'Quer negociar', 'recusou': 'Recusou' };
+            var map = { 
+                'atendeu': 'Atendeu', 
+                'nao_atendeu': 'Não atendeu', 
+                'caixa_postal': 'Caixa postal', 
+                'numero_errado': 'Número errado', 
+                'prometeu_pagar': 'Prometeu pagar', 
+                'quer_negociar': 'Quer negociar', 
+                'recusou': 'Recusou' 
+            };
             return map[r] || r;
         }
 
         function proximo() {
-            if (posicao < fila.length - 1) { posicao++; mostrarDevedor(); }
-            else { document.getElementById('devedorContent').style.display = 'none'; document.getElementById('emptyState').style.display = 'flex'; }
+            if (posicao < fila.length - 1) { 
+                posicao++; 
+                mostrarDevedor(); 
+            } else { 
+                document.getElementById('devedorContent').style.display = 'none'; 
+                document.getElementById('emptyState').style.display = 'flex'; 
+            }
         }
 
         function pular() {
-            const dev = fila.splice(posicao, 1)[0];
+            var dev = fila.splice(posicao, 1)[0];
             fila.push(dev);
             mostrarDevedor();
             toast('Devedor movido para o final');
         }
 
         function ligar() {
-            if (devedorAtual?.telefone) {
+            if (devedorAtual && devedorAtual.telefone) {
                 window.open('tel:' + devedorAtual.telefone.replace(/\D/g, ''), '_blank');
                 document.getElementById('tipoContato').value = 'ligacao';
-            } else { toast('Telefone não cadastrado'); }
+            } else { 
+                toast('Telefone não cadastrado'); 
+            }
         }
 
         function whatsapp() {
-            if (devedorAtual?.telefone) {
-                let tel = devedorAtual.telefone.replace(/\D/g, '');
+            if (devedorAtual && devedorAtual.telefone) {
+                var tel = devedorAtual.telefone.replace(/\D/g, '');
                 if (tel.length <= 11) tel = '55' + tel;
-                const msg = encodeURIComponent(`Olá ${devedorAtual.nome.split(' ')[0]}, aqui é da ACERTIVE.`);
-                window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+                var msg = encodeURIComponent('Olá ' + devedorAtual.nome.split(' ')[0] + ', aqui é da ACERTIVE.');
+                window.open('https://wa.me/' + tel + '?text=' + msg, '_blank');
                 document.getElementById('tipoContato').value = 'whatsapp';
-            } else { toast('Telefone não cadastrado'); }
+            } else { 
+                toast('Telefone não cadastrado'); 
+            }
         }
 
         function enviarEmail() {
-            if (devedorAtual?.email) {
-                const assunto = encodeURIComponent('ACERTIVE - Regularização');
-                const corpo = encodeURIComponent(`Prezado(a) ${devedorAtual.nome},\n\nEntramos em contato sobre sua pendência.\n\nAtenciosamente,\nEquipe ACERTIVE`);
-                window.open(`mailto:${devedorAtual.email}?subject=${assunto}&body=${corpo}`, '_blank');
+            if (devedorAtual && devedorAtual.email) {
+                var assunto = encodeURIComponent('ACERTIVE - Regularização');
+                var corpo = encodeURIComponent('Prezado(a) ' + devedorAtual.nome + ',\n\nEntramos em contato sobre sua pendência.\n\nAtenciosamente,\nEquipe ACERTIVE');
+                window.open('mailto:' + devedorAtual.email + '?subject=' + assunto + '&body=' + corpo, '_blank');
                 document.getElementById('tipoContato').value = 'email';
-            } else { toast('E-mail não cadastrado'); }
+            } else { 
+                toast('E-mail não cadastrado'); 
+            }
         }
 
         async function registrarAcionamento(e) {
             e.preventDefault();
             if (!devedorAtual) return;
-            const tipo = document.getElementById('tipoContato').value;
-            const resultado = document.getElementById('resultadoContato').value;
-            const obs = document.getElementById('observacao').value;
-            if (!tipo || !resultado) { toast('Preencha tipo e resultado'); return; }
+            
+            var tipo = document.getElementById('tipoContato').value;
+            var resultado = document.getElementById('resultadoContato').value;
+            var obs = document.getElementById('observacao').value;
+            
+            if (!tipo || !resultado) { 
+                toast('Preencha tipo e resultado'); 
+                return; 
+            }
 
             try {
-                const r = await fetch(API + '/api/acionamentos', {
-                    method: 'POST', headers: H(),
-                    body: JSON.stringify({ cliente_id: devedorAtual.cliente_id, tipo, resultado, descricao: obs })
+                var r = await fetch(API + '/api/acionamentos', {
+                    method: 'POST', 
+                    headers: H(),
+                    body: JSON.stringify({ 
+                        cliente_id: devedorAtual.cliente_id, 
+                        tipo: tipo, 
+                        resultado: resultado, 
+                        descricao: obs 
+                    })
                 });
+                
                 if (r.ok) {
                     toast('Acionamento registrado!');
                     document.getElementById('tipoContato').value = '';
                     document.getElementById('resultadoContato').value = '';
                     document.getElementById('observacao').value = '';
-                    document.getElementById('acionamentosHoje').textContent = parseInt(document.getElementById('acionamentosHoje').textContent) + 1;
+                    var acionHoje = parseInt(document.getElementById('acionamentosHoje').textContent) + 1;
+                    document.getElementById('acionamentosHoje').textContent = acionHoje;
                     carregarHistorico();
-                } else { toast('Erro ao registrar'); }
-            } catch (e) { console.error(e); toast('Erro ao registrar'); }
+                } else { 
+                    toast('Erro ao registrar'); 
+                }
+            } catch (e) { 
+                console.error(e); 
+                toast('Erro ao registrar'); 
+            }
         }
 
         function abrirModalAcordo() {
@@ -679,23 +786,26 @@
             document.getElementById('modalAcordo').classList.add('active');
         }
 
-        function fecharModal() { document.getElementById('modalAcordo').classList.remove('active'); }
+        function fecharModal() { 
+            document.getElementById('modalAcordo').classList.remove('active'); 
+        }
 
         function calcularAcordo() {
             if (!devedorAtual) return;
-            const original = devedorAtual.valor_total;
-            const multa = parseFloat(document.getElementById('inputMulta').value) || 0;
-            const juros = parseFloat(document.getElementById('inputJuros').value) || 0;
-            const honorarios = parseFloat(document.getElementById('inputHonorarios').value) || 0;
-            const desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
+            
+            var original = devedorAtual.valor_total;
+            var multa = parseFloat(document.getElementById('inputMulta').value) || 0;
+            var juros = parseFloat(document.getElementById('inputJuros').value) || 0;
+            var honorarios = parseFloat(document.getElementById('inputHonorarios').value) || 0;
+            var desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
 
-            const meses = devedorAtual.maior_atraso / 30;
-            const vMulta = original * (multa / 100);
-            const vJuros = original * (juros / 100) * meses;
-            const vHonorarios = original * (honorarios / 100);
-            const subtotal = original + vMulta + vJuros + vHonorarios;
-            const vDesconto = subtotal * (desconto / 100);
-            const total = subtotal - vDesconto;
+            var meses = devedorAtual.maior_atraso / 30;
+            var vMulta = original * (multa / 100);
+            var vJuros = original * (juros / 100) * meses;
+            var vHonorarios = original * (honorarios / 100);
+            var subtotal = original + vMulta + vJuros + vHonorarios;
+            var vDesconto = subtotal * (desconto / 100);
+            var total = subtotal - vDesconto;
 
             document.getElementById('acordoMulta').textContent = fmtMoney(vMulta);
             document.getElementById('acordoJuros').textContent = fmtMoney(vJuros);
@@ -703,10 +813,10 @@
             document.getElementById('acordoDesconto').textContent = '- ' + fmtMoney(vDesconto);
             document.getElementById('acordoTotal').textContent = fmtMoney(total);
 
-            const sel = document.getElementById('inputParcelas');
-            for (let i = 0; i < sel.options.length; i++) {
-                const p = i + 1;
-                sel.options[i].text = p === 1 ? `À Vista - ${fmtMoney(total)}` : `${p}x de ${fmtMoney(total / p)}`;
+            var sel = document.getElementById('inputParcelas');
+            for (var i = 0; i < sel.options.length; i++) {
+                var p = i + 1;
+                sel.options[i].text = p === 1 ? 'À Vista - ' + fmtMoney(total) : p + 'x de ' + fmtMoney(total / p);
             }
         }
 
@@ -714,81 +824,133 @@
             if (!devedorAtual) return;
             toast('Acordo criado com sucesso!');
             fecharModal();
-            document.getElementById('acordosHoje').textContent = parseInt(document.getElementById('acordosHoje').textContent) + 1;
-            setTimeout(() => proximo(), 1000);
+            var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1;
+            document.getElementById('acordosHoje').textContent = acordosHoje;
+            setTimeout(function() { proximo(); }, 1000);
         }
 
         async function marcarIncobravel() {
             if (!devedorAtual) return;
             if (!confirm('Marcar como INCOBRÁVEL?')) return;
             try {
-                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'incobravel' }) });
+                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { 
+                    method: 'PUT', 
+                    headers: H(), 
+                    body: JSON.stringify({ status_cobranca: 'incobravel' }) 
+                });
                 toast('Marcado como incobrável');
                 proximo();
-            } catch (e) { toast('Erro ao atualizar'); }
+            } catch (e) { 
+                toast('Erro ao atualizar'); 
+            }
         }
 
         async function enviarJuridico() {
             if (!devedorAtual) return;
             if (!confirm('Enviar para JURÍDICO?')) return;
             try {
-                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'juridico' }) });
+                await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { 
+                    method: 'PUT', 
+                    headers: H(), 
+                    body: JSON.stringify({ status_cobranca: 'juridico' }) 
+                });
                 toast('Enviado para jurídico');
                 proximo();
-            } catch (e) { toast('Erro ao atualizar'); }
+            } catch (e) { 
+                toast('Erro ao atualizar'); 
+            }
         }
 
         function verDetalhes() {
-            if (devedorAtual) window.location.href = 'devedores.html?id=' + devedorAtual.cliente_id;
+            if (devedorAtual) {
+                window.location.href = 'devedores.html?id=' + devedorAtual.cliente_id;
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const auth = await checkAuth();
-            if (auth) await carregarFila();
-        });
-
-        document.getElementById('modalAcordo').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) fecharModal();
-        });
-
-        // BUSCA
+        // ═══════════════════════════════════════════════════════════════
+        // BUSCA DE CLIENTES - CORRIGIDA (ES5)
+        // ═══════════════════════════════════════════════════════════════
         function buscarCliente(termo) {
-            const results = document.getElementById('searchResults');
-            if (!termo || termo.length < 2) { results.classList.remove('show'); return; }
+            var results = document.getElementById('searchResults');
+            
+            if (!termo || termo.length < 2) { 
+                results.classList.remove('show'); 
+                return; 
+            }
 
-            const termoLower = termo.toLowerCase();
-            const encontrados = filaOriginal.filter(d => 
-                d.nome.toLowerCase().includes(termoLower) || 
-                d.cpf_cnpj.includes(termo.replace(/\D/g, ''))
-            ).slice(0, 10);
+            var termoLower = termo.toLowerCase();
+            var termoNumeros = termo.replace(/\D/g, '');
+            var encontrados = [];
+            
+            console.log('[BUSCA] Termo:', termoLower, '| Números:', termoNumeros);
+
+            for (var i = 0; i < filaOriginal.length; i++) {
+                var d = filaOriginal[i];
+                
+                // Busca por nome
+                var nomeOk = false;
+                if (d.nome) {
+                    nomeOk = d.nome.toLowerCase().indexOf(termoLower) !== -1;
+                }
+                
+                // Busca por CPF
+                var cpfOk = false;
+                if (d.cpf_cnpj && termoNumeros.length > 0) {
+                    var cpfLimpo = d.cpf_cnpj.replace(/\D/g, '');
+                    cpfOk = cpfLimpo.indexOf(termoNumeros) !== -1;
+                }
+                
+                if (nomeOk || cpfOk) {
+                    encontrados.push(d);
+                    if (encontrados.length >= 10) break;
+                }
+            }
+
+            console.log('[BUSCA] Encontrados:', encontrados.length);
 
             if (encontrados.length === 0) {
                 results.innerHTML = '<div class="search-result-item"><span style="color: var(--text-muted);">Nenhum cliente encontrado</span></div>';
             } else {
-                results.innerHTML = encontrados.map((d, i) => `
-                    <div class="search-result-item" onclick="selecionarCliente(${filaOriginal.indexOf(d)})">
-                        <div class="nome">${d.nome}</div>
-                        <div class="info">
-                            <span>CPF: ${d.cpf_cnpj}</span>
-                            <span class="valor">${fmtMoney(d.valor_total)}</span>
-                            <span style="color: var(--danger);">${d.maior_atraso} dias</span>
-                        </div>
-                    </div>
-                `).join('');
+                var html = '';
+                for (var j = 0; j < encontrados.length; j++) {
+                    var dev = encontrados[j];
+                    var idx = filaOriginal.indexOf(dev);
+                    html += '<div class="search-result-item" onclick="selecionarCliente(' + idx + ')">';
+                    html += '<div class="nome">' + dev.nome + '</div>';
+                    html += '<div class="info">';
+                    html += '<span>CPF: ' + dev.cpf_cnpj + '</span>';
+                    html += '<span class="valor">' + fmtMoney(dev.valor_total) + '</span>';
+                    html += '<span style="color: var(--danger);">' + dev.maior_atraso + ' dias</span>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                results.innerHTML = html;
             }
+            
             results.classList.add('show');
         }
 
         function selecionarCliente(index) {
             posicao = index;
-            fila = [...filaOriginal];
+            fila = filaOriginal.slice();
             mostrarDevedor();
             document.getElementById('searchResults').classList.remove('show');
             document.getElementById('searchInput').value = '';
         }
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-box')) document.getElementById('searchResults').classList.remove('show');
+        document.addEventListener('DOMContentLoaded', async function() {
+            var auth = await checkAuth();
+            if (auth) await carregarFila();
+        });
+
+        document.getElementById('modalAcordo').addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) fecharModal();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-box')) {
+                document.getElementById('searchResults').classList.remove('show');
+            }
         });
     </script>
 </body>
