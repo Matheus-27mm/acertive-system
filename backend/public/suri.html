@@ -350,20 +350,25 @@
 
             buscaTimeout = setTimeout(async function() {
                 try {
-                    var r = await fetch(API + '/api/acionamentos/fila/devedores?limit=100', { headers: H() });
+                    // Buscar clientes diretamente
+                    var r = await fetch(API + '/api/cadastros/clientes?limit=100', { headers: H() });
                     var d = await r.json();
-                    var devedores = d.data || [];
+                    var clientes = d.data || d || [];
                     
-                    var termoLower = termo.toLowerCase();
+                    var termoLower = termo.toLowerCase().trim();
                     var encontrados = [];
                     
-                    for (var i = 0; i < devedores.length; i++) {
-                        var dev = devedores[i];
-                        var nomeOk = dev.nome && dev.nome.toLowerCase().indexOf(termoLower) !== -1;
-                        var cpfOk = dev.cpf_cnpj && dev.cpf_cnpj.replace(/\D/g, '').indexOf(termo.replace(/\D/g, '')) !== -1;
+                    for (var i = 0; i < clientes.length; i++) {
+                        var cli = clientes[i];
+                        var nome = (cli.nome || '').toLowerCase();
+                        var cpf = (cli.cpf_cnpj || '').replace(/\D/g, '');
+                        var termoNumeros = termo.replace(/\D/g, '');
+                        
+                        var nomeOk = nome.indexOf(termoLower) !== -1;
+                        var cpfOk = termoNumeros.length > 0 && cpf.indexOf(termoNumeros) !== -1;
                         
                         if (nomeOk || cpfOk) {
-                            encontrados.push(dev);
+                            encontrados.push(cli);
                             if (encontrados.length >= 5) break;
                         }
                     }
@@ -372,18 +377,21 @@
                     if (encontrados.length > 0) {
                         for (var j = 0; j < encontrados.length; j++) {
                             var c = encontrados[j];
-                            html += '<div style="padding:10px;background:var(--bg-secondary);border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="selecionarClienteSuri(\'' + c.cliente_id + '\',\'' + (c.nome || '').replace(/'/g, "\\'") + '\')">';
-                            html += '<strong>' + c.nome + '</strong><br>';
-                            html += '<small style="color:var(--text-muted);">CPF: ' + c.cpf_cnpj + ' | Tel: ' + (c.telefone || 'Sem telefone') + '</small>';
+                            var telefone = c.telefone || c.celular || 'Sem telefone';
+                            var nomeEscapado = (c.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            html += '<div style="padding:12px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=\'var(--gold-primary)\'" onmouseout="this.style.borderColor=\'var(--border-subtle)\'" onclick="selecionarClienteSuri(\'' + c.id + '\',\'' + nomeEscapado + '\')">';
+                            html += '<strong style="color:var(--text-primary);">' + (c.nome || 'Sem nome') + '</strong><br>';
+                            html += '<small style="color:var(--text-muted);">CPF: ' + (c.cpf_cnpj || 'N/A') + ' | Tel: ' + telefone + '</small>';
                             html += '</div>';
                         }
                     } else {
-                        html = '<p style="color:var(--text-muted);font-size:13px;">Nenhum cliente encontrado</p>';
+                        html = '<p style="color:var(--text-muted);font-size:13px;padding:10px;"><i class="fas fa-search"></i> Nenhum cliente encontrado com "' + termo + '"</p>';
                     }
                     
                     document.getElementById('resultadoBusca').innerHTML = html;
                 } catch (e) {
-                    console.error(e);
+                    console.error('Erro na busca:', e);
+                    document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--danger);font-size:13px;">Erro ao buscar clientes</p>';
                 }
             }, 300);
         }
@@ -391,7 +399,7 @@
         function selecionarClienteSuri(id, nome) {
             document.getElementById('clienteSelecionado').value = id;
             document.getElementById('buscaCliente').value = nome;
-            document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check"></i> Cliente selecionado: ' + nome + '</p>';
+            document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--success);font-size:13px;padding:10px;"><i class="fas fa-check-circle"></i> Cliente selecionado: <strong>' + nome + '</strong></p>';
         }
 
         // Mostrar/ocultar campo de mensagem personalizada
