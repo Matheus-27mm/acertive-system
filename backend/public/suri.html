@@ -350,33 +350,15 @@
 
             buscaTimeout = setTimeout(async function() {
                 try {
-                    // Buscar clientes na API correta
-                    var r = await fetch(API + '/api/clientes?limit=100', { headers: H() });
+                    // Buscar clientes com parâmetro search
+                    var r = await fetch(API + '/api/clientes?limit=10&search=' + encodeURIComponent(termo), { headers: H() });
                     var d = await r.json();
                     var clientes = d.data || [];
-                    
-                    var termoLower = termo.toLowerCase().trim();
-                    var encontrados = [];
-                    
-                    for (var i = 0; i < clientes.length; i++) {
-                        var cli = clientes[i];
-                        var nome = (cli.nome || '').toLowerCase();
-                        var cpf = (cli.cpf_cnpj || '').replace(/\D/g, '');
-                        var termoNumeros = termo.replace(/\D/g, '');
-                        
-                        var nomeOk = nome.indexOf(termoLower) !== -1;
-                        var cpfOk = termoNumeros.length > 0 && cpf.indexOf(termoNumeros) !== -1;
-                        
-                        if (nomeOk || cpfOk) {
-                            encontrados.push(cli);
-                            if (encontrados.length >= 5) break;
-                        }
-                    }
 
                     var html = '';
-                    if (encontrados.length > 0) {
-                        for (var j = 0; j < encontrados.length; j++) {
-                            var c = encontrados[j];
+                    if (clientes.length > 0) {
+                        for (var j = 0; j < clientes.length && j < 5; j++) {
+                            var c = clientes[j];
                             var telefone = c.telefone || c.celular || 'Sem telefone';
                             var nomeEscapado = (c.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                             html += '<div style="padding:12px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=\'var(--gold-primary)\'" onmouseout="this.style.borderColor=\'var(--border-subtle)\'" onclick="selecionarClienteSuri(\'' + c.id + '\',\'' + nomeEscapado + '\')">';
