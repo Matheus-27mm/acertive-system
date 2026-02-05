@@ -5,7 +5,7 @@
  * ========================================
  * 
  * Funcionalidades:
- * - Enviar mensagens via WhatsApp
+ * - Enviar mensagens via WhatsApp (template)
  * - Receber webhooks (mensagens recebidas)
  * - Registrar acionamentos automaticamente
  * - Chatbot de cobrança
@@ -25,7 +25,9 @@ module.exports = function(pool, auth, registrarLog) {
         token: 'c79ce62a-eb6c-495a-b102-0e780b5d2047',
         identificador: 'cb126955962',
         channelId: 'wp946373665229352',
-        channelType: 1
+        channelType: 1,
+        // Template padrão para cobrança (SURI - INICIANDO ATENDIMENTO)
+        templateId: '1182587867397343'
     };
 
     function getSuriHeaders() {
@@ -57,18 +59,64 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // API: ENVIAR MENSAGEM
+    // FUNÇÃO PRINCIPAL: ENVIAR TEMPLATE COM IMPORT
+    // ═══════════════════════════════════════════════════════════════
+
+    async function enviarTemplateComImport(cliente, telefone, templateId, bodyParams) {
+        try {
+            var body = {
+                user: {
+                    name: cliente.nome || 'Cliente',
+                    phone: telefone,
+                    email: cliente.email || null,
+                    gender: 0,
+                    channelId: SURI_CONFIG.channelId,
+                    channelType: SURI_CONFIG.channelType,
+                    defaultDepartmentId: null
+                },
+                message: {
+                    templateId: templateId,
+                    BodyParameters: bodyParams,
+                    ButtonsParameters: []
+                }
+            };
+
+            console.log('[SURI] Enviando template:', JSON.stringify(body, null, 2));
+
+            var response = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
+                method: 'POST',
+                headers: getSuriHeaders(),
+                body: JSON.stringify(body)
+            });
+
+            var text = await response.text();
+            console.log('[SURI] Resposta:', response.status, text);
+            
+            var data = text ? JSON.parse(text) : {};
+            
+            return { 
+                success: data.success === true || response.ok, 
+                data: data 
+            };
+        } catch (error) {
+            console.error('[SURI] Erro ao enviar template:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // API: ENVIAR MENSAGEM (Template)
     // ═══════════════════════════════════════════════════════════════
 
     // POST /api/suri/enviar-mensagem
     router.post('/enviar-mensagem', auth, async function(req, res) {
         try {
             var cliente_id = req.body.cliente_id;
-            var mensagem = req.body.mensagem;
-            var tipo = req.body.tipo || 'texto';
+            var mensagem = req.body.mensagem || '';
+            var assunto = req.body.assunto || 'uma pendência financeira';
 
-            if (!cliente_id || !mensagem) {
-                return res.status(400).json({ success: false, error: 'Cliente e mensagem são obrigatórios' });
+            if (!cliente_id) {
+                return res.status(400).json({ success: false, error: 'Cliente é obrigatório' });
             }
 
             // Buscar dados do cliente
@@ -88,21 +136,22 @@ module.exports = function(pool, auth, registrarLog) {
                 return res.status(400).json({ success: false, error: 'Cliente sem telefone cadastrado' });
             }
 
-            // Primeiro, importar/atualizar contato na Suri
-            var contatoSuri = await importarContatoSuri(cliente, telefone);
-            
-            if (!contatoSuri || !contatoSuri.id) {
-                return res.status(500).json({ success: false, error: 'Erro ao importar contato na Suri' });
-            }
+            // Pegar primeiro nome
+            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
 
-            // Enviar mensagem
-            var resultado = await enviarMensagemSuri(contatoSuri.id, mensagem, tipo);
+            // Enviar template com import
+            var resultado = await enviarTemplateComImport(
+                cliente, 
+                telefone, 
+                SURI_CONFIG.templateId,
+                [primeiroNome, assunto]
+            );
 
             if (resultado.success) {
                 // Registrar acionamento
                 await pool.query(
                     'INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
-                    [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Mensagem enviada via Suri: ' + mensagem.substring(0, 100)]
+                    [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Mensagem enviada via Suri - Assunto: ' + assunto]
                 );
 
                 // Atualizar último contato
@@ -130,69 +179,6 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // Função para importar contato na Suri
-    async function importarContatoSuri(cliente, telefone) {
-        try {
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/contacts', {
-                method: 'POST',
-                headers: getSuriHeaders(),
-                body: JSON.stringify({
-                    phone: telefone,
-                    name: cliente.nome,
-                    email: cliente.email || '',
-                    channelId: SURI_CONFIG.channelId,
-                    channelType: SURI_CONFIG.channelType,
-                    note: 'Cliente ACERTIVE - ID: ' + cliente.id
-                })
-            });
-
-            var text = await response.text();
-            console.log('[SURI] Resposta importar contato:', response.status, text);
-            
-            if (!text) {
-                console.error('[SURI] Resposta vazia ao importar contato');
-                return null;
-            }
-            
-            var data = JSON.parse(text);
-            console.log('[SURI] Contato importado:', data);
-            return data;
-        } catch (error) {
-            console.error('[SURI] Erro ao importar contato:', error);
-            return null;
-        }
-    }
-
-    // Função para enviar mensagem via Suri
-    async function enviarMensagemSuri(contatoId, mensagem, tipo) {
-        try {
-            var body = {
-                userId: contatoId,
-                message: {
-                    text: mensagem
-                }
-            };
-
-            console.log('[SURI] Enviando mensagem:', JSON.stringify(body));
-
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
-                method: 'POST',
-                headers: getSuriHeaders(),
-                body: JSON.stringify(body)
-            });
-
-            var text = await response.text();
-            console.log('[SURI] Resposta enviar mensagem:', response.status, text);
-            
-            var data = text ? JSON.parse(text) : {};
-            
-            return { success: response.ok, data: data };
-        } catch (error) {
-            console.error('[SURI] Erro ao enviar mensagem:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
     // ═══════════════════════════════════════════════════════════════
     // API: ENVIAR COBRANÇA (Mensagem formatada)
     // ═══════════════════════════════════════════════════════════════
@@ -215,6 +201,11 @@ module.exports = function(pool, auth, registrarLog) {
             }
 
             var cliente = clienteResult.rows[0];
+            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
+            
+            if (!telefone) {
+                return res.status(400).json({ success: false, error: 'Cliente sem telefone cadastrado' });
+            }
 
             // Buscar cobranças pendentes
             var cobrancasResult = await pool.query(
@@ -226,30 +217,31 @@ module.exports = function(pool, auth, registrarLog) {
             var valorTotal = parseFloat(cobranca.total) || 0;
             var qtdCobrancas = parseInt(cobranca.qtd) || 0;
 
-            if (qtdCobrancas === 0) {
-                return res.status(400).json({ success: false, error: 'Cliente não possui cobranças pendentes' });
+            // Pegar primeiro nome
+            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+
+            // Definir assunto baseado no tipo de mensagem
+            var assuntos = {
+                lembrete: 'sua pendência financeira',
+                urgente: 'um débito urgente em seu nome',
+                negociacao: 'uma proposta de negociação',
+                acordo: 'uma oportunidade de acordo'
+            };
+
+            var assunto = assuntos[tipo_mensagem] || assuntos.lembrete;
+
+            // Se tiver valor, adicionar ao assunto
+            if (valorTotal > 0) {
+                assunto = 'seu débito de ' + formatarMoeda(valorTotal);
             }
 
-            // Montar mensagem baseada no tipo
-            var mensagem = montarMensagemCobranca(cliente, valorTotal, qtdCobrancas, tipo_mensagem);
-
-            // Enviar via endpoint padrão
-            req.body.mensagem = mensagem;
-            
-            // Chamar função de envio
-            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
-            
-            if (!telefone) {
-                return res.status(400).json({ success: false, error: 'Cliente sem telefone cadastrado' });
-            }
-
-            var contatoSuri = await importarContatoSuri(cliente, telefone);
-            
-            if (!contatoSuri || !contatoSuri.id) {
-                return res.status(500).json({ success: false, error: 'Erro ao importar contato na Suri' });
-            }
-
-            var resultado = await enviarMensagemSuri(contatoSuri.id, mensagem, 'texto');
+            // Enviar template com import
+            var resultado = await enviarTemplateComImport(
+                cliente, 
+                telefone, 
+                SURI_CONFIG.templateId,
+                [primeiroNome, assunto]
+            );
 
             if (resultado.success) {
                 await pool.query(
@@ -265,7 +257,8 @@ module.exports = function(pool, auth, registrarLog) {
                 res.json({ 
                     success: true, 
                     message: 'Cobrança enviada com sucesso!',
-                    mensagem_enviada: mensagem
+                    tipo: tipo_mensagem,
+                    assunto: assunto
                 });
             } else {
                 res.status(500).json({ success: false, error: resultado.error || 'Erro ao enviar' });
@@ -276,41 +269,6 @@ module.exports = function(pool, auth, registrarLog) {
             res.status(500).json({ success: false, error: 'Erro interno: ' + error.message });
         }
     });
-
-    function montarMensagemCobranca(cliente, valorTotal, qtdCobrancas, tipo) {
-        var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
-        var valorFormatado = formatarMoeda(valorTotal);
-
-        var mensagens = {
-            lembrete: 'Olá ' + primeiroNome + '! 👋\n\n' +
-                'Passando para lembrar que você possui ' + qtdCobrancas + ' cobrança(s) em aberto no valor total de *' + valorFormatado + '*.\n\n' +
-                'Entre em contato conosco para regularizar sua situação e evitar juros e multas.\n\n' +
-                'Atenciosamente,\n*Equipe ACERTIVE*',
-            
-            urgente: '⚠️ *AVISO IMPORTANTE* ⚠️\n\n' +
-                'Prezado(a) ' + primeiroNome + ',\n\n' +
-                'Identificamos pendências em seu nome no valor de *' + valorFormatado + '*.\n\n' +
-                'Para evitar medidas de cobrança judicial e negativação, entre em contato URGENTE para negociação.\n\n' +
-                '*Equipe ACERTIVE*',
-            
-            negociacao: 'Olá ' + primeiroNome + '! 🤝\n\n' +
-                'Temos uma *proposta especial* para você regularizar sua situação!\n\n' +
-                '💰 Valor em aberto: *' + valorFormatado + '*\n\n' +
-                'Oferecemos condições facilitadas de pagamento. Responda essa mensagem para conhecer nossas opções!\n\n' +
-                '*Equipe ACERTIVE*',
-            
-            acordo: 'Olá ' + primeiroNome + '! ✅\n\n' +
-                'Que tal resolver sua pendência hoje?\n\n' +
-                'Valor: *' + valorFormatado + '*\n\n' +
-                'Temos opções de:\n' +
-                '• Pagamento à vista com desconto\n' +
-                '• Parcelamento em até 12x\n\n' +
-                'Responda *ACORDO* para falar com um de nossos consultores!\n\n' +
-                '*Equipe ACERTIVE*'
-        };
-
-        return mensagens[tipo] || mensagens.lembrete;
-    }
 
     // ═══════════════════════════════════════════════════════════════
     // WEBHOOK: RECEBER EVENTOS DA SURI
@@ -475,48 +433,6 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // API: LISTAR CONTATOS DA SURI
-    // ═══════════════════════════════════════════════════════════════
-
-    // GET /api/suri/contatos
-    router.get('/contatos', auth, async function(req, res) {
-        try {
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/v1/contacts', {
-                method: 'GET',
-                headers: getSuriHeaders()
-            });
-
-            var data = await response.json();
-            res.json({ success: true, data: data });
-        } catch (error) {
-            console.error('[SURI] Erro ao listar contatos:', error);
-            res.status(500).json({ success: false, error: error.message });
-        }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // API: BUSCAR CONVERSAS DE UM CONTATO
-    // ═══════════════════════════════════════════════════════════════
-
-    // GET /api/suri/conversas/:contactId
-    router.get('/conversas/:contactId', auth, async function(req, res) {
-        try {
-            var contactId = req.params.contactId;
-            
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/v1/contacts/' + contactId + '/messages', {
-                method: 'GET',
-                headers: getSuriHeaders()
-            });
-
-            var data = await response.json();
-            res.json({ success: true, data: data });
-        } catch (error) {
-            console.error('[SURI] Erro ao buscar conversas:', error);
-            res.status(500).json({ success: false, error: error.message });
-        }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
     // API: DISPARO EM MASSA (RÉGUA DE COBRANÇA)
     // ═══════════════════════════════════════════════════════════════
 
@@ -528,8 +444,31 @@ module.exports = function(pool, auth, registrarLog) {
             var filtro_atraso_max = req.body.filtro_atraso_max || 9999;
             var limite = req.body.limite || 50;
 
+            // Definir assunto baseado no tipo
+            var assuntos = {
+                lembrete: 'sua pendência financeira',
+                urgente: 'um débito urgente em seu nome',
+                negociacao: 'uma proposta de negociação',
+                acordo: 'uma oportunidade de acordo'
+            };
+
             // Buscar clientes com cobranças vencidas
-            var query = "\n                SELECT \n                    c.id, c.nome, c.telefone, c.celular, c.cpf_cnpj, c.email,\n                    SUM(cob.valor) as valor_total,\n                    COUNT(cob.id) as qtd_cobrancas,\n                    MAX(CURRENT_DATE - cob.data_vencimento) as maior_atraso\n                FROM clientes c\n                JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')\n                WHERE c.ativo = true \n                  AND (c.telefone IS NOT NULL OR c.celular IS NOT NULL)\n                  AND c.status_cobranca NOT IN ('acordo', 'incobravel', 'juridico')\n                GROUP BY c.id\n                HAVING MAX(CURRENT_DATE - cob.data_vencimento) BETWEEN $1 AND $2\n                ORDER BY MAX(CURRENT_DATE - cob.data_vencimento) DESC\n                LIMIT $3\n            ";
+            var query = `
+                SELECT 
+                    c.id, c.nome, c.telefone, c.celular, c.cpf_cnpj, c.email,
+                    SUM(cob.valor) as valor_total,
+                    COUNT(cob.id) as qtd_cobrancas,
+                    MAX(CURRENT_DATE - cob.data_vencimento) as maior_atraso
+                FROM clientes c
+                JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')
+                WHERE c.ativo = true 
+                  AND (c.telefone IS NOT NULL OR c.celular IS NOT NULL)
+                  AND c.status_cobranca NOT IN ('acordo', 'incobravel', 'juridico')
+                GROUP BY c.id
+                HAVING MAX(CURRENT_DATE - cob.data_vencimento) BETWEEN $1 AND $2
+                ORDER BY MAX(CURRENT_DATE - cob.data_vencimento) DESC
+                LIMIT $3
+            `;
 
             var result = await pool.query(query, [filtro_atraso_min, filtro_atraso_max, limite]);
             var clientes = result.rows;
@@ -543,31 +482,37 @@ module.exports = function(pool, auth, registrarLog) {
                     var telefone = formatarTelefone(cliente.telefone || cliente.celular);
                     if (!telefone) continue;
 
-                    var mensagem = montarMensagemCobranca(
+                    var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+                    var valorTotal = parseFloat(cliente.valor_total) || 0;
+                    
+                    // Usar valor no assunto se disponível
+                    var assunto = valorTotal > 0 
+                        ? 'seu débito de ' + formatarMoeda(valorTotal)
+                        : assuntos[tipo_mensagem] || assuntos.lembrete;
+
+                    var resultado = await enviarTemplateComImport(
                         cliente, 
-                        parseFloat(cliente.valor_total), 
-                        parseInt(cliente.qtd_cobrancas), 
-                        tipo_mensagem
+                        telefone, 
+                        SURI_CONFIG.templateId,
+                        [primeiroNome, assunto]
                     );
 
-                    var contatoSuri = await importarContatoSuri(cliente, telefone);
-                    if (contatoSuri && contatoSuri.id) {
-                        var resultado = await enviarMensagemSuri(contatoSuri.id, mensagem, 'texto');
-                        if (resultado.success) {
-                            enviados++;
-                            
-                            await pool.query(
-                                "INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'whatsapp', 'suri', 'enviado', $3, NOW())",
-                                [cliente.id, req.user.id, 'Disparo em massa: ' + tipo_mensagem]
-                            );
-                        }
+                    if (resultado.success) {
+                        enviados++;
+                        
+                        await pool.query(
+                            "INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'whatsapp', 'suri', 'enviado', $3, NOW())",
+                            [cliente.id, req.user.id, 'Disparo em massa: ' + tipo_mensagem]
+                        );
+                    } else {
+                        erros.push({ cliente_id: cliente.id, nome: cliente.nome, erro: resultado.error });
                     }
 
-                    // Delay entre mensagens para não sobrecarregar
-                    await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+                    // Delay entre mensagens para não sobrecarregar (2 segundos)
+                    await new Promise(function(resolve) { setTimeout(resolve, 2000); });
                     
                 } catch (err) {
-                    erros.push({ cliente_id: cliente.id, erro: err.message });
+                    erros.push({ cliente_id: cliente.id, nome: cliente.nome, erro: err.message });
                 }
             }
 
@@ -603,16 +548,30 @@ module.exports = function(pool, auth, registrarLog) {
     // GET /api/suri/status
     router.get('/status', auth, async function(req, res) {
         try {
-            // Testar conexão com a Suri
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/v1/contacts?limit=1', {
-                method: 'GET',
-                headers: getSuriHeaders()
+            // Testar conexão importando contato de teste
+            var response = await fetch(SURI_CONFIG.endpoint + '/api/contacts', {
+                method: 'POST',
+                headers: getSuriHeaders(),
+                body: JSON.stringify({
+                    phone: '5500000000000',
+                    name: 'Teste Conexão',
+                    channelId: SURI_CONFIG.channelId,
+                    channelType: SURI_CONFIG.channelType
+                })
             });
 
-            var conectado = response.ok;
+            var text = await response.text();
+            var data = text ? JSON.parse(text) : {};
+            var conectado = data.success === true;
 
             // Buscar estatísticas
-            var statsResult = await pool.query("\n                SELECT \n                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND DATE(created_at) = CURRENT_DATE) as mensagens_hoje,\n                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND created_at >= NOW() - INTERVAL '7 days') as mensagens_semana,\n                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri') as mensagens_total\n                FROM acionamentos\n            ");
+            var statsResult = await pool.query(`
+                SELECT 
+                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND DATE(created_at) = CURRENT_DATE) as mensagens_hoje,
+                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND created_at >= NOW() - INTERVAL '7 days') as mensagens_semana,
+                    COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri') as mensagens_total
+                FROM acionamentos
+            `);
 
             res.json({
                 success: true,
@@ -620,6 +579,8 @@ module.exports = function(pool, auth, registrarLog) {
                     conectado: conectado,
                     endpoint: SURI_CONFIG.endpoint,
                     identificador: SURI_CONFIG.identificador,
+                    channelId: SURI_CONFIG.channelId,
+                    templateId: SURI_CONFIG.templateId,
                     estatisticas: statsResult.rows[0]
                 }
             });
