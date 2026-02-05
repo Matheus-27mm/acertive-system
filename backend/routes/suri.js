@@ -712,9 +712,9 @@ module.exports = function(pool, auth, registrarLog) {
     async function processarNovoContato(evento) {
         try {
             var payload = evento.payload || evento.data || evento;
-            var contato = payload.contact || payload.user || payload;
-            var telefone = contato.phone || contato.telefone || contato.phoneNumber || payload.phone;
-            console.log('[SURI] Novo contato - telefone:', telefone);
+            var user = payload.user || payload.contact || payload;
+            var telefone = user.Phone || user.phone || user.telefone;
+            console.log('[SURI] Novo contato - Nome:', user.Name || 'N/A', '| Telefone:', telefone);
             if (!telefone) return;
 
             var cliente = await buscarClientePorTelefone(telefone);
@@ -736,39 +736,31 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             console.log('[SURI BOT] ────────────────────────────────────');
             console.log('[SURI BOT] MENSAGEM RECEBIDA');
-            console.log('[SURI BOT] Keys evento:', Object.keys(evento));
             
             // A Suri envia os dados dentro de 'payload'
-            var payload = evento.payload || evento.data || evento.message || evento;
-            console.log('[SURI BOT] Keys payload:', Object.keys(payload));
-            console.log('[SURI BOT] Payload completo:', JSON.stringify(payload).substring(0, 1500));
+            var payload = evento.payload || evento.data || evento;
+            
+            // ESTRUTURA DA SURI:
+            // payload.user = { Id, Name, Phone, Email, ... }
+            // payload.Message = { text, mid, ... }
+            var user = payload.user || {};
+            var message = payload.Message || payload.message || {};
 
-            // Extrair contato - pode estar em vários lugares
-            var contato = payload.contact || payload.user || payload.customer || {};
-            var mensagem = payload.message || payload.lastMessage || payload;
+            // Extrair telefone (Suri usa 'Phone' com P maiúsculo)
+            var telefone = user.Phone || user.phone || user.telefone || payload.Phone || payload.phone;
 
-            console.log('[SURI BOT] Keys contato:', Object.keys(contato));
-            console.log('[SURI BOT] Keys mensagem:', typeof mensagem === 'object' ? Object.keys(mensagem) : 'string');
-
-            // Extrair telefone - testar todas as possíveis localizações
-            var telefone = contato.phone || contato.telefone || contato.phoneNumber || contato.number ||
-                           payload.phone || payload.from || payload.telefone ||
-                           mensagem.from || mensagem.phone || evento.phone;
-
-            // Extrair texto da mensagem
+            // Extrair texto (Suri usa 'Message.text')
             var texto = '';
-            if (typeof mensagem === 'string') {
-                texto = mensagem;
-            } else if (mensagem) {
-                texto = mensagem.text || mensagem.body || mensagem.message || mensagem.content || '';
+            if (typeof message === 'string') {
+                texto = message;
+            } else if (message) {
+                texto = message.text || message.body || message.Text || message.content || '';
             }
-            if (!texto && payload.text) texto = payload.text;
-            if (!texto && payload.body) texto = payload.body;
 
-            // Extrair contactId
-            var contactId = contato.id || contato._id || payload.contactId || evento.contactId || mensagem.contactId;
+            // Extrair contactId (Suri usa 'Id' com I maiúsculo)
+            var contactId = user.Id || user.id || user._id || payload.contactId;
 
-            console.log('[SURI BOT] Telefone:', telefone);
+            console.log('[SURI BOT] User:', user.Name || 'N/A', '| Phone:', telefone);
             console.log('[SURI BOT] Texto:', texto);
             console.log('[SURI BOT] ContactId:', contactId);
             console.log('[SURI BOT] ────────────────────────────────────');
