@@ -23,7 +23,9 @@ module.exports = function(pool, auth, registrarLog) {
     var SURI_CONFIG = {
         endpoint: 'https://cbm-wap-babysuri-cb126955962.azurewebsites.net',
         token: 'c79ce62a-eb6c-495a-b102-0e780b5d2047',
-        identificador: 'cb126955962'
+        identificador: 'cb126955962',
+        channelId: 'wp946373665229352',
+        channelType: 1
     };
 
     function getSuriHeaders() {
@@ -131,19 +133,28 @@ module.exports = function(pool, auth, registrarLog) {
     // Função para importar contato na Suri
     async function importarContatoSuri(cliente, telefone) {
         try {
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/v1/contacts/import', {
+            var response = await fetch(SURI_CONFIG.endpoint + '/api/contacts', {
                 method: 'POST',
                 headers: getSuriHeaders(),
                 body: JSON.stringify({
                     phone: telefone,
                     name: cliente.nome,
                     email: cliente.email || '',
-                    document: cliente.cpf_cnpj || '',
-                    notes: 'Cliente ACERTIVE - ID: ' + cliente.id
+                    channelId: SURI_CONFIG.channelId,
+                    channelType: SURI_CONFIG.channelType,
+                    note: 'Cliente ACERTIVE - ID: ' + cliente.id
                 })
             });
 
-            var data = await response.json();
+            var text = await response.text();
+            console.log('[SURI] Resposta importar contato:', response.status, text);
+            
+            if (!text) {
+                console.error('[SURI] Resposta vazia ao importar contato');
+                return null;
+            }
+            
+            var data = JSON.parse(text);
             console.log('[SURI] Contato importado:', data);
             return data;
         } catch (error) {
@@ -156,22 +167,24 @@ module.exports = function(pool, auth, registrarLog) {
     async function enviarMensagemSuri(contatoId, mensagem, tipo) {
         try {
             var body = {
-                contactId: contatoId,
-                message: mensagem
+                userId: contatoId,
+                message: {
+                    text: mensagem
+                }
             };
 
-            if (tipo === 'template') {
-                body.type = 'template';
-            }
+            console.log('[SURI] Enviando mensagem:', JSON.stringify(body));
 
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/v1/messages/send', {
+            var response = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
                 method: 'POST',
                 headers: getSuriHeaders(),
                 body: JSON.stringify(body)
             });
 
-            var data = await response.json();
-            console.log('[SURI] Mensagem enviada:', data);
+            var text = await response.text();
+            console.log('[SURI] Resposta enviar mensagem:', response.status, text);
+            
+            var data = text ? JSON.parse(text) : {};
             
             return { success: response.ok, data: data };
         } catch (error) {
