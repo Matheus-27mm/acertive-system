@@ -711,8 +711,10 @@ module.exports = function(pool, auth, registrarLog) {
     // Processar novo contato
     async function processarNovoContato(evento) {
         try {
-            var contato = evento.contact || evento.data || evento;
-            var telefone = contato.phone || contato.telefone;
+            var payload = evento.payload || evento.data || evento;
+            var contato = payload.contact || payload.user || payload;
+            var telefone = contato.phone || contato.telefone || contato.phoneNumber || payload.phone;
+            console.log('[SURI] Novo contato - telefone:', telefone);
             if (!telefone) return;
 
             var cliente = await buscarClientePorTelefone(telefone);
@@ -734,18 +736,37 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             console.log('[SURI BOT] ────────────────────────────────────');
             console.log('[SURI BOT] MENSAGEM RECEBIDA');
-            
-            // Extrair dados - testar várias estruturas possíveis
-            var mensagem = evento.message || evento.data || evento;
-            var contato = mensagem.contact || evento.contact || {};
-
             console.log('[SURI BOT] Keys evento:', Object.keys(evento));
-            if (mensagem !== evento) console.log('[SURI BOT] Keys mensagem:', Object.keys(mensagem));
-            console.log('[SURI BOT] Keys contato:', Object.keys(contato));
+            
+            // A Suri envia os dados dentro de 'payload'
+            var payload = evento.payload || evento.data || evento.message || evento;
+            console.log('[SURI BOT] Keys payload:', Object.keys(payload));
+            console.log('[SURI BOT] Payload completo:', JSON.stringify(payload).substring(0, 1500));
 
-            var telefone = contato.phone || contato.telefone || mensagem.from || mensagem.phone || evento.phone;
-            var texto = mensagem.text || mensagem.body || mensagem.message || mensagem.content || evento.text || '';
-            var contactId = contato.id || contato._id || mensagem.contactId || evento.contactId;
+            // Extrair contato - pode estar em vários lugares
+            var contato = payload.contact || payload.user || payload.customer || {};
+            var mensagem = payload.message || payload.lastMessage || payload;
+
+            console.log('[SURI BOT] Keys contato:', Object.keys(contato));
+            console.log('[SURI BOT] Keys mensagem:', typeof mensagem === 'object' ? Object.keys(mensagem) : 'string');
+
+            // Extrair telefone - testar todas as possíveis localizações
+            var telefone = contato.phone || contato.telefone || contato.phoneNumber || contato.number ||
+                           payload.phone || payload.from || payload.telefone ||
+                           mensagem.from || mensagem.phone || evento.phone;
+
+            // Extrair texto da mensagem
+            var texto = '';
+            if (typeof mensagem === 'string') {
+                texto = mensagem;
+            } else if (mensagem) {
+                texto = mensagem.text || mensagem.body || mensagem.message || mensagem.content || '';
+            }
+            if (!texto && payload.text) texto = payload.text;
+            if (!texto && payload.body) texto = payload.body;
+
+            // Extrair contactId
+            var contactId = contato.id || contato._id || payload.contactId || evento.contactId || mensagem.contactId;
 
             console.log('[SURI BOT] Telefone:', telefone);
             console.log('[SURI BOT] Texto:', texto);
@@ -799,9 +820,10 @@ module.exports = function(pool, auth, registrarLog) {
     // Processar finalização de atendimento
     async function processarFinalizacaoAtendimento(evento) {
         try {
-            var atendimento = evento.attendance || evento.data || evento;
-            var contato = atendimento.contact || {};
-            var telefone = contato.phone || contato.telefone;
+            var payload = evento.payload || evento.data || evento;
+            var atendimento = payload.attendance || payload;
+            var contato = atendimento.contact || payload.contact || {};
+            var telefone = contato.phone || contato.telefone || contato.phoneNumber;
             if (!telefone) return;
 
             var telefoneKey = limparTelefone(telefone);
