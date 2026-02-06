@@ -90,7 +90,16 @@ module.exports = function(pool, auth, registrarLog) {
 
             // Atualizar parcela_acordo (tabela nova - Suri v3)
             try {
-                const parc2 = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.asaas_payment_id = $1::text OR pa.external_reference = $2::text', [String(payment.id), String(payment.externalReference || '')]);
+                var parc2 = { rowCount: 0, rows: [] };
+                // Buscar por asaas_payment_id primeiro
+                var findByPayment = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.asaas_payment_id = $1', [String(payment.id)]);
+                if (findByPayment.rowCount > 0) {
+                    parc2 = findByPayment;
+                } else if (payment.externalReference) {
+                    // Se não achou, buscar por external_reference
+                    var findByRef = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.external_reference = $1', [String(payment.externalReference)]);
+                    if (findByRef.rowCount > 0) parc2 = findByRef;
+                }
                 if (parc2.rowCount > 0) {
                     await pool.query(`UPDATE parcelas_acordo SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END, updated_at = NOW() WHERE id = $2`, [novoStatus, parc2.rows[0].id]);
                     console.log('[ASAAS] ✅ Parcela acordo atualizada:', parc2.rows[0].id, '->', novoStatus);
