@@ -183,6 +183,7 @@
         .btn-cancelar:hover { background: var(--bg-elevated); color: var(--text-primary); }
         .btn-confirmar { padding: 12px 24px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border: none; border-radius: 10px; color: var(--bg-primary); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-confirmar:hover { box-shadow: var(--shadow-gold); transform: translateY(-2px); }
+        .btn-confirmar:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
         .loading { display: flex; align-items: center; justify-content: center; padding: 80px; }
         .spinner { width: 48px; height: 48px; border: 3px solid var(--border-subtle); border-top-color: var(--gold-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -206,6 +207,9 @@
         .search-result-item .nome { font-weight: 600; margin-bottom: 4px; }
         .search-result-item .info { font-size: 12px; color: var(--text-muted); display: flex; gap: 16px; }
         .search-result-item .valor { color: var(--gold-primary); font-weight: 600; }
+        .canal-option { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+        .canal-option:hover { border-color: var(--border-strong); }
+        .canal-option input { width: 18px; height: 18px; }
     </style>
 </head>
 <body>
@@ -219,6 +223,7 @@
         </nav>
         <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div></div></div>
     </aside>
+
     <main class="main-content">
         <header class="page-header"><h1>Fila de Trabalho</h1><div class="header-stats"><div class="header-stat gold"><i class="fas fa-list-check"></i><div><div class="value" id="totalFila">0</div><div class="label">Na fila</div></div></div><div class="header-stat green"><i class="fas fa-phone-volume"></i><div><div class="value" id="acionamentosHoje">0</div><div class="label">Acionamentos</div></div></div><div class="header-stat blue"><i class="fas fa-handshake"></i><div><div class="value" id="acordosHoje">0</div><div class="label">Acordos</div></div></div></div></header>
         <div class="search-container"><div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" id="searchInput" placeholder="Buscar cliente por nome ou CPF..." oninput="buscarCliente(this.value)"><div class="search-results" id="searchResults"></div></div></div>
@@ -234,8 +239,8 @@
                         <div class="cobrancas-section"><div class="section-title"><i class="fas fa-file-invoice"></i> Cobranças em Aberto</div><div id="cobrancasLista"></div></div>
                         <div class="action-buttons">
                             <button class="action-btn btn-ligar" onclick="ligar()"><i class="fas fa-phone"></i><span>Ligar</span></button>
-                            <button class="action-btn btn-whatsapp" id="btnWhatsapp" onclick="enviarWhatsAppSuri()"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>
-                            <button class="action-btn btn-email" onclick="enviarEmail()"><i class="fas fa-envelope"></i><span>E-mail</span></button>
+                            <button class="action-btn btn-whatsapp" id="btnWhatsapp" onclick="abrirModalDisparo()"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>
+                            <button class="action-btn btn-email" id="btnEmail" onclick="enviarCobrancaEmail()"><i class="fas fa-envelope"></i><span>E-mail</span></button>
                         </div>
                         <div class="nav-buttons"><button class="nav-btn btn-pular" onclick="pular()"><i class="fas fa-forward"></i> Pular</button><button class="nav-btn btn-proximo" onclick="proximo()">Próximo <i class="fas fa-arrow-right"></i></button></div>
                     </div>
@@ -249,14 +254,77 @@
             </div>
         </div>
     </main>
-    <div class="modal-overlay" id="modalAcordo"><div class="modal"><div class="modal-header"><h3><i class="fas fa-handshake"></i> Simulador de Acordo</h3><button class="modal-close" onclick="fecharModal()">&times;</button></div><div class="modal-body"><div class="acordo-resumo"><div class="acordo-linha"><span class="label">Valor Original</span><span class="value" id="acordoOriginal">R$ 0</span></div><div class="acordo-linha"><span class="label">+ Multa (2%)</span><span class="value" id="acordoMulta">R$ 0</span></div><div class="acordo-linha"><span class="label">+ Juros (1% a.m.)</span><span class="value" id="acordoJuros">R$ 0</span></div><div class="acordo-linha"><span class="label">+ Honorários (10%)</span><span class="value" id="acordoHonorarios">R$ 0</span></div><div class="acordo-linha"><span class="label">- Desconto</span><span class="value" id="acordoDesconto">- R$ 0</span></div><div class="acordo-linha total"><span class="label">TOTAL</span><span class="value" id="acordoTotal">R$ 0</span></div></div><div class="acordo-grid"><div class="form-group"><label>Multa (%)</label><input type="number" id="inputMulta" value="2" step="0.1" onchange="calcularAcordo()"></div><div class="form-group"><label>Juros (% a.m.)</label><input type="number" id="inputJuros" value="1" step="0.1" onchange="calcularAcordo()"></div><div class="form-group"><label>Honorários (%)</label><input type="number" id="inputHonorarios" value="10" step="0.1" onchange="calcularAcordo()"></div><div class="form-group"><label>Desconto (%)</label><input type="number" id="inputDesconto" value="0" step="0.1" onchange="calcularAcordo()"></div><div class="form-group full"><label>Parcelas</label><select id="inputParcelas" onchange="calcularAcordo()"><option value="1">À Vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option></select></div></div></div><div class="modal-footer"><button class="btn-cancelar" onclick="fecharModal()">Cancelar</button><button class="btn-confirmar" onclick="criarAcordo()"><i class="fas fa-check"></i> Criar Acordo</button></div></div></div>
+
+    <!-- MODAL: ACORDO COM PIX REAL -->
+    <div class="modal-overlay" id="modalAcordo">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-handshake"></i> Criar Acordo + PIX</h3><button class="modal-close" onclick="fecharModal()">&times;</button></div>
+            <div class="modal-body">
+                <div id="acordoLoading" style="display:none; text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:var(--gold-primary);"></i><p style="color:var(--text-muted); margin-top:10px;">Buscando config do credor...</p></div>
+                <div id="acordoForm">
+                    <div class="acordo-resumo">
+                        <div class="acordo-linha"><span class="label">Valor Original</span><span class="value" id="acordoOriginal">R$ 0</span></div>
+                        <div class="acordo-linha"><span class="label">+ Multa (<span id="acordoMultaPct">2</span>%)</span><span class="value" id="acordoMulta">R$ 0</span></div>
+                        <div class="acordo-linha"><span class="label">+ Juros (<span id="acordoJurosPct">1</span>% a.m.)</span><span class="value" id="acordoJuros">R$ 0</span></div>
+                        <div class="acordo-linha"><span class="label">+ Honorários</span><span class="value" id="acordoHonorarios">R$ 0</span></div>
+                        <div class="acordo-linha"><span class="label">- Desconto</span><span class="value" id="acordoDesconto">- R$ 0</span></div>
+                        <div class="acordo-linha total"><span class="label">TOTAL DO ACORDO</span><span class="value" id="acordoTotal">R$ 0</span></div>
+                    </div>
+                    <div class="acordo-grid">
+                        <div class="form-group"><label>Multa (%)</label><input type="number" id="inputMulta" value="2" step="0.1" min="0" oninput="calcularAcordo()"></div>
+                        <div class="form-group"><label>Juros (% a.m.)</label><input type="number" id="inputJuros" value="1" step="0.1" min="0" oninput="calcularAcordo()"></div>
+                        <div class="form-group"><label>Honorários (%)</label><input type="number" id="inputHonorarios" value="10" step="0.1" min="0" oninput="calcularAcordo()"></div>
+                        <div class="form-group"><label>Desconto (%)</label><input type="number" id="inputDesconto" value="0" step="0.1" min="0" oninput="calcularAcordo()"></div>
+                        <div class="form-group full"><label>Parcelas</label><select id="inputParcelas" onchange="calcularAcordo()"><option value="1">À Vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option></select></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 8px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" id="acordoEnviarWhatsapp" checked style="accent-color: #25d366; width: 16px; height: 16px;">
+                    <i class="fab fa-whatsapp" style="color: #25d366;"></i> Enviar PIX por WhatsApp ao confirmar
+                </label>
+                <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirmar" id="btnCriarAcordo" onclick="criarAcordo()"><i class="fas fa-check"></i> Criar Acordo + PIX</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DISPARO DE COBRANÇA -->
+    <div class="modal-overlay" id="modalDisparo">
+        <div class="modal" style="max-width: 440px;">
+            <div class="modal-header"><h3><i class="fas fa-paper-plane"></i> Enviar Cobrança</h3><button class="modal-close" onclick="fecharModalDisparo()">&times;</button></div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">Mensagem profissional com valor atualizado (multa + juros do credor).</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <label class="canal-option" style="border-color: rgba(37,211,102,0.3);">
+                        <input type="checkbox" id="canalWhatsapp" checked style="accent-color: #25d366;">
+                        <i class="fab fa-whatsapp" style="font-size: 24px; color: #25d366;"></i>
+                        <div style="flex:1;"><div style="font-weight: 600;">WhatsApp</div><div style="font-size: 12px; color: var(--text-muted);">Mensagem profissional via Suri</div></div>
+                    </label>
+                    <label class="canal-option">
+                        <input type="checkbox" id="canalEmail" style="accent-color: #3b82f6;">
+                        <i class="fas fa-envelope" style="font-size: 22px; color: #60a5fa;"></i>
+                        <div style="flex:1;"><div style="font-weight: 600;">E-mail</div><div style="font-size: 12px; color: var(--text-muted);" id="emailDevedorDisparo">Email HTML profissional</div></div>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancelar" onclick="fecharModalDisparo()">Cancelar</button>
+                <button class="btn-confirmar" id="btnEnviarDisparo" onclick="executarDisparo()"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
+
     <script>
         var API = window.location.origin;
         var fila = [];
         var filaOriginal = [];
         var posicao = 0;
         var devedorAtual = null;
+        var configCredorAtual = null;
 
         function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
         function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -316,6 +384,7 @@
         async function mostrarDevedor() {
             if (posicao >= fila.length) { document.getElementById('devedorContent').style.display = 'none'; document.getElementById('emptyState').style.display = 'flex'; return; }
             devedorAtual = fila[posicao];
+            configCredorAtual = null;
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('devedorContent').style.display = 'block';
@@ -378,36 +447,100 @@
             } catch (e) { console.error('Erro histórico:', e); }
         }
 
-        function getIconTipo(t) { var map = { 'ligacao': '<i class="fas fa-phone"></i>', 'whatsapp': '<i class="fab fa-whatsapp"></i>', 'email': '<i class="fas fa-envelope"></i>', 'sms': '<i class="fas fa-sms"></i>' }; return map[t] || '<i class="fas fa-comment"></i>'; }
-        function formatTipo(t) { var map = { 'ligacao': 'Ligação', 'whatsapp': 'WhatsApp', 'email': 'E-mail', 'sms': 'SMS' }; return map[t] || t; }
-        function formatResultado(r) { var map = { 'atendeu': 'Atendeu', 'nao_atendeu': 'Não atendeu', 'caixa_postal': 'Caixa postal', 'numero_errado': 'Número errado', 'prometeu_pagar': 'Prometeu pagar', 'quer_negociar': 'Quer negociar', 'recusou': 'Recusou', 'enviado': 'Enviado' }; return map[r] || r; }
+        function getIconTipo(t) { var map = { 'ligacao': '<i class="fas fa-phone"></i>', 'whatsapp': '<i class="fab fa-whatsapp"></i>', 'email': '<i class="fas fa-envelope"></i>', 'sms': '<i class="fas fa-sms"></i>', 'acordo': '<i class="fas fa-handshake"></i>', 'pagamento': '<i class="fas fa-check-double"></i>' }; return map[t] || '<i class="fas fa-comment"></i>'; }
+        function formatTipo(t) { var map = { 'ligacao': 'Ligação', 'whatsapp': 'WhatsApp', 'email': 'E-mail', 'sms': 'SMS', 'acordo': 'Acordo', 'pagamento': 'Pagamento' }; return map[t] || t; }
+        function formatResultado(r) { var map = { 'atendeu': 'Atendeu', 'nao_atendeu': 'Não atendeu', 'caixa_postal': 'Caixa postal', 'numero_errado': 'Número errado', 'prometeu_pagar': 'Prometeu pagar', 'quer_negociar': 'Quer negociar', 'recusou': 'Recusou', 'enviado': 'Enviado', 'acordo_pix_gerado': 'PIX gerado', 'acordo_criado': 'Acordo criado', 'acordo_parcelado_pix': 'Parcelamento PIX' }; return map[r] || r; }
 
         function proximo() { if (posicao < fila.length - 1) { posicao++; mostrarDevedor(); } else { document.getElementById('devedorContent').style.display = 'none'; document.getElementById('emptyState').style.display = 'flex'; } }
         function pular() { var dev = fila.splice(posicao, 1)[0]; fila.push(dev); mostrarDevedor(); toast('Devedor movido para o final'); }
         function ligar() { if (devedorAtual && devedorAtual.telefone) { window.open('tel:' + devedorAtual.telefone.replace(/\D/g, ''), '_blank'); document.getElementById('tipoContato').value = 'ligacao'; } else { toast('Telefone não cadastrado', 'error'); } }
 
-        // ENVIAR WHATSAPP VIA SURI
-        async function enviarWhatsAppSuri() {
+        // ═══════════════════════════════════════
+        // MODAL DISPARO (WhatsApp + Email)
+        // ═══════════════════════════════════════
+
+        function abrirModalDisparo() {
             if (!devedorAtual) { toast('Nenhum devedor selecionado', 'error'); return; }
-            if (!devedorAtual.telefone) { toast('Cliente sem telefone cadastrado', 'error'); return; }
-            var btn = document.getElementById('btnWhatsapp');
-            var textoOriginal = btn.innerHTML;
+            document.getElementById('canalWhatsapp').checked = true;
+            document.getElementById('canalEmail').checked = false;
+            if (devedorAtual.email) {
+                document.getElementById('emailDevedorDisparo').textContent = devedorAtual.email;
+            } else {
+                document.getElementById('emailDevedorDisparo').textContent = 'Sem email cadastrado';
+            }
+            document.getElementById('modalDisparo').classList.add('active');
+        }
+
+        function fecharModalDisparo() { document.getElementById('modalDisparo').classList.remove('active'); }
+
+        async function executarDisparo() {
+            if (!devedorAtual) return;
+            var canais = [];
+            if (document.getElementById('canalWhatsapp').checked) canais.push('whatsapp');
+            if (document.getElementById('canalEmail').checked) canais.push('email');
+            if (canais.length === 0) { toast('Selecione pelo menos um canal', 'error'); return; }
+
+            var btn = document.getElementById('btnEnviarDisparo');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            try {
+                var r = await fetch(API + '/api/suri/enviar-cobranca-inicial', {
+                    method: 'POST', headers: H(),
+                    body: JSON.stringify({ cliente_id: devedorAtual.cliente_id, canais: canais })
+                });
+                var d = await r.json();
+                if (d.success) {
+                    var msgs = [];
+                    if (d.resultados.whatsapp && d.resultados.whatsapp.success) msgs.push('WhatsApp ✅');
+                    else if (d.resultados.whatsapp) msgs.push('WhatsApp ❌');
+                    if (d.resultados.email && d.resultados.email.success) msgs.push('Email ✅');
+                    else if (d.resultados.email) msgs.push('Email ❌');
+                    toast('Cobrança enviada! ' + msgs.join(' | '));
+                    document.getElementById('tipoContato').value = 'whatsapp';
+                    document.getElementById('resultadoContato').value = 'enviado';
+                    fecharModalDisparo();
+                    setTimeout(function() { carregarHistorico(); }, 500);
+                } else {
+                    toast(d.error || 'Erro ao enviar', 'error');
+                }
+            } catch (e) {
+                console.error('[DISPARO] Erro:', e);
+                toast('Erro ao enviar cobrança', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+            }
+        }
+
+        // Email direto (sem modal)
+        async function enviarCobrancaEmail() {
+            if (!devedorAtual) return;
+            if (!devedorAtual.email) { toast('Email não cadastrado', 'error'); return; }
+            var btn = document.getElementById('btnEmail');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Enviando...</span>';
             try {
-                var r = await fetch(API + '/api/suri/enviar-cobranca', { method: 'POST', headers: H(), body: JSON.stringify({ cliente_id: devedorAtual.cliente_id, tipo_mensagem: 'lembrete' }) });
+                var r = await fetch(API + '/api/suri/enviar-cobranca-inicial', {
+                    method: 'POST', headers: H(),
+                    body: JSON.stringify({ cliente_id: devedorAtual.cliente_id, canais: ['email'] })
+                });
                 var d = await r.json();
-                if (d.success) {
-                    toast('WhatsApp enviado com sucesso!');
-                    document.getElementById('tipoContato').value = 'whatsapp';
+                if (d.success && d.resultados.email && d.resultados.email.success) {
+                    toast('Email enviado com sucesso!');
+                    document.getElementById('tipoContato').value = 'email';
                     document.getElementById('resultadoContato').value = 'enviado';
                     setTimeout(function() { carregarHistorico(); }, 500);
-                } else { toast(d.error || 'Erro ao enviar WhatsApp', 'error'); }
-            } catch (e) { console.error('[SURI] Erro:', e); toast('Erro ao enviar WhatsApp', 'error'); } 
-            finally { btn.disabled = false; btn.innerHTML = textoOriginal; }
+                } else {
+                    toast(d.resultados && d.resultados.email ? d.resultados.email.error : 'Erro ao enviar email', 'error');
+                }
+            } catch (e) { toast('Erro ao enviar email', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-envelope"></i><span>E-mail</span>'; }
         }
 
-        function enviarEmail() { if (devedorAtual && devedorAtual.email) { var assunto = encodeURIComponent('ACERTIVE - Regularização'); var corpo = encodeURIComponent('Prezado(a) ' + devedorAtual.nome + ',\n\nEntramos em contato sobre sua pendência.\n\nAtenciosamente,\nEquipe ACERTIVE'); window.open('mailto:' + devedorAtual.email + '?subject=' + assunto + '&body=' + corpo, '_blank'); document.getElementById('tipoContato').value = 'email'; } else { toast('E-mail não cadastrado', 'error'); } }
+        // ═══════════════════════════════════════
+        // REGISTRAR ACIONAMENTO
+        // ═══════════════════════════════════════
 
         async function registrarAcionamento(e) {
             e.preventDefault();
@@ -423,7 +556,44 @@
             } catch (e) { console.error(e); toast('Erro ao registrar', 'error'); }
         }
 
-        function abrirModalAcordo() { if (!devedorAtual) return; document.getElementById('acordoOriginal').textContent = fmtMoney(devedorAtual.valor_total); calcularAcordo(); document.getElementById('modalAcordo').classList.add('active'); }
+        // ═══════════════════════════════════════
+        // MODAL ACORDO (COM PIX REAL DO ASAAS)
+        // ═══════════════════════════════════════
+
+        async function abrirModalAcordo() {
+            if (!devedorAtual) return;
+            document.getElementById('modalAcordo').classList.add('active');
+            document.getElementById('acordoLoading').style.display = 'block';
+            document.getElementById('acordoForm').style.display = 'none';
+
+            // Buscar config do credor via API
+            try {
+                var r = await fetch(API + '/api/suri/calcular-acordo', {
+                    method: 'POST', headers: H(),
+                    body: JSON.stringify({ cliente_id: devedorAtual.cliente_id })
+                });
+                var d = await r.json();
+                if (d.success && d.config_credor) {
+                    configCredorAtual = d.config_credor;
+                    document.getElementById('inputMulta').value = d.config_credor.multa_atraso || 2;
+                    document.getElementById('inputJuros').value = d.config_credor.juros_atraso || 1;
+                    document.getElementById('acordoMultaPct').textContent = d.config_credor.multa_atraso || 2;
+                    document.getElementById('acordoJurosPct').textContent = d.config_credor.juros_atraso || 1;
+                    // Limitar parcelas ao máximo do credor
+                    var maxP = d.config_credor.parcelas_maximo || 12;
+                    var sel = document.getElementById('inputParcelas');
+                    for (var i = 0; i < sel.options.length; i++) {
+                        sel.options[i].disabled = (parseInt(sel.options[i].value) > maxP);
+                    }
+                }
+            } catch (e) { console.log('Usando config padrão'); }
+
+            document.getElementById('acordoOriginal').textContent = fmtMoney(devedorAtual.valor_total);
+            document.getElementById('acordoLoading').style.display = 'none';
+            document.getElementById('acordoForm').style.display = 'block';
+            calcularAcordo();
+        }
+
         function fecharModal() { document.getElementById('modalAcordo').classList.remove('active'); }
 
         function calcularAcordo() {
@@ -440,22 +610,96 @@
             var subtotal = original + vMulta + vJuros + vHonorarios;
             var vDesconto = subtotal * (desconto / 100);
             var total = subtotal - vDesconto;
+
+            document.getElementById('acordoMultaPct').textContent = multa;
+            document.getElementById('acordoJurosPct').textContent = juros;
             document.getElementById('acordoMulta').textContent = fmtMoney(vMulta);
             document.getElementById('acordoJuros').textContent = fmtMoney(vJuros);
             document.getElementById('acordoHonorarios').textContent = fmtMoney(vHonorarios);
             document.getElementById('acordoDesconto').textContent = '- ' + fmtMoney(vDesconto);
             document.getElementById('acordoTotal').textContent = fmtMoney(total);
+
             var sel = document.getElementById('inputParcelas');
-            for (var i = 0; i < sel.options.length; i++) { var p = i + 1; sel.options[i].text = p === 1 ? 'À Vista - ' + fmtMoney(total) : p + 'x de ' + fmtMoney(total / p); }
+            for (var i = 0; i < sel.options.length; i++) {
+                var p = parseInt(sel.options[i].value);
+                if (!sel.options[i].disabled) {
+                    sel.options[i].text = p === 1 ? 'À Vista - ' + fmtMoney(total) : p + 'x de ' + fmtMoney(total / p);
+                }
+            }
         }
 
-        async function criarAcordo() { if (!devedorAtual) return; toast('Acordo criado com sucesso!'); fecharModal(); var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1; document.getElementById('acordosHoje').textContent = acordosHoje; setTimeout(function() { proximo(); }, 1000); }
+        async function criarAcordo() {
+            if (!devedorAtual) return;
+            var original = devedorAtual.valor_total;
+            var multa = parseFloat(document.getElementById('inputMulta').value) || 0;
+            var juros = parseFloat(document.getElementById('inputJuros').value) || 0;
+            var honorarios = parseFloat(document.getElementById('inputHonorarios').value) || 0;
+            var desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
+            var numParcelas = parseInt(document.getElementById('inputParcelas').value) || 1;
+            var meses = devedorAtual.maior_atraso / 30;
+
+            var vMulta = original * (multa / 100);
+            var vJuros = original * (juros / 100) * meses;
+            var vHonorarios = original * (honorarios / 100);
+            var subtotal = original + vMulta + vJuros + vHonorarios;
+            var vDesconto = subtotal * (desconto / 100);
+            var valorFinal = subtotal - vDesconto;
+            var enviarWhatsapp = document.getElementById('acordoEnviarWhatsapp').checked;
+
+            var btn = document.getElementById('btnCriarAcordo');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PIX...';
+
+            try {
+                var r = await fetch(API + '/api/suri/criar-acordo-pix', {
+                    method: 'POST', headers: H(),
+                    body: JSON.stringify({
+                        cliente_id: devedorAtual.cliente_id,
+                        valor_original: original,
+                        valor_final: Math.round(valorFinal * 100) / 100,
+                        num_parcelas: numParcelas,
+                        desconto_pct: desconto,
+                        enviar_whatsapp: enviarWhatsapp
+                    })
+                });
+                var d = await r.json();
+                if (d.success) {
+                    var msg = 'Acordo criado! ';
+                    if (d.parcelas && d.parcelas.length > 0) {
+                        msg += d.parcelas.length + ' parcela(s) PIX gerada(s)';
+                        if (enviarWhatsapp) msg += ' + WhatsApp enviado';
+                    }
+                    toast(msg);
+                    fecharModal();
+                    var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1;
+                    document.getElementById('acordosHoje').textContent = acordosHoje;
+                    setTimeout(function() { carregarHistorico(); }, 500);
+                    setTimeout(function() { proximo(); }, 1500);
+                } else {
+                    toast(d.error || 'Erro ao criar acordo', 'error');
+                }
+            } catch (e) {
+                console.error('[ACORDO] Erro:', e);
+                toast('Erro ao criar acordo', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Criar Acordo + PIX';
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // AÇÕES RÁPIDAS
+        // ═══════════════════════════════════════
 
         async function marcarIncobravel() { if (!devedorAtual) return; if (!confirm('Marcar como INCOBRÁVEL?')) return; try { await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'incobravel' }) }); toast('Marcado como incobrável'); proximo(); } catch (e) { toast('Erro ao atualizar', 'error'); } }
 
         async function enviarJuridico() { if (!devedorAtual) return; if (!confirm('Enviar para JURÍDICO?')) return; try { await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'juridico' }) }); toast('Enviado para jurídico'); proximo(); } catch (e) { toast('Erro ao atualizar', 'error'); } }
 
         function verDetalhes() { if (devedorAtual) { window.location.href = 'devedores.html?id=' + devedorAtual.cliente_id; } }
+
+        // ═══════════════════════════════════════
+        // BUSCA
+        // ═══════════════════════════════════════
 
         function buscarCliente(termo) {
             var results = document.getElementById('searchResults');
@@ -480,8 +724,13 @@
 
         function selecionarCliente(index) { posicao = index; fila = filaOriginal.slice(); mostrarDevedor(); document.getElementById('searchResults').classList.remove('show'); document.getElementById('searchInput').value = ''; }
 
+        // ═══════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════
+
         document.addEventListener('DOMContentLoaded', async function() { var auth = await checkAuth(); if (auth) await carregarFila(); });
         document.getElementById('modalAcordo').addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) fecharModal(); });
+        document.getElementById('modalDisparo').addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) fecharModalDisparo(); });
         document.addEventListener('click', function(e) { if (!e.target.closest('.search-box')) { document.getElementById('searchResults').classList.remove('show'); } });
     </script>
 </body>

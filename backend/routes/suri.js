@@ -1,15 +1,16 @@
 /**
  * ========================================
  * ACERTIVE - Integração SURI (Chatbot Maker)
- * routes/suri.js
+ * routes/suri.js - v3.0
  * ========================================
  * 
- * Funcionalidades:
- * - Enviar mensagens via WhatsApp (template)
- * - Receber webhooks (mensagens recebidas)
- * - CHATBOT AUTOMÁTICO DE COBRANÇA (tipo Claro)
- * - Negociação automática com parcelamento
- * - Registrar acionamentos automaticamente
+ * NOVIDADES v3.0:
+ * - Multa/juros calculados por credor (configurável)
+ * - Mensagem inicial profissional (WhatsApp + Email)
+ * - Acordos salvos no banco com parcelas
+ * - Modal de acordo integrado com PIX real
+ * - Disparo em massa com filtro por credor
+ * - Removido código duplicado
  */
 
 var express = require('express');
@@ -40,28 +41,37 @@ module.exports = function(pool, auth, registrarLog) {
         environment: 'sandbox'
     };
 
-    function getAsaasHeaders() {
-        return {
-            'access_token': ASAAS_CONFIG.apiKey,
-            'Content-Type': 'application/json'
-        };
+    // ═══════════════════════════════════════════════════════════════
+    // CONFIGURAÇÕES DE EMAIL (SMTP)
+    // ═══════════════════════════════════════════════════════════════
+
+    var nodemailer = null;
+    var emailTransporter = null;
+    var EMAIL_USER = process.env.SMTP_USER || process.env.EMAIL_USER || '';
+    var EMAIL_FROM = process.env.EMAIL_FROM || ('ACERTIVE Cobranças <' + EMAIL_USER + '>');
+    try {
+        nodemailer = require('nodemailer');
+        if (EMAIL_USER) {
+            emailTransporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com',
+                port: parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587,
+                secure: false,
+                auth: { user: EMAIL_USER, pass: process.env.SMTP_PASS || process.env.EMAIL_PASS || '' }
+            });
+            console.log('[EMAIL] ✅ Configurado:', EMAIL_USER);
+        } else {
+            console.log('[EMAIL] ⚠️ Sem credenciais - defina SMTP_USER e SMTP_PASS');
+        }
+    } catch (e) {
+        console.log('[EMAIL] ⚠️ nodemailer não instalado - rode: npm install nodemailer');
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // CONFIGURAÇÕES DO ASAAS (Sandbox)
-    // ═══════════════════════════════════════════════════════════════
-    
-    var ASAAS_CONFIG = {
-        apiKey: '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjkxNmNkYWI4LTUxMmQtNDlmYS1iZjgzLWJiZWY2ZjExOTQyYjo6JGFhY2hfNTllZDEzNmEtYmIxZS00NGMxLTlmNDMtMGQxYjg5NjQzMzIx',
-        baseUrl: 'https://sandbox.asaas.com/api/v3',
-        environment: 'sandbox'
-    };
-
     function getAsaasHeaders() {
-        return {
-            'Content-Type': 'application/json',
-            'access_token': ASAAS_CONFIG.apiKey
-        };
+        return { 'Content-Type': 'application/json', 'access_token': ASAAS_CONFIG.apiKey };
+    }
+
+    function getSuriHeaders() {
+        return { 'Authorization': 'Bearer ' + SURI_CONFIG.token, 'Content-Type': 'application/json' };
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -70,7 +80,6 @@ module.exports = function(pool, auth, registrarLog) {
     
     var sessoes = {};
 
-    // Limpar sessões antigas (mais de 24h)
     setInterval(function() {
         var agora = Date.now();
         var chaves = Object.keys(sessoes);
@@ -80,13 +89,6 @@ module.exports = function(pool, auth, registrarLog) {
             }
         }
     }, 60 * 60 * 1000);
-
-    function getSuriHeaders() {
-        return {
-            'Authorization': 'Bearer ' + SURI_CONFIG.token,
-            'Content-Type': 'application/json'
-        };
-    }
 
     // ═══════════════════════════════════════════════════════════════
     // FUNÇÕES AUXILIARES
@@ -113,39 +115,90 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // CÁLCULO DE MULTA E JUROS POR CREDOR
+    // ═══════════════════════════════════════════════════════════════
+
+    function calcularValorAtualizado(valorOriginal, diasAtraso, credorConfig) {
+        var multa_pct = parseFloat(credorConfig.multa_atraso) || 2;
+        var juros_pct = parseFloat(credorConfig.juros_atraso) || 1;
+        
+        var valorMulta = 0;
+        var valorJuros = 0;
+        
+        if (diasAtraso > 0) {
+            valorMulta = valorOriginal * (multa_pct / 100);
+            var mesesAtraso = diasAtraso / 30;
+            valorJuros = valorOriginal * (juros_pct / 100) * mesesAtraso;
+        }
+        
+        var valorAtualizado = valorOriginal + valorMulta + valorJuros;
+        
+        return {
+            original: valorOriginal,
+            multa: Math.round(valorMulta * 100) / 100,
+            juros: Math.round(valorJuros * 100) / 100,
+            atualizado: Math.round(valorAtualizado * 100) / 100,
+            multa_pct: multa_pct,
+            juros_pct: juros_pct,
+            dias_atraso: diasAtraso,
+            meses_atraso: Math.round((diasAtraso / 30) * 10) / 10
+        };
+    }
+
+    async function buscarConfigCredor(credorId) {
+        try {
+            if (!credorId) return getConfigCredorPadrao();
+            var result = await pool.query(
+                "SELECT multa_atraso, juros_atraso, permite_desconto, desconto_maximo, " +
+                "permite_parcelamento, parcelas_maximo, juros_parcelamento, nome " +
+                "FROM credores WHERE id = $1", [credorId]
+            );
+            if (result.rowCount > 0) {
+                var c = result.rows[0];
+                return {
+                    nome: c.nome || 'Credor',
+                    multa_atraso: parseFloat(c.multa_atraso) || 2,
+                    juros_atraso: parseFloat(c.juros_atraso) || 1,
+                    permite_desconto: c.permite_desconto !== false,
+                    desconto_maximo: parseFloat(c.desconto_maximo) || 10,
+                    permite_parcelamento: c.permite_parcelamento !== false,
+                    parcelas_maximo: parseInt(c.parcelas_maximo) || 12,
+                    juros_parcelamento: parseFloat(c.juros_parcelamento) || 0
+                };
+            }
+            return getConfigCredorPadrao();
+        } catch (e) {
+            console.error('[CONFIG] Erro:', e);
+            return getConfigCredorPadrao();
+        }
+    }
+
+    function getConfigCredorPadrao() {
+        return { nome: 'Credor', multa_atraso: 2, juros_atraso: 1, permite_desconto: true, desconto_maximo: 10, permite_parcelamento: true, parcelas_maximo: 12, juros_parcelamento: 0 };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // FUNÇÕES DO ASAAS - PAGAMENTO
     // ═══════════════════════════════════════════════════════════════
 
-    // Buscar ou criar cliente no Asaas
     async function buscarOuCriarClienteAsaas(cliente) {
         try {
             var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
-            
-            // Validar CPF básico (11 dígitos) ou CNPJ (14 dígitos)
             var cpfValido = cpfCnpj.length === 11 || cpfCnpj.length === 14;
-            
-            // Se CPF inválido ou de teste, usar CPF genérico do sandbox
-            if (!cpfValido || cpfCnpj === '00000000000' || cpfCnpj === '12345678990' || cpfCnpj.match(/^(\d)\1+$/)) {
-                // CPF de teste válido para sandbox Asaas
+            if (!cpfValido || cpfCnpj.match(/^(\d)\1+$/)) {
                 cpfCnpj = '24971563792';
-                console.log('[ASAAS] CPF inválido, usando CPF de teste:', cpfCnpj);
+                console.log('[ASAAS] CPF inválido, usando teste:', cpfCnpj);
             }
             
-            // Primeiro tenta buscar pelo CPF/CNPJ
             if (cpfCnpj) {
-                var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, {
-                    method: 'GET',
-                    headers: getAsaasHeaders()
-                });
+                var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, { method: 'GET', headers: getAsaasHeaders() });
                 var buscaData = await buscaResp.json();
-                
                 if (buscaData.data && buscaData.data.length > 0) {
                     console.log('[ASAAS] Cliente encontrado:', buscaData.data[0].id);
                     return buscaData.data[0];
                 }
             }
 
-            // Se não encontrou, cria novo
             var novoCliente = {
                 name: cliente.nome || 'Cliente',
                 cpfCnpj: cpfCnpj,
@@ -155,395 +208,228 @@ module.exports = function(pool, auth, registrarLog) {
                 notificationDisabled: true
             };
 
-            console.log('[ASAAS] Criando cliente:', novoCliente.name, '| CPF:', novoCliente.cpfCnpj);
-            
-            var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', {
-                method: 'POST',
-                headers: getAsaasHeaders(),
-                body: JSON.stringify(novoCliente)
-            });
-            
+            var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', { method: 'POST', headers: getAsaasHeaders(), body: JSON.stringify(novoCliente) });
             var criarData = await criarResp.json();
-            
-            if (criarData.id) {
-                console.log('[ASAAS] Cliente criado:', criarData.id);
-                return criarData;
-            } else {
-                console.error('[ASAAS] Erro ao criar cliente:', JSON.stringify(criarData));
-                return null;
-            }
+            if (criarData.id) { console.log('[ASAAS] Cliente criado:', criarData.id); return criarData; }
+            console.error('[ASAAS] Erro criar cliente:', JSON.stringify(criarData));
+            return null;
         } catch (error) {
-            console.error('[ASAAS] Erro buscarOuCriarCliente:', error);
+            console.error('[ASAAS] Erro:', error);
             return null;
         }
     }
 
-    // Criar cobrança PIX no Asaas (à vista)
-    async function criarCobrancaPix(clienteAsaas, valor, descricao) {
+    async function criarCobrancaPix(clienteAsaas, valor, descricao, externalRef) {
         try {
             var vencimento = new Date();
-            vencimento.setDate(vencimento.getDate() + 2); // Vence em 2 dias
-            
+            vencimento.setDate(vencimento.getDate() + 2);
             var cobranca = {
-                customer: clienteAsaas.id,
-                billingType: 'PIX',
-                value: valor,
+                customer: clienteAsaas.id, billingType: 'PIX', value: valor,
                 dueDate: vencimento.toISOString().split('T')[0],
                 description: descricao || 'Acordo ACERTIVE',
-                externalReference: 'acertive_' + Date.now()
+                externalReference: externalRef || 'acertive_' + Date.now()
             };
 
-            console.log('[ASAAS] Criando cobrança PIX:', valor);
-            
-            var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
-                method: 'POST',
-                headers: getAsaasHeaders(),
-                body: JSON.stringify(cobranca)
-            });
-            
+            var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', { method: 'POST', headers: getAsaasHeaders(), body: JSON.stringify(cobranca) });
             var data = await resp.json();
             
             if (data.id) {
-                console.log('[ASAAS] Cobrança criada:', data.id);
-                
-                // Buscar QR Code do PIX
-                var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
-                    method: 'GET',
-                    headers: getAsaasHeaders()
-                });
-                
+                var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
                 var pixData = await pixResp.json();
-                
                 return {
-                    success: true,
-                    cobrancaId: data.id,
-                    valor: data.value,
-                    vencimento: data.dueDate,
-                    linkPagamento: data.invoiceUrl,
-                    pixCopiaECola: pixData.payload || null,
-                    pixQrCodeBase64: pixData.encodedImage || null
+                    success: true, cobrancaId: data.id, valor: data.value, vencimento: data.dueDate,
+                    linkPagamento: data.invoiceUrl, pixCopiaECola: pixData.payload || null,
+                    externalReference: cobranca.externalReference
                 };
-            } else {
-                console.error('[ASAAS] Erro ao criar cobrança:', data);
-                return { success: false, error: data.errors ? data.errors[0].description : 'Erro desconhecido' };
             }
+            return { success: false, error: data.errors ? data.errors[0].description : 'Erro desconhecido' };
         } catch (error) {
-            console.error('[ASAAS] Erro criarCobrancaPix:', error);
             return { success: false, error: error.message };
         }
     }
 
-    // Criar parcelamento no Asaas (gera todas as parcelas)
     async function criarParcelamentoAsaas(clienteAsaas, valorTotal, numParcelas, descricao) {
         try {
             var valorParcela = Math.round((valorTotal / numParcelas) * 100) / 100;
             var parcelas = [];
             var hoje = new Date();
-            
-            console.log('[ASAAS] Criando parcelamento:', numParcelas, 'x', valorParcela);
 
             for (var i = 0; i < numParcelas; i++) {
                 var vencimento = new Date(hoje);
                 vencimento.setMonth(vencimento.getMonth() + i);
-                if (i === 0) {
-                    vencimento.setDate(vencimento.getDate() + 2); // 1ª parcela vence em 2 dias
-                }
+                if (i === 0) vencimento.setDate(vencimento.getDate() + 2);
                 
+                var externalRef = 'acertive_parc_' + Date.now() + '_' + (i + 1);
                 var cobranca = {
-                    customer: clienteAsaas.id,
-                    billingType: 'PIX',
-                    value: valorParcela,
+                    customer: clienteAsaas.id, billingType: 'PIX', value: valorParcela,
                     dueDate: vencimento.toISOString().split('T')[0],
                     description: (descricao || 'Acordo ACERTIVE') + ' - Parcela ' + (i + 1) + '/' + numParcelas,
-                    externalReference: 'acertive_parc_' + Date.now() + '_' + (i + 1)
+                    externalReference: externalRef
                 };
 
-                var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
-                    method: 'POST',
-                    headers: getAsaasHeaders(),
-                    body: JSON.stringify(cobranca)
-                });
-                
+                var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', { method: 'POST', headers: getAsaasHeaders(), body: JSON.stringify(cobranca) });
                 var data = await resp.json();
                 
                 if (data.id) {
-                    var parcelaInfo = {
-                        numero: i + 1,
-                        cobrancaId: data.id,
-                        valor: data.value,
-                        vencimento: data.dueDate,
-                        linkPagamento: data.invoiceUrl
-                    };
-
-                    // Buscar PIX só da primeira parcela
+                    var parcelaInfo = { numero: i + 1, cobrancaId: data.id, valor: data.value, vencimento: data.dueDate, linkPagamento: data.invoiceUrl, externalReference: externalRef };
                     if (i === 0) {
-                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
-                            method: 'GET',
-                            headers: getAsaasHeaders()
-                        });
+                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
                         var pixData = await pixResp.json();
                         parcelaInfo.pixCopiaECola = pixData.payload || null;
                     }
-
                     parcelas.push(parcelaInfo);
-                    console.log('[ASAAS] Parcela', (i + 1), 'criada:', data.id);
-                } else {
-                    console.error('[ASAAS] Erro parcela', (i + 1), ':', data);
                 }
-
-                // Delay entre requisições para não sobrecarregar
                 await new Promise(function(r) { setTimeout(r, 500); });
             }
 
-            if (parcelas.length === numParcelas) {
-                return { success: true, parcelas: parcelas };
-            } else {
-                return { success: false, error: 'Algumas parcelas não foram criadas', parcelas: parcelas };
-            }
+            return parcelas.length === numParcelas
+                ? { success: true, parcelas: parcelas }
+                : { success: false, error: 'Algumas parcelas falharam', parcelas: parcelas };
         } catch (error) {
-            console.error('[ASAAS] Erro criarParcelamento:', error);
             return { success: false, error: error.message };
         }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // FUNÇÕES DO ASAAS - PAGAMENTO
-    // ═══════════════════════════════════════════════════════════════
-
-    // Buscar ou criar cliente no Asaas
-    async function buscarOuCriarClienteAsaas(cliente) {
-        try {
-            var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
-            
-            // Buscar cliente existente por CPF/CNPJ
-            if (cpfCnpj) {
-                var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, {
-                    method: 'GET',
-                    headers: getAsaasHeaders()
-                });
-                var buscaData = await buscaResp.json();
-                
-                if (buscaData.data && buscaData.data.length > 0) {
-                    console.log('[ASAAS] Cliente encontrado:', buscaData.data[0].id);
-                    return buscaData.data[0];
-                }
-            }
-
-            // Criar novo cliente
-            var novoCliente = {
-                name: cliente.nome || 'Cliente',
-                cpfCnpj: cpfCnpj || '00000000000',
-                email: cliente.email || null,
-                phone: (cliente.telefone || cliente.celular || '').replace(/\D/g, ''),
-                mobilePhone: (cliente.celular || cliente.telefone || '').replace(/\D/g, ''),
-                notificationDisabled: true
-            };
-
-            console.log('[ASAAS] Criando cliente:', novoCliente.name);
-            var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', {
-                method: 'POST',
-                headers: getAsaasHeaders(),
-                body: JSON.stringify(novoCliente)
-            });
-            var criarData = await criarResp.json();
-
-            if (criarData.id) {
-                console.log('[ASAAS] Cliente criado:', criarData.id);
-                return criarData;
-            }
-
-            console.error('[ASAAS] Erro ao criar cliente:', criarData);
-            return null;
-        } catch (error) {
-            console.error('[ASAAS] Erro buscar/criar cliente:', error);
-            return null;
-        }
-    }
-
-    // Gerar cobrança PIX no Asaas
-    async function gerarCobrancaPix(clienteAsaas, valor, descricao) {
-        try {
-            var vencimento = new Date();
-            vencimento.setDate(vencimento.getDate() + 2); // Vence em 2 dias
-            var vencimentoStr = vencimento.toISOString().split('T')[0];
-
-            var cobranca = {
-                customer: clienteAsaas.id,
-                billingType: 'PIX',
-                value: valor,
-                dueDate: vencimentoStr,
-                description: descricao || 'Acordo ACERTIVE',
-                externalReference: 'ACERTIVE_' + Date.now()
-            };
-
-            console.log('[ASAAS] Gerando cobrança PIX:', valor);
-            var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
-                method: 'POST',
-                headers: getAsaasHeaders(),
-                body: JSON.stringify(cobranca)
-            });
-            var data = await resp.json();
-
-            if (data.id) {
-                console.log('[ASAAS] Cobrança criada:', data.id);
-                
-                // Buscar QR Code do PIX
-                var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
-                    method: 'GET',
-                    headers: getAsaasHeaders()
-                });
-                var pixData = await pixResp.json();
-
-                return {
-                    success: true,
-                    cobrancaId: data.id,
-                    valor: data.value,
-                    vencimento: data.dueDate,
-                    linkBoleto: data.bankSlipUrl,
-                    linkPagamento: data.invoiceUrl,
-                    pixCopiaECola: pixData.payload || null,
-                    pixQrCodeBase64: pixData.encodedImage || null
-                };
-            }
-
-            console.error('[ASAAS] Erro ao criar cobrança:', data);
-            return { success: false, error: data.errors || 'Erro ao gerar cobrança' };
-        } catch (error) {
-            console.error('[ASAAS] Erro gerar cobrança:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // ENVIAR TEMPLATE COM IMPORT
+    // ENVIAR MENSAGENS WHATSAPP (SURI)
     // ═══════════════════════════════════════════════════════════════
 
     async function enviarTemplateComImport(cliente, telefone, templateId, bodyParams) {
         try {
             var body = {
-                user: {
-                    name: cliente.nome || 'Cliente',
-                    phone: telefone,
-                    email: cliente.email || '',
-                    gender: 0,
-                    channelId: SURI_CONFIG.channelId,
-                    channelType: SURI_CONFIG.channelType,
-                    defaultDepartmentId: null
-                },
-                message: {
-                    templateId: templateId,
-                    BodyParameters: bodyParams || [],
-                    ButtonsParameters: []
-                }
+                user: { name: cliente.nome || 'Cliente', phone: telefone, email: cliente.email || '', gender: 0, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType, defaultDepartmentId: null },
+                message: { templateId: templateId, BodyParameters: bodyParams || [], ButtonsParameters: [] }
             };
-
-            console.log('[SURI] Enviando template para', telefone);
-
-            var response = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
-                method: 'POST',
-                headers: getSuriHeaders(),
-                body: JSON.stringify(body)
-            });
-
+            var response = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', { method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body) });
             var respText = await response.text();
-            console.log('[SURI] Resposta template:', response.status, respText);
-
-            if (response.ok) {
-                var data = respText ? JSON.parse(respText) : {};
-                return { success: true, data: data };
-            }
-            return { success: false, error: 'Status ' + response.status + ': ' + respText };
+            if (response.ok) return { success: true, data: respText ? JSON.parse(respText) : {} };
+            return { success: false, error: 'Status ' + response.status };
         } catch (error) {
-            console.error('[SURI] Erro ao enviar template:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async function enviarMensagemTexto(telefone, texto, contactId) {
+        // Tentativa 1: send-text com phone
+        try {
+            var r1 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
+                method: 'POST', headers: getSuriHeaders(),
+                body: JSON.stringify({ phone: telefone, message: texto, channelId: SURI_CONFIG.channelId })
+            });
+            if (r1.ok) { console.log('[SURI] ✅ Enviado via send-text/phone'); return { success: true }; }
+        } catch (e) {}
+
+        // Tentativa 2: send-text com to
+        try {
+            var r2 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
+                method: 'POST', headers: getSuriHeaders(),
+                body: JSON.stringify({ to: telefone, text: texto, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType })
+            });
+            if (r2.ok) { console.log('[SURI] ✅ Enviado via send-text/to'); return { success: true }; }
+        } catch (e) {}
+
+        // Tentativa 3: send com user + text
+        try {
+            var r3 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
+                method: 'POST', headers: getSuriHeaders(),
+                body: JSON.stringify({ user: { phone: telefone, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType }, message: { text: texto } })
+            });
+            if (r3.ok) { console.log('[SURI] ✅ Enviado via send/user-text'); return { success: true }; }
+        } catch (e) {}
+
+        // Tentativa 4: send com user + body
+        try {
+            var r4 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
+                method: 'POST', headers: getSuriHeaders(),
+                body: JSON.stringify({ user: { phone: telefone, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType }, message: { body: texto } })
+            });
+            if (r4.ok) { console.log('[SURI] ✅ Enviado via send/user-body'); return { success: true }; }
+        } catch (e) {}
+
+        // Tentativa 5: com contactId
+        if (contactId) {
+            try {
+                var r5 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
+                    method: 'POST', headers: getSuriHeaders(),
+                    body: JSON.stringify({ contactId: contactId, message: texto, channelId: SURI_CONFIG.channelId })
+                });
+                if (r5.ok) { console.log('[SURI] ✅ Enviado via contactId'); return { success: true }; }
+            } catch (e) {}
+        }
+
+        console.error('[SURI] ❌ Todas tentativas falharam para:', telefone);
+        return { success: false, error: 'Todas as tentativas falharam' };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ENVIAR EMAIL DE COBRANÇA
+    // ═══════════════════════════════════════════════════════════════
+
+    async function enviarEmailCobranca(cliente, valorTotal, valorAtualizado, credorNome) {
+        try {
+            if (!emailTransporter) return { success: false, error: 'Email não configurado. Defina EMAIL_USER e EMAIL_PASS.' };
+            if (!cliente.email) return { success: false, error: 'Cliente sem email' };
+
+            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+            var valorStr = formatarMoeda(valorAtualizado || valorTotal);
+
+            var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">';
+            html += '<div style="max-width:600px;margin:0 auto;background:#fff;">';
+            html += '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:30px;text-align:center;">';
+            html += '<h1 style="color:#d4a853;margin:0;font-size:28px;">ACERTIVE</h1>';
+            html += '<p style="color:#9ca3af;margin:5px 0 0;font-size:14px;">Assessoria e Cobrança</p></div>';
+            html += '<div style="padding:30px;">';
+            html += '<p style="font-size:16px;color:#333;">Prezado(a) <strong>' + primeiroNome + '</strong>,</p>';
+            html += '<p style="font-size:14px;color:#666;line-height:1.6;">Identificamos uma pendência financeira em seu nome. Estamos entrando em contato para oferecer condições especiais de negociação.</p>';
+            html += '<div style="background:#f8f9fa;border-left:4px solid #d4a853;padding:20px;margin:20px 0;border-radius:0 8px 8px 0;">';
+            html += '<p style="margin:0 0 5px;font-size:12px;color:#999;text-transform:uppercase;">Valor da pendência</p>';
+            html += '<p style="margin:0;font-size:28px;font-weight:bold;color:#1a1a2e;">' + valorStr + '</p>';
+            html += '<p style="margin:5px 0 0;font-size:13px;color:#666;">Referente a: ' + (credorNome || 'Credor') + '</p></div>';
+            html += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px;margin:20px 0;">';
+            html += '<p style="margin:0 0 10px;font-weight:bold;color:#166534;">✅ Condições especiais:</p>';
+            html += '<p style="margin:5px 0;color:#333;">• Desconto para pagamento à vista</p>';
+            html += '<p style="margin:5px 0;color:#333;">• Parcelamento facilitado via PIX</p>';
+            html += '<p style="margin:5px 0;color:#333;">• Regularize seu nome rapidamente</p></div>';
+            html += '<div style="text-align:center;margin:30px 0;">';
+            html += '<p style="font-size:14px;color:#666;">Para negociar, responda este e-mail ou entre em contato:</p>';
+            html += '<a href="https://wa.me/5592981040145" style="display:inline-block;background:#25d366;color:white;padding:14px 30px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;">💬 Negociar pelo WhatsApp</a></div>';
+            html += '<p style="font-size:12px;color:#999;text-align:center;margin-top:30px;">⏰ Condições válidas por tempo limitado.</p></div>';
+            html += '<div style="background:#1a1a2e;padding:20px;text-align:center;">';
+            html += '<p style="color:#9ca3af;margin:0;font-size:12px;">ACERTIVE - Assessoria e Cobrança</p></div>';
+            html += '</div></body></html>';
+
+            var info = await emailTransporter.sendMail({
+                from: EMAIL_FROM,
+                to: cliente.email,
+                subject: 'ACERTIVE - Oportunidade de regularização da sua pendência',
+                html: html
+            });
+            console.log('[EMAIL] ✅ Enviado para:', cliente.email);
+            return { success: true, messageId: info.messageId };
+        } catch (error) {
+            console.error('[EMAIL] Erro:', error);
             return { success: false, error: error.message };
         }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ENVIAR MENSAGEM DE TEXTO (resposta do chatbot)
-    // Tenta múltiplos formatos até funcionar
-    // Quando encontrar o que funciona, loga o método
+    // MENSAGEM INICIAL PROFISSIONAL (WhatsApp)
     // ═══════════════════════════════════════════════════════════════
 
-    async function enviarMensagemTexto(telefone, texto, contactId) {
-        var tentativas = [];
-
-        // Tentativa 1: /api/messages/send-text com phone
-        try {
-            var body1 = { phone: telefone, message: texto, channelId: SURI_CONFIG.channelId };
-            var r1 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
-                method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body1)
-            });
-            var t1 = await r1.text();
-            tentativas.push({ metodo: 'send-text/phone', status: r1.status, ok: r1.ok, resp: t1.substring(0, 300) });
-            if (r1.ok) { console.log('[SURI BOT] ✅ Enviado via send-text/phone'); return { success: true, metodo: 'send-text/phone' }; }
-        } catch (e) { tentativas.push({ metodo: 'send-text/phone', error: e.message }); }
-
-        // Tentativa 2: /api/messages/send-text com to
-        try {
-            var body2 = { to: telefone, text: texto, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType };
-            var r2 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
-                method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body2)
-            });
-            var t2 = await r2.text();
-            tentativas.push({ metodo: 'send-text/to', status: r2.status, ok: r2.ok, resp: t2.substring(0, 300) });
-            if (r2.ok) { console.log('[SURI BOT] ✅ Enviado via send-text/to'); return { success: true, metodo: 'send-text/to' }; }
-        } catch (e) { tentativas.push({ metodo: 'send-text/to', error: e.message }); }
-
-        // Tentativa 3: /api/messages/send com user + message.text
-        try {
-            var body3 = {
-                user: { phone: telefone, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType },
-                message: { text: texto }
-            };
-            var r3 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
-                method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body3)
-            });
-            var t3 = await r3.text();
-            tentativas.push({ metodo: 'send/user-text', status: r3.status, ok: r3.ok, resp: t3.substring(0, 300) });
-            if (r3.ok) { console.log('[SURI BOT] ✅ Enviado via send/user-text'); return { success: true, metodo: 'send/user-text' }; }
-        } catch (e) { tentativas.push({ metodo: 'send/user-text', error: e.message }); }
-
-        // Tentativa 4: /api/messages/send com user + message.body
-        try {
-            var body4 = {
-                user: { phone: telefone, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType },
-                message: { body: texto }
-            };
-            var r4 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send', {
-                method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body4)
-            });
-            var t4 = await r4.text();
-            tentativas.push({ metodo: 'send/user-body', status: r4.status, ok: r4.ok, resp: t4.substring(0, 300) });
-            if (r4.ok) { console.log('[SURI BOT] ✅ Enviado via send/user-body'); return { success: true, metodo: 'send/user-body' }; }
-        } catch (e) { tentativas.push({ metodo: 'send/user-body', error: e.message }); }
-
-        // Tentativa 5: /api/messages/send-text-message
-        try {
-            var body5 = { phone: telefone, message: texto, channelId: SURI_CONFIG.channelId, channelType: SURI_CONFIG.channelType };
-            var r5 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text-message', {
-                method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body5)
-            });
-            var t5 = await r5.text();
-            tentativas.push({ metodo: 'send-text-message', status: r5.status, ok: r5.ok, resp: t5.substring(0, 300) });
-            if (r5.ok) { console.log('[SURI BOT] ✅ Enviado via send-text-message'); return { success: true, metodo: 'send-text-message' }; }
-        } catch (e) { tentativas.push({ metodo: 'send-text-message', error: e.message }); }
-
-        // Tentativa 6: com contactId se disponível
-        if (contactId) {
-            try {
-                var body6 = { contactId: contactId, message: texto, channelId: SURI_CONFIG.channelId };
-                var r6 = await fetch(SURI_CONFIG.endpoint + '/api/messages/send-text', {
-                    method: 'POST', headers: getSuriHeaders(), body: JSON.stringify(body6)
-                });
-                var t6 = await r6.text();
-                tentativas.push({ metodo: 'send-text/contactId', status: r6.status, ok: r6.ok, resp: t6.substring(0, 300) });
-                if (r6.ok) { console.log('[SURI BOT] ✅ Enviado via send-text/contactId'); return { success: true, metodo: 'send-text/contactId' }; }
-            } catch (e) { tentativas.push({ metodo: 'send-text/contactId', error: e.message }); }
-        }
-
-        console.error('[SURI BOT] ❌ TODAS tentativas falharam:', JSON.stringify(tentativas, null, 2));
-        return { success: false, error: 'Todas as tentativas falharam', tentativas: tentativas };
+    function gerarMensagemInicial(cliente, valorAtualizado, credorNome, descontoMax) {
+        var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+        var msg = '📋 *ACERTIVE - Assessoria e Cobrança*\n\n';
+        msg += 'Olá *' + primeiroNome + '*, tudo bem?\n\n';
+        msg += 'Identificamos uma pendência financeira em seu nome no valor de *' + formatarMoeda(valorAtualizado) + '*';
+        if (credorNome) msg += ' referente a *' + credorNome + '*';
+        msg += '.\n\n';
+        msg += 'Temos condições especiais para você regularizar sua situação:\n';
+        msg += '✅ Desconto de até *' + (descontoMax || 10) + '%* para pagamento à vista\n';
+        msg += '✅ Parcelamento facilitado no PIX\n';
+        msg += '✅ Regularize seu nome rapidamente\n\n';
+        msg += 'Responda esta mensagem para negociar! 💬\n\n';
+        msg += '⏰ _Condições válidas por tempo limitado._';
+        return msg;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -551,30 +437,19 @@ module.exports = function(pool, auth, registrarLog) {
     // ═══════════════════════════════════════════════════════════════
 
     async function buscarClientePorTelefone(telefone) {
-        console.log('[SURI BOT] ========== VERSAO 2.0 - BUSCA CLIENTE ==========');
-        var telefoneOriginal = telefone;
         var telefoneNumeros = limparTelefone(telefone);
-        
-        console.log('[SURI BOT] Buscando cliente - Original:', telefoneOriginal, '| Limpo:', telefoneNumeros);
-        
-        if (!telefoneNumeros || telefoneNumeros.length < 10) {
-            console.log('[SURI BOT] Telefone muito curto, ignorando');
-            return null;
-        }
+        if (!telefoneNumeros || telefoneNumeros.length < 10) return null;
 
-        // Tentar busca com o número completo e também só os últimos 8-9 dígitos
         var ultimos9 = telefoneNumeros.slice(-9);
         var ultimos8 = telefoneNumeros.slice(-8);
-        
-        console.log('[SURI BOT] Buscando com:', telefoneNumeros, '| últimos 9:', ultimos9, '| últimos 8:', ultimos8);
 
-        // Tentar busca com diferentes formatos
         var result = await pool.query(
             "SELECT c.*, " +
             "(SELECT COALESCE(SUM(cob.valor), 0) FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as valor_total, " +
             "(SELECT COUNT(*) FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as qtd_cobrancas, " +
             "(SELECT MAX(CURRENT_DATE - cob.data_vencimento) FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as maior_atraso, " +
-            "(SELECT string_agg(DISTINCT cr.nome, ', ') FROM cobrancas cob JOIN credores cr ON cr.id = cob.credor_id WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as credores_nomes " +
+            "(SELECT string_agg(DISTINCT cr.nome, ', ') FROM cobrancas cob JOIN credores cr ON cr.id = cob.credor_id WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as credores_nomes, " +
+            "(SELECT cob.credor_id FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido') ORDER BY cob.valor DESC LIMIT 1) as principal_credor_id " +
             "FROM clientes c " +
             "WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.telefone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $1 " +
             "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.celular, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $1 " +
@@ -587,26 +462,18 @@ module.exports = function(pool, auth, registrarLog) {
         );
 
         if (result.rowCount > 0) {
-            console.log('[SURI BOT] ✅ Cliente encontrado:', result.rows[0].nome);
+            console.log('[SURI BOT] ✅ Cliente:', result.rows[0].nome);
             return result.rows[0];
         }
-        
-        console.log('[SURI BOT] ❌ Nenhum cliente encontrado');
         return null;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // BUSCAR COBRANÇAS DETALHADAS DO CLIENTE
-    // ═══════════════════════════════════════════════════════════════
-
     async function buscarCobrancasCliente(cliente_id) {
         var result = await pool.query(
-            "SELECT cob.*, cr.nome as credor_nome " +
-            "FROM cobrancas cob " +
-            "LEFT JOIN credores cr ON cr.id = cob.credor_id " +
+            "SELECT cob.*, cr.nome as credor_nome, cob.credor_id " +
+            "FROM cobrancas cob LEFT JOIN credores cr ON cr.id = cob.credor_id " +
             "WHERE cob.cliente_id = $1 AND cob.status IN ('pendente', 'vencido') " +
-            "ORDER BY cob.data_vencimento ASC",
-            [cliente_id]
+            "ORDER BY cob.data_vencimento ASC", [cliente_id]
         );
         return result.rows;
     }
@@ -620,57 +487,46 @@ module.exports = function(pool, auth, registrarLog) {
         var sessao = sessoes[telefoneKey];
         var textoLimpo = texto.trim().toLowerCase();
 
-        // Se não tem sessão, criar uma nova
-        if (!sessao) {
-            return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
-        }
+        if (!sessao) return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
 
-        // Atualizar timestamp e contactId
         sessao.timestamp = Date.now();
         if (contactId) sessao.contactId = contactId;
 
-        // Verificar se quer voltar ao início
         if (textoLimpo === 'menu' || textoLimpo === 'inicio' || textoLimpo === 'voltar' || textoLimpo === '0') {
             delete sessoes[telefoneKey];
             return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
         }
 
-        // Processar baseado na etapa atual
         switch (sessao.etapa) {
-            case 'menu_principal':
-                return await processarMenuPrincipal(telefoneKey, telefone, textoLimpo, sessao);
-            case 'parcelamento':
-                return await processarParcelamento(telefoneKey, telefone, textoLimpo, sessao);
-            case 'confirmacao':
-                return await processarConfirmacao(telefoneKey, telefone, textoLimpo, sessao);
-            case 'atendente':
-                return null; // Não processar, deixar pro humano
-            default:
-                return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
+            case 'menu_principal': return await processarMenuPrincipal(telefoneKey, telefone, textoLimpo, sessao);
+            case 'parcelamento': return await processarParcelamento(telefoneKey, telefone, textoLimpo, sessao);
+            case 'confirmacao': return await processarConfirmacao(telefoneKey, telefone, textoLimpo, sessao);
+            case 'atendente': return null;
+            default: return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CHATBOT: INICIAR SESSÃO
+    // CHATBOT: INICIAR SESSÃO (COM MULTA/JUROS DO CREDOR)
     // ═══════════════════════════════════════════════════════════════
 
     async function iniciarSessao(telefoneKey, telefone, cliente, contactId) {
         var cobrancas = await buscarCobrancasCliente(cliente.id);
-        var valorTotal = parseFloat(cliente.valor_total) || 0;
+        var valorOriginal = parseFloat(cliente.valor_total) || 0;
         var maiorAtraso = parseInt(cliente.maior_atraso) || 0;
         var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
 
+        var credorId = cliente.principal_credor_id || (cobrancas.length > 0 ? cobrancas[0].credor_id : null);
+        var configCredor = await buscarConfigCredor(credorId);
+        var calculo = calcularValorAtualizado(valorOriginal, maiorAtraso, configCredor);
+        var valorAtualizado = calculo.atualizado;
+
         sessoes[telefoneKey] = {
-            cliente_id: cliente.id,
-            etapa: 'menu_principal',
-            valor_total: valorTotal,
-            cobrancas: cobrancas,
-            nome: primeiroNome,
-            credores: cliente.credores_nomes || '',
-            desconto: 0,
-            parcelas: 1,
-            contactId: contactId || null,
-            timestamp: Date.now()
+            cliente_id: cliente.id, etapa: 'menu_principal',
+            valor_original: valorOriginal, valor_total: valorAtualizado,
+            calculo: calculo, config_credor: configCredor, credor_id: credorId,
+            cobrancas: cobrancas, nome: primeiroNome, credores: cliente.credores_nomes || '',
+            desconto: 0, parcelas: 1, contactId: contactId || null, timestamp: Date.now()
         };
 
         var msg = '📋 *ACERTIVE - Assessoria e Cobrança*\n\n';
@@ -688,17 +544,24 @@ module.exports = function(pool, auth, registrarLog) {
         if (cobrancas.length > 5) msg += '... e mais ' + (cobrancas.length - 5) + ' cobranças\n\n';
 
         msg += '━━━━━━━━━━━━━━━━━━━━\n';
-        msg += '💰 *TOTAL: ' + formatarMoeda(valorTotal) + '*\n';
+        msg += '💰 Valor original: ' + formatarMoeda(valorOriginal) + '\n';
+        if (calculo.multa > 0) msg += '📌 Multa (' + calculo.multa_pct + '%): + ' + formatarMoeda(calculo.multa) + '\n';
+        if (calculo.juros > 0) msg += '📌 Juros (' + calculo.juros_pct + '% a.m.): + ' + formatarMoeda(calculo.juros) + '\n';
+        msg += '💰 *TOTAL ATUALIZADO: ' + formatarMoeda(valorAtualizado) + '*\n';
         msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
         msg += 'Como deseja resolver?\n\n';
-        msg += '*1️⃣* - Pagar à vista (10% desconto)\n';
-        msg += '*2️⃣* - Parcelar o débito\n';
+
+        var descMax = configCredor.desconto_maximo || 10;
+        msg += '*1️⃣* - Pagar à vista';
+        if (configCredor.permite_desconto) msg += ' (' + descMax + '% desconto)';
+        msg += '\n';
+        if (configCredor.permite_parcelamento) msg += '*2️⃣* - Parcelar o débito (até ' + configCredor.parcelas_maximo + 'x)\n';
+        else msg += '*2️⃣* - Parcelar o débito\n';
         msg += '*3️⃣* - Já realizei o pagamento\n';
         msg += '*4️⃣* - Falar com um atendente\n\n';
         msg += '_Digite o número da opção desejada_';
 
-        var resultado = await enviarMensagemTexto(telefone, msg, contactId);
-        console.log('[SURI BOT] Menu enviado:', resultado.success ? 'OK' : 'FALHOU');
+        await enviarMensagemTexto(telefone, msg, contactId);
         return 'menu_enviado';
     }
 
@@ -709,94 +572,77 @@ module.exports = function(pool, auth, registrarLog) {
     async function processarMenuPrincipal(telefoneKey, telefone, texto, sessao) {
         var opcao = texto.replace(/[^0-9]/g, '');
         var cId = sessao.contactId;
+        var config = sessao.config_credor;
 
         if (opcao === '1') {
-            // PAGAR À VISTA COM DESCONTO
-            var valorComDesconto = sessao.valor_total * 0.90;
-            sessao.desconto = 10;
+            var descMax = config.permite_desconto ? (config.desconto_maximo || 10) : 0;
+            var valorComDesconto = sessao.valor_total * (1 - descMax / 100);
+            sessao.desconto = descMax;
             sessao.parcelas = 1;
             sessao.valor_final = valorComDesconto;
             sessao.etapa = 'confirmacao';
 
             var msg = '✅ *PAGAMENTO À VISTA*\n\n';
-            msg += '💰 Valor original: ~' + formatarMoeda(sessao.valor_total) + '~\n';
-            msg += '🏷️ Desconto à vista: *10%*\n';
+            msg += '💰 Valor atualizado: ~' + formatarMoeda(sessao.valor_total) + '~\n';
+            if (descMax > 0) msg += '🏷️ Desconto à vista: *' + descMax + '%*\n';
             msg += '✨ *Valor com desconto: ' + formatarMoeda(valorComDesconto) + '*\n\n';
-            msg += 'Deseja confirmar este acordo?\n\n';
-            msg += '*1️⃣* - ✅ Sim, confirmar\n';
-            msg += '*2️⃣* - ↩️ Voltar ao menu\n';
-
+            msg += 'Deseja confirmar?\n\n*1️⃣* - ✅ Sim, confirmar\n*2️⃣* - ↩️ Voltar ao menu';
             await enviarMensagemTexto(telefone, msg, cId);
             return 'pix_opcao';
 
         } else if (opcao === '2') {
-            // PARCELAR
+            if (!config.permite_parcelamento) {
+                await enviarMensagemTexto(telefone, '⚠️ Este credor não permite parcelamento.\n\n*1️⃣* - Pagar à vista\n*3️⃣* - Já paguei\n*4️⃣* - Falar com atendente', cId);
+                return 'parcelamento_bloqueado';
+            }
+
             sessao.etapa = 'parcelamento';
+            var maxParc = config.parcelas_maximo || 12;
+            var msg = '📊 *OPÇÕES DE PARCELAMENTO*\n\nValor total: *' + formatarMoeda(sessao.valor_total) + '*\n\n';
+
+            var opcoesParcelamento = [];
+            var parcDisp = [2, 3, 4, 6, 10, 12];
             
-            var msg = '📊 *OPÇÕES DE PARCELAMENTO*\n\n';
-            msg += 'Valor total: *' + formatarMoeda(sessao.valor_total) + '*\n\n';
+            for (var i = 0; i < parcDisp.length; i++) {
+                var np = parcDisp[i];
+                if (np > maxParc) break;
+                var descParc = 0;
+                if (np <= 2) descParc = Math.min(5, config.desconto_maximo || 5);
+                else if (np <= 3) descParc = Math.min(3, config.desconto_maximo || 3);
+                
+                var jurosParcela = config.juros_parcelamento || 0;
+                var valorBase = sessao.valor_total * (1 - descParc / 100);
+                if (jurosParcela > 0 && np > 1) valorBase = valorBase * (1 + (jurosParcela / 100) * (np - 1));
+                var valorParcela = valorBase / np;
+                
+                opcoesParcelamento.push({ parcelas: np, desconto: descParc, juros_parc: jurosParcela, valor_parcela: valorParcela, valor_total: valorBase });
+            }
 
-            var opcoes = [
-                { parcelas: 2, desconto: 5 },
-                { parcelas: 3, desconto: 3 },
-                { parcelas: 4, desconto: 0 },
-                { parcelas: 6, desconto: 0 },
-                { parcelas: 10, desconto: 0 },
-                { parcelas: 12, desconto: 0 }
-            ];
+            sessao.opcoes_parcelamento = opcoesParcelamento;
 
-            for (var i = 0; i < opcoes.length; i++) {
-                var op = opcoes[i];
-                var valorDesc = sessao.valor_total * (1 - op.desconto/100);
-                var valorParcela = valorDesc / op.parcelas;
-                msg += '*' + (i + 1) + '️⃣* - ' + op.parcelas + 'x de *' + formatarMoeda(valorParcela) + '*';
+            for (var j = 0; j < opcoesParcelamento.length; j++) {
+                var op = opcoesParcelamento[j];
+                msg += '*' + (j + 1) + '️⃣* - ' + op.parcelas + 'x de *' + formatarMoeda(op.valor_parcela) + '*';
                 if (op.desconto > 0) msg += ' (' + op.desconto + '% desc.)';
                 msg += '\n';
             }
-            msg += '\n*7️⃣* - ↩️ Voltar ao menu\n\n_Digite o número da opção_';
-
+            msg += '\n*' + (opcoesParcelamento.length + 1) + '️⃣* - ↩️ Voltar ao menu\n\n_Digite o número da opção_';
             await enviarMensagemTexto(telefone, msg, cId);
             return 'parcelamento_opcao';
 
         } else if (opcao === '3') {
-            // JÁ PAGUEI
             sessao.etapa = 'atendente';
-            var msg = '🔍 *VERIFICAÇÃO DE PAGAMENTO*\n\n';
-            msg += 'Obrigado por informar, ' + sessao.nome + '!\n\n';
-            msg += 'Um atendente verificará o pagamento em até *24 horas úteis*.\n\n';
-            msg += 'Se tiver o comprovante, pode enviar aqui que agilizamos a baixa! 📄\n\n';
-            msg += '🕐 Aguarde nosso retorno.';
-
-            await enviarMensagemTexto(telefone, msg, cId);
-
-            try {
-                await pool.query(
-                    "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'info_pagamento', 'Cliente informou que já pagou via chatbot - Verificar comprovante', NOW())",
-                    [sessao.cliente_id]
-                );
-            } catch(e) { console.error('[SURI BOT] Erro registrar:', e); }
+            await enviarMensagemTexto(telefone, '🔍 *VERIFICAÇÃO DE PAGAMENTO*\n\nObrigado por informar, ' + sessao.nome + '!\n\nUm atendente verificará em até *24 horas úteis*.\n\nSe tiver o comprovante, pode enviar aqui! 📄\n\n🕐 Aguarde nosso retorno.', cId);
+            try { await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'info_pagamento', 'Cliente informou que já pagou via chatbot', NOW())", [sessao.cliente_id]); } catch(e) {}
             return 'ja_paguei';
 
         } else if (opcao === '4') {
-            // FALAR COM ATENDENTE
             sessao.etapa = 'atendente';
-            var msg = '👤 *ATENDIMENTO HUMANO*\n\n';
-            msg += 'Certo, ' + sessao.nome + '! Vou transferir para um atendente.\n\n';
-            msg += '🕐 Horário de atendimento:\n';
-            msg += 'Segunda a Quinta, 8h às 17h30\n\n';
-            msg += 'Fora do horário, retornaremos assim que possível. 🙏';
-
-            await enviarMensagemTexto(telefone, msg, cId);
+            await enviarMensagemTexto(telefone, '👤 *ATENDIMENTO HUMANO*\n\nCerto, ' + sessao.nome + '! Vou transferir para um atendente.\n\n🕐 Horário: Segunda a Quinta, 8h às 17h30\n\nFora do horário, retornaremos assim que possível. 🙏', cId);
             return 'atendente';
 
         } else {
-            var msg = '⚠️ Opção inválida. Por favor, digite o *número*:\n\n';
-            msg += '*1️⃣* - Pagar à vista (10% desc.)\n';
-            msg += '*2️⃣* - Parcelar\n';
-            msg += '*3️⃣* - Já paguei\n';
-            msg += '*4️⃣* - Falar com atendente';
-
-            await enviarMensagemTexto(telefone, msg, cId);
+            await enviarMensagemTexto(telefone, '⚠️ Opção inválida. Digite o *número*:\n\n*1️⃣* - Pagar à vista\n*2️⃣* - Parcelar\n*3️⃣* - Já paguei\n*4️⃣* - Falar com atendente', cId);
             return 'opcao_invalida';
         }
     }
@@ -808,17 +654,9 @@ module.exports = function(pool, auth, registrarLog) {
     async function processarParcelamento(telefoneKey, telefone, texto, sessao) {
         var opcao = texto.replace(/[^0-9]/g, '');
         var cId = sessao.contactId;
+        var opcoes = sessao.opcoes_parcelamento || [];
 
-        var opcoes = [
-            { parcelas: 2, desconto: 5 },
-            { parcelas: 3, desconto: 3 },
-            { parcelas: 4, desconto: 0 },
-            { parcelas: 6, desconto: 0 },
-            { parcelas: 10, desconto: 0 },
-            { parcelas: 12, desconto: 0 }
-        ];
-
-        if (opcao === '7') {
+        if (parseInt(opcao) === opcoes.length + 1) {
             sessao.etapa = 'menu_principal';
             var cliente = await buscarClientePorTelefone(telefone);
             if (cliente) return await iniciarSessao(telefoneKey, telefone, cliente, cId);
@@ -828,306 +666,159 @@ module.exports = function(pool, auth, registrarLog) {
         var idx = parseInt(opcao) - 1;
         if (idx >= 0 && idx < opcoes.length) {
             var escolha = opcoes[idx];
-            var valorDesc = sessao.valor_total * (1 - escolha.desconto/100);
-            var valorParcela = valorDesc / escolha.parcelas;
-
             sessao.desconto = escolha.desconto;
             sessao.parcelas = escolha.parcelas;
-            sessao.valor_final = valorDesc;
+            sessao.valor_final = escolha.valor_total;
             sessao.etapa = 'confirmacao';
 
             var msg = '✅ *CONFIRMAÇÃO DE PARCELAMENTO*\n\n';
-            msg += '💰 Valor original: ' + formatarMoeda(sessao.valor_total) + '\n';
+            msg += '💰 Valor atualizado: ' + formatarMoeda(sessao.valor_total) + '\n';
             if (escolha.desconto > 0) msg += '🏷️ Desconto: *' + escolha.desconto + '%*\n';
-            msg += '📋 *' + escolha.parcelas + 'x de ' + formatarMoeda(valorParcela) + '*\n';
-            msg += '✨ Total: *' + formatarMoeda(valorDesc) + '*\n\n';
-            msg += 'Confirma este acordo?\n\n*1️⃣* - ✅ Sim, confirmar\n*2️⃣* - ↩️ Voltar';
-
+            msg += '📋 *' + escolha.parcelas + 'x de ' + formatarMoeda(escolha.valor_parcela) + '*\n';
+            msg += '✨ Total: *' + formatarMoeda(escolha.valor_total) + '*\n\n';
+            msg += 'Confirma?\n\n*1️⃣* - ✅ Sim, confirmar\n*2️⃣* - ↩️ Voltar';
             await enviarMensagemTexto(telefone, msg, cId);
             return 'confirmacao_parcelamento';
         }
 
-        await enviarMensagemTexto(telefone, '⚠️ Opção inválida. Digite *1 a 6* ou *7* para voltar.', cId);
+        await enviarMensagemTexto(telefone, '⚠️ Opção inválida. Digite *1 a ' + opcoes.length + '* ou *' + (opcoes.length + 1) + '* para voltar.', cId);
         return 'opcao_invalida';
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CHATBOT: PROCESSAR CONFIRMAÇÃO (COM GERAÇÃO DE PIX)
+    // CHATBOT: PROCESSAR CONFIRMAÇÃO (GERAR PIX + SALVAR ACORDO)
     // ═══════════════════════════════════════════════════════════════
 
     async function processarConfirmacao(telefoneKey, telefone, texto, sessao) {
         var opcao = texto.replace(/[^0-9]/g, '');
         var cId = sessao.contactId;
 
-        if (opcao === '1') {
-            // CONFIRMAR ACORDO - GERAR PIX
-            var valorParcela = sessao.valor_final / sessao.parcelas;
-            
-            // Buscar dados completos do cliente
-            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [sessao.cliente_id]);
-            var clienteDB = clienteResult.rows[0];
-
-            if (sessao.parcelas === 1) {
-                // PAGAMENTO À VISTA - GERAR PIX NA HORA
-                var msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
-                msg += '💳 *Pagamento à vista via PIX*\n';
-                msg += 'Valor: *' + formatarMoeda(sessao.valor_final) + '*\n\n';
-                msg += '⏳ Gerando seu PIX, aguarde...';
-                
-                await enviarMensagemTexto(telefone, msg, cId);
-
-                // Gerar PIX no Asaas
-                var clienteAsaas = await buscarOuCriarClienteAsaas(clienteDB);
-                
-                if (clienteAsaas) {
-                    var descricao = 'Acordo ACERTIVE - ' + sessao.nome;
-                    var pix = await criarCobrancaPix(clienteAsaas, sessao.valor_final, descricao);
-                    
-                    if (pix.success && pix.pixCopiaECola) {
-                        var msgPix = '✅ *PIX GERADO COM SUCESSO!*\n\n';
-                        msgPix += '💰 Valor: *' + formatarMoeda(sessao.valor_final) + '*\n';
-                        msgPix += '📅 Validade: *48 horas*\n\n';
-                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n';
-                        msgPix += '📋 *PIX COPIA E COLA:*\n';
-                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                        msgPix += pix.pixCopiaECola + '\n\n';
-                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                        msgPix += '👆 Copie o código acima e cole no app do seu banco!\n\n';
-                        if (pix.linkPagamento) {
-                            msgPix += '🔗 Ou acesse: ' + pix.linkPagamento + '\n\n';
-                        }
-                        msgPix += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
-                        
-                        await enviarMensagemTexto(telefone, msgPix, cId);
-                        
-                        // Registrar no banco com ID do Asaas
-                        try {
-                            var descAcordo = 'Acordo via chatbot: À vista ' + formatarMoeda(sessao.valor_final) + ' - PIX gerado: ' + pix.cobrancaId;
-                            await pool.query(
-                                "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_pix_gerado', $2, NOW())",
-                                [sessao.cliente_id, descAcordo]
-                            );
-                            await pool.query(
-                                "UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1",
-                                [sessao.cliente_id]
-                            );
-                        } catch (e) { console.error('[SURI BOT] Erro registrar:', e); }
-                        
-                        sessao.etapa = 'aguardando_pagamento';
-                        sessao.asaas_payment_id = pix.cobrancaId;
-                        return 'pix_enviado';
-                    } else {
-                        // Erro ao gerar PIX - fallback para atendente
-                        var msgErro = '⚠️ Não foi possível gerar o PIX automaticamente.\n\n';
-                        msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
-                        msgErro += '⏰ Validade do acordo: *48 horas*\n\n';
-                        msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
-                        
-                        await enviarMensagemTexto(telefone, msgErro, cId);
-                        sessao.etapa = 'atendente';
-                    }
-                } else {
-                    // Erro ao criar cliente no Asaas
-                    var msgErro = '⚠️ Não foi possível gerar o PIX automaticamente.\n\n';
-                    msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
-                    msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
-                    
-                    await enviarMensagemTexto(telefone, msgErro, cId);
-                    sessao.etapa = 'atendente';
-                }
-            } else {
-                // PARCELAMENTO - GERAR TODAS AS PARCELAS AUTOMATICAMENTE
-                var msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
-                msg += '📋 *' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + '*\n\n';
-                msg += '⏳ Gerando suas parcelas, aguarde...';
-                
-                await enviarMensagemTexto(telefone, msg, cId);
-
-                // Gerar parcelamento no Asaas
-                var clienteAsaas = await buscarOuCriarClienteAsaas(clienteDB);
-                
-                if (clienteAsaas) {
-                    var descricao = 'Acordo ACERTIVE - ' + sessao.nome;
-                    var resultado = await criarParcelamentoAsaas(clienteAsaas, sessao.valor_final, sessao.parcelas, descricao);
-                    
-                    if (resultado.success && resultado.parcelas.length > 0) {
-                        var msgParc = '✅ *PARCELAS GERADAS!*\n\n';
-                        msgParc += '📋 *Cronograma de Pagamento:*\n';
-                        msgParc += '━━━━━━━━━━━━━━━━━━━━\n';
-                        
-                        for (var i = 0; i < resultado.parcelas.length; i++) {
-                            var p = resultado.parcelas[i];
-                            var dataVenc = new Date(p.vencimento + 'T12:00:00').toLocaleDateString('pt-BR');
-                            msgParc += (i + 1) + 'ª parcela: *' + formatarMoeda(p.valor) + '* - ' + dataVenc;
-                            if (i === 0) msgParc += ' 👈 *PAGAR AGORA*';
-                            msgParc += '\n';
-                        }
-                        
-                        msgParc += '━━━━━━━━━━━━━━━━━━━━\n';
-                        msgParc += '💰 Total: *' + formatarMoeda(sessao.valor_final) + '*\n\n';
-                        
-                        await enviarMensagemTexto(telefone, msgParc, cId);
-                        
-                        // Enviar PIX da primeira parcela
-                        var primeiraParcela = resultado.parcelas[0];
-                        if (primeiraParcela.pixCopiaECola) {
-                            var msgPix = '💳 *PIX DA 1ª PARCELA:*\n\n';
-                            msgPix += '💰 Valor: *' + formatarMoeda(primeiraParcela.valor) + '*\n\n';
-                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n';
-                            msgPix += '📋 *PIX COPIA E COLA:*\n';
-                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                            msgPix += primeiraParcela.pixCopiaECola + '\n\n';
-                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                            msgPix += '👆 Copie o código acima e cole no app do seu banco!\n\n';
-                            if (primeiraParcela.linkPagamento) {
-                                msgPix += '🔗 Ou acesse: ' + primeiraParcela.linkPagamento + '\n\n';
-                            }
-                            msgPix += '📲 As próximas parcelas serão enviadas antes do vencimento!\n\n';
-                            msgPix += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
-                            
-                            await enviarMensagemTexto(telefone, msgPix, cId);
-                        }
-                        
-                        // Registrar no banco
-                        try {
-                            var idsAsaas = resultado.parcelas.map(function(p) { return p.cobrancaId; }).join(', ');
-                            var descAcordo = 'Acordo via chatbot: ' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + ' - PIX gerados: ' + idsAsaas;
-                            await pool.query(
-                                "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_parcelado_pix', $2, NOW())",
-                                [sessao.cliente_id, descAcordo]
-                            );
-                            await pool.query(
-                                "UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1",
-                                [sessao.cliente_id]
-                            );
-                        } catch (e) { console.error('[SURI BOT] Erro registrar:', e); }
-                        
-                        sessao.etapa = 'aguardando_pagamento';
-                        sessao.asaas_parcelas = resultado.parcelas;
-                        return 'parcelamento_gerado';
-                    } else {
-                        // Erro ao gerar parcelas - fallback
-                        var msgErro = '⚠️ Não foi possível gerar as parcelas automaticamente.\n\n';
-                        msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
-                        msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
-                        
-                        await enviarMensagemTexto(telefone, msgErro, cId);
-                        sessao.etapa = 'atendente';
-                    }
-                } else {
-                    // Erro ao criar cliente
-                    var msgErro = '⚠️ Não foi possível gerar as parcelas automaticamente.\n\n';
-                    msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
-                    msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
-                    
-                    await enviarMensagemTexto(telefone, msgErro, cId);
-                    sessao.etapa = 'atendente';
-                }
-            }
-
-            // Registrar acordo no banco
-            try {
-                var descAcordo = 'Acordo via chatbot: ' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + ' (desc ' + sessao.desconto + '%) - Total: ' + formatarMoeda(sessao.valor_final);
-                await pool.query(
-                    "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_chatbot', $2, NOW())",
-                    [sessao.cliente_id, descAcordo]
-                );
-                await pool.query(
-                    "UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1",
-                    [sessao.cliente_id]
-                );
-                console.log('[SURI BOT] ✅ Acordo registrado:', descAcordo);
-            } catch (e) { console.error('[SURI BOT] Erro ao registrar acordo:', e); }
-
-            return 'acordo_confirmado';
-
-        } else if (opcao === '2') {
-            // VOLTAR AO MENU
+        if (opcao === '2') {
             delete sessoes[telefoneKey];
             var cliente = await buscarClientePorTelefone(telefone);
             if (cliente) return await iniciarSessao(telefoneKey, telefone, cliente, cId);
             return 'voltar_menu';
         }
 
-        await enviarMensagemTexto(telefone, '⚠️ Digite *1* para confirmar ou *2* para voltar.', cId);
-        return 'opcao_invalida';
+        if (opcao !== '1') {
+            await enviarMensagemTexto(telefone, '⚠️ Digite *1* para confirmar ou *2* para voltar.', cId);
+            return 'opcao_invalida';
+        }
+
+        var valorParcela = sessao.valor_final / sessao.parcelas;
+        var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [sessao.cliente_id]);
+        var clienteDB = clienteResult.rows[0];
+        var clienteAsaas = await buscarOuCriarClienteAsaas(clienteDB);
+
+        if (!clienteAsaas) {
+            await enviarMensagemTexto(telefone, '⚠️ Não foi possível gerar o PIX.\nUm atendente enviará os dados em breve! 🙏', cId);
+            sessao.etapa = 'atendente';
+            return 'erro_asaas';
+        }
+
+        var descricao = 'Acordo ACERTIVE - ' + sessao.nome;
+
+        if (sessao.parcelas === 1) {
+            // ═══ PAGAMENTO À VISTA ═══
+            await enviarMensagemTexto(telefone, '🎉 *ACORDO CONFIRMADO!*\n\n💳 Pagamento à vista via PIX\nValor: *' + formatarMoeda(sessao.valor_final) + '*\n\n⏳ Gerando seu PIX, aguarde...', cId);
+
+            var pix = await criarCobrancaPix(clienteAsaas, sessao.valor_final, descricao);
+            
+            if (pix.success && pix.pixCopiaECola) {
+                // Salvar acordo no banco
+                try {
+                    var acordoRes = await pool.query(
+                        "INSERT INTO acordos (cliente_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, 1, 'ativo', NOW()) RETURNING id",
+                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_final]
+                    );
+                    await pool.query(
+                        "INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1, 1, $2, NOW() + INTERVAL '2 days', $3, $4, 'pendente', NOW())",
+                        [acordoRes.rows[0].id, sessao.valor_final, pix.cobrancaId, pix.externalReference]
+                    );
+                } catch (e) { console.error('[ACORDO] Erro salvar:', e); }
+
+                var msgPix = '✅ *PIX GERADO COM SUCESSO!*\n\n💰 Valor: *' + formatarMoeda(sessao.valor_final) + '*\n📅 Validade: *48 horas*\n\n';
+                msgPix += '━━━━━━━━━━━━━━━━━━━━\n📋 *PIX COPIA E COLA:*\n━━━━━━━━━━━━━━━━━━━━\n\n' + pix.pixCopiaECola + '\n\n━━━━━━━━━━━━━━━━━━━━\n\n';
+                msgPix += '👆 Copie o código acima e cole no app do seu banco!\n\n';
+                if (pix.linkPagamento) msgPix += '🔗 Ou acesse: ' + pix.linkPagamento + '\n\n';
+                msgPix += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
+                await enviarMensagemTexto(telefone, msgPix, cId);
+
+                try {
+                    await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_pix_gerado', $2, NOW())", [sessao.cliente_id, 'À vista ' + formatarMoeda(sessao.valor_final)]);
+                    await pool.query("UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1", [sessao.cliente_id]);
+                } catch (e) {}
+
+                sessao.etapa = 'aguardando_pagamento';
+                return 'pix_enviado';
+            }
+
+            await enviarMensagemTexto(telefone, '⚠️ Não foi possível gerar o PIX.\nUm atendente enviará os dados em breve! 🙏', cId);
+            sessao.etapa = 'atendente';
+            return 'erro_pix';
+
+        } else {
+            // ═══ PARCELAMENTO ═══
+            await enviarMensagemTexto(telefone, '🎉 *ACORDO CONFIRMADO!*\n\n📋 *' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + '*\n\n⏳ Gerando suas parcelas, aguarde...', cId);
+
+            var resultado = await criarParcelamentoAsaas(clienteAsaas, sessao.valor_final, sessao.parcelas, descricao);
+            
+            if (resultado.success && resultado.parcelas.length > 0) {
+                // Salvar acordo
+                var acordoId = null;
+                try {
+                    var acordoRes = await pool.query(
+                        "INSERT INTO acordos (cliente_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, $5, 'ativo', NOW()) RETURNING id",
+                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_final, sessao.parcelas]
+                    );
+                    acordoId = acordoRes.rows[0].id;
+                } catch (e) { console.error('[ACORDO] Erro:', e); }
+
+                var msgParc = '✅ *PARCELAS GERADAS!*\n\n📋 *Cronograma de Pagamento:*\n━━━━━━━━━━━━━━━━━━━━\n';
+                for (var i = 0; i < resultado.parcelas.length; i++) {
+                    var p = resultado.parcelas[i];
+                    var dataVenc = new Date(p.vencimento + 'T12:00:00').toLocaleDateString('pt-BR');
+                    msgParc += (i + 1) + 'ª parcela: *' + formatarMoeda(p.valor) + '* - ' + dataVenc;
+                    if (i === 0) msgParc += ' 👈 *PAGAR AGORA*';
+                    msgParc += '\n';
+
+                    if (acordoId) {
+                        try {
+                            await pool.query(
+                                "INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW())",
+                                [acordoId, p.numero, p.valor, p.vencimento, p.cobrancaId, p.externalReference]
+                            );
+                        } catch (e) {}
+                    }
+                }
+                msgParc += '━━━━━━━━━━━━━━━━━━━━\n💰 Total: *' + formatarMoeda(sessao.valor_final) + '*\n';
+                await enviarMensagemTexto(telefone, msgParc, cId);
+
+                // PIX da 1ª parcela
+                var primeira = resultado.parcelas[0];
+                if (primeira.pixCopiaECola) {
+                    var msgPix = '💳 *PIX DA 1ª PARCELA:*\n\n💰 Valor: *' + formatarMoeda(primeira.valor) + '*\n\n';
+                    msgPix += '━━━━━━━━━━━━━━━━━━━━\n📋 *PIX COPIA E COLA:*\n━━━━━━━━━━━━━━━━━━━━\n\n' + primeira.pixCopiaECola + '\n\n━━━━━━━━━━━━━━━━━━━━\n\n';
+                    msgPix += '👆 Copie e cole no app do seu banco!\n\n';
+                    if (primeira.linkPagamento) msgPix += '🔗 Ou acesse: ' + primeira.linkPagamento + '\n\n';
+                    msgPix += '📲 As próximas parcelas serão enviadas antes do vencimento!\n\nObrigado por regularizar, ' + sessao.nome + '! 🙏';
+                    await enviarMensagemTexto(telefone, msgPix, cId);
+                }
+
+                try {
+                    await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_parcelado_pix', $2, NOW())", [sessao.cliente_id, sessao.parcelas + 'x ' + formatarMoeda(valorParcela)]);
+                    await pool.query("UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1", [sessao.cliente_id]);
+                } catch (e) {}
+
+                sessao.etapa = 'aguardando_pagamento';
+                return 'parcelamento_gerado';
+            }
+
+            await enviarMensagemTexto(telefone, '⚠️ Não foi possível gerar as parcelas.\nUm atendente enviará os dados em breve! 🙏', cId);
+            sessao.etapa = 'atendente';
+            return 'erro_parcelas';
+        }
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // API: ENVIAR MENSAGEM (Template)
-    // ═══════════════════════════════════════════════════════════════
-
-    router.post('/enviar-mensagem', auth, async function(req, res) {
-        try {
-            var cliente_id = req.body.cliente_id;
-            var assunto = req.body.assunto || 'uma pendência financeira';
-            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente é obrigatório' });
-
-            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
-            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
-
-            var cliente = clienteResult.rows[0];
-            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
-            if (!telefone) return res.status(400).json({ success: false, error: 'Cliente sem telefone' });
-
-            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
-            var resultado = await enviarTemplateComImport(cliente, telefone, SURI_CONFIG.templateId, [primeiroNome, assunto]);
-
-            if (resultado.success) {
-                var telefoneKey = limparTelefone(telefone);
-                delete sessoes[telefoneKey];
-                await pool.query('INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())', [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Mensagem Suri - Assunto: ' + assunto]);
-                await pool.query('UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1', [cliente_id]);
-                res.json({ success: true, message: 'Mensagem enviada!', data: resultado.data });
-            } else {
-                res.status(500).json({ success: false, error: resultado.error || 'Erro ao enviar' });
-            }
-        } catch (error) {
-            console.error('[SURI] Erro:', error);
-            res.status(500).json({ success: false, error: error.message });
-        }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // API: ENVIAR COBRANÇA (usado pela Fila de Trabalho)
-    // ═══════════════════════════════════════════════════════════════
-
-    router.post('/enviar-cobranca', auth, async function(req, res) {
-        try {
-            var cliente_id = req.body.cliente_id;
-            var tipo_mensagem = req.body.tipo_mensagem || 'lembrete';
-            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente é obrigatório' });
-
-            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
-            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
-
-            var cliente = clienteResult.rows[0];
-            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
-            if (!telefone) return res.status(400).json({ success: false, error: 'Cliente sem telefone' });
-
-            var cobrancasResult = await pool.query("SELECT SUM(valor) as total FROM cobrancas WHERE cliente_id = $1 AND status IN ('pendente', 'vencido')", [cliente_id]);
-            var valorTotal = parseFloat(cobrancasResult.rows[0].total) || 0;
-            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
-
-            var assuntos = { lembrete: 'sua pendência financeira', urgente: 'um débito urgente em seu nome', negociacao: 'uma proposta de negociação', acordo: 'uma oportunidade de acordo' };
-            var assunto = valorTotal > 0 ? 'seu débito de ' + formatarMoeda(valorTotal) : assuntos[tipo_mensagem] || assuntos.lembrete;
-
-            var resultado = await enviarTemplateComImport(cliente, telefone, SURI_CONFIG.templateId, [primeiroNome, assunto]);
-
-            if (resultado.success) {
-                var telefoneKey = limparTelefone(telefone);
-                delete sessoes[telefoneKey];
-                await pool.query('INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())', [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Cobrança: ' + tipo_mensagem]);
-                await pool.query('UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1', [cliente_id]);
-                res.json({ success: true, message: 'Cobrança enviada!', tipo: tipo_mensagem, assunto: assunto });
-            } else {
-                res.status(500).json({ success: false, error: resultado.error || 'Erro ao enviar' });
-            }
-        } catch (error) {
-            console.error('[SURI] Erro cobrança:', error);
-            res.status(500).json({ success: false, error: error.message });
-        }
-    });
 
     // ═══════════════════════════════════════════════════════════════
     // WEBHOOK: RECEBER EVENTOS DA SURI
@@ -1136,475 +827,277 @@ module.exports = function(pool, auth, registrarLog) {
     router.post('/webhook', async function(req, res) {
         try {
             var evento = req.body;
-            console.log('[SURI WEBHOOK] ═══════════════════════════════════════');
-            console.log('[SURI WEBHOOK] Tipo:', evento.type || evento.event || 'unknown');
-            console.log('[SURI WEBHOOK] Dados:', JSON.stringify(evento).substring(0, 1500));
-            console.log('[SURI WEBHOOK] ═══════════════════════════════════════');
-
             var tipo = evento.type || evento.event || 'unknown';
+            console.log('[SURI WEBHOOK] Tipo:', tipo);
 
-            switch (tipo) {
-                case 'new-contact':
-                    await processarNovoContato(evento);
-                    break;
-                case 'message-received':
-                    await processarMensagemRecebida(evento);
-                    break;
-                case 'change-queue':
-                    console.log('[SURI WEBHOOK] Mudança de fila');
-                    break;
-                case 'finish-attendance':
-                    await processarFinalizacaoAtendimento(evento);
-                    break;
-                default:
-                    console.log('[SURI WEBHOOK] Tipo não tratado:', tipo);
+            if (tipo === 'new-contact') {
+                var payload = evento.payload || evento.data || evento;
+                var user = payload.user || payload.contact || payload;
+                var tel = user.Phone || user.phone;
+                if (tel) {
+                    var cli = await buscarClientePorTelefone(tel);
+                    if (cli) await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'novo_contato', 'Contato via WhatsApp', NOW())", [cli.id]);
+                }
+            } else if (tipo === 'message-received') {
+                await processarMensagemRecebida(evento);
+            } else if (tipo === 'finish-attendance') {
+                var payload = evento.payload || evento.data || evento;
+                var contato = (payload.attendance || payload).contact || {};
+                var tel = contato.phone || contato.telefone;
+                if (tel) delete sessoes[limparTelefone(tel)];
             }
 
             res.json({ success: true });
         } catch (error) {
             console.error('[SURI WEBHOOK] Erro:', error);
-            res.status(200).json({ success: true }); // Sempre 200 pra Suri não reenviar
+            res.status(200).json({ success: true });
         }
     });
-
-    // ═══════════════════════════════════════════════════════════════
-    // WEBHOOK: DEBUG - Ver logs e sessões
-    // ═══════════════════════════════════════════════════════════════
-
-    router.get('/webhook-logs', auth, async function(req, res) {
-        res.json({
-            success: true,
-            sessoes_ativas: Object.keys(sessoes).length,
-            sessoes: sessoes,
-            config: {
-                endpoint: SURI_CONFIG.endpoint,
-                channelId: SURI_CONFIG.channelId,
-                templateId: SURI_CONFIG.templateId,
-                webhook_url: 'https://acertivecobranca.com.br/api/suri/webhook'
-            }
-        });
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // TESTE: Enviar mensagem de texto para testar endpoint
-    // ═══════════════════════════════════════════════════════════════
-
-    router.post('/teste-texto', auth, async function(req, res) {
-        try {
-            var telefone = req.body.telefone;
-            var texto = req.body.texto || 'Teste de mensagem ACERTIVE';
-            if (!telefone) return res.status(400).json({ success: false, error: 'Telefone obrigatório' });
-
-            var telFormatado = formatarTelefone(telefone);
-            console.log('[SURI TESTE] Enviando texto para:', telFormatado);
-
-            var resultado = await enviarMensagemTexto(telFormatado, texto, null);
-            res.json({ success: resultado.success, metodo: resultado.metodo || null, error: resultado.error || null, tentativas: resultado.tentativas || null });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    });
-
-    // Processar novo contato
-    async function processarNovoContato(evento) {
-        try {
-            var payload = evento.payload || evento.data || evento;
-            var user = payload.user || payload.contact || payload;
-            var telefone = user.Phone || user.phone || user.telefone;
-            console.log('[SURI] Novo contato - Nome:', user.Name || 'N/A', '| Telefone:', telefone);
-            if (!telefone) return;
-
-            var cliente = await buscarClientePorTelefone(telefone);
-            if (cliente) {
-                console.log('[SURI] Novo contato identificado:', cliente.nome);
-                await pool.query(
-                    "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'novo_contato', 'Cliente iniciou contato via WhatsApp', NOW())",
-                    [cliente.id]
-                );
-            }
-        } catch (error) { console.error('[SURI] Erro novo contato:', error); }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // PROCESSAR MENSAGEM RECEBIDA (CORAÇÃO DO CHATBOT)
-    // ═══════════════════════════════════════════════════════════════
 
     async function processarMensagemRecebida(evento) {
         try {
-            console.log('[SURI BOT] ────────────────────────────────────');
-            console.log('[SURI BOT] MENSAGEM RECEBIDA');
-            
-            // A Suri envia os dados dentro de 'payload'
             var payload = evento.payload || evento.data || evento;
-            
-            // ESTRUTURA DA SURI:
-            // payload.user = { Id, Name, Phone, Email, ... }
-            // payload.Message = { text, mid, ... }
             var user = payload.user || {};
             var message = payload.Message || payload.message || {};
 
-            // Extrair telefone (Suri usa 'Phone' com P maiúsculo)
-            var telefone = user.Phone || user.phone || user.telefone || payload.Phone || payload.phone;
+            var telefone = user.Phone || user.phone || payload.Phone || payload.phone;
+            var texto = typeof message === 'string' ? message : (message.text || message.body || message.Text || message.content || '');
+            var contactId = user.Id || user.id || payload.contactId;
 
-            // Extrair texto (Suri usa 'Message.text')
-            var texto = '';
-            if (typeof message === 'string') {
-                texto = message;
-            } else if (message) {
-                texto = message.text || message.body || message.Text || message.content || '';
-            }
+            if (!telefone || !texto) return;
+            if (message.fromMe || message.direction === 'sent' || message.isFromMe) return;
 
-            // Extrair contactId (Suri usa 'Id' com I maiúsculo)
-            var contactId = user.Id || user.id || user._id || payload.contactId;
-
-            console.log('[SURI BOT] User:', user.Name || 'N/A', '| Phone:', telefone);
-            console.log('[SURI BOT] Texto:', texto);
-            console.log('[SURI BOT] ContactId:', contactId);
-            console.log('[SURI BOT] ────────────────────────────────────');
-
-            if (!telefone || !texto) {
-                console.log('[SURI BOT] Sem telefone ou texto - ignorando');
-                return;
-            }
-
-            // Ignorar mensagens do próprio bot/sistema
-            if (message.fromMe === true || message.direction === 'sent' || message.isFromMe === true) {
-                console.log('[SURI BOT] Mensagem enviada por nós - ignorando');
-                return;
-            }
-
-            // Buscar cliente no banco
             var cliente = await buscarClientePorTelefone(telefone);
+            if (!cliente || parseFloat(cliente.valor_total) <= 0) return;
 
-            if (!cliente) {
-                console.log('[SURI BOT] Cliente NÃO encontrado para:', telefone);
-                return;
-            }
+            try { await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'resposta_recebida', $2, NOW())", [cliente.id, 'WhatsApp: ' + texto.substring(0, 500)]); } catch(e) {}
 
-            console.log('[SURI BOT] ✅ Cliente:', cliente.nome, '| Valor:', cliente.valor_total, '| Cobranças:', cliente.qtd_cobrancas);
-
-            var valorTotal = parseFloat(cliente.valor_total) || 0;
-            if (valorTotal <= 0) {
-                console.log('[SURI BOT] Cliente sem cobranças pendentes - ignorando');
-                return;
-            }
-
-            // Registrar mensagem recebida
-            try {
-                await pool.query(
-                    "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'resposta_recebida', $2, NOW())",
-                    [cliente.id, 'WhatsApp: ' + texto.substring(0, 500)]
-                );
-            } catch(e) { /* ignora erro de log */ }
-
-            // PROCESSAR NO CHATBOT
-            var resultado = await processarChatbot(telefone, texto, cliente, contactId);
-            console.log('[SURI BOT] Resultado chatbot:', resultado);
-
+            await processarChatbot(telefone, texto, cliente, contactId);
         } catch (error) {
-            console.error('[SURI BOT] ❌ Erro ao processar:', error);
+            console.error('[SURI BOT] ❌ Erro:', error);
         }
     }
 
-    // Processar finalização de atendimento
-    async function processarFinalizacaoAtendimento(evento) {
-        try {
-            var payload = evento.payload || evento.data || evento;
-            var atendimento = payload.attendance || payload;
-            var contato = atendimento.contact || payload.contact || {};
-            var telefone = contato.phone || contato.telefone || contato.phoneNumber;
-            if (!telefone) return;
-
-            var telefoneKey = limparTelefone(telefone);
-            delete sessoes[telefoneKey];
-            console.log('[SURI] Sessão limpa para:', telefoneKey);
-
-            var cliente = await buscarClientePorTelefone(telefone);
-            if (cliente) {
-                await pool.query(
-                    "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'atendimento_finalizado', 'Atendimento WhatsApp finalizado', NOW())",
-                    [cliente.id]
-                );
-            }
-        } catch (error) { console.error('[SURI] Erro finalização:', error); }
-    }
-
     // ═══════════════════════════════════════════════════════════════
-    // API: DISPARO EM MASSA
+    // API: ENVIAR COBRANÇA INICIAL (WhatsApp + Email) - NOVA!
     // ═══════════════════════════════════════════════════════════════
 
-    router.post('/disparo-massa', auth, async function(req, res) {
+    router.post('/enviar-cobranca-inicial', auth, async function(req, res) {
         try {
-            var tipo_mensagem = req.body.tipo_mensagem || 'lembrete';
-            var filtro_atraso_min = req.body.filtro_atraso_min || 0;
-            var filtro_atraso_max = req.body.filtro_atraso_max || 9999;
-            var limite = req.body.limite || 50;
+            var cliente_id = req.body.cliente_id;
+            var canais = req.body.canais || ['whatsapp'];
+            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente obrigatório' });
 
-            var query = "SELECT c.id, c.nome, c.telefone, c.celular, c.cpf_cnpj, c.email, " +
-                "SUM(cob.valor) as valor_total, COUNT(cob.id) as qtd_cobrancas " +
-                "FROM clientes c " +
-                "JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido') " +
-                "WHERE c.ativo = true AND (c.telefone IS NOT NULL OR c.celular IS NOT NULL) " +
-                "AND c.status_cobranca NOT IN ('acordo', 'incobravel', 'juridico') " +
-                "GROUP BY c.id " +
-                "HAVING MAX(CURRENT_DATE - cob.data_vencimento) BETWEEN $1 AND $2 " +
-                "ORDER BY MAX(CURRENT_DATE - cob.data_vencimento) DESC LIMIT $3";
+            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
+            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
+            var cliente = clienteResult.rows[0];
 
-            var result = await pool.query(query, [filtro_atraso_min, filtro_atraso_max, limite]);
-            var clientes = result.rows;
-            var enviados = 0;
-            var erros = [];
+            var cobResult = await pool.query(
+                "SELECT cob.*, cr.nome as credor_nome, cob.credor_id, (CURRENT_DATE - cob.data_vencimento) as dias_atraso " +
+                "FROM cobrancas cob LEFT JOIN credores cr ON cr.id = cob.credor_id " +
+                "WHERE cob.cliente_id = $1 AND cob.status IN ('pendente', 'vencido') ORDER BY cob.valor DESC", [cliente_id]
+            );
+            if (cobResult.rowCount === 0) return res.status(400).json({ success: false, error: 'Sem cobranças pendentes' });
 
-            var assuntos = { lembrete: 'sua pendência financeira', urgente: 'um débito urgente em seu nome', negociacao: 'uma proposta de negociação', acordo: 'uma oportunidade de acordo' };
+            var cobrancas = cobResult.rows;
+            var valorOriginal = cobrancas.reduce(function(s, c) { return s + parseFloat(c.valor); }, 0);
+            var maiorAtraso = Math.max.apply(null, cobrancas.map(function(c) { return parseInt(c.dias_atraso) || 0; }));
+            var config = await buscarConfigCredor(cobrancas[0].credor_id);
+            var calculo = calcularValorAtualizado(valorOriginal, maiorAtraso, config);
 
-            for (var i = 0; i < clientes.length; i++) {
-                var cliente = clientes[i];
-                try {
-                    var telefone = formatarTelefone(cliente.telefone || cliente.celular);
-                    if (!telefone) continue;
-                    var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
-                    var valorTotal = parseFloat(cliente.valor_total) || 0;
-                    var assunto = valorTotal > 0 ? 'seu débito de ' + formatarMoeda(valorTotal) : assuntos[tipo_mensagem] || assuntos.lembrete;
+            var resultados = {};
 
-                    var telefoneKey = limparTelefone(telefone);
-                    delete sessoes[telefoneKey];
-
-                    var resultado = await enviarTemplateComImport(cliente, telefone, SURI_CONFIG.templateId, [primeiroNome, assunto]);
-                    if (resultado.success) {
-                        enviados++;
-                        await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'whatsapp', 'suri', 'enviado', $3, NOW())", [cliente.id, req.user.id, 'Disparo: ' + tipo_mensagem]);
-                    } else {
-                        erros.push({ cliente_id: cliente.id, nome: cliente.nome, erro: resultado.error });
+            if (canais.indexOf('whatsapp') !== -1) {
+                var telefone = formatarTelefone(cliente.telefone || cliente.celular);
+                if (telefone) {
+                    var msgWhats = gerarMensagemInicial(cliente, calculo.atualizado, cobrancas[0].credor_nome, config.desconto_maximo);
+                    var r = await enviarMensagemTexto(telefone, msgWhats, null);
+                    resultados.whatsapp = r;
+                    if (r.success) {
+                        delete sessoes[limparTelefone(telefone)];
+                        await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'whatsapp', 'suri', 'enviado', $3, NOW())", [cliente_id, req.user.id, 'Cobrança inicial - ' + formatarMoeda(calculo.atualizado)]);
                     }
-                    // Delay de 2s entre mensagens
-                    await new Promise(function(resolve) { setTimeout(resolve, 2000); });
-                } catch (err) { erros.push({ cliente_id: cliente.id, nome: cliente.nome, erro: err.message }); }
+                } else resultados.whatsapp = { success: false, error: 'Sem telefone' };
             }
 
-            res.json({ success: true, message: 'Disparo concluído!', data: { total: clientes.length, enviados: enviados, erros: erros.length, detalhes: erros } });
+            if (canais.indexOf('email') !== -1) {
+                var emailR = await enviarEmailCobranca(cliente, valorOriginal, calculo.atualizado, cobrancas[0].credor_nome);
+                resultados.email = emailR;
+                if (emailR.success) {
+                    await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'email', 'sistema', 'enviado', $3, NOW())", [cliente_id, req.user.id, 'Email cobrança - ' + formatarMoeda(calculo.atualizado)]);
+                }
+            }
+
+            await pool.query("UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1", [cliente_id]);
+            res.json({ success: true, calculo: calculo, resultados: resultados });
         } catch (error) {
-            console.error('[SURI] Erro disparo:', error);
+            console.error('[COBRANCA] Erro:', error);
             res.status(500).json({ success: false, error: error.message });
         }
     });
 
-    // ═══════════════════════════════════════════════════════════════
-    // API: STATUS DA INTEGRAÇÃO
-    // ═══════════════════════════════════════════════════════════════
-
-    router.get('/status', auth, async function(req, res) {
+    // API legado - enviar-cobranca (template Suri)
+    router.post('/enviar-cobranca', auth, async function(req, res) {
         try {
-            var statsResult = await pool.query(
-                "SELECT COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND DATE(created_at) = CURRENT_DATE) as mensagens_hoje, " +
-                "COUNT(*) FILTER (WHERE tipo = 'whatsapp' AND canal = 'suri' AND created_at >= NOW() - INTERVAL '7 days') as mensagens_semana, " +
-                "COUNT(*) FILTER (WHERE resultado = 'acordo_chatbot') as acordos_chatbot " +
-                "FROM acionamentos"
-            );
+            var cliente_id = req.body.cliente_id;
+            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente obrigatório' });
 
-            res.json({
-                success: true,
-                data: {
-                    conectado: true,
-                    endpoint: SURI_CONFIG.endpoint,
-                    chatbot_ativo: true,
-                    sessoes_ativas: Object.keys(sessoes).length,
-                    estatisticas: statsResult.rows[0]
-                }
-            });
+            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
+            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
+
+            var cliente = clienteResult.rows[0];
+            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
+            if (!telefone) return res.status(400).json({ success: false, error: 'Sem telefone' });
+
+            var cobRes = await pool.query("SELECT SUM(valor) as total FROM cobrancas WHERE cliente_id = $1 AND status IN ('pendente', 'vencido')", [cliente_id]);
+            var valorTotal = parseFloat(cobRes.rows[0].total) || 0;
+            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+            var assunto = valorTotal > 0 ? 'seu débito de ' + formatarMoeda(valorTotal) : 'sua pendência financeira';
+
+            var resultado = await enviarTemplateComImport(cliente, telefone, SURI_CONFIG.templateId, [primeiroNome, assunto]);
+            if (resultado.success) {
+                delete sessoes[limparTelefone(telefone)];
+                await pool.query('INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())', [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Cobrança: ' + (req.body.tipo_mensagem || 'lembrete')]);
+                await pool.query('UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1', [cliente_id]);
+                res.json({ success: true, message: 'Cobrança enviada!' });
+            } else res.status(500).json({ success: false, error: resultado.error });
         } catch (error) {
-            res.json({ success: false, data: { conectado: false, erro: error.message } });
+            res.status(500).json({ success: false, error: error.message });
         }
     });
 
+    router.post('/enviar-mensagem', auth, async function(req, res) {
+        try {
+            var cliente_id = req.body.cliente_id;
+            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente obrigatório' });
+            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
+            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Não encontrado' });
+            var cliente = clienteResult.rows[0];
+            var telefone = formatarTelefone(cliente.telefone || cliente.celular);
+            if (!telefone) return res.status(400).json({ success: false, error: 'Sem telefone' });
+            var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
+            var resultado = await enviarTemplateComImport(cliente, telefone, SURI_CONFIG.templateId, [primeiroNome, req.body.assunto || 'uma pendência financeira']);
+            if (resultado.success) {
+                delete sessoes[limparTelefone(telefone)];
+                await pool.query('INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())', [cliente_id, req.user.id, 'whatsapp', 'suri', 'enviado', 'Mensagem Suri']);
+                res.json({ success: true, message: 'Enviado!' });
+            } else res.status(500).json({ success: false, error: resultado.error });
+        } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+    });
+
     // ═══════════════════════════════════════════════════════════════
-    // WEBHOOK DO ASAAS - NOTIFICAÇÃO DE PAGAMENTO
+    // WEBHOOK ASAAS - PAGAMENTO
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/asaas-webhook', async function(req, res) {
         try {
             var evento = req.body;
-            console.log('[ASAAS WEBHOOK] ═══════════════════════════════════════');
-            console.log('[ASAAS WEBHOOK] Evento:', evento.event);
-            console.log('[ASAAS WEBHOOK] Payment ID:', evento.payment ? evento.payment.id : 'N/A');
-            console.log('[ASAAS WEBHOOK] ═══════════════════════════════════════');
+            console.log('[ASAAS] Evento:', evento.event);
 
             if (evento.event === 'PAYMENT_RECEIVED' || evento.event === 'PAYMENT_CONFIRMED') {
                 var payment = evento.payment;
-                
                 if (payment && payment.externalReference && payment.externalReference.startsWith('acertive_')) {
-                    console.log('[ASAAS WEBHOOK] Pagamento ACERTIVE confirmado:', payment.id);
-                    console.log('[ASAAS WEBHOOK] Valor:', payment.value);
-                    
-                    // Atualizar parcela como paga no banco
                     try {
-                        await pool.query(
-                            "UPDATE parcelas_acordo SET status = 'pago', data_pagamento = NOW(), asaas_payment_id = $1 WHERE asaas_payment_id = $1 OR external_reference = $2",
-                            [payment.id, payment.externalReference]
-                        );
+                        await pool.query("UPDATE parcelas_acordo SET status = 'pago', data_pagamento = NOW() WHERE asaas_payment_id = $1 OR external_reference = $2", [payment.id, payment.externalReference]);
                         
-                        // Verificar se todas as parcelas do acordo foram pagas
-                        var acordoResult = await pool.query(
-                            "SELECT acordo_id FROM parcelas_acordo WHERE asaas_payment_id = $1 OR external_reference = $2",
-                            [payment.id, payment.externalReference]
-                        );
-                        
-                        if (acordoResult.rowCount > 0) {
-                            var acordoId = acordoResult.rows[0].acordo_id;
-                            var pendentesResult = await pool.query(
-                                "SELECT COUNT(*) as pendentes FROM parcelas_acordo WHERE acordo_id = $1 AND status != 'pago'",
-                                [acordoId]
-                            );
-                            
-                            if (parseInt(pendentesResult.rows[0].pendentes) === 0) {
-                                // Todas parcelas pagas - marcar acordo como quitado
-                                await pool.query(
-                                    "UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1",
-                                    [acordoId]
-                                );
-                                console.log('[ASAAS WEBHOOK] ✅ Acordo', acordoId, 'QUITADO!');
+                        var acordoRes = await pool.query("SELECT acordo_id FROM parcelas_acordo WHERE asaas_payment_id = $1 OR external_reference = $2", [payment.id, payment.externalReference]);
+                        if (acordoRes.rowCount > 0) {
+                            var acordoId = acordoRes.rows[0].acordo_id;
+                            var pendentes = await pool.query("SELECT COUNT(*) as n FROM parcelas_acordo WHERE acordo_id = $1 AND status != 'pago'", [acordoId]);
+                            if (parseInt(pendentes.rows[0].n) === 0) {
+                                await pool.query("UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1", [acordoId]);
+                                var cliRes = await pool.query("SELECT cliente_id FROM acordos WHERE id = $1", [acordoId]);
+                                if (cliRes.rowCount > 0) await pool.query("UPDATE clientes SET status_cobranca = 'quitado', updated_at = NOW() WHERE id = $1", [cliRes.rows[0].cliente_id]);
+                                console.log('[ASAAS] ✅ Acordo', acordoId, 'QUITADO!');
                             }
                         }
-                        
-                        await pool.query(
-                            "INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())",
-                            ['Pagamento confirmado - ID: ' + payment.id + ' - Valor: R$ ' + payment.value]
-                        );
-                        
-                        console.log('[ASAAS WEBHOOK] ✅ Pagamento registrado');
-                    } catch (e) {
-                        console.error('[ASAAS WEBHOOK] Erro ao registrar:', e);
-                    }
+                        await pool.query("INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())", ['Pago: ' + payment.id + ' R$ ' + payment.value]);
+                    } catch (e) { console.error('[ASAAS] Erro:', e); }
                 }
             }
-
             res.json({ success: true });
         } catch (error) {
-            console.error('[ASAAS WEBHOOK] Erro:', error);
             res.status(200).json({ success: true });
         }
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // API: CRIAR ACORDO COM PIX AUTOMÁTICO
+    // API: CRIAR ACORDO COM PIX (Fila de Trabalho)
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/criar-acordo-pix', auth, async function(req, res) {
         try {
             var cliente_id = req.body.cliente_id;
-            var valor_total = parseFloat(req.body.valor_total);
+            var valor_final = parseFloat(req.body.valor_final) || 0;
             var num_parcelas = parseInt(req.body.num_parcelas) || 1;
-            var desconto = parseFloat(req.body.desconto) || 0;
-            var descricao = req.body.descricao || 'Acordo de dívida';
+            var desconto_pct = parseFloat(req.body.desconto_pct) || 0;
+            var valor_original = parseFloat(req.body.valor_original) || valor_final;
+            var enviar_whatsapp = req.body.enviar_whatsapp !== false;
 
-            if (!cliente_id || !valor_total) {
-                return res.status(400).json({ success: false, error: 'Cliente e valor são obrigatórios' });
-            }
+            if (!cliente_id || !valor_final) return res.status(400).json({ success: false, error: 'Cliente e valor obrigatórios' });
 
-            // Buscar cliente
             var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
-            if (clienteResult.rowCount === 0) {
-                return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
-            }
+            if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Não encontrado' });
             var cliente = clienteResult.rows[0];
 
-            // Calcular valor com desconto
-            var valor_final = valor_total * (1 - desconto / 100);
-            var valor_parcela = Math.round((valor_final / num_parcelas) * 100) / 100;
-
-            console.log('[ACORDO] Criando acordo para', cliente.nome, '| Valor:', valor_final, '| Parcelas:', num_parcelas);
-
-            // Criar cliente no Asaas
             var clienteAsaas = await buscarOuCriarClienteAsaas(cliente);
-            if (!clienteAsaas) {
-                return res.status(500).json({ success: false, error: 'Erro ao criar cliente no Asaas' });
-            }
+            if (!clienteAsaas) return res.status(500).json({ success: false, error: 'Erro Asaas' });
 
-            // Criar acordo no banco
-            var acordoResult = await pool.query(
+            var acordoRes = await pool.query(
                 "INSERT INTO acordos (cliente_id, operador_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'ativo', NOW()) RETURNING id",
-                [cliente_id, req.user.id, valor_total, desconto, valor_final, num_parcelas]
+                [cliente_id, req.user.id, valor_original, desconto_pct, valor_final, num_parcelas]
             );
-            var acordoId = acordoResult.rows[0].id;
-
-            // Gerar parcelas no Asaas
+            var acordoId = acordoRes.rows[0].id;
+            var valor_parcela = Math.round((valor_final / num_parcelas) * 100) / 100;
             var parcelas = [];
             var hoje = new Date();
 
             for (var i = 0; i < num_parcelas; i++) {
-                var vencimento = new Date(hoje);
-                vencimento.setMonth(vencimento.getMonth() + i);
-                if (i === 0) vencimento.setDate(vencimento.getDate() + 2);
-
-                var externalRef = 'acertive_acordo_' + acordoId + '_parc_' + (i + 1);
-
-                var cobranca = {
-                    customer: clienteAsaas.id,
-                    billingType: 'PIX',
-                    value: valor_parcela,
-                    dueDate: vencimento.toISOString().split('T')[0],
-                    description: descricao + ' - Parcela ' + (i + 1) + '/' + num_parcelas,
-                    externalReference: externalRef
-                };
+                var venc = new Date(hoje);
+                venc.setMonth(venc.getMonth() + i);
+                if (i === 0) venc.setDate(venc.getDate() + 2);
+                var extRef = 'acertive_acordo_' + acordoId + '_parc_' + (i + 1);
 
                 var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
-                    method: 'POST',
-                    headers: getAsaasHeaders(),
-                    body: JSON.stringify(cobranca)
+                    method: 'POST', headers: getAsaasHeaders(),
+                    body: JSON.stringify({ customer: clienteAsaas.id, billingType: 'PIX', value: valor_parcela, dueDate: venc.toISOString().split('T')[0], description: 'Acordo ACERTIVE - Parcela ' + (i+1) + '/' + num_parcelas, externalReference: extRef })
                 });
                 var data = await resp.json();
 
                 if (data.id) {
-                    var parcelaInfo = {
-                        numero: i + 1,
-                        asaas_id: data.id,
-                        valor: data.value,
-                        vencimento: data.dueDate,
-                        link: data.invoiceUrl,
-                        pix: null
-                    };
-
-                    // Buscar PIX da primeira parcela
+                    var info = { numero: i+1, asaas_id: data.id, valor: data.value, vencimento: data.dueDate, link: data.invoiceUrl, pix: null };
                     if (i === 0) {
-                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
-                            method: 'GET',
-                            headers: getAsaasHeaders()
-                        });
-                        var pixData = await pixResp.json();
-                        parcelaInfo.pix = pixData.payload || null;
+                        var pixR = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
+                        var pixD = await pixR.json();
+                        info.pix = pixD.payload || null;
                     }
-
-                    // Salvar parcela no banco
-                    await pool.query(
-                        "INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW())",
-                        [acordoId, i + 1, valor_parcela, vencimento, data.id, externalRef]
-                    );
-
-                    parcelas.push(parcelaInfo);
-                    console.log('[ACORDO] Parcela', (i + 1), 'criada:', data.id);
+                    await pool.query("INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1,$2,$3,$4,$5,$6,'pendente',NOW())", [acordoId, i+1, valor_parcela, venc, data.id, extRef]);
+                    parcelas.push(info);
                 }
-
                 await new Promise(function(r) { setTimeout(r, 500); });
             }
 
-            // Atualizar status do cliente
-            await pool.query(
-                "UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1",
-                [cliente_id]
-            );
+            // Enviar WhatsApp
+            if (enviar_whatsapp && parcelas.length > 0) {
+                var tel = formatarTelefone(cliente.telefone || cliente.celular);
+                if (tel) {
+                    var nome = (cliente.nome || 'Cliente').split(' ')[0];
+                    var msgA = '🎉 *ACORDO REGISTRADO!*\n\nOlá *' + nome + '*, seu acordo foi criado:\n\n';
+                    msgA += '📋 *' + num_parcelas + 'x de ' + formatarMoeda(valor_parcela) + '*\n💰 Total: *' + formatarMoeda(valor_final) + '*\n\n';
+                    if (parcelas[0].pix) {
+                        msgA += '━━━━━━━━━━━━━━━━━━━━\n📋 *PIX DA 1ª PARCELA:*\n━━━━━━━━━━━━━━━━━━━━\n\n' + parcelas[0].pix + '\n\n━━━━━━━━━━━━━━━━━━━━\n\n';
+                        msgA += '👆 Copie e cole no app do seu banco!\n\n';
+                    }
+                    if (parcelas[0].link) msgA += '🔗 Ou acesse: ' + parcelas[0].link + '\n\n';
+                    msgA += 'Obrigado por regularizar! 🙏';
+                    await enviarMensagemTexto(tel, msgA, null);
+                }
+            }
 
-            // Registrar acionamento
-            await pool.query(
-                "INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'acordo', 'sistema', 'acordo_criado', $3, NOW())",
-                [cliente_id, req.user.id, 'Acordo criado: ' + num_parcelas + 'x de R$ ' + valor_parcela.toFixed(2)]
-            );
+            await pool.query("UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1", [cliente_id]);
+            await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1,$2,'acordo','sistema','acordo_criado',$3,NOW())", [cliente_id, req.user.id, 'Acordo: ' + num_parcelas + 'x R$' + valor_parcela.toFixed(2)]);
 
-            res.json({
-                success: true,
-                acordo_id: acordoId,
-                parcelas: parcelas,
-                mensagem: 'Acordo criado com sucesso!'
-            });
-
+            res.json({ success: true, acordo_id: acordoId, parcelas: parcelas });
         } catch (error) {
             console.error('[ACORDO] Erro:', error);
             res.status(500).json({ success: false, error: error.message });
@@ -1612,134 +1105,134 @@ module.exports = function(pool, auth, registrarLog) {
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // API: ENVIAR LEMBRETES DE PARCELAS (rodar diariamente)
+    // API: CALCULAR ACORDO (preview)
     // ═══════════════════════════════════════════════════════════════
 
-    router.post('/enviar-lembretes', auth, async function(req, res) {
+    router.post('/calcular-acordo', auth, async function(req, res) {
         try {
-            var dias_antes = req.body.dias_antes || 3;
+            var cliente_id = req.body.cliente_id;
+            if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente obrigatório' });
 
-            // Buscar parcelas que vencem nos próximos X dias
-            var result = await pool.query(
-                "SELECT pa.*, a.cliente_id, c.nome, c.telefone, c.celular " +
-                "FROM parcelas_acordo pa " +
-                "JOIN acordos a ON a.id = pa.acordo_id " +
-                "JOIN clientes c ON c.id = a.cliente_id " +
-                "WHERE pa.status = 'pendente' " +
-                "AND pa.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 " +
-                "AND pa.lembrete_enviado IS NOT TRUE",
-                [dias_antes]
+            var cobRes = await pool.query(
+                "SELECT cob.*, cob.credor_id, (CURRENT_DATE - cob.data_vencimento) as dias_atraso " +
+                "FROM cobrancas cob WHERE cob.cliente_id = $1 AND cob.status IN ('pendente', 'vencido')", [cliente_id]
             );
+            if (cobRes.rowCount === 0) return res.json({ success: true, valor_original: 0 });
 
-            var parcelas = result.rows;
-            var enviados = 0;
-            var erros = [];
+            var cobrancas = cobRes.rows;
+            var valorOrig = cobrancas.reduce(function(s, c) { return s + parseFloat(c.valor); }, 0);
+            var maiorAtraso = Math.max.apply(null, cobrancas.map(function(c) { return parseInt(c.dias_atraso) || 0; }));
+            var config = await buscarConfigCredor(cobrancas[0].credor_id);
+            var calculo = calcularValorAtualizado(valorOrig, maiorAtraso, config);
 
-            console.log('[LEMBRETES] Encontradas', parcelas.length, 'parcelas para lembrete');
-
-            for (var i = 0; i < parcelas.length; i++) {
-                var p = parcelas[i];
-                try {
-                    var telefone = formatarTelefone(p.telefone || p.celular);
-                    if (!telefone) continue;
-
-                    // Buscar PIX da parcela no Asaas
-                    var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + p.asaas_payment_id + '/pixQrCode', {
-                        method: 'GET',
-                        headers: getAsaasHeaders()
-                    });
-                    var pixData = await pixResp.json();
-
-                    if (pixData.payload) {
-                        var dataVenc = new Date(p.data_vencimento).toLocaleDateString('pt-BR');
-                        var primeiroNome = (p.nome || 'Cliente').split(' ')[0];
-
-                        var msg = '📅 *LEMBRETE DE PARCELA*\n\n';
-                        msg += 'Olá ' + primeiroNome + '!\n\n';
-                        msg += 'Sua parcela ' + p.numero + ' vence em *' + dataVenc + '*\n';
-                        msg += 'Valor: *' + formatarMoeda(p.valor) + '*\n\n';
-                        msg += '━━━━━━━━━━━━━━━━━━━━\n';
-                        msg += '📋 *PIX COPIA E COLA:*\n';
-                        msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                        msg += pixData.payload + '\n\n';
-                        msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                        msg += 'Evite juros! Pague em dia. 🙏';
-
-                        var resultado = await enviarMensagemTexto(telefone, msg, null);
-
-                        if (resultado.success) {
-                            await pool.query(
-                                "UPDATE parcelas_acordo SET lembrete_enviado = true WHERE id = $1",
-                                [p.id]
-                            );
-                            enviados++;
-                        } else {
-                            erros.push({ parcela_id: p.id, erro: 'Falha no envio' });
-                        }
-                    }
-
-                    await new Promise(function(r) { setTimeout(r, 2000); });
-                } catch (e) {
-                    erros.push({ parcela_id: p.id, erro: e.message });
-                }
-            }
-
-            res.json({
-                success: true,
-                total: parcelas.length,
-                enviados: enviados,
-                erros: erros
-            });
-
+            res.json({ success: true, valor_original: valorOrig, calculo: calculo, config_credor: config, dias_atraso: maiorAtraso });
         } catch (error) {
-            console.error('[LEMBRETES] Erro:', error);
             res.status(500).json({ success: false, error: error.message });
         }
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // API: BUSCAR PIX DE UMA PARCELA
+    // API: DISPARO EM MASSA (com filtro por credor)
     // ═══════════════════════════════════════════════════════════════
 
+    router.post('/disparo-massa', auth, async function(req, res) {
+        try {
+            var canais = req.body.canais || ['whatsapp'];
+            var filtro_atraso_min = req.body.filtro_atraso_min || 0;
+            var filtro_atraso_max = req.body.filtro_atraso_max || 9999;
+            var credor_id = req.body.credor_id || null;
+            var limite = req.body.limite || 50;
+
+            var query = "SELECT c.id, c.nome, c.telefone, c.celular, c.email, c.cpf_cnpj, " +
+                "SUM(cob.valor) as valor_total, MAX(CURRENT_DATE - cob.data_vencimento) as maior_atraso, " +
+                "(SELECT cr.nome FROM credores cr WHERE cr.id = MIN(cob.credor_id)) as credor_nome, MIN(cob.credor_id) as credor_id " +
+                "FROM clientes c JOIN cobrancas cob ON cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido') " +
+                "WHERE c.ativo = true AND (c.telefone IS NOT NULL OR c.celular IS NOT NULL) " +
+                "AND c.status_cobranca NOT IN ('acordo', 'incobravel', 'juridico', 'quitado') ";
+            var params = [filtro_atraso_min, filtro_atraso_max, limite];
+            if (credor_id) { query += "AND cob.credor_id = $4 "; params.push(credor_id); }
+            query += "GROUP BY c.id HAVING MAX(CURRENT_DATE - cob.data_vencimento) BETWEEN $1 AND $2 ORDER BY MAX(CURRENT_DATE - cob.data_vencimento) DESC LIMIT $3";
+
+            var result = await pool.query(query, params);
+            var enviados = { whatsapp: 0, email: 0 };
+            var erros = [];
+
+            for (var i = 0; i < result.rows.length; i++) {
+                var cl = result.rows[i];
+                try {
+                    var cfg = await buscarConfigCredor(cl.credor_id);
+                    var calc = calcularValorAtualizado(parseFloat(cl.valor_total), parseInt(cl.maior_atraso) || 0, cfg);
+
+                    if (canais.indexOf('whatsapp') !== -1) {
+                        var tel = formatarTelefone(cl.telefone || cl.celular);
+                        if (tel) {
+                            var r = await enviarMensagemTexto(tel, gerarMensagemInicial(cl, calc.atualizado, cl.credor_nome, cfg.desconto_maximo), null);
+                            if (r.success) { enviados.whatsapp++; delete sessoes[limparTelefone(tel)]; await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1,$2,'whatsapp','suri','enviado','Disparo massa',NOW())", [cl.id, req.user.id]); }
+                        }
+                    }
+                    if (canais.indexOf('email') !== -1 && cl.email) {
+                        var eR = await enviarEmailCobranca(cl, parseFloat(cl.valor_total), calc.atualizado, cl.credor_nome);
+                        if (eR.success) { enviados.email++; await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1,$2,'email','sistema','enviado','Disparo massa email',NOW())", [cl.id, req.user.id]); }
+                    }
+                    await new Promise(function(r) { setTimeout(r, 2000); });
+                } catch (e) { erros.push({ id: cl.id, erro: e.message }); }
+            }
+            res.json({ success: true, total: result.rows.length, enviados: enviados, erros: erros.length });
+        } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+    });
+
+    // API: Lembretes
+    router.post('/enviar-lembretes', auth, async function(req, res) {
+        try {
+            var result = await pool.query(
+                "SELECT pa.*, a.cliente_id, c.nome, c.telefone, c.celular FROM parcelas_acordo pa " +
+                "JOIN acordos a ON a.id = pa.acordo_id JOIN clientes c ON c.id = a.cliente_id " +
+                "WHERE pa.status = 'pendente' AND pa.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 AND pa.lembrete_enviado IS NOT TRUE", [req.body.dias_antes || 3]
+            );
+            var enviados = 0;
+            for (var i = 0; i < result.rows.length; i++) {
+                var p = result.rows[i];
+                var tel = formatarTelefone(p.telefone || p.celular);
+                if (!tel) continue;
+                try {
+                    var pixR = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + p.asaas_payment_id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
+                    var pixD = await pixR.json();
+                    if (pixD.payload) {
+                        var msg = '📅 *LEMBRETE DE PARCELA*\n\nOlá ' + (p.nome||'').split(' ')[0] + '!\n\nParcela ' + p.numero + ' vence em *' + new Date(p.data_vencimento).toLocaleDateString('pt-BR') + '*\nValor: *' + formatarMoeda(p.valor) + '*\n\n━━━━━━━━━━━━━━━━━━━━\n📋 *PIX:*\n━━━━━━━━━━━━━━━━━━━━\n\n' + pixD.payload + '\n\n━━━━━━━━━━━━━━━━━━━━\n\nEvite juros! Pague em dia. 🙏';
+                        var r = await enviarMensagemTexto(tel, msg, null);
+                        if (r.success) { await pool.query("UPDATE parcelas_acordo SET lembrete_enviado = true WHERE id = $1", [p.id]); enviados++; }
+                    }
+                    await new Promise(function(r) { setTimeout(r, 2000); });
+                } catch (e) {}
+            }
+            res.json({ success: true, total: result.rows.length, enviados: enviados });
+        } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+    });
+
+    // API: PIX de parcela
     router.get('/parcela-pix/:parcela_id', auth, async function(req, res) {
         try {
-            var parcela_id = req.params.parcela_id;
+            var r = await pool.query("SELECT * FROM parcelas_acordo WHERE id = $1", [req.params.parcela_id]);
+            if (r.rowCount === 0) return res.status(404).json({ success: false, error: 'Não encontrada' });
+            var p = r.rows[0];
+            var pixR = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + p.asaas_payment_id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
+            var pixD = await pixR.json();
+            res.json({ success: true, parcela: { numero: p.numero, valor: p.valor, vencimento: p.data_vencimento, status: p.status }, pix: { copiaECola: pixD.payload, qrCodeBase64: pixD.encodedImage } });
+        } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+    });
 
-            var result = await pool.query(
-                "SELECT * FROM parcelas_acordo WHERE id = $1",
-                [parcela_id]
-            );
-
-            if (result.rowCount === 0) {
-                return res.status(404).json({ success: false, error: 'Parcela não encontrada' });
-            }
-
-            var parcela = result.rows[0];
-
-            // Buscar PIX no Asaas
-            var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + parcela.asaas_payment_id + '/pixQrCode', {
-                method: 'GET',
-                headers: getAsaasHeaders()
-            });
-            var pixData = await pixResp.json();
-
-            res.json({
-                success: true,
-                parcela: {
-                    numero: parcela.numero,
-                    valor: parcela.valor,
-                    vencimento: parcela.data_vencimento,
-                    status: parcela.status
-                },
-                pix: {
-                    copiaECola: pixData.payload || null,
-                    qrCodeBase64: pixData.encodedImage || null
-                }
-            });
-
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
+    // Status e debug
+    router.get('/webhook-logs', auth, function(req, res) { res.json({ success: true, sessoes_ativas: Object.keys(sessoes).length, sessoes: sessoes }); });
+    router.get('/status', auth, async function(req, res) {
+        try {
+            var s = await pool.query("SELECT COUNT(*) FILTER (WHERE tipo='whatsapp' AND canal='suri' AND DATE(created_at)=CURRENT_DATE) as msg_hoje, COUNT(*) FILTER (WHERE resultado LIKE 'acordo%') as acordos FROM acionamentos");
+            res.json({ success: true, data: { conectado: true, chatbot_ativo: true, sessoes: Object.keys(sessoes).length, stats: s.rows[0], email_ok: !!emailTransporter } });
+        } catch (e) { res.json({ success: false }); }
+    });
+    router.post('/teste-texto', auth, async function(req, res) {
+        if (!req.body.telefone) return res.status(400).json({ success: false, error: 'Telefone obrigatório' });
+        var r = await enviarMensagemTexto(formatarTelefone(req.body.telefone), req.body.texto || 'Teste ACERTIVE', null);
+        res.json(r);
     });
 
     return router;
