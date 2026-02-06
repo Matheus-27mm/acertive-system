@@ -31,6 +31,40 @@ module.exports = function(pool, auth, registrarLog) {
     };
 
     // ═══════════════════════════════════════════════════════════════
+    // CONFIGURAÇÕES DO ASAAS (SANDBOX)
+    // ═══════════════════════════════════════════════════════════════
+    
+    var ASAAS_CONFIG = {
+        apiKey: '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjkxNmNkYWI4LTUxMmQtNDlmYS1iZjgzLWJiZWY2ZjExOTQyYjo6JGFhY2hfNTllZDEzNmEtYmIxZS00NGMxLTlmNDMtMGQxYjg5NjQzMzIx',
+        baseUrl: 'https://sandbox.asaas.com/api/v3',
+        environment: 'sandbox'
+    };
+
+    function getAsaasHeaders() {
+        return {
+            'access_token': ASAAS_CONFIG.apiKey,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONFIGURAÇÕES DO ASAAS (Sandbox)
+    // ═══════════════════════════════════════════════════════════════
+    
+    var ASAAS_CONFIG = {
+        apiKey: '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjkxNmNkYWI4LTUxMmQtNDlmYS1iZjgzLWJiZWY2ZjExOTQyYjo6JGFhY2hfNTllZDEzNmEtYmIxZS00NGMxLTlmNDMtMGQxYjg5NjQzMzIx',
+        baseUrl: 'https://sandbox.asaas.com/api/v3',
+        environment: 'sandbox'
+    };
+
+    function getAsaasHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'access_token': ASAAS_CONFIG.apiKey
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // CONTROLE DE SESSÕES DO CHATBOT
     // ═══════════════════════════════════════════════════════════════
     
@@ -76,6 +110,298 @@ module.exports = function(pool, auth, registrarLog) {
 
     function formatarMoeda(valor) {
         return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNÇÕES DO ASAAS - PAGAMENTO
+    // ═══════════════════════════════════════════════════════════════
+
+    // Buscar ou criar cliente no Asaas
+    async function buscarOuCriarClienteAsaas(cliente) {
+        try {
+            var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
+            
+            // Primeiro tenta buscar pelo CPF/CNPJ
+            if (cpfCnpj) {
+                var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, {
+                    method: 'GET',
+                    headers: getAsaasHeaders()
+                });
+                var buscaData = await buscaResp.json();
+                
+                if (buscaData.data && buscaData.data.length > 0) {
+                    console.log('[ASAAS] Cliente encontrado:', buscaData.data[0].id);
+                    return buscaData.data[0];
+                }
+            }
+
+            // Se não encontrou, cria novo
+            var novoCliente = {
+                name: cliente.nome || 'Cliente',
+                cpfCnpj: cpfCnpj || '00000000000',
+                email: cliente.email || null,
+                phone: (cliente.telefone || cliente.celular || '').replace(/\D/g, ''),
+                mobilePhone: (cliente.celular || cliente.telefone || '').replace(/\D/g, ''),
+                notificationDisabled: true
+            };
+
+            console.log('[ASAAS] Criando cliente:', novoCliente.name);
+            
+            var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', {
+                method: 'POST',
+                headers: getAsaasHeaders(),
+                body: JSON.stringify(novoCliente)
+            });
+            
+            var criarData = await criarResp.json();
+            
+            if (criarData.id) {
+                console.log('[ASAAS] Cliente criado:', criarData.id);
+                return criarData;
+            } else {
+                console.error('[ASAAS] Erro ao criar cliente:', criarData);
+                return null;
+            }
+        } catch (error) {
+            console.error('[ASAAS] Erro buscarOuCriarCliente:', error);
+            return null;
+        }
+    }
+
+    // Criar cobrança PIX no Asaas (à vista)
+    async function criarCobrancaPix(clienteAsaas, valor, descricao) {
+        try {
+            var vencimento = new Date();
+            vencimento.setDate(vencimento.getDate() + 2); // Vence em 2 dias
+            
+            var cobranca = {
+                customer: clienteAsaas.id,
+                billingType: 'PIX',
+                value: valor,
+                dueDate: vencimento.toISOString().split('T')[0],
+                description: descricao || 'Acordo ACERTIVE',
+                externalReference: 'acertive_' + Date.now()
+            };
+
+            console.log('[ASAAS] Criando cobrança PIX:', valor);
+            
+            var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
+                method: 'POST',
+                headers: getAsaasHeaders(),
+                body: JSON.stringify(cobranca)
+            });
+            
+            var data = await resp.json();
+            
+            if (data.id) {
+                console.log('[ASAAS] Cobrança criada:', data.id);
+                
+                // Buscar QR Code do PIX
+                var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
+                    method: 'GET',
+                    headers: getAsaasHeaders()
+                });
+                
+                var pixData = await pixResp.json();
+                
+                return {
+                    success: true,
+                    cobrancaId: data.id,
+                    valor: data.value,
+                    vencimento: data.dueDate,
+                    linkPagamento: data.invoiceUrl,
+                    pixCopiaECola: pixData.payload || null,
+                    pixQrCodeBase64: pixData.encodedImage || null
+                };
+            } else {
+                console.error('[ASAAS] Erro ao criar cobrança:', data);
+                return { success: false, error: data.errors ? data.errors[0].description : 'Erro desconhecido' };
+            }
+        } catch (error) {
+            console.error('[ASAAS] Erro criarCobrancaPix:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Criar parcelamento no Asaas (gera todas as parcelas)
+    async function criarParcelamentoAsaas(clienteAsaas, valorTotal, numParcelas, descricao) {
+        try {
+            var valorParcela = Math.round((valorTotal / numParcelas) * 100) / 100;
+            var parcelas = [];
+            var hoje = new Date();
+            
+            console.log('[ASAAS] Criando parcelamento:', numParcelas, 'x', valorParcela);
+
+            for (var i = 0; i < numParcelas; i++) {
+                var vencimento = new Date(hoje);
+                vencimento.setMonth(vencimento.getMonth() + i);
+                if (i === 0) {
+                    vencimento.setDate(vencimento.getDate() + 2); // 1ª parcela vence em 2 dias
+                }
+                
+                var cobranca = {
+                    customer: clienteAsaas.id,
+                    billingType: 'PIX',
+                    value: valorParcela,
+                    dueDate: vencimento.toISOString().split('T')[0],
+                    description: (descricao || 'Acordo ACERTIVE') + ' - Parcela ' + (i + 1) + '/' + numParcelas,
+                    externalReference: 'acertive_parc_' + Date.now() + '_' + (i + 1)
+                };
+
+                var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
+                    method: 'POST',
+                    headers: getAsaasHeaders(),
+                    body: JSON.stringify(cobranca)
+                });
+                
+                var data = await resp.json();
+                
+                if (data.id) {
+                    var parcelaInfo = {
+                        numero: i + 1,
+                        cobrancaId: data.id,
+                        valor: data.value,
+                        vencimento: data.dueDate,
+                        linkPagamento: data.invoiceUrl
+                    };
+
+                    // Buscar PIX só da primeira parcela
+                    if (i === 0) {
+                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
+                            method: 'GET',
+                            headers: getAsaasHeaders()
+                        });
+                        var pixData = await pixResp.json();
+                        parcelaInfo.pixCopiaECola = pixData.payload || null;
+                    }
+
+                    parcelas.push(parcelaInfo);
+                    console.log('[ASAAS] Parcela', (i + 1), 'criada:', data.id);
+                } else {
+                    console.error('[ASAAS] Erro parcela', (i + 1), ':', data);
+                }
+
+                // Delay entre requisições para não sobrecarregar
+                await new Promise(function(r) { setTimeout(r, 500); });
+            }
+
+            if (parcelas.length === numParcelas) {
+                return { success: true, parcelas: parcelas };
+            } else {
+                return { success: false, error: 'Algumas parcelas não foram criadas', parcelas: parcelas };
+            }
+        } catch (error) {
+            console.error('[ASAAS] Erro criarParcelamento:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNÇÕES DO ASAAS - PAGAMENTO
+    // ═══════════════════════════════════════════════════════════════
+
+    // Buscar ou criar cliente no Asaas
+    async function buscarOuCriarClienteAsaas(cliente) {
+        try {
+            var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
+            
+            // Buscar cliente existente por CPF/CNPJ
+            if (cpfCnpj) {
+                var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, {
+                    method: 'GET',
+                    headers: getAsaasHeaders()
+                });
+                var buscaData = await buscaResp.json();
+                
+                if (buscaData.data && buscaData.data.length > 0) {
+                    console.log('[ASAAS] Cliente encontrado:', buscaData.data[0].id);
+                    return buscaData.data[0];
+                }
+            }
+
+            // Criar novo cliente
+            var novoCliente = {
+                name: cliente.nome || 'Cliente',
+                cpfCnpj: cpfCnpj || '00000000000',
+                email: cliente.email || null,
+                phone: (cliente.telefone || cliente.celular || '').replace(/\D/g, ''),
+                mobilePhone: (cliente.celular || cliente.telefone || '').replace(/\D/g, ''),
+                notificationDisabled: true
+            };
+
+            console.log('[ASAAS] Criando cliente:', novoCliente.name);
+            var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', {
+                method: 'POST',
+                headers: getAsaasHeaders(),
+                body: JSON.stringify(novoCliente)
+            });
+            var criarData = await criarResp.json();
+
+            if (criarData.id) {
+                console.log('[ASAAS] Cliente criado:', criarData.id);
+                return criarData;
+            }
+
+            console.error('[ASAAS] Erro ao criar cliente:', criarData);
+            return null;
+        } catch (error) {
+            console.error('[ASAAS] Erro buscar/criar cliente:', error);
+            return null;
+        }
+    }
+
+    // Gerar cobrança PIX no Asaas
+    async function gerarCobrancaPix(clienteAsaas, valor, descricao) {
+        try {
+            var vencimento = new Date();
+            vencimento.setDate(vencimento.getDate() + 2); // Vence em 2 dias
+            var vencimentoStr = vencimento.toISOString().split('T')[0];
+
+            var cobranca = {
+                customer: clienteAsaas.id,
+                billingType: 'PIX',
+                value: valor,
+                dueDate: vencimentoStr,
+                description: descricao || 'Acordo ACERTIVE',
+                externalReference: 'ACERTIVE_' + Date.now()
+            };
+
+            console.log('[ASAAS] Gerando cobrança PIX:', valor);
+            var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
+                method: 'POST',
+                headers: getAsaasHeaders(),
+                body: JSON.stringify(cobranca)
+            });
+            var data = await resp.json();
+
+            if (data.id) {
+                console.log('[ASAAS] Cobrança criada:', data.id);
+                
+                // Buscar QR Code do PIX
+                var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
+                    method: 'GET',
+                    headers: getAsaasHeaders()
+                });
+                var pixData = await pixResp.json();
+
+                return {
+                    success: true,
+                    cobrancaId: data.id,
+                    valor: data.value,
+                    vencimento: data.dueDate,
+                    linkBoleto: data.bankSlipUrl,
+                    linkPagamento: data.invoiceUrl,
+                    pixCopiaECola: pixData.payload || null,
+                    pixQrCodeBase64: pixData.encodedImage || null
+                };
+            }
+
+            console.error('[ASAAS] Erro ao criar cobrança:', data);
+            return { success: false, error: data.errors || 'Erro ao gerar cobrança' };
+        } catch (error) {
+            console.error('[ASAAS] Erro gerar cobrança:', error);
+            return { success: false, error: error.message };
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -516,7 +842,7 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CHATBOT: PROCESSAR CONFIRMAÇÃO
+    // CHATBOT: PROCESSAR CONFIRMAÇÃO (COM GERAÇÃO DE PIX)
     // ═══════════════════════════════════════════════════════════════
 
     async function processarConfirmacao(telefoneKey, telefone, texto, sessao) {
@@ -524,33 +850,170 @@ module.exports = function(pool, auth, registrarLog) {
         var cId = sessao.contactId;
 
         if (opcao === '1') {
-            // CONFIRMAR ACORDO
+            // CONFIRMAR ACORDO - GERAR PIX
             var valorParcela = sessao.valor_final / sessao.parcelas;
-            var msg = '';
+            
+            // Buscar dados completos do cliente
+            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [sessao.cliente_id]);
+            var clienteDB = clienteResult.rows[0];
 
             if (sessao.parcelas === 1) {
-                msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
-                msg += '💳 *Pagamento à vista*\n';
+                // PAGAMENTO À VISTA - GERAR PIX NA HORA
+                var msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
+                msg += '💳 *Pagamento à vista via PIX*\n';
                 msg += 'Valor: *' + formatarMoeda(sessao.valor_final) + '*\n\n';
-                msg += 'Um atendente enviará os dados para pagamento (PIX/boleto) em breve!\n\n';
-                msg += '⚠️ Validade do acordo: *48 horas*\n\n';
-                msg += 'Obrigado por regularizar sua situação, ' + sessao.nome + '! 🙏';
-            } else {
-                msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
-                msg += '📋 *Resumo do acordo*\n';
-                msg += '━━━━━━━━━━━━━━━━━━━━\n';
-                msg += 'Parcelas: *' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + '*\n';
-                msg += 'Total: *' + formatarMoeda(sessao.valor_final) + '*\n';
-                msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
-                msg += 'Um atendente entrará em contato para:\n';
-                msg += '✅ Confirmar datas de vencimento\n';
-                msg += '✅ Enviar boletos/PIX das parcelas\n';
-                msg += '✅ Formalizar o acordo\n\n';
-                msg += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
-            }
+                msg += '⏳ Gerando seu PIX, aguarde...';
+                
+                await enviarMensagemTexto(telefone, msg, cId);
 
-            sessao.etapa = 'atendente';
-            await enviarMensagemTexto(telefone, msg, cId);
+                // Gerar PIX no Asaas
+                var clienteAsaas = await buscarOuCriarClienteAsaas(clienteDB);
+                
+                if (clienteAsaas) {
+                    var descricao = 'Acordo ACERTIVE - ' + sessao.nome;
+                    var pix = await criarCobrancaPix(clienteAsaas, sessao.valor_final, descricao);
+                    
+                    if (pix.success && pix.pixCopiaECola) {
+                        var msgPix = '✅ *PIX GERADO COM SUCESSO!*\n\n';
+                        msgPix += '💰 Valor: *' + formatarMoeda(sessao.valor_final) + '*\n';
+                        msgPix += '📅 Validade: *48 horas*\n\n';
+                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n';
+                        msgPix += '📋 *PIX COPIA E COLA:*\n';
+                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                        msgPix += pix.pixCopiaECola + '\n\n';
+                        msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                        msgPix += '👆 Copie o código acima e cole no app do seu banco!\n\n';
+                        if (pix.linkPagamento) {
+                            msgPix += '🔗 Ou acesse: ' + pix.linkPagamento + '\n\n';
+                        }
+                        msgPix += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
+                        
+                        await enviarMensagemTexto(telefone, msgPix, cId);
+                        
+                        // Registrar no banco com ID do Asaas
+                        try {
+                            var descAcordo = 'Acordo via chatbot: À vista ' + formatarMoeda(sessao.valor_final) + ' - PIX gerado: ' + pix.cobrancaId;
+                            await pool.query(
+                                "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_pix_gerado', $2, NOW())",
+                                [sessao.cliente_id, descAcordo]
+                            );
+                            await pool.query(
+                                "UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1",
+                                [sessao.cliente_id]
+                            );
+                        } catch (e) { console.error('[SURI BOT] Erro registrar:', e); }
+                        
+                        sessao.etapa = 'aguardando_pagamento';
+                        sessao.asaas_payment_id = pix.cobrancaId;
+                        return 'pix_enviado';
+                    } else {
+                        // Erro ao gerar PIX - fallback para atendente
+                        var msgErro = '⚠️ Não foi possível gerar o PIX automaticamente.\n\n';
+                        msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
+                        msgErro += '⏰ Validade do acordo: *48 horas*\n\n';
+                        msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
+                        
+                        await enviarMensagemTexto(telefone, msgErro, cId);
+                        sessao.etapa = 'atendente';
+                    }
+                } else {
+                    // Erro ao criar cliente no Asaas
+                    var msgErro = '⚠️ Não foi possível gerar o PIX automaticamente.\n\n';
+                    msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
+                    msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
+                    
+                    await enviarMensagemTexto(telefone, msgErro, cId);
+                    sessao.etapa = 'atendente';
+                }
+            } else {
+                // PARCELAMENTO - GERAR TODAS AS PARCELAS AUTOMATICAMENTE
+                var msg = '🎉 *ACORDO CONFIRMADO!*\n\n';
+                msg += '📋 *' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + '*\n\n';
+                msg += '⏳ Gerando suas parcelas, aguarde...';
+                
+                await enviarMensagemTexto(telefone, msg, cId);
+
+                // Gerar parcelamento no Asaas
+                var clienteAsaas = await buscarOuCriarClienteAsaas(clienteDB);
+                
+                if (clienteAsaas) {
+                    var descricao = 'Acordo ACERTIVE - ' + sessao.nome;
+                    var resultado = await criarParcelamentoAsaas(clienteAsaas, sessao.valor_final, sessao.parcelas, descricao);
+                    
+                    if (resultado.success && resultado.parcelas.length > 0) {
+                        var msgParc = '✅ *PARCELAS GERADAS!*\n\n';
+                        msgParc += '📋 *Cronograma de Pagamento:*\n';
+                        msgParc += '━━━━━━━━━━━━━━━━━━━━\n';
+                        
+                        for (var i = 0; i < resultado.parcelas.length; i++) {
+                            var p = resultado.parcelas[i];
+                            var dataVenc = new Date(p.vencimento + 'T12:00:00').toLocaleDateString('pt-BR');
+                            msgParc += (i + 1) + 'ª parcela: *' + formatarMoeda(p.valor) + '* - ' + dataVenc;
+                            if (i === 0) msgParc += ' 👈 *PAGAR AGORA*';
+                            msgParc += '\n';
+                        }
+                        
+                        msgParc += '━━━━━━━━━━━━━━━━━━━━\n';
+                        msgParc += '💰 Total: *' + formatarMoeda(sessao.valor_final) + '*\n\n';
+                        
+                        await enviarMensagemTexto(telefone, msgParc, cId);
+                        
+                        // Enviar PIX da primeira parcela
+                        var primeiraParcela = resultado.parcelas[0];
+                        if (primeiraParcela.pixCopiaECola) {
+                            var msgPix = '💳 *PIX DA 1ª PARCELA:*\n\n';
+                            msgPix += '💰 Valor: *' + formatarMoeda(primeiraParcela.valor) + '*\n\n';
+                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n';
+                            msgPix += '📋 *PIX COPIA E COLA:*\n';
+                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                            msgPix += primeiraParcela.pixCopiaECola + '\n\n';
+                            msgPix += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                            msgPix += '👆 Copie o código acima e cole no app do seu banco!\n\n';
+                            if (primeiraParcela.linkPagamento) {
+                                msgPix += '🔗 Ou acesse: ' + primeiraParcela.linkPagamento + '\n\n';
+                            }
+                            msgPix += '📲 As próximas parcelas serão enviadas antes do vencimento!\n\n';
+                            msgPix += 'Obrigado por regularizar, ' + sessao.nome + '! 🙏';
+                            
+                            await enviarMensagemTexto(telefone, msgPix, cId);
+                        }
+                        
+                        // Registrar no banco
+                        try {
+                            var idsAsaas = resultado.parcelas.map(function(p) { return p.cobrancaId; }).join(', ');
+                            var descAcordo = 'Acordo via chatbot: ' + sessao.parcelas + 'x de ' + formatarMoeda(valorParcela) + ' - PIX gerados: ' + idsAsaas;
+                            await pool.query(
+                                "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'acordo_parcelado_pix', $2, NOW())",
+                                [sessao.cliente_id, descAcordo]
+                            );
+                            await pool.query(
+                                "UPDATE clientes SET status_cobranca = 'negociando', updated_at = NOW() WHERE id = $1",
+                                [sessao.cliente_id]
+                            );
+                        } catch (e) { console.error('[SURI BOT] Erro registrar:', e); }
+                        
+                        sessao.etapa = 'aguardando_pagamento';
+                        sessao.asaas_parcelas = resultado.parcelas;
+                        return 'parcelamento_gerado';
+                    } else {
+                        // Erro ao gerar parcelas - fallback
+                        var msgErro = '⚠️ Não foi possível gerar as parcelas automaticamente.\n\n';
+                        msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
+                        msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
+                        
+                        await enviarMensagemTexto(telefone, msgErro, cId);
+                        sessao.etapa = 'atendente';
+                    }
+                } else {
+                    // Erro ao criar cliente
+                    var msgErro = '⚠️ Não foi possível gerar as parcelas automaticamente.\n\n';
+                    msgErro += 'Um atendente enviará os dados para pagamento em breve!\n\n';
+                    msgErro += 'Obrigado, ' + sessao.nome + '! 🙏';
+                    
+                    await enviarMensagemTexto(telefone, msgErro, cId);
+                    sessao.etapa = 'atendente';
+                }
+            }
 
             // Registrar acordo no banco
             try {
@@ -940,6 +1403,49 @@ module.exports = function(pool, auth, registrarLog) {
             });
         } catch (error) {
             res.json({ success: false, data: { conectado: false, erro: error.message } });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEBHOOK DO ASAAS - NOTIFICAÇÃO DE PAGAMENTO
+    // ═══════════════════════════════════════════════════════════════
+
+    router.post('/asaas-webhook', async function(req, res) {
+        try {
+            var evento = req.body;
+            console.log('[ASAAS WEBHOOK] ═══════════════════════════════════════');
+            console.log('[ASAAS WEBHOOK] Evento:', evento.event);
+            console.log('[ASAAS WEBHOOK] Payment ID:', evento.payment ? evento.payment.id : 'N/A');
+            console.log('[ASAAS WEBHOOK] ═══════════════════════════════════════');
+
+            if (evento.event === 'PAYMENT_RECEIVED' || evento.event === 'PAYMENT_CONFIRMED') {
+                var payment = evento.payment;
+                
+                if (payment && payment.externalReference && payment.externalReference.startsWith('acertive_')) {
+                    console.log('[ASAAS WEBHOOK] Pagamento ACERTIVE confirmado:', payment.id);
+                    console.log('[ASAAS WEBHOOK] Valor:', payment.value);
+                    console.log('[ASAAS WEBHOOK] Cliente Asaas:', payment.customer);
+                    
+                    // Buscar cliente pelo customer ID do Asaas
+                    // Como não temos o ID salvo, vamos buscar pelo externalReference ou notificar
+                    try {
+                        // Registrar o pagamento recebido
+                        await pool.query(
+                            "INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())",
+                            ['Pagamento confirmado via Asaas - ID: ' + payment.id + ' - Valor: R$ ' + payment.value]
+                        );
+                        
+                        console.log('[ASAAS WEBHOOK] ✅ Pagamento registrado no sistema');
+                    } catch (e) {
+                        console.error('[ASAAS WEBHOOK] Erro ao registrar:', e);
+                    }
+                }
+            }
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('[ASAAS WEBHOOK] Erro:', error);
+            res.status(200).json({ success: true }); // Sempre 200 pro Asaas não reenviar
         }
     });
 
