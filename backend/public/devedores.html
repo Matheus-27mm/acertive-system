@@ -72,14 +72,18 @@
         .status-acordo{background:var(--success-bg);color:#34d399}
         .status-sem_contato{background:rgba(156,163,175,0.12);color:#9ca3af}
         .status-recusou{background:var(--danger-bg);color:#f87171}
+        .status-quitado{background:var(--success-bg);color:#34d399}
         .valor-cell{font-family:'Playfair Display',serif;font-weight:600;color:var(--gold-primary)}
         .atraso-cell{color:var(--danger);font-weight:600}
         .atraso-cell.ok{color:var(--success)}
-        .actions-cell{display:flex;gap:8px}
-        .action-btn{width:38px;height:38px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+        .actions-cell{display:flex;gap:6px}
+        .action-btn{width:34px;height:34px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:13px}
         .action-btn.view{background:var(--gold-subtle);color:var(--gold-primary)}
+        .action-btn.edit{background:var(--info-bg);color:#60a5fa}
         .action-btn.work{background:var(--success-bg);color:var(--success)}
+        .action-btn.delete{background:var(--danger-bg);color:var(--danger)}
         .action-btn:hover{transform:scale(1.1)}
+        .action-btn[title]:hover::after{content:attr(title);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg-elevated);color:var(--text-primary);padding:4px 8px;border-radius:6px;font-size:11px;white-space:nowrap;margin-bottom:4px;border:1px solid var(--border-subtle)}
         .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
         .empty-state i{font-size:64px;color:var(--gold-primary);margin-bottom:20px;opacity:0.4}
         .empty-state h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px}
@@ -133,6 +137,13 @@
         .btn-salvar{padding:14px 28px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;border-radius:10px;color:var(--bg-primary);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
         .btn-salvar:hover{transform:translateY(-2px)}
         .btn-salvar:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+        .btn-danger{padding:14px 28px;background:var(--danger);border:none;border-radius:10px;color:white;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+        .btn-danger:hover{opacity:0.9}
+        .confirm-delete{text-align:center;padding:20px 0}
+        .confirm-delete i{font-size:48px;color:var(--danger);margin-bottom:16px}
+        .confirm-delete h3{font-size:18px;margin-bottom:8px}
+        .confirm-delete p{color:var(--text-muted);margin-bottom:8px}
+        .confirm-delete .nome-destaque{color:var(--gold-primary);font-weight:700}
         @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}}
     </style>
 </head>
@@ -155,9 +166,17 @@
         <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Devedor</th><th>Credor</th><th>Status</th><th>Atraso</th><th>Valor Total</th><th>Ações</th></tr></thead><tbody id="tabelaBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table></div><div class="pagination"><div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div><div class="pagination-buttons"><button class="pagination-btn" id="btnPrev" onclick="paginaAnterior()" disabled><i class="fas fa-chevron-left"></i> Anterior</button><button class="pagination-btn" id="btnNext" onclick="proximaPagina()">Próximo <i class="fas fa-chevron-right"></i></button></div></div></div>
     </main>
 
+    <!-- MODAL DETALHES -->
     <div class="modal-overlay" id="modalDetalhes"><div class="modal"><div class="modal-header"><h3><i class="fas fa-user"></i> <span id="modalNome">Detalhes</span></h3><button class="modal-close" onclick="fecharModal()">&times;</button></div><div class="modal-body"><div class="detail-grid"><div class="detail-item"><div class="detail-label">CPF/CNPJ</div><div class="detail-value" id="modalDoc">-</div></div><div class="detail-item"><div class="detail-label">Telefone</div><div class="detail-value" id="modalTel">-</div></div><div class="detail-item"><div class="detail-label">E-mail</div><div class="detail-value" id="modalEmail">-</div></div><div class="detail-item"><div class="detail-label">Status</div><div class="detail-value" id="modalStatus">-</div></div><div class="detail-item"><div class="detail-label">Valor Total</div><div class="detail-value gold" id="modalValor">R$ 0</div></div><div class="detail-item"><div class="detail-label">Maior Atraso</div><div class="detail-value red" id="modalAtraso">0 dias</div></div></div><div class="cobrancas-list"><h4><i class="fas fa-file-invoice"></i> Cobranças</h4><div id="modalCobrancas"></div></div></div></div></div>
 
+    <!-- MODAL NOVO DEVEDOR -->
     <div class="modal-overlay" id="modalNovoDevedor"><div class="modal" style="max-width:800px;"><div class="modal-header"><h3><i class="fas fa-user-plus"></i> Novo Devedor</h3><button class="modal-close" onclick="fecharModalNovo()">&times;</button></div><div class="modal-body"><form id="formNovoDevedor" onsubmit="salvarDevedor(event)"><div class="form-section"><div class="form-section-title"><i class="fas fa-user"></i> Dados Pessoais</div><div class="form-row"><div class="form-group full"><label>Nome *</label><input type="text" id="novoNome" required placeholder="Nome completo"></div></div><div class="form-row"><div class="form-group"><label>CPF/CNPJ *</label><input type="text" id="novoCpf" required placeholder="000.000.000-00" oninput="mascaraCpfCnpj(this)"></div><div class="form-group"><label>E-mail</label><input type="email" id="novoEmail" placeholder="email@exemplo.com"></div></div><div class="form-row"><div class="form-group"><label>Telefone</label><input type="text" id="novoTelefone" placeholder="(00) 00000-0000" oninput="mascaraTelefone(this)"></div><div class="form-group"><label>Telefone 2</label><input type="text" id="novoTelefone2" placeholder="(00) 00000-0000" oninput="mascaraTelefone(this)"></div></div></div><div class="form-section"><div class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Dados da Dívida</div><div class="form-row"><div class="form-group"><label>Credor *</label><select id="novoCredor" required><option value="">Selecione...</option></select></div><div class="form-group"><label>Nº Documento</label><input type="text" id="novoDocumento" placeholder="Número"></div></div><div class="form-row three"><div class="form-group"><label>Valor *</label><input type="text" id="novoValor" required placeholder="R$ 0,00" oninput="mascaraMoeda(this)"></div><div class="form-group"><label>Vencimento *</label><input type="date" id="novoVencimento" required></div><div class="form-group"><label>Status</label><select id="novoStatus"><option value="novo">Novo</option><option value="negociando">Negociando</option><option value="sem_contato">Sem Contato</option></select></div></div><div class="form-row"><div class="form-group full"><label>Descrição</label><textarea id="novoDescricao" placeholder="Detalhes..."></textarea></div></div></div></form></div><div class="modal-footer"><button type="button" class="btn-cancelar" onclick="fecharModalNovo()">Cancelar</button><button type="submit" form="formNovoDevedor" class="btn-salvar" id="btnSalvar"><i class="fas fa-save"></i> Salvar</button></div></div></div>
+
+    <!-- MODAL EDITAR DEVEDOR -->
+    <div class="modal-overlay" id="modalEditar"><div class="modal" style="max-width:700px;"><div class="modal-header"><h3><i class="fas fa-user-edit"></i> Editar Devedor</h3><button class="modal-close" onclick="fecharModalEditar()">&times;</button></div><div class="modal-body"><form id="formEditar" onsubmit="salvarEdicao(event)"><input type="hidden" id="editId"><div class="form-section"><div class="form-section-title"><i class="fas fa-user"></i> Dados Pessoais</div><div class="form-row"><div class="form-group full"><label>Nome *</label><input type="text" id="editNome" required></div></div><div class="form-row"><div class="form-group"><label>CPF/CNPJ</label><input type="text" id="editCpf" oninput="mascaraCpfCnpj(this)"></div><div class="form-group"><label>E-mail</label><input type="email" id="editEmail"></div></div><div class="form-row"><div class="form-group"><label>Telefone</label><input type="text" id="editTelefone" oninput="mascaraTelefone(this)"></div><div class="form-group"><label>Telefone 2</label><input type="text" id="editTelefone2" oninput="mascaraTelefone(this)"></div></div></div><div class="form-section"><div class="form-section-title"><i class="fas fa-flag"></i> Status</div><div class="form-row"><div class="form-group"><label>Status da Cobrança</label><select id="editStatusCobranca"><option value="novo">Novo</option><option value="negociando">Negociando</option><option value="acordo">Acordo</option><option value="sem_contato">Sem Contato</option><option value="recusou">Recusou</option><option value="quitado">Quitado</option></select></div></div></div></form></div><div class="modal-footer"><button type="button" class="btn-cancelar" onclick="fecharModalEditar()">Cancelar</button><button type="submit" form="formEditar" class="btn-salvar" id="btnSalvarEdicao"><i class="fas fa-save"></i> Salvar Alterações</button></div></div></div>
+
+    <!-- MODAL CONFIRMAR EXCLUSÃO -->
+    <div class="modal-overlay" id="modalExcluir"><div class="modal" style="max-width:480px;"><div class="modal-header"><h3><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Confirmar Exclusão</h3><button class="modal-close" onclick="fecharModalExcluir()">&times;</button></div><div class="modal-body"><div class="confirm-delete"><i class="fas fa-trash-alt"></i><h3>Tem certeza?</h3><p>Você está prestes a excluir o devedor:</p><p class="nome-destaque" id="excluirNome">-</p><p style="color:var(--danger);font-size:12px;margin-top:12px"><i class="fas fa-exclamation-circle"></i> Esta ação irá remover o devedor e todas as cobranças associadas. Não pode ser desfeita.</p></div><input type="hidden" id="excluirId"></div><div class="modal-footer" style="justify-content:center;gap:20px"><button type="button" class="btn-cancelar" onclick="fecharModalExcluir()">Cancelar</button><button type="button" class="btn-danger" onclick="confirmarExclusao()"><i class="fas fa-trash"></i> Excluir</button></div></div></div>
 
     <script>
         const API = window.location.origin;
@@ -200,6 +219,7 @@
                     nome: dev.nome || 'Cliente',
                     cpf_cnpj: dev.cpf_cnpj || '-',
                     telefone: dev.telefone || dev.celular || '',
+                    celular: dev.celular || '',
                     email: dev.email || '',
                     credor: dev.credor_nome || '-',
                     total: parseFloat(dev.valor_total) || 0,
@@ -208,7 +228,6 @@
                     status: dev.status_cobranca || 'novo'
                 }));
 
-                console.log('[ACERTIVE] Carregados', todosDevedores.length, 'devedores');
                 await carregarCredores();
                 atualizarContadores();
                 filtrar();
@@ -247,96 +266,35 @@
             filtrar();
         }
 
-        function filtrarComDebounce() { 
-            clearTimeout(debounceTimer); 
-            debounceTimer = setTimeout(function() { 
-                filtrar(); 
-            }, 300); 
-        }
+        function filtrarComDebounce() { clearTimeout(debounceTimer); debounceTimer = setTimeout(function() { filtrar(); }, 300); }
 
-        // ═══════════════════════════════════════════════════════════════
-        // FUNÇÃO FILTRAR - CORRIGIDA
-        // ═══════════════════════════════════════════════════════════════
         function filtrar() {
             var busca = document.getElementById('searchInput').value.toLowerCase().trim();
             var credor = document.getElementById('filterCredor').value;
             var atraso = document.getElementById('filterAtraso').value;
-
-            console.log('[FILTRAR] Busca:', busca, '| Status:', statusAtual, '| Credor:', credor, '| Atraso:', atraso);
-
-            // Começar com todos
             var resultado = todosDevedores.slice();
             
-            // Filtro por status
-            if (statusAtual) {
-                resultado = resultado.filter(function(d) {
-                    return d.status === statusAtual;
-                });
-            }
+            if (statusAtual) resultado = resultado.filter(function(d) { return d.status === statusAtual; });
 
-            // Filtro por busca (nome, CPF ou telefone)
             if (busca && busca.length > 0) {
                 resultado = resultado.filter(function(d) {
-                    // Busca por nome
-                    var nomeOk = false;
-                    if (d.nome) {
-                        nomeOk = d.nome.toLowerCase().indexOf(busca) !== -1;
-                    }
-                    
-                    // Busca por CPF (apenas números)
-                    var cpfOk = false;
-                    if (d.cpf_cnpj) {
-                        var cpfLimpo = d.cpf_cnpj.replace(/\D/g, '');
-                        var buscaLimpa = busca.replace(/\D/g, '');
-                        if (buscaLimpa.length > 0) {
-                            cpfOk = cpfLimpo.indexOf(buscaLimpa) !== -1;
-                        }
-                    }
-                    
-                    // Busca por telefone (apenas números)
-                    var telOk = false;
-                    if (d.telefone) {
-                        var telLimpo = d.telefone.replace(/\D/g, '');
-                        var buscaLimpa2 = busca.replace(/\D/g, '');
-                        if (buscaLimpa2.length > 0) {
-                            telOk = telLimpo.indexOf(buscaLimpa2) !== -1;
-                        }
-                    }
-                    
+                    var nomeOk = d.nome ? d.nome.toLowerCase().indexOf(busca) !== -1 : false;
+                    var buscaLimpa = busca.replace(/\D/g, '');
+                    var cpfOk = (d.cpf_cnpj && buscaLimpa.length > 0) ? d.cpf_cnpj.replace(/\D/g, '').indexOf(buscaLimpa) !== -1 : false;
+                    var telOk = (d.telefone && buscaLimpa.length > 0) ? d.telefone.replace(/\D/g, '').indexOf(buscaLimpa) !== -1 : false;
                     return nomeOk || cpfOk || telOk;
                 });
-                
-                console.log('[FILTRAR] Após busca:', resultado.length, 'resultados');
             }
 
-            // Filtro por credor
-            if (credor) {
-                resultado = resultado.filter(function(d) {
-                    return d.credor === credor;
-                });
-            }
+            if (credor) resultado = resultado.filter(function(d) { return d.credor === credor; });
 
-            // Filtro por atraso
             if (atraso) {
-                if (atraso === '90+') {
-                    resultado = resultado.filter(function(d) {
-                        return d.maiorAtraso > 90;
-                    });
-                } else {
-                    var partes = atraso.split('-');
-                    var min = parseInt(partes[0]) || 0;
-                    var max = parseInt(partes[1]) || 0;
-                    resultado = resultado.filter(function(d) {
-                        return d.maiorAtraso >= min && d.maiorAtraso <= max;
-                    });
-                }
+                if (atraso === '90+') { resultado = resultado.filter(function(d) { return d.maiorAtraso > 90; }); }
+                else { var p = atraso.split('-'); var min = parseInt(p[0])||0; var max = parseInt(p[1])||0; resultado = resultado.filter(function(d) { return d.maiorAtraso >= min && d.maiorAtraso <= max; }); }
             }
 
             devedoresFiltrados = resultado;
             paginaAtual = 1;
-            
-            console.log('[FILTRAR] Total filtrado:', devedoresFiltrados.length);
-            
             renderizar();
         }
 
@@ -357,7 +315,12 @@
                     html += '<td><span class="status-badge status-' + d.status + '">' + formatStatus(d.status) + '</span></td>';
                     html += '<td><span class="atraso-cell' + (d.maiorAtraso === 0 ? ' ok' : '') + '">' + (d.maiorAtraso > 0 ? d.maiorAtraso + ' dias' : 'Em dia') + '</span></td>';
                     html += '<td><span class="valor-cell">' + fmtMoney(d.total) + '</span></td>';
-                    html += '<td><div class="actions-cell"><button class="action-btn view" onclick="verDetalhes(\'' + d.id + '\')"><i class="fas fa-eye"></i></button><button class="action-btn work" onclick="trabalhar(\'' + d.id + '\')"><i class="fas fa-headset"></i></button></div></td>';
+                    html += '<td><div class="actions-cell">';
+                    html += '<button class="action-btn view" title="Ver detalhes" onclick="verDetalhes(\'' + d.id + '\')"><i class="fas fa-eye"></i></button>';
+                    html += '<button class="action-btn edit" title="Editar" onclick="abrirModalEditar(\'' + d.id + '\')"><i class="fas fa-pen"></i></button>';
+                    html += '<button class="action-btn work" title="Trabalhar" onclick="trabalhar(\'' + d.id + '\')"><i class="fas fa-headset"></i></button>';
+                    html += '<button class="action-btn delete" title="Excluir" onclick="abrirModalExcluir(\'' + d.id + '\')"><i class="fas fa-trash"></i></button>';
+                    html += '</div></td>';
                     html += '</tr>';
                 }
                 document.getElementById('tabelaBody').innerHTML = html;
@@ -369,10 +332,13 @@
             document.getElementById('btnNext').disabled = paginaAtual >= Math.ceil(total / porPagina);
         }
 
-        function formatStatus(s) { var map = {'novo':'Novo','negociando':'Negociando','acordo':'Acordo','sem_contato':'Sem Contato','recusou':'Recusou'}; return map[s] || 'Novo'; }
+        function formatStatus(s) { var map = {'novo':'Novo','negociando':'Negociando','acordo':'Acordo','sem_contato':'Sem Contato','recusou':'Recusou','quitado':'Quitado'}; return map[s] || 'Novo'; }
         function paginaAnterior() { if (paginaAtual > 1) { paginaAtual--; renderizar(); } }
         function proximaPagina() { paginaAtual++; renderizar(); }
 
+        // ═══════════════════════════════════════════════════════════════
+        // VER DETALHES
+        // ═══════════════════════════════════════════════════════════════
         async function verDetalhes(id) {
             var dev = todosDevedores.find(function(d) { return d.id === id || d.cliente_id === id; });
             if (!dev) return;
@@ -408,6 +374,109 @@
         function fecharModal() { document.getElementById('modalDetalhes').classList.remove('active'); }
         function trabalhar(id) { window.location.href = 'fila.html?id=' + id; }
 
+        // ═══════════════════════════════════════════════════════════════
+        // EDITAR DEVEDOR
+        // ═══════════════════════════════════════════════════════════════
+        async function abrirModalEditar(id) {
+            var dev = todosDevedores.find(function(d) { return d.id === id || d.cliente_id === id; });
+            if (!dev) return;
+
+            // Buscar dados completos do cliente
+            try {
+                var r = await fetch(API + '/api/cadastros/clientes/' + id, { headers: H() });
+                var d = await r.json();
+                var cliente = d.data || d;
+                
+                document.getElementById('editId').value = id;
+                document.getElementById('editNome').value = cliente.nome || dev.nome || '';
+                document.getElementById('editCpf').value = cliente.cpf_cnpj || dev.cpf_cnpj || '';
+                document.getElementById('editEmail').value = cliente.email || dev.email || '';
+                document.getElementById('editTelefone').value = cliente.telefone || dev.telefone || '';
+                document.getElementById('editTelefone2').value = cliente.celular || dev.celular || '';
+                document.getElementById('editStatusCobranca').value = cliente.status_cobranca || dev.status || 'novo';
+            } catch (e) {
+                document.getElementById('editId').value = id;
+                document.getElementById('editNome').value = dev.nome || '';
+                document.getElementById('editCpf').value = dev.cpf_cnpj || '';
+                document.getElementById('editEmail').value = dev.email || '';
+                document.getElementById('editTelefone').value = dev.telefone || '';
+                document.getElementById('editTelefone2').value = dev.celular || '';
+                document.getElementById('editStatusCobranca').value = dev.status || 'novo';
+            }
+
+            document.getElementById('modalEditar').classList.add('active');
+        }
+
+        function fecharModalEditar() { document.getElementById('modalEditar').classList.remove('active'); }
+
+        async function salvarEdicao(e) {
+            e.preventDefault();
+            var btn = document.getElementById('btnSalvarEdicao');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+            var id = document.getElementById('editId').value;
+            var dados = {
+                nome: document.getElementById('editNome').value.toUpperCase(),
+                cpf_cnpj: document.getElementById('editCpf').value.replace(/\D/g, ''),
+                email: document.getElementById('editEmail').value || null,
+                telefone: document.getElementById('editTelefone').value.replace(/\D/g, '') || null,
+                celular: document.getElementById('editTelefone2').value.replace(/\D/g, '') || null,
+                status_cobranca: document.getElementById('editStatusCobranca').value
+            };
+
+            try {
+                var r = await fetch(API + '/api/cadastros/clientes/' + id, { method: 'PUT', headers: H(), body: JSON.stringify(dados) });
+                var d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Erro ao salvar');
+                alert('✅ Devedor atualizado!');
+                fecharModalEditar();
+                await carregarDevedores();
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EXCLUIR DEVEDOR
+        // ═══════════════════════════════════════════════════════════════
+        function abrirModalExcluir(id) {
+            var dev = todosDevedores.find(function(d) { return d.id === id || d.cliente_id === id; });
+            if (!dev) return;
+            document.getElementById('excluirId').value = id;
+            document.getElementById('excluirNome').textContent = dev.nome;
+            document.getElementById('modalExcluir').classList.add('active');
+        }
+
+        function fecharModalExcluir() { document.getElementById('modalExcluir').classList.remove('active'); }
+
+        async function confirmarExclusao() {
+            var id = document.getElementById('excluirId').value;
+            try {
+                // Primeiro deletar cobranças do cliente
+                try {
+                    await fetch(API + '/api/cobrancas/cliente/' + id, { method: 'DELETE', headers: H() });
+                } catch (e) {}
+
+                // Depois deletar o cliente
+                var r = await fetch(API + '/api/cadastros/clientes/' + id, { method: 'DELETE', headers: H() });
+                var d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Erro ao excluir');
+                
+                alert('✅ Devedor excluído!');
+                fecharModalExcluir();
+                await carregarDevedores();
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // NOVO DEVEDOR
+        // ═══════════════════════════════════════════════════════════════
         function abrirModalNovoDevedor() { document.getElementById('formNovoDevedor').reset(); carregarCredoresModal(); document.getElementById('modalNovoDevedor').classList.add('active'); }
         function fecharModalNovo() { document.getElementById('modalNovoDevedor').classList.remove('active'); }
 
@@ -478,15 +547,28 @@
             }
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // MÁSCARAS
+        // ═══════════════════════════════════════════════════════════════
         function mascaraCpfCnpj(input) { var v = input.value.replace(/\D/g, ''); if (v.length <= 11) { v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); } else { v = v.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2'); } input.value = v; }
         function mascaraTelefone(input) { var v = input.value.replace(/\D/g, ''); v = v.replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2'); input.value = v.substring(0, 15); }
         function mascaraMoeda(input) { var v = input.value.replace(/\D/g, ''); if (v === '') v = '0'; v = (parseInt(v) / 100).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); input.value = 'R$ ' + v; }
 
+        // ═══════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════
         document.addEventListener('DOMContentLoaded', async function() {
             var auth = await checkAuth();
             if (auth) await carregarDevedores();
-            document.getElementById('modalDetalhes').addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) fecharModal(); });
-            document.getElementById('modalNovoDevedor').addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) fecharModalNovo(); });
+
+            // Fechar modais ao clicar fora
+            ['modalDetalhes','modalNovoDevedor','modalEditar','modalExcluir'].forEach(function(id) {
+                document.getElementById(id).addEventListener('click', function(e) {
+                    if (e.target.classList.contains('modal-overlay')) {
+                        e.target.classList.remove('active');
+                    }
+                });
+            });
         });
 
         var urlParams = new URLSearchParams(window.location.search);
