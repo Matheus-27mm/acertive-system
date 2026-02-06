@@ -771,7 +771,7 @@ module.exports = function(pool, auth, registrarLog) {
             }
 
             // Ignorar mensagens do próprio bot/sistema
-            if (mensagem.fromMe === true || mensagem.direction === 'sent' || mensagem.isFromMe === true) {
+            if (message.fromMe === true || message.direction === 'sent' || message.isFromMe === true) {
                 console.log('[SURI BOT] Mensagem enviada por nós - ignorando');
                 return;
             }
