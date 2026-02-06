@@ -728,8 +728,8 @@ module.exports = function(pool, auth, registrarLog) {
                 // Salvar acordo no banco
                 try {
                     var acordoRes = await pool.query(
-                        "INSERT INTO acordos (cliente_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, 1, 'ativo', NOW()) RETURNING id",
-                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_final]
+                        "INSERT INTO acordos (cliente_id, valor_original, valor_atualizado, desconto_percentual, desconto_valor, valor_acordo, valor_final, numero_parcelas, num_parcelas, forma_pagamento, status, created_at) VALUES ($1, $2, $2, $3, $4, $5, $5, 1, 1, 'pix', 'ativo', NOW()) RETURNING id",
+                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_total * sessao.desconto / 100, sessao.valor_final]
                     );
                     await pool.query(
                         "INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1, 1, $2, NOW() + INTERVAL '2 days', $3, $4, 'pendente', NOW())",
@@ -768,8 +768,8 @@ module.exports = function(pool, auth, registrarLog) {
                 var acordoId = null;
                 try {
                     var acordoRes = await pool.query(
-                        "INSERT INTO acordos (cliente_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, $5, 'ativo', NOW()) RETURNING id",
-                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_final, sessao.parcelas]
+                        "INSERT INTO acordos (cliente_id, valor_original, valor_atualizado, desconto_percentual, desconto_valor, valor_acordo, valor_final, numero_parcelas, num_parcelas, valor_parcela, forma_pagamento, status, created_at) VALUES ($1, $2, $2, $3, $4, $5, $5, $6, $6, $7, 'pix', 'ativo', NOW()) RETURNING id",
+                        [sessao.cliente_id, sessao.valor_total, sessao.desconto, sessao.valor_total * sessao.desconto / 100, sessao.valor_final, sessao.parcelas, sessao.valor_final / sessao.parcelas]
                     );
                     acordoId = acordoRes.rows[0].id;
                 } catch (e) { console.error('[ACORDO] Erro:', e); }
@@ -1044,8 +1044,8 @@ module.exports = function(pool, auth, registrarLog) {
             if (!clienteAsaas) return res.status(500).json({ success: false, error: 'Erro Asaas' });
 
             var acordoRes = await pool.query(
-                "INSERT INTO acordos (cliente_id, operador_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'ativo', NOW()) RETURNING id",
-                [cliente_id, req.user.id, valor_original, desconto_pct, valor_final, num_parcelas]
+                "INSERT INTO acordos (cliente_id, operador_id, valor_original, valor_atualizado, desconto_percentual, desconto_valor, valor_acordo, valor_final, numero_parcelas, num_parcelas, valor_parcela, forma_pagamento, status, created_at) VALUES ($1, $2, $3, $3, $4, $5, $6, $6, $7, $7, $8, 'pix', 'ativo', NOW()) RETURNING id",
+                [cliente_id, req.user.id, valor_original, desconto_pct, valor_original * desconto_pct / 100, valor_final, num_parcelas, Math.round((valor_final / num_parcelas) * 100) / 100]
             );
             var acordoId = acordoRes.rows[0].id;
             var valor_parcela = Math.round((valor_final / num_parcelas) * 100) / 100;
