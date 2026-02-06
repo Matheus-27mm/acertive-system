@@ -64,26 +64,58 @@ module.exports = function(pool, auth, registrarLog) {
             if (!novoStatus) return res.json({ received: true });
 
             // Atualizar cobrança
-            const cob = await pool.query('SELECT * FROM cobrancas WHERE asaas_id = $1', [payment.id]);
-            if (cob.rowCount > 0) {
-                await pool.query(`UPDATE cobrancas SET status = $1, valor_pago = CASE WHEN $1 = 'pago' THEN $2 ELSE valor_pago END, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END, asaas_sync_at = NOW() WHERE id = $3`, [novoStatus, payment.value, cob.rows[0].id]);
-            }
+            try {
+                const cob = await pool.query('SELECT * FROM cobrancas WHERE asaas_id = $1', [payment.id]);
+                if (cob.rowCount > 0) {
+                    await pool.query(`UPDATE cobrancas SET status = $1, valor_pago = CASE WHEN $1 = 'pago' THEN $2 ELSE valor_pago END, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END, asaas_sync_at = NOW() WHERE id = $3`, [novoStatus, payment.value, cob.rows[0].id]);
+                    console.log('[ASAAS] ✅ Cobrança atualizada:', cob.rows[0].id, '->', novoStatus);
+                }
+            } catch (e) { console.log('[ASAAS] Cobrança não encontrada ou erro:', e.message); }
 
-            // Atualizar parcela
-            const parc = await pool.query('SELECT p.*, a.id as acordo_id FROM parcelas p JOIN acordos a ON p.acordo_id = a.id WHERE p.asaas_payment_id = $1', [payment.id]);
-            if (parc.rowCount > 0) {
-                await pool.query(`UPDATE parcelas SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END WHERE id = $2`, [novoStatus, parc.rows[0].id]);
-                if (novoStatus === 'pago') {
-                    const pendentes = await pool.query('SELECT COUNT(*) FROM parcelas WHERE acordo_id = $1 AND status != \'pago\'', [parc.rows[0].acordo_id]);
-                    if (parseInt(pendentes.rows[0].count) === 0) {
-                        await pool.query('UPDATE acordos SET status = \'quitado\' WHERE id = $1', [parc.rows[0].acordo_id]);
+            // Atualizar parcela (tabela parcelas - antiga)
+            try {
+                const parc = await pool.query('SELECT p.*, a.id as acordo_id FROM parcelas p JOIN acordos a ON p.acordo_id = a.id WHERE p.asaas_payment_id = $1', [payment.id]);
+                if (parc.rowCount > 0) {
+                    await pool.query(`UPDATE parcelas SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END WHERE id = $2`, [novoStatus, parc.rows[0].id]);
+                    console.log('[ASAAS] ✅ Parcela (antiga) atualizada:', parc.rows[0].id, '->', novoStatus);
+                    if (novoStatus === 'pago') {
+                        const pendentes = await pool.query('SELECT COUNT(*) FROM parcelas WHERE acordo_id = $1 AND status != \'pago\'', [parc.rows[0].acordo_id]);
+                        if (parseInt(pendentes.rows[0].count) === 0) {
+                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1', [parc.rows[0].acordo_id]);
+                            console.log('[ASAAS] ✅ Acordo quitado (antiga):', parc.rows[0].acordo_id);
+                        }
                     }
                 }
-            }
+            } catch (e) { console.log('[ASAAS] Tabela parcelas não encontrada ou sem coluna:', e.message); }
+
+            // Atualizar parcela_acordo (tabela nova - Suri v3)
+            try {
+                const parc2 = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.asaas_payment_id = $1 OR pa.external_reference = $2', [payment.id, payment.externalReference]);
+                if (parc2.rowCount > 0) {
+                    await pool.query(`UPDATE parcelas_acordo SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END, updated_at = NOW() WHERE id = $2`, [novoStatus, parc2.rows[0].id]);
+                    console.log('[ASAAS] ✅ Parcela acordo atualizada:', parc2.rows[0].id, '->', novoStatus);
+                    if (novoStatus === 'pago') {
+                        var acordoId = parc2.rows[0].acordo_id;
+                        const pendentes2 = await pool.query('SELECT COUNT(*) as n FROM parcelas_acordo WHERE acordo_id = $1 AND status != \'pago\'', [acordoId]);
+                        if (parseInt(pendentes2.rows[0].n) === 0) {
+                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1', [acordoId]);
+                            console.log('[ASAAS] ✅ Acordo quitado:', acordoId);
+                            // Atualizar status do cliente
+                            try {
+                                var cliRes = await pool.query('SELECT cliente_id FROM acordos WHERE id = $1', [acordoId]);
+                                if (cliRes.rowCount > 0) {
+                                    await pool.query("UPDATE clientes SET status_cobranca = 'quitado' WHERE id = $1", [cliRes.rows[0].cliente_id]);
+                                    console.log('[ASAAS] ✅ Cliente quitado:', cliRes.rows[0].cliente_id);
+                                }
+                            } catch (e2) { console.log('[ASAAS] Erro ao atualizar cliente:', e2.message); }
+                        }
+                    }
+                }
+            } catch (e) { console.log('[ASAAS] parcelas_acordo erro:', e.message); }
 
             res.json({ received: true });
         } catch (error) {
-            console.error('[ASAAS] Erro webhook:', error);
+            console.error('[ASAAS] Erro webhook:', error.message);
             res.status(500).json({ error: 'Erro ao processar webhook' });
         }
     });
@@ -313,7 +345,7 @@ module.exports = function(pool, auth, registrarLog) {
     async function getTransporter() {
         const config = await pool.query('SELECT * FROM configuracoes WHERE id = 1');
         const cfg = config.rows[0] || {};
-        return nodemailer.createTransport({ host: cfg.smtp_host || 'smtp.gmail.com', port: cfg.smtp_port || 587, secure: false, auth: { user: cfg.smtp_user || process.env.EMAIL_USER, pass: cfg.smtp_pass || process.env.EMAIL_PASS } });
+        return nodemailer.createTransport({ host: cfg.smtp_host || 'smtp.gmail.com', port: cfg.smtp_port || 587, secure: false, auth: { user: cfg.smtp_user || process.env.SMTP_USER || process.env.EMAIL_USER, pass: cfg.smtp_pass || process.env.SMTP_PASS || process.env.EMAIL_PASS } });
     }
 
     // POST /api/integracoes/email/enviar-cobranca/:id
@@ -332,7 +364,7 @@ module.exports = function(pool, auth, registrarLog) {
 
             const html = `<div style="font-family:Arial;max-width:600px;margin:0 auto"><div style="background:#1e3a5f;color:white;padding:20px;text-align:center"><h1>ACERTIVE</h1><p>Sistema de Cobranças</p></div><div style="padding:20px;background:#f9f9f9"><p>Prezado(a) <strong>${c.cliente_nome}</strong>,</p><p>Existe uma pendência financeira em seu nome:</p><div style="background:white;padding:15px;border-radius:8px;margin:20px 0"><table style="width:100%"><tr><td><strong>Credor:</strong></td><td>${c.credor_nome || 'Não informado'}</td></tr><tr><td><strong>Descrição:</strong></td><td>${c.descricao}</td></tr><tr><td><strong>Valor:</strong></td><td style="color:#e74c3c;font-weight:bold">${valor}</td></tr><tr><td><strong>Vencimento:</strong></td><td>${vencimento}</td></tr></table></div><p>Entre em contato para regularizar.</p></div></div>`;
 
-            await transporter.sendMail({ from: process.env.EMAIL_USER, to: c.cliente_email, subject: `Cobrança - ${c.descricao}`, html });
+            await transporter.sendMail({ from: process.env.SMTP_USER || process.env.EMAIL_USER, to: c.cliente_email, subject: `Cobrança - ${c.descricao}`, html });
             await pool.query('UPDATE cobrancas SET ultimo_contato = NOW(), observacoes = CONCAT(observacoes, E\'\\n[\', NOW(), \'] Email enviado\') WHERE id = $1', [id]);
             await registrarLog(req.user?.id, 'EMAIL_ENVIADO', 'cobrancas', id, { destinatario: c.cliente_email });
 
@@ -348,7 +380,7 @@ module.exports = function(pool, auth, registrarLog) {
             const { destinatario } = req.body;
             if (!destinatario) return res.status(400).json({ success: false, error: 'Destinatário é obrigatório' });
             const transporter = await getTransporter();
-            await transporter.sendMail({ from: process.env.EMAIL_USER, to: destinatario, subject: 'Teste ACERTIVE', html: '<h1>Teste de Email</h1><p>Configuração OK!</p>' });
+            await transporter.sendMail({ from: process.env.SMTP_USER || process.env.EMAIL_USER, to: destinatario, subject: 'Teste ACERTIVE', html: '<h1>Teste de Email</h1><p>Configuração OK!</p>' });
             res.json({ success: true, message: 'Email de teste enviado' });
         } catch (error) {
             res.status(500).json({ success: false, error: 'Erro: ' + error.message });
