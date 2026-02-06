@@ -215,8 +215,21 @@ module.exports = function(pool, auth, registrarLog) {
     // ═══════════════════════════════════════════════════════════════
 
     async function buscarClientePorTelefone(telefone) {
+        var telefoneOriginal = telefone;
         var telefoneNumeros = limparTelefone(telefone);
-        if (!telefoneNumeros || telefoneNumeros.length < 10) return null;
+        
+        console.log('[SURI BOT] Buscando cliente - Original:', telefoneOriginal, '| Limpo:', telefoneNumeros);
+        
+        if (!telefoneNumeros || telefoneNumeros.length < 10) {
+            console.log('[SURI BOT] Telefone muito curto, ignorando');
+            return null;
+        }
+
+        // Tentar busca com o número completo e também só os últimos 8-9 dígitos
+        var ultimos9 = telefoneNumeros.slice(-9);
+        var ultimos8 = telefoneNumeros.slice(-8);
+        
+        console.log('[SURI BOT] Buscando com:', telefoneNumeros, '| últimos 9:', ultimos9, '| últimos 8:', ultimos8);
 
         // Tentar busca com diferentes formatos
         var result = await pool.query(
@@ -226,13 +239,23 @@ module.exports = function(pool, auth, registrarLog) {
             "(SELECT MAX(CURRENT_DATE - cob.data_vencimento) FROM cobrancas cob WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as maior_atraso, " +
             "(SELECT string_agg(DISTINCT cr.nome, ', ') FROM cobrancas cob JOIN credores cr ON cr.id = cob.credor_id WHERE cob.cliente_id = c.id AND cob.status IN ('pendente', 'vencido')) as credores_nomes " +
             "FROM clientes c " +
-            "WHERE REPLACE(REPLACE(REPLACE(REPLACE(c.telefone, '(', ''), ')', ''), '-', ''), ' ', '') LIKE $1 " +
-            "OR REPLACE(REPLACE(REPLACE(REPLACE(c.celular, '(', ''), ')', ''), '-', ''), ' ', '') LIKE $1 " +
+            "WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.telefone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $1 " +
+            "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.celular, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $1 " +
+            "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.telefone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $2 " +
+            "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.celular, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $2 " +
+            "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.telefone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $3 " +
+            "OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(c.celular, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE $3 " +
             "LIMIT 1",
-            ['%' + telefoneNumeros]
+            ['%' + telefoneNumeros, '%' + ultimos9, '%' + ultimos8]
         );
 
-        return result.rowCount > 0 ? result.rows[0] : null;
+        if (result.rowCount > 0) {
+            console.log('[SURI BOT] ✅ Cliente encontrado:', result.rows[0].nome);
+            return result.rows[0];
+        }
+        
+        console.log('[SURI BOT] ❌ Nenhum cliente encontrado');
+        return null;
     }
 
     // ═══════════════════════════════════════════════════════════════
