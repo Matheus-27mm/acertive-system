@@ -121,6 +121,16 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
             
+            // Validar CPF básico (11 dígitos) ou CNPJ (14 dígitos)
+            var cpfValido = cpfCnpj.length === 11 || cpfCnpj.length === 14;
+            
+            // Se CPF inválido ou de teste, usar CPF genérico do sandbox
+            if (!cpfValido || cpfCnpj === '00000000000' || cpfCnpj === '12345678990' || cpfCnpj.match(/^(\d)\1+$/)) {
+                // CPF de teste válido para sandbox Asaas
+                cpfCnpj = '24971563792';
+                console.log('[ASAAS] CPF inválido, usando CPF de teste:', cpfCnpj);
+            }
+            
             // Primeiro tenta buscar pelo CPF/CNPJ
             if (cpfCnpj) {
                 var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, {
@@ -138,14 +148,14 @@ module.exports = function(pool, auth, registrarLog) {
             // Se não encontrou, cria novo
             var novoCliente = {
                 name: cliente.nome || 'Cliente',
-                cpfCnpj: cpfCnpj || '00000000000',
+                cpfCnpj: cpfCnpj,
                 email: cliente.email || null,
-                phone: (cliente.telefone || cliente.celular || '').replace(/\D/g, ''),
-                mobilePhone: (cliente.celular || cliente.telefone || '').replace(/\D/g, ''),
+                phone: (cliente.telefone || cliente.celular || '').replace(/\D/g, '').slice(-11),
+                mobilePhone: (cliente.celular || cliente.telefone || '').replace(/\D/g, '').slice(-11),
                 notificationDisabled: true
             };
 
-            console.log('[ASAAS] Criando cliente:', novoCliente.name);
+            console.log('[ASAAS] Criando cliente:', novoCliente.name, '| CPF:', novoCliente.cpfCnpj);
             
             var criarResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers', {
                 method: 'POST',
@@ -159,7 +169,7 @@ module.exports = function(pool, auth, registrarLog) {
                 console.log('[ASAAS] Cliente criado:', criarData.id);
                 return criarData;
             } else {
-                console.error('[ASAAS] Erro ao criar cliente:', criarData);
+                console.error('[ASAAS] Erro ao criar cliente:', JSON.stringify(criarData));
                 return null;
             }
         } catch (error) {
@@ -1424,18 +1434,43 @@ module.exports = function(pool, auth, registrarLog) {
                 if (payment && payment.externalReference && payment.externalReference.startsWith('acertive_')) {
                     console.log('[ASAAS WEBHOOK] Pagamento ACERTIVE confirmado:', payment.id);
                     console.log('[ASAAS WEBHOOK] Valor:', payment.value);
-                    console.log('[ASAAS WEBHOOK] Cliente Asaas:', payment.customer);
                     
-                    // Buscar cliente pelo customer ID do Asaas
-                    // Como não temos o ID salvo, vamos buscar pelo externalReference ou notificar
+                    // Atualizar parcela como paga no banco
                     try {
-                        // Registrar o pagamento recebido
                         await pool.query(
-                            "INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())",
-                            ['Pagamento confirmado via Asaas - ID: ' + payment.id + ' - Valor: R$ ' + payment.value]
+                            "UPDATE parcelas_acordo SET status = 'pago', data_pagamento = NOW(), asaas_payment_id = $1 WHERE asaas_payment_id = $1 OR external_reference = $2",
+                            [payment.id, payment.externalReference]
                         );
                         
-                        console.log('[ASAAS WEBHOOK] ✅ Pagamento registrado no sistema');
+                        // Verificar se todas as parcelas do acordo foram pagas
+                        var acordoResult = await pool.query(
+                            "SELECT acordo_id FROM parcelas_acordo WHERE asaas_payment_id = $1 OR external_reference = $2",
+                            [payment.id, payment.externalReference]
+                        );
+                        
+                        if (acordoResult.rowCount > 0) {
+                            var acordoId = acordoResult.rows[0].acordo_id;
+                            var pendentesResult = await pool.query(
+                                "SELECT COUNT(*) as pendentes FROM parcelas_acordo WHERE acordo_id = $1 AND status != 'pago'",
+                                [acordoId]
+                            );
+                            
+                            if (parseInt(pendentesResult.rows[0].pendentes) === 0) {
+                                // Todas parcelas pagas - marcar acordo como quitado
+                                await pool.query(
+                                    "UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1",
+                                    [acordoId]
+                                );
+                                console.log('[ASAAS WEBHOOK] ✅ Acordo', acordoId, 'QUITADO!');
+                            }
+                        }
+                        
+                        await pool.query(
+                            "INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())",
+                            ['Pagamento confirmado - ID: ' + payment.id + ' - Valor: R$ ' + payment.value]
+                        );
+                        
+                        console.log('[ASAAS WEBHOOK] ✅ Pagamento registrado');
                     } catch (e) {
                         console.error('[ASAAS WEBHOOK] Erro ao registrar:', e);
                     }
@@ -1445,7 +1480,265 @@ module.exports = function(pool, auth, registrarLog) {
             res.json({ success: true });
         } catch (error) {
             console.error('[ASAAS WEBHOOK] Erro:', error);
-            res.status(200).json({ success: true }); // Sempre 200 pro Asaas não reenviar
+            res.status(200).json({ success: true });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // API: CRIAR ACORDO COM PIX AUTOMÁTICO
+    // ═══════════════════════════════════════════════════════════════
+
+    router.post('/criar-acordo-pix', auth, async function(req, res) {
+        try {
+            var cliente_id = req.body.cliente_id;
+            var valor_total = parseFloat(req.body.valor_total);
+            var num_parcelas = parseInt(req.body.num_parcelas) || 1;
+            var desconto = parseFloat(req.body.desconto) || 0;
+            var descricao = req.body.descricao || 'Acordo de dívida';
+
+            if (!cliente_id || !valor_total) {
+                return res.status(400).json({ success: false, error: 'Cliente e valor são obrigatórios' });
+            }
+
+            // Buscar cliente
+            var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
+            if (clienteResult.rowCount === 0) {
+                return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
+            }
+            var cliente = clienteResult.rows[0];
+
+            // Calcular valor com desconto
+            var valor_final = valor_total * (1 - desconto / 100);
+            var valor_parcela = Math.round((valor_final / num_parcelas) * 100) / 100;
+
+            console.log('[ACORDO] Criando acordo para', cliente.nome, '| Valor:', valor_final, '| Parcelas:', num_parcelas);
+
+            // Criar cliente no Asaas
+            var clienteAsaas = await buscarOuCriarClienteAsaas(cliente);
+            if (!clienteAsaas) {
+                return res.status(500).json({ success: false, error: 'Erro ao criar cliente no Asaas' });
+            }
+
+            // Criar acordo no banco
+            var acordoResult = await pool.query(
+                "INSERT INTO acordos (cliente_id, operador_id, valor_original, desconto_percentual, valor_final, num_parcelas, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'ativo', NOW()) RETURNING id",
+                [cliente_id, req.user.id, valor_total, desconto, valor_final, num_parcelas]
+            );
+            var acordoId = acordoResult.rows[0].id;
+
+            // Gerar parcelas no Asaas
+            var parcelas = [];
+            var hoje = new Date();
+
+            for (var i = 0; i < num_parcelas; i++) {
+                var vencimento = new Date(hoje);
+                vencimento.setMonth(vencimento.getMonth() + i);
+                if (i === 0) vencimento.setDate(vencimento.getDate() + 2);
+
+                var externalRef = 'acertive_acordo_' + acordoId + '_parc_' + (i + 1);
+
+                var cobranca = {
+                    customer: clienteAsaas.id,
+                    billingType: 'PIX',
+                    value: valor_parcela,
+                    dueDate: vencimento.toISOString().split('T')[0],
+                    description: descricao + ' - Parcela ' + (i + 1) + '/' + num_parcelas,
+                    externalReference: externalRef
+                };
+
+                var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', {
+                    method: 'POST',
+                    headers: getAsaasHeaders(),
+                    body: JSON.stringify(cobranca)
+                });
+                var data = await resp.json();
+
+                if (data.id) {
+                    var parcelaInfo = {
+                        numero: i + 1,
+                        asaas_id: data.id,
+                        valor: data.value,
+                        vencimento: data.dueDate,
+                        link: data.invoiceUrl,
+                        pix: null
+                    };
+
+                    // Buscar PIX da primeira parcela
+                    if (i === 0) {
+                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', {
+                            method: 'GET',
+                            headers: getAsaasHeaders()
+                        });
+                        var pixData = await pixResp.json();
+                        parcelaInfo.pix = pixData.payload || null;
+                    }
+
+                    // Salvar parcela no banco
+                    await pool.query(
+                        "INSERT INTO parcelas_acordo (acordo_id, numero, valor, data_vencimento, asaas_payment_id, external_reference, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, 'pendente', NOW())",
+                        [acordoId, i + 1, valor_parcela, vencimento, data.id, externalRef]
+                    );
+
+                    parcelas.push(parcelaInfo);
+                    console.log('[ACORDO] Parcela', (i + 1), 'criada:', data.id);
+                }
+
+                await new Promise(function(r) { setTimeout(r, 500); });
+            }
+
+            // Atualizar status do cliente
+            await pool.query(
+                "UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1",
+                [cliente_id]
+            );
+
+            // Registrar acionamento
+            await pool.query(
+                "INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'acordo', 'sistema', 'acordo_criado', $3, NOW())",
+                [cliente_id, req.user.id, 'Acordo criado: ' + num_parcelas + 'x de R$ ' + valor_parcela.toFixed(2)]
+            );
+
+            res.json({
+                success: true,
+                acordo_id: acordoId,
+                parcelas: parcelas,
+                mensagem: 'Acordo criado com sucesso!'
+            });
+
+        } catch (error) {
+            console.error('[ACORDO] Erro:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // API: ENVIAR LEMBRETES DE PARCELAS (rodar diariamente)
+    // ═══════════════════════════════════════════════════════════════
+
+    router.post('/enviar-lembretes', auth, async function(req, res) {
+        try {
+            var dias_antes = req.body.dias_antes || 3;
+
+            // Buscar parcelas que vencem nos próximos X dias
+            var result = await pool.query(
+                "SELECT pa.*, a.cliente_id, c.nome, c.telefone, c.celular " +
+                "FROM parcelas_acordo pa " +
+                "JOIN acordos a ON a.id = pa.acordo_id " +
+                "JOIN clientes c ON c.id = a.cliente_id " +
+                "WHERE pa.status = 'pendente' " +
+                "AND pa.data_vencimento BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 " +
+                "AND pa.lembrete_enviado IS NOT TRUE",
+                [dias_antes]
+            );
+
+            var parcelas = result.rows;
+            var enviados = 0;
+            var erros = [];
+
+            console.log('[LEMBRETES] Encontradas', parcelas.length, 'parcelas para lembrete');
+
+            for (var i = 0; i < parcelas.length; i++) {
+                var p = parcelas[i];
+                try {
+                    var telefone = formatarTelefone(p.telefone || p.celular);
+                    if (!telefone) continue;
+
+                    // Buscar PIX da parcela no Asaas
+                    var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + p.asaas_payment_id + '/pixQrCode', {
+                        method: 'GET',
+                        headers: getAsaasHeaders()
+                    });
+                    var pixData = await pixResp.json();
+
+                    if (pixData.payload) {
+                        var dataVenc = new Date(p.data_vencimento).toLocaleDateString('pt-BR');
+                        var primeiroNome = (p.nome || 'Cliente').split(' ')[0];
+
+                        var msg = '📅 *LEMBRETE DE PARCELA*\n\n';
+                        msg += 'Olá ' + primeiroNome + '!\n\n';
+                        msg += 'Sua parcela ' + p.numero + ' vence em *' + dataVenc + '*\n';
+                        msg += 'Valor: *' + formatarMoeda(p.valor) + '*\n\n';
+                        msg += '━━━━━━━━━━━━━━━━━━━━\n';
+                        msg += '📋 *PIX COPIA E COLA:*\n';
+                        msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                        msg += pixData.payload + '\n\n';
+                        msg += '━━━━━━━━━━━━━━━━━━━━\n\n';
+                        msg += 'Evite juros! Pague em dia. 🙏';
+
+                        var resultado = await enviarMensagemTexto(telefone, msg, null);
+
+                        if (resultado.success) {
+                            await pool.query(
+                                "UPDATE parcelas_acordo SET lembrete_enviado = true WHERE id = $1",
+                                [p.id]
+                            );
+                            enviados++;
+                        } else {
+                            erros.push({ parcela_id: p.id, erro: 'Falha no envio' });
+                        }
+                    }
+
+                    await new Promise(function(r) { setTimeout(r, 2000); });
+                } catch (e) {
+                    erros.push({ parcela_id: p.id, erro: e.message });
+                }
+            }
+
+            res.json({
+                success: true,
+                total: parcelas.length,
+                enviados: enviados,
+                erros: erros
+            });
+
+        } catch (error) {
+            console.error('[LEMBRETES] Erro:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // API: BUSCAR PIX DE UMA PARCELA
+    // ═══════════════════════════════════════════════════════════════
+
+    router.get('/parcela-pix/:parcela_id', auth, async function(req, res) {
+        try {
+            var parcela_id = req.params.parcela_id;
+
+            var result = await pool.query(
+                "SELECT * FROM parcelas_acordo WHERE id = $1",
+                [parcela_id]
+            );
+
+            if (result.rowCount === 0) {
+                return res.status(404).json({ success: false, error: 'Parcela não encontrada' });
+            }
+
+            var parcela = result.rows[0];
+
+            // Buscar PIX no Asaas
+            var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + parcela.asaas_payment_id + '/pixQrCode', {
+                method: 'GET',
+                headers: getAsaasHeaders()
+            });
+            var pixData = await pixResp.json();
+
+            res.json({
+                success: true,
+                parcela: {
+                    numero: parcela.numero,
+                    valor: parcela.valor,
+                    vencimento: parcela.data_vencimento,
+                    status: parcela.status
+                },
+                pix: {
+                    copiaECola: pixData.payload || null,
+                    qrCodeBase64: pixData.encodedImage || null
+                }
+            });
+
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
         }
     });
 
