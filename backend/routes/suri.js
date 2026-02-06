@@ -215,6 +215,7 @@ module.exports = function(pool, auth, registrarLog) {
     // ═══════════════════════════════════════════════════════════════
 
     async function buscarClientePorTelefone(telefone) {
+        console.log('[SURI BOT] ========== VERSAO 2.0 - BUSCA CLIENTE ==========');
         var telefoneOriginal = telefone;
         var telefoneNumeros = limparTelefone(telefone);
         
