@@ -349,7 +349,6 @@ module.exports = function(pool, auth, registrarLog) {
 
             const result = await pool.query(query, params);
 
-            // Contar total
             let countQuery = 'SELECT COUNT(*) FROM clientes WHERE 1=1';
             const countParams = [];
             let countIndex = 1;
@@ -461,14 +460,12 @@ module.exports = function(pool, auth, registrarLog) {
                 return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
             }
 
-            // Buscar cobranças
             const cobrancas = await pool.query(`
                 SELECT c.*, cr.nome as credor_nome
                 FROM cobrancas c LEFT JOIN credores cr ON c.credor_id = cr.id
                 WHERE c.cliente_id = $1::uuid ORDER BY c.data_vencimento DESC
             `, [id]);
 
-            // Buscar acordos
             let acordos = { rows: [] };
             try {
                 acordos = await pool.query(`
@@ -480,7 +477,6 @@ module.exports = function(pool, auth, registrarLog) {
                 `, [id]);
             } catch (e) {}
 
-            // Estatísticas
             const stats = await pool.query(`
                 SELECT 
                     COUNT(*) as total_cobrancas,
@@ -510,7 +506,7 @@ module.exports = function(pool, auth, registrarLog) {
     // POST /api/cadastros/clientes - Criar cliente
     router.post('/clientes', auth, async (req, res) => {
         try {
-            const { nome, cpf_cnpj, telefone, celular, email, endereco, cidade, estado, cep, data_nascimento, observacoes } = req.body;
+            const { nome, cpf_cnpj, telefone, celular, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status_cobranca } = req.body;
 
             if (!nome) {
                 return res.status(400).json({ success: false, error: 'Nome é obrigatório' });
@@ -526,10 +522,10 @@ module.exports = function(pool, auth, registrarLog) {
             const telefoneVal = telefone || celular || null;
 
             const result = await pool.query(`
-                INSERT INTO clientes (nome, cpf_cnpj, telefone, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status, created_at, updated_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ativo', NOW(), NOW())
+                INSERT INTO clientes (nome, cpf_cnpj, telefone, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status, status_cobranca, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ativo', $11, NOW(), NOW())
                 RETURNING *
-            `, [nome, cpf_cnpj || null, telefoneVal, email || null, endereco || null, cidade || null, estado || null, cep || null, data_nascimento || null, observacoes || null]);
+            `, [nome, cpf_cnpj || null, telefoneVal, email || null, endereco || null, cidade || null, estado || null, cep || null, data_nascimento || null, observacoes || null, status_cobranca || 'novo']);
 
             await registrarLog(req.user?.id, 'CLIENTE_CRIADO', 'clientes', result.rows[0].id, { nome });
 
@@ -545,24 +541,26 @@ module.exports = function(pool, auth, registrarLog) {
     router.put('/clientes/:id', auth, async (req, res) => {
         try {
             const { id } = req.params;
-            const { nome, cpf_cnpj, telefone, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status } = req.body;
+            const { nome, cpf_cnpj, telefone, celular, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status, status_cobranca } = req.body;
 
             const result = await pool.query(`
                 UPDATE clientes SET
                     nome = COALESCE($2, nome),
                     cpf_cnpj = COALESCE($3, cpf_cnpj),
                     telefone = COALESCE($4, telefone),
-                    email = COALESCE($5, email),
-                    endereco = COALESCE($6, endereco),
-                    cidade = COALESCE($7, cidade),
-                    estado = COALESCE($8, estado),
-                    cep = COALESCE($9, cep),
-                    data_nascimento = COALESCE($10, data_nascimento),
-                    observacoes = COALESCE($11, observacoes),
-                    status = COALESCE($12, status),
+                    celular = COALESCE($5, celular),
+                    email = COALESCE($6, email),
+                    endereco = COALESCE($7, endereco),
+                    cidade = COALESCE($8, cidade),
+                    estado = COALESCE($9, estado),
+                    cep = COALESCE($10, cep),
+                    data_nascimento = COALESCE($11, data_nascimento),
+                    observacoes = COALESCE($12, observacoes),
+                    status = COALESCE($13, status),
+                    status_cobranca = COALESCE($14, status_cobranca),
                     updated_at = NOW()
                 WHERE id = $1::uuid RETURNING *
-            `, [id, nome, cpf_cnpj, telefone, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status]);
+            `, [id, nome, cpf_cnpj, telefone, celular, email, endereco, cidade, estado, cep, data_nascimento, observacoes, status, status_cobranca]);
 
             if (result.rows.length === 0) {
                 return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
@@ -577,27 +575,53 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // DELETE /api/cadastros/clientes/:id - Remover cliente
+    // DELETE /api/cadastros/clientes/:id - Remover cliente (com dados associados)
     router.delete('/clientes/:id', auth, async (req, res) => {
         try {
             const { id } = req.params;
 
-            const cobrancas = await pool.query('SELECT COUNT(*) FROM cobrancas WHERE cliente_id = $1::uuid', [id]);
-            
-            if (parseInt(cobrancas.rows[0].count) > 0) {
-                return res.status(400).json({ 
-                    success: false,
-                    error: 'Não é possível remover cliente com cobranças vinculadas. Inative-o.' 
-                });
+            // Verificar se cliente existe
+            const cliente = await pool.query('SELECT nome FROM clientes WHERE id = $1::uuid', [id]);
+            if (cliente.rows.length === 0) {
+                return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
             }
 
-            await pool.query('DELETE FROM clientes WHERE id = $1::uuid', [id]);
-            await registrarLog(req.user?.id, 'CLIENTE_REMOVIDO', 'clientes', id, {});
+            const nomeCliente = cliente.rows[0].nome;
 
-            res.json({ success: true, message: 'Cliente removido com sucesso!' });
+            // Deletar parcelas_acordo dos acordos deste cliente
+            try {
+                await pool.query('DELETE FROM parcelas_acordo WHERE acordo_id IN (SELECT id FROM acordos WHERE cliente_id = $1::uuid)', [id]);
+            } catch (e) { console.log('[DELETE] parcelas_acordo:', e.message); }
+
+            // Deletar parcelas dos acordos deste cliente
+            try {
+                await pool.query('DELETE FROM parcelas WHERE acordo_id IN (SELECT id FROM acordos WHERE cliente_id = $1::uuid)', [id]);
+            } catch (e) { console.log('[DELETE] parcelas:', e.message); }
+
+            // Deletar acordos deste cliente
+            try {
+                await pool.query('DELETE FROM acordos WHERE cliente_id = $1::uuid', [id]);
+            } catch (e) { console.log('[DELETE] acordos:', e.message); }
+
+            // Deletar acionamentos deste cliente
+            try {
+                await pool.query('DELETE FROM acionamentos WHERE cliente_id = $1::uuid', [id]);
+            } catch (e) { console.log('[DELETE] acionamentos:', e.message); }
+
+            // Deletar cobranças deste cliente
+            try {
+                await pool.query('DELETE FROM cobrancas WHERE cliente_id = $1::uuid', [id]);
+            } catch (e) { console.log('[DELETE] cobrancas:', e.message); }
+
+            // Finalmente deletar o cliente
+            await pool.query('DELETE FROM clientes WHERE id = $1::uuid', [id]);
+            await registrarLog(req.user?.id, 'CLIENTE_REMOVIDO', 'clientes', id, { nome: nomeCliente });
+
+            res.json({ success: true, message: 'Cliente e dados associados removidos com sucesso!' });
 
         } catch (error) {
-            res.status(500).json({ success: false, error: 'Erro ao remover cliente' });
+            console.error('[CADASTROS] Erro ao remover cliente:', error);
+            res.status(500).json({ success: false, error: 'Erro ao remover cliente: ' + error.message });
         }
     });
 
@@ -743,7 +767,6 @@ module.exports = function(pool, auth, registrarLog) {
 
             const eraPadrao = empresa.rows[0].padrao;
 
-            // Desvincular dependências
             try { await pool.query('UPDATE usuarios SET empresa_id = NULL WHERE empresa_id = $1', [id]); } catch (e) {}
             try { await pool.query('UPDATE cobrancas SET empresa_id = NULL WHERE empresa_id = $1', [id]); } catch (e) {}
             try { await pool.query('UPDATE clientes SET empresa_id = NULL WHERE empresa_id = $1', [id]); } catch (e) {}
