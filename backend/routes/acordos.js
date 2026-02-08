@@ -4,6 +4,7 @@
  * routes/acordos.js
  * ========================================
  * IMPORTANTE: Rotas específicas ANTES de rotas com :id
+ * ATUALIZADO: Busca parcelas de parcelas_acordo (Suri v3) e parcelas (antiga)
  */
 
 const express = require('express');
@@ -11,7 +12,6 @@ const express = require('express');
 module.exports = function(pool, auth, registrarLog) {
     const router = express.Router();
 
-    // Helper para registrar log de forma segura
     const logSeguro = async (userId, acao, tabela, registroId, dados) => {
         try {
             if (registrarLog && typeof registrarLog === 'function') {
@@ -21,6 +21,15 @@ module.exports = function(pool, auth, registrarLog) {
             console.error('[LOG] Erro ao registrar log:', e.message);
         }
     };
+
+    // Helper: buscar parcelas de ambas as tabelas
+    async function buscarParcelas(acordoId) {
+        let parcelas = await pool.query('SELECT * FROM parcelas_acordo WHERE acordo_id = $1 ORDER BY numero ASC', [acordoId]);
+        if (parcelas.rowCount === 0) {
+            parcelas = await pool.query('SELECT * FROM parcelas WHERE acordo_id = $1 ORDER BY numero ASC', [acordoId]);
+        }
+        return parcelas;
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // ROTAS ESPECÍFICAS (devem vir ANTES das rotas com :id)
@@ -120,11 +129,12 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { status, periodo, credor_id, acordo_id, cliente_id, page = 1, limit = 50 } = req.query;
             
+            // Tentar parcelas_acordo primeiro, depois parcelas
             let sql = `
                 SELECT p.*, a.valor_acordo, a.numero_parcelas as total_parcelas, a.status as acordo_status,
                        cl.nome as cliente_nome, cl.cpf_cnpj as cliente_cpf, cl.telefone as cliente_telefone, cl.email as cliente_email,
                        cr.nome as credor_nome, cr.id as credor_id
-                FROM parcelas p
+                FROM parcelas_acordo p
                 JOIN acordos a ON a.id = p.acordo_id
                 LEFT JOIN clientes cl ON cl.id = a.cliente_id
                 LEFT JOIN credores cr ON cr.id = a.credor_id
@@ -147,7 +157,14 @@ module.exports = function(pool, auth, registrarLog) {
             sql += ` ORDER BY p.data_vencimento ASC LIMIT $${idx} OFFSET $${idx + 1}`;
             params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
             
-            const resultado = await pool.query(sql, params);
+            let resultado = await pool.query(sql, params);
+            
+            // Se não encontrou em parcelas_acordo, buscar em parcelas (antiga)
+            if (resultado.rowCount === 0) {
+                sql = sql.replace(/parcelas_acordo/g, 'parcelas');
+                resultado = await pool.query(sql, params);
+            }
+            
             res.json({ success: true, data: resultado.rows });
         } catch (error) {
             console.error('[PARCELAS] Erro ao listar:', error);
@@ -167,8 +184,8 @@ module.exports = function(pool, auth, registrarLog) {
                     COUNT(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN 1 END)::int as vencidas,
                     COALESCE(SUM(CASE WHEN p.data_vencimento < CURRENT_DATE AND p.status = 'pendente' THEN p.valor ELSE 0 END), 0)::numeric as valor_vencidas,
                     COUNT(CASE WHEN p.status = 'pago' THEN 1 END)::int as total_pagas,
-                    COALESCE(SUM(CASE WHEN p.status = 'pago' THEN COALESCE(p.valor_pago, p.valor) ELSE 0 END), 0)::numeric as valor_total_pago
-                FROM parcelas p
+                    COALESCE(SUM(CASE WHEN p.status = 'pago' THEN p.valor ELSE 0 END), 0)::numeric as valor_total_pago
+                FROM parcelas_acordo p
                 JOIN acordos a ON a.id = p.acordo_id
                 WHERE a.status IN ('ativo', 'quitado')
             `);
@@ -199,7 +216,15 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('BEGIN');
             
-            const parcela = await client.query('SELECT acordo_id, valor FROM parcelas WHERE id = $1', [id]);
+            // Tentar parcelas_acordo primeiro
+            let parcela = await client.query('SELECT acordo_id, valor FROM parcelas_acordo WHERE id = $1', [id]);
+            let tabela = 'parcelas_acordo';
+            
+            if (!parcela.rowCount) {
+                parcela = await client.query('SELECT acordo_id, valor FROM parcelas WHERE id = $1', [id]);
+                tabela = 'parcelas';
+            }
+            
             if (!parcela.rowCount) {
                 await client.query('ROLLBACK');
                 return res.status(404).json({ success: false, error: 'Parcela não encontrada' });
@@ -208,13 +233,13 @@ module.exports = function(pool, auth, registrarLog) {
             const valorPago = valor_pago || parcela.rows[0].valor;
             
             await client.query(`
-                UPDATE parcelas SET status = 'pago', valor_pago = $1, data_pagamento = $2, forma_pagamento = $3, updated_at = NOW()
-                WHERE id = $4
-            `, [valorPago, data_pagamento || new Date(), forma_pagamento || 'pix', id]);
+                UPDATE ${tabela} SET status = 'pago', data_pagamento = $1, updated_at = NOW()
+                WHERE id = $2
+            `, [data_pagamento || new Date(), id]);
             
             // Verificar se acordo foi quitado
             const acordoId = parcela.rows[0].acordo_id;
-            const pendentes = await client.query('SELECT COUNT(*) FROM parcelas WHERE acordo_id = $1 AND status = \'pendente\'', [acordoId]);
+            const pendentes = await client.query(`SELECT COUNT(*) FROM ${tabela} WHERE acordo_id = $1 AND status = 'pendente'`, [acordoId]);
             
             if (parseInt(pendentes.rows[0].count) === 0) {
                 await client.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1', [acordoId]);
@@ -222,7 +247,7 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('COMMIT');
             
-            await logSeguro(req.user?.id, 'PARCELA_PAGA', 'parcelas', id, { valor_pago: valorPago });
+            await logSeguro(req.user?.id, 'PARCELA_PAGA', tabela, id, { valor_pago: valorPago });
             
             const quitado = parseInt(pendentes.rows[0].count) === 0;
             res.json({ success: true, message: quitado ? 'Parcela paga! Acordo quitado!' : 'Parcela paga!', acordo_quitado: quitado });
@@ -244,10 +269,18 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!nova_data) return res.status(400).json({ success: false, error: 'Nova data é obrigatória' });
             
-            const resultado = await pool.query(`
-                UPDATE parcelas SET data_vencimento = $1, observacoes = CONCAT(COALESCE(observacoes, ''), ' | Reagendado: ', $2), updated_at = NOW()
-                WHERE id = $3 AND status = 'pendente' RETURNING *
-            `, [nova_data, motivo || 'Solicitação', id]);
+            // Tentar parcelas_acordo primeiro
+            let resultado = await pool.query(`
+                UPDATE parcelas_acordo SET data_vencimento = $1, updated_at = NOW()
+                WHERE id = $2 AND status = 'pendente' RETURNING *
+            `, [nova_data, id]);
+            
+            if (!resultado.rowCount) {
+                resultado = await pool.query(`
+                    UPDATE parcelas SET data_vencimento = $1, observacoes = CONCAT(COALESCE(observacoes, ''), ' | Reagendado: ', $2), updated_at = NOW()
+                    WHERE id = $3 AND status = 'pendente' RETURNING *
+                `, [nova_data, motivo || 'Solicitação', id]);
+            }
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Parcela não encontrada ou já paga' });
             
@@ -264,14 +297,26 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { id } = req.params;
             
-            const resultado = await pool.query(`
+            // Tentar parcelas_acordo primeiro
+            let resultado = await pool.query(`
                 SELECT p.*, cl.nome as cliente_nome, cl.telefone as cliente_telefone, a.numero_parcelas, cr.nome as credor_nome
-                FROM parcelas p
+                FROM parcelas_acordo p
                 JOIN acordos a ON a.id = p.acordo_id
                 LEFT JOIN clientes cl ON cl.id = a.cliente_id
                 LEFT JOIN credores cr ON cr.id = a.credor_id
                 WHERE p.id = $1
             `, [id]);
+            
+            if (!resultado.rowCount) {
+                resultado = await pool.query(`
+                    SELECT p.*, cl.nome as cliente_nome, cl.telefone as cliente_telefone, a.numero_parcelas, cr.nome as credor_nome
+                    FROM parcelas p
+                    JOIN acordos a ON a.id = p.acordo_id
+                    LEFT JOIN clientes cl ON cl.id = a.cliente_id
+                    LEFT JOIN credores cr ON cr.id = a.credor_id
+                    WHERE p.id = $1
+                `, [id]);
+            }
             
             if (!resultado.rowCount) return res.status(404).json({ success: false, error: 'Parcela não encontrada' });
             
@@ -289,8 +334,6 @@ module.exports = function(pool, auth, registrarLog) {
             let mensagem = vencida
                 ? `Olá, *${p.cliente_nome}*!\n\n⚠️ *PARCELA EM ATRASO*\n\n📌 *Parcela:* ${p.numero}/${p.numero_parcelas}\n💰 *Valor:* ${valor}\n📅 *Vencimento:* ${vencimento}\n\nPor favor, regularize.`
                 : `Olá, *${p.cliente_nome}*!\n\n📄 *LEMBRETE DE PARCELA*\n\n📌 *Parcela:* ${p.numero}/${p.numero_parcelas}\n💰 *Valor:* ${valor}\n📅 *Vencimento:* ${vencimento}\n\nEvite juros!`;
-            
-            if (p.asaas_invoice_url) mensagem += `\n\n🔗 *Link:* ${p.asaas_invoice_url}`;
             
             res.json({ success: true, link: `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`, telefone, mensagem });
         } catch (error) {
@@ -312,9 +355,18 @@ module.exports = function(pool, auth, registrarLog) {
                 SELECT a.*, c.descricao as cobranca_descricao, c.valor_original as divida_original,
                        cl.nome as cliente_nome, cl.cpf_cnpj as cliente_cpf, cl.telefone as cliente_telefone,
                        cr.nome as credor_nome,
-                       (SELECT COUNT(*)::int FROM parcelas WHERE acordo_id = a.id) as total_parcelas,
-                       (SELECT COUNT(*)::int FROM parcelas WHERE acordo_id = a.id AND status = 'pago') as parcelas_pagas,
-                       (SELECT MIN(data_vencimento) FROM parcelas WHERE acordo_id = a.id AND status = 'pendente') as proxima_parcela
+                       CASE WHEN (SELECT COUNT(*) FROM parcelas_acordo WHERE acordo_id = a.id) > 0
+                           THEN (SELECT COUNT(*)::int FROM parcelas_acordo WHERE acordo_id = a.id)
+                           ELSE (SELECT COUNT(*)::int FROM parcelas WHERE acordo_id = a.id)
+                       END as total_parcelas,
+                       CASE WHEN (SELECT COUNT(*) FROM parcelas_acordo WHERE acordo_id = a.id) > 0
+                           THEN (SELECT COUNT(*)::int FROM parcelas_acordo WHERE acordo_id = a.id AND status = 'pago')
+                           ELSE (SELECT COUNT(*)::int FROM parcelas WHERE acordo_id = a.id AND status = 'pago')
+                       END as parcelas_pagas,
+                       CASE WHEN (SELECT COUNT(*) FROM parcelas_acordo WHERE acordo_id = a.id) > 0
+                           THEN (SELECT MIN(data_vencimento) FROM parcelas_acordo WHERE acordo_id = a.id AND status = 'pendente')
+                           ELSE (SELECT MIN(data_vencimento) FROM parcelas WHERE acordo_id = a.id AND status = 'pendente')
+                       END as proxima_parcela
                 FROM acordos a
                 LEFT JOIN cobrancas c ON c.id = a.cobranca_id
                 LEFT JOIN clientes cl ON cl.id = a.cliente_id
@@ -391,28 +443,15 @@ module.exports = function(pool, auth, registrarLog) {
             const valorRestante = valorAcordo - valorEntrada;
             const valorParcela = numParcelas > 0 ? (valorRestante / numParcelas) : 0;
             
-            console.log('[ACORDOS] Calculado:', { valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, valorParcela });
-            
             const acordo = await client.query(`
                 INSERT INTO acordos (cobranca_id, cliente_id, credor_id, valor_original, valor_acordo, desconto_percentual, valor_entrada, numero_parcelas, valor_parcela, data_primeiro_vencimento, observacoes, status, created_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'ativo', NOW()) RETURNING *
             `, [
-                b.cobranca_id || null, 
-                clienteId, 
-                credorId, 
-                valorOriginal, 
-                valorAcordo, 
-                descontoPerc, 
-                valorEntrada, 
-                numParcelas, 
-                Math.round(valorParcela * 100) / 100, 
-                b.data_primeiro_vencimento || new Date(), 
-                b.observacoes || null
+                b.cobranca_id || null, clienteId, credorId, valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, Math.round(valorParcela * 100) / 100, b.data_primeiro_vencimento || new Date(), b.observacoes || null
             ]);
             
             const acordoId = acordo.rows[0].id;
             
-            // Criar parcelas
             let dataVenc = new Date(b.data_primeiro_vencimento || Date.now());
             
             for (let i = 1; i <= numParcelas; i++) {
@@ -424,13 +463,10 @@ module.exports = function(pool, auth, registrarLog) {
                 dataVenc.setMonth(dataVenc.getMonth() + 1);
             }
             
-            // Atualizar cobrança original (se tiver acordo_id na tabela)
             if (b.cobranca_id) {
                 try {
                     await client.query('UPDATE cobrancas SET status = \'acordo\', acordo_id = $1, updated_at = NOW() WHERE id = $2', [acordoId, b.cobranca_id]);
                 } catch (colErr) {
-                    // Se acordo_id não existir, só atualiza o status
-                    console.log('[ACORDOS] Coluna acordo_id não existe, atualizando só status');
                     await client.query('UPDATE cobrancas SET status = \'acordo\', updated_at = NOW() WHERE id = $1', [b.cobranca_id]);
                 }
             }
@@ -472,7 +508,7 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!acordo.rowCount) return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
             
-            const parcelas = await pool.query('SELECT * FROM parcelas WHERE acordo_id = $1 ORDER BY numero ASC', [id]);
+            const parcelas = await buscarParcelas(id);
             
             res.json({ success: true, data: { ...acordo.rows[0], parcelas: parcelas.rows } });
         } catch (error) {
@@ -481,13 +517,11 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // GET /api/acordos/:id/parcelas - Listar parcelas de um acordo específico
+    // GET /api/acordos/:id/parcelas
     router.get('/:id/parcelas', auth, async (req, res) => {
         try {
             const { id } = req.params;
-            
-            const parcelas = await pool.query('SELECT * FROM parcelas WHERE acordo_id = $1 ORDER BY numero ASC', [id]);
-            
+            const parcelas = await buscarParcelas(id);
             res.json({ success: true, data: parcelas.rows });
         } catch (error) {
             console.error('[ACORDOS] Erro ao buscar parcelas:', error);
@@ -524,11 +558,8 @@ module.exports = function(pool, auth, registrarLog) {
             const { id } = req.params;
             const { motivo } = req.body || {};
             
-            console.log('[ACORDOS] Quebrando acordo:', id, 'Motivo:', motivo);
-            
             await client.query('BEGIN');
             
-            // Primeiro buscar o acordo para pegar cobranca_id e observacoes
             const acordoAtual = await client.query('SELECT cobranca_id, observacoes FROM acordos WHERE id = $1', [id]);
             
             if (!acordoAtual.rowCount) {
@@ -541,35 +572,21 @@ module.exports = function(pool, auth, registrarLog) {
             const motivoTexto = motivo || 'Não informado';
             const novaObs = obsAtual ? `${obsAtual} | QUEBRADO: ${motivoTexto}` : `QUEBRADO: ${motivoTexto}`;
             
-            // Atualizar acordo para quebrado
-            await client.query(`
-                UPDATE acordos 
-                SET status = 'quebrado', 
-                    observacoes = $1,
-                    updated_at = NOW()
-                WHERE id = $2
-            `, [novaObs, id]);
+            await client.query('UPDATE acordos SET status = \'quebrado\', observacoes = $1, updated_at = NOW() WHERE id = $2', [novaObs, id]);
             
-            // Cancelar parcelas pendentes
-            await client.query(`
-                UPDATE parcelas SET status = 'cancelado', updated_at = NOW() 
-                WHERE acordo_id = $1 AND status = 'pendente'
-            `, [id]);
+            // Cancelar parcelas pendentes em ambas as tabelas
+            await client.query('UPDATE parcelas_acordo SET status = \'cancelado\', updated_at = NOW() WHERE acordo_id = $1 AND status = \'pendente\'', [id]);
+            await client.query('UPDATE parcelas SET status = \'cancelado\', updated_at = NOW() WHERE acordo_id = $1 AND status = \'pendente\'', [id]);
             
-            // Voltar cobrança para vencido (se existir)
             if (cobrancaId) {
                 try {
                     await client.query('UPDATE cobrancas SET status = \'vencido\', updated_at = NOW() WHERE id = $1', [cobrancaId]);
-                } catch (e) {
-                    console.log('[ACORDOS] Erro ao atualizar cobrança (ignorado):', e.message);
-                }
+                } catch (e) {}
             }
             
             await client.query('COMMIT');
             
             await logSeguro(req.user?.id, 'ACORDO_QUEBRADO', 'acordos', id, { motivo: motivoTexto });
-            
-            console.log('[ACORDOS] Acordo quebrado com sucesso:', id);
             res.json({ success: true, message: 'Acordo quebrado. Cobrança voltou para status vencido.' });
             
         } catch (error) {
@@ -581,18 +598,15 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // DELETE /api/acordos/:id - Excluir acordo
+    // DELETE /api/acordos/:id
     router.delete('/:id', auth, async (req, res) => {
         const client = await pool.connect();
         
         try {
             const { id } = req.params;
             
-            console.log('[ACORDOS] Excluindo acordo:', id);
-            
             await client.query('BEGIN');
             
-            // Buscar acordo para pegar cobranca_id
             const acordo = await client.query('SELECT cobranca_id FROM acordos WHERE id = $1', [id]);
             
             if (!acordo.rowCount) {
@@ -600,26 +614,19 @@ module.exports = function(pool, auth, registrarLog) {
                 return res.status(404).json({ success: false, error: 'Acordo não encontrado' });
             }
             
-            const cobrancaId = acordo.rows[0].cobranca_id;
-            
-            // Limpar referência na tabela cobrancas (acordo_id = NULL)
             try {
                 await client.query('UPDATE cobrancas SET acordo_id = NULL, status = \'vencido\', updated_at = NOW() WHERE acordo_id = $1', [id]);
-            } catch (e) {
-                console.log('[ACORDOS] Erro ao limpar acordo_id em cobrancas (ignorado):', e.message);
-            }
+            } catch (e) {}
             
-            // Excluir parcelas
+            // Excluir parcelas de ambas as tabelas
+            await client.query('DELETE FROM parcelas_acordo WHERE acordo_id = $1', [id]);
             await client.query('DELETE FROM parcelas WHERE acordo_id = $1', [id]);
             
-            // Excluir acordo
             await client.query('DELETE FROM acordos WHERE id = $1', [id]);
             
             await client.query('COMMIT');
             
             await logSeguro(req.user?.id, 'ACORDO_EXCLUIDO', 'acordos', id, {});
-            
-            console.log('[ACORDOS] Acordo excluído com sucesso:', id);
             res.json({ success: true, message: 'Acordo excluído com sucesso' });
             
         } catch (error) {
