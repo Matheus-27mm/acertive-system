@@ -74,14 +74,14 @@ module.exports = function(pool, auth, registrarLog) {
 
             // Atualizar parcela (tabela parcelas - antiga)
             try {
-                const parc = await pool.query('SELECT p.*, a.id as acordo_id FROM parcelas p JOIN acordos a ON p.acordo_id = a.id WHERE p.asaas_payment_id = $1', [payment.id]);
+                const parc = await pool.query('SELECT p.*, a.id as acordo_id FROM parcelas p JOIN acordos a ON p.acordo_id = a.id WHERE p.asaas_id = $1::text', [String(payment.id)]);
                 if (parc.rowCount > 0) {
-                    await pool.query(`UPDATE parcelas SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END WHERE id = $2`, [novoStatus, parc.rows[0].id]);
+                    await pool.query('UPDATE parcelas SET status = $1::text, data_pagamento = CASE WHEN $1::text = \'pago\' THEN NOW() ELSE data_pagamento END WHERE id = $2::uuid', [novoStatus, parc.rows[0].id]);
                     console.log('[ASAAS] ✅ Parcela (antiga) atualizada:', parc.rows[0].id, '->', novoStatus);
                     if (novoStatus === 'pago') {
-                        const pendentes = await pool.query('SELECT COUNT(*) FROM parcelas WHERE acordo_id = $1 AND status != \'pago\'', [parc.rows[0].acordo_id]);
+                        const pendentes = await pool.query('SELECT COUNT(*) FROM parcelas WHERE acordo_id = $1::uuid AND status != \'pago\'', [parc.rows[0].acordo_id]);
                         if (parseInt(pendentes.rows[0].count) === 0) {
-                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1', [parc.rows[0].acordo_id]);
+                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1::uuid', [parc.rows[0].acordo_id]);
                             console.log('[ASAAS] ✅ Acordo quitado (antiga):', parc.rows[0].acordo_id);
                         }
                     }
@@ -91,23 +91,27 @@ module.exports = function(pool, auth, registrarLog) {
             // Atualizar parcela_acordo (tabela nova - Suri v3)
             try {
                 var parc2 = { rowCount: 0, rows: [] };
-                // Buscar por asaas_payment_id primeiro
-                var findByPayment = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.asaas_payment_id = $1', [String(payment.id)]);
+                // Buscar por asaas_payment_id primeiro (cast explícito para text)
+                var findByPayment = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.asaas_payment_id = $1::text', [String(payment.id)]);
                 if (findByPayment.rowCount > 0) {
                     parc2 = findByPayment;
+                    console.log('[ASAAS] Encontrou por payment_id:', payment.id);
                 } else if (payment.externalReference) {
                     // Se não achou, buscar por external_reference
-                    var findByRef = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.external_reference = $1', [String(payment.externalReference)]);
-                    if (findByRef.rowCount > 0) parc2 = findByRef;
+                    var findByRef = await pool.query('SELECT pa.*, pa.acordo_id FROM parcelas_acordo pa WHERE pa.external_reference = $1::text', [String(payment.externalReference)]);
+                    if (findByRef.rowCount > 0) {
+                        parc2 = findByRef;
+                        console.log('[ASAAS] Encontrou por external_reference:', payment.externalReference);
+                    }
                 }
                 if (parc2.rowCount > 0) {
-                    await pool.query(`UPDATE parcelas_acordo SET status = $1, data_pagamento = CASE WHEN $1 = 'pago' THEN NOW() ELSE data_pagamento END, updated_at = NOW() WHERE id = $2`, [novoStatus, parc2.rows[0].id]);
+                    await pool.query('UPDATE parcelas_acordo SET status = $1::text, data_pagamento = CASE WHEN $1::text = \'pago\' THEN NOW() ELSE data_pagamento END, updated_at = NOW() WHERE id = $2::uuid', [novoStatus, parc2.rows[0].id]);
                     console.log('[ASAAS] ✅ Parcela acordo atualizada:', parc2.rows[0].id, '->', novoStatus);
                     if (novoStatus === 'pago') {
                         var acordoId = parc2.rows[0].acordo_id;
-                        const pendentes2 = await pool.query('SELECT COUNT(*) as n FROM parcelas_acordo WHERE acordo_id = $1 AND status != \'pago\'', [acordoId]);
+                        const pendentes2 = await pool.query('SELECT COUNT(*) as n FROM parcelas_acordo WHERE acordo_id = $1::uuid AND status != \'pago\'', [acordoId]);
                         if (parseInt(pendentes2.rows[0].n) === 0) {
-                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1', [acordoId]);
+                            await pool.query('UPDATE acordos SET status = \'quitado\', updated_at = NOW() WHERE id = $1::uuid', [acordoId]);
                             console.log('[ASAAS] ✅ Acordo quitado:', acordoId);
                             // Atualizar status do cliente
                             try {
