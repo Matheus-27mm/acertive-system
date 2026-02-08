@@ -10,863 +10,209 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-primary: #07090d;
-            --bg-secondary: #0d1117;
-            --bg-card: #111820;
-            --bg-card-hover: #161d27;
-            --bg-elevated: #1a222d;
-            --gold-primary: #d4a853;
-            --gold-light: #e8c47c;
-            --gold-dark: #b8923e;
-            --gold-glow: rgba(212, 168, 83, 0.15);
-            --gold-subtle: rgba(212, 168, 83, 0.08);
-            --success: #22c55e;
-            --success-bg: rgba(34, 197, 94, 0.12);
-            --warning: #f59e0b;
-            --warning-bg: rgba(245, 158, 11, 0.12);
-            --danger: #ef4444;
-            --danger-bg: rgba(239, 68, 68, 0.12);
-            --info: #3b82f6;
-            --info-bg: rgba(59, 130, 246, 0.12);
-            --text-primary: #f5f5f5;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border-subtle: rgba(212, 168, 83, 0.1);
-            --border-default: rgba(212, 168, 83, 0.15);
-            --border-strong: rgba(212, 168, 83, 0.25);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-            --shadow-gold: 0 4px 30px rgba(212, 168, 83, 0.2);
+            --bg-primary:#07090d;--bg-secondary:#0d1117;--bg-card:#111820;--bg-card-hover:#161d27;
+            --bg-elevated:#1a222d;--gold-primary:#d4a853;--gold-light:#e8c47c;--gold-dark:#b8923e;
+            --gold-glow:rgba(212,168,83,0.15);--gold-subtle:rgba(212,168,83,0.08);
+            --success:#22c55e;--success-bg:rgba(34,197,94,0.12);
+            --warning:#f59e0b;--warning-bg:rgba(245,158,11,0.12);
+            --danger:#ef4444;--danger-bg:rgba(239,68,68,0.12);
+            --info:#3b82f6;--info-bg:rgba(59,130,246,0.12);
+            --text-primary:#f5f5f5;--text-secondary:#9ca3af;--text-muted:#6b7280;
+            --border-subtle:rgba(212,168,83,0.1);--border-default:rgba(212,168,83,0.15);
+            --border-strong:rgba(212,168,83,0.25);
+            --shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-gold:0 4px 30px rgba(212,168,83,0.2);
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;background-image:radial-gradient(ellipse at 0% 0%,rgba(212,168,83,0.03)0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(212,168,83,0.02)0%,transparent 50%)}
         
-        body { 
-            font-family: 'DM Sans', sans-serif; 
-            background: var(--bg-primary); 
-            color: var(--text-primary); 
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(ellipse at 0% 0%, rgba(212, 168, 83, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 100% 100%, rgba(212, 168, 83, 0.02) 0%, transparent 50%);
-        }
-
         /* Sidebar */
-        .sidebar { 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 280px; 
-            height: 100vh; 
-            background: var(--bg-secondary); 
-            border-right: 1px solid var(--border-subtle); 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 100; 
-        }
-        
-        .sidebar-header { 
-            padding: 28px 24px; 
-            border-bottom: 1px solid var(--border-subtle); 
-        }
-        
-        .sidebar-logo { 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-        }
-        
-        .sidebar-logo-icon { 
-            width: 46px; 
-            height: 46px; 
-            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 20px; 
-            color: var(--bg-primary);
-            box-shadow: var(--shadow-gold);
-        }
-        
-        .sidebar-logo-text { 
-            font-family: 'Playfair Display', serif;
-            font-size: 26px; 
-            font-weight: 700; 
-        }
-        
-        .sidebar-logo-text span { color: var(--gold-primary); }
-        
-        .sidebar-nav { 
-            flex: 1; 
-            padding: 24px 16px; 
-            overflow-y: auto; 
-        }
-        
-        .nav-section { margin-bottom: 28px; }
-        
-        .nav-section-title { 
-            font-size: 10px; 
-            font-weight: 700; 
-            color: var(--gold-primary); 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px; 
-            padding: 0 14px; 
-            margin-bottom: 12px;
-            opacity: 0.8;
-        }
-        
-        .nav-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-            padding: 14px 18px; 
-            color: var(--text-secondary); 
-            text-decoration: none; 
-            border-radius: 10px; 
-            margin-bottom: 4px; 
-            transition: all 0.25s; 
-            font-size: 14px; 
-            font-weight: 500;
-            position: relative;
-            border: 1px solid transparent;
-        }
-        
-        .nav-item:hover { 
-            background: var(--gold-subtle); 
-            color: var(--text-primary);
-            border-color: var(--border-subtle);
-        }
-        
-        .nav-item.active { 
-            background: linear-gradient(135deg, var(--gold-subtle) 0%, transparent 100%);
-            color: var(--gold-light);
-            border-color: var(--border-default);
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: var(--gold-primary);
-            border-radius: 0 4px 4px 0;
-        }
-        
-        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
-        
-        .nav-item .badge { 
-            margin-left: auto; 
-            background: var(--danger); 
-            color: white; 
-            font-size: 10px; 
-            font-weight: 700; 
-            padding: 3px 8px; 
-            border-radius: 20px;
-            animation: pulse-badge 2s infinite;
-        }
-
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .sidebar-footer { 
-            padding: 20px; 
-            border-top: 1px solid var(--border-subtle); 
-        }
-        
-        .user-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            padding: 14px; 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px; 
-        }
-        
-        .user-avatar { 
-            width: 40px; 
-            height: 40px; 
-            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); 
-            border-radius: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 14px; 
-            font-weight: 700;
-            color: var(--bg-primary);
-        }
-        
-        .user-details { flex: 1; }
-        .user-name { font-size: 14px; font-weight: 600; }
-        .user-role { font-size: 12px; color: var(--text-muted); }
-        
-        .user-logout { 
-            color: var(--text-muted); 
-            padding: 8px; 
-            cursor: pointer; 
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        
-        .user-logout:hover { 
-            background: var(--danger-bg); 
-            color: var(--danger); 
-        }
+        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
+        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
+        .sidebar-logo{display:flex;align-items:center;gap:14px}
+        .sidebar-logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
+        .sidebar-logo-text{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
+        .sidebar-logo-text span{color:var(--gold-primary)}
+        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
+        .nav-section{margin-bottom:28px}
+        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px;opacity:.8}
+        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all .25s;font-size:14px;font-weight:500;position:relative;border:1px solid transparent}
+        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary);border-color:var(--border-subtle)}
+        .nav-item.active{background:linear-gradient(135deg,var(--gold-subtle),transparent);color:var(--gold-light);border-color:var(--border-default)}
+        .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold-primary);border-radius:0 4px 4px 0}
+        .nav-item i{width:20px;text-align:center;font-size:15px}
+        .nav-item .badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
+        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
+        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--bg-primary)}
+        .user-details{flex:1}
+        .user-name{font-size:14px;font-weight:600}
+        .user-role{font-size:12px;color:var(--text-muted)}
+        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px;transition:all .2s}
+        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
 
         /* Main */
-        .main-content { 
-            margin-left: 280px; 
-            min-height: 100vh; 
-            padding: 36px 40px; 
-        }
-
-        /* Header */
-        .page-header { 
-            margin-bottom: 32px; 
-        }
-        
-        .page-header h1 { 
-            font-family: 'Playfair Display', serif;
-            font-size: 32px; 
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
+        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
+        .page-header{margin-bottom:32px}
+        .page-header h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:600;letter-spacing:-.5px}
 
         /* Stats */
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 20px; 
-            margin-bottom: 32px; 
-        }
-        
-        .stat-card { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-subtle); 
-            border-radius: 16px; 
-            padding: 24px;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            border-color: var(--border-default);
-            transform: translateY(-2px);
-        }
-        
-        .stat-icon { 
-            width: 52px; 
-            height: 52px; 
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 22px; 
-            margin-bottom: 18px; 
-        }
-        
-        .stat-card.gold .stat-icon { 
-            background: var(--gold-subtle); 
-            color: var(--gold-primary);
-            border: 1px solid var(--border-default);
-        }
-        
-        .stat-card.green .stat-icon { 
-            background: var(--success-bg); 
-            color: var(--success);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .stat-card.blue .stat-icon { 
-            background: var(--info-bg); 
-            color: var(--info);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        
-        .stat-card.red .stat-icon { 
-            background: var(--danger-bg); 
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        
-        .stat-value { 
-            font-family: 'Playfair Display', serif;
-            font-size: 28px; 
-            font-weight: 700; 
-            margin-bottom: 6px; 
-        }
-        
-        .stat-label { 
-            font-size: 13px; 
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;transition:all .3s}
+        .stat-card:hover{border-color:var(--border-default);transform:translateY(-2px)}
+        .stat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
+        .stat-card.gold .stat-icon{background:var(--gold-subtle);color:var(--gold-primary);border:1px solid var(--border-default)}
+        .stat-card.green .stat-icon{background:var(--success-bg);color:var(--success);border:1px solid rgba(34,197,94,.3)}
+        .stat-card.blue .stat-icon{background:var(--info-bg);color:var(--info);border:1px solid rgba(59,130,246,.3)}
+        .stat-card.red .stat-icon{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+        .stat-value{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:6px}
+        .stat-label{font-size:13px;color:var(--text-muted);font-weight:500}
 
         /* Tabs */
-        .tabs { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 24px; 
-            border-bottom: 1px solid var(--border-subtle); 
-            padding-bottom: 20px; 
-        }
-        
-        .tab { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            padding: 12px 20px; 
-            background: transparent; 
-            border: 1px solid transparent;
-            color: var(--text-muted); 
-            font-size: 14px; 
-            font-weight: 500; 
-            cursor: pointer; 
-            border-radius: 10px; 
-            transition: all 0.3s;
-            font-family: 'DM Sans', sans-serif;
-        }
-        
-        .tab:hover { 
-            color: var(--text-primary); 
-            background: var(--gold-subtle);
-            border-color: var(--border-subtle);
-        }
-        
-        .tab.active { 
-            background: linear-gradient(135deg, var(--gold-subtle) 0%, transparent 100%);
-            border-color: var(--gold-primary);
-            color: var(--gold-light); 
-        }
-        
-        .tab .count { 
-            background: var(--bg-secondary); 
-            padding: 4px 10px; 
-            border-radius: 10px; 
-            font-size: 11px;
-            font-weight: 700;
-        }
-        
-        .tab.active .count { 
-            background: var(--gold-primary);
-            color: var(--bg-primary);
-        }
+        .tabs{display:flex;gap:10px;margin-bottom:24px;border-bottom:1px solid var(--border-subtle);padding-bottom:20px}
+        .tab{display:flex;align-items:center;gap:10px;padding:12px 20px;background:transparent;border:1px solid transparent;color:var(--text-muted);font-size:14px;font-weight:500;cursor:pointer;border-radius:10px;transition:all .3s;font-family:'DM Sans',sans-serif}
+        .tab:hover{color:var(--text-primary);background:var(--gold-subtle);border-color:var(--border-subtle)}
+        .tab.active{background:linear-gradient(135deg,var(--gold-subtle),transparent);border-color:var(--gold-primary);color:var(--gold-light)}
+        .tab .count{background:var(--bg-secondary);padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700}
+        .tab.active .count{background:var(--gold-primary);color:var(--bg-primary)}
 
-        /* Search */
-        .search-bar { margin-bottom: 24px; }
-        
-        .search-box { 
-            position: relative; 
-            max-width: 400px; 
-        }
-        
-        .search-box i { 
-            position: absolute; 
-            left: 18px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            color: var(--text-muted); 
-        }
-        
-        .search-box input { 
-            width: 100%; 
-            padding: 14px 18px 14px 48px; 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-subtle); 
-            border-radius: 12px; 
-            color: var(--text-primary); 
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s;
-        }
-        
-        .search-box input:focus { 
-            outline: none; 
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 0 3px var(--gold-glow);
-        }
-
-        .search-box input::placeholder {
-            color: var(--text-muted);
-        }
+        /* Filters bar */
+        .filters-bar{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+        .search-box{position:relative;flex:1;min-width:250px}
+        .search-box i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+        .search-box input{width:100%;padding:14px 18px 14px 48px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-size:14px;font-family:'DM Sans',sans-serif;transition:all .2s}
+        .search-box input:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
+        .search-box input::placeholder{color:var(--text-muted)}
+        .filter-select{padding:14px 18px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;min-width:180px;transition:all .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+        .filter-select:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
 
         /* Table */
-        .table-card { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-subtle); 
-            border-radius: 16px; 
-            overflow: hidden;
-            transition: all 0.3s;
-        }
+        .table-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
+        table{width:100%;border-collapse:collapse}
+        th{text-align:left;padding:18px 24px;font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border-subtle);background:var(--bg-secondary)}
+        td{padding:18px 24px;border-bottom:1px solid var(--border-subtle);font-size:14px}
+        tr:hover{background:var(--gold-subtle)}
+        tr:last-child td{border-bottom:none}
+        .cliente-info{display:flex;align-items:center;gap:14px}
+        .cliente-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-subtle),var(--bg-elevated));border:1px solid var(--border-default);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-primary)}
+        .cliente-nome{font-weight:600;margin-bottom:3px}
+        .cliente-doc{font-size:12px;color:var(--text-muted)}
+        .valor-cell{font-family:'Playfair Display',serif;font-weight:600;color:var(--gold-primary);font-size:15px}
+        .valor-sub{font-size:11px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-weight:400}
 
-        .table-card:hover {
-            border-color: var(--border-default);
-        }
-        
-        table { width: 100%; border-collapse: collapse; }
-        
-        th { 
-            text-align: left; 
-            padding: 18px 24px; 
-            font-size: 10px; 
-            font-weight: 700; 
-            color: var(--gold-primary); 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            border-bottom: 1px solid var(--border-subtle); 
-            background: var(--bg-secondary); 
-        }
-        
-        td { 
-            padding: 18px 24px; 
-            border-bottom: 1px solid var(--border-subtle); 
-            font-size: 14px; 
-        }
-        
-        tr:hover { 
-            background: var(--gold-subtle); 
-        }
-        
-        tr:last-child td { border-bottom: none; }
+        /* Parcelas cell enhanced */
+        .parcelas-cell{display:flex;flex-direction:column;gap:6px}
+        .parcelas-bar-row{display:flex;align-items:center;gap:12px}
+        .parcelas-bar{flex:1;height:8px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;border:1px solid var(--border-subtle)}
+        .parcelas-progress{height:100%;border-radius:4px;transition:width .5s ease}
+        .parcelas-progress.low{background:linear-gradient(90deg,var(--danger),#f87171)}
+        .parcelas-progress.mid{background:linear-gradient(90deg,var(--warning),#fbbf24)}
+        .parcelas-progress.high{background:linear-gradient(90deg,var(--gold-dark),var(--gold-primary))}
+        .parcelas-progress.full{background:linear-gradient(90deg,#16a34a,var(--success))}
+        .parcelas-text{font-size:12px;color:var(--text-secondary);white-space:nowrap;font-weight:600}
+        .parcelas-detail{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+        .parcelas-detail i{font-size:10px}
+        .parcelas-detail.vencida{color:var(--danger)}
+        .parcelas-detail.hoje{color:var(--warning)}
+        .parcelas-detail.ok{color:var(--text-muted)}
 
-        .cliente-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-        }
-        
-        .cliente-avatar { 
-            width: 44px; 
-            height: 44px; 
-            background: linear-gradient(135deg, var(--gold-subtle) 0%, var(--bg-elevated) 100%);
-            border: 1px solid var(--border-default);
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: 700; 
-            color: var(--gold-primary); 
-        }
-        
-        .cliente-nome { font-weight: 600; margin-bottom: 3px; }
-        .cliente-doc { font-size: 12px; color: var(--text-muted); }
+        .status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+        .status-ativo{background:var(--success-bg);color:#34d399;border:1px solid rgba(34,197,94,.3)}
+        .status-quitado{background:var(--info-bg);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+        .status-quebrado{background:var(--danger-bg);color:#f87171;border:1px solid rgba(239,68,68,.3)}
 
-        .status-badge { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px; 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 11px; 
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .status-ativo { 
-            background: var(--success-bg); 
-            color: #34d399;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .status-quitado { 
-            background: var(--info-bg); 
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        
-        .status-quebrado { 
-            background: var(--danger-bg); 
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        
-        .status-pendente { 
-            background: var(--warning-bg); 
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
+        .actions-cell{display:flex;gap:8px}
+        .action-btn{width:38px;height:38px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;font-size:14px}
+        .action-btn.view{background:var(--gold-subtle);color:var(--gold-primary);border:1px solid var(--border-subtle)}
+        .action-btn.cancel{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+        .action-btn.delete{background:rgba(107,114,128,.15);color:#9ca3af;border:1px solid rgba(107,114,128,.3)}
+        .action-btn.delete:hover{background:var(--danger-bg);color:var(--danger);border-color:rgba(239,68,68,.3)}
+        .action-btn:hover{transform:scale(1.1);box-shadow:var(--shadow-sm)}
 
-        .valor-cell { 
-            font-family: 'Playfair Display', serif;
-            font-weight: 600; 
-            color: var(--gold-primary);
-            font-size: 15px;
-        }
-        
-        .parcelas-cell { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-        
-        .parcelas-bar { 
-            flex: 1; 
-            height: 8px; 
-            background: var(--bg-secondary); 
-            border-radius: 4px; 
-            overflow: hidden;
-            border: 1px solid var(--border-subtle);
-        }
-        
-        .parcelas-progress { 
-            height: 100%; 
-            background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary)); 
-            border-radius: 4px; 
-        }
-        
-        .parcelas-text { 
-            font-size: 12px; 
-            color: var(--text-secondary); 
-            white-space: nowrap;
-            font-weight: 600;
-        }
-
-        .actions-cell { display: flex; gap: 8px; }
-        
-        .action-btn { 
-            width: 38px; 
-            height: 38px; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .action-btn.view { 
-            background: var(--gold-subtle); 
-            color: var(--gold-primary);
-            border: 1px solid var(--border-subtle);
-        }
-        
-        .action-btn.cancel { 
-            background: var(--danger-bg); 
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .action-btn.delete { 
-            background: rgba(107, 114, 128, 0.15); 
-            color: #9ca3af;
-            border: 1px solid rgba(107, 114, 128, 0.3);
-        }
-
-        .action-btn.delete:hover {
-            background: var(--danger-bg);
-            color: var(--danger);
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-        
-        .action-btn:hover { 
-            transform: scale(1.1);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Empty */
-        .empty-state { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 80px 40px; 
-            text-align: center; 
-        }
-        
-        .empty-state i { 
-            font-size: 64px; 
-            color: var(--gold-primary); 
-            margin-bottom: 20px;
-            opacity: 0.4;
-        }
-        
-        .empty-state h3 { 
-            font-family: 'Playfair Display', serif;
-            font-size: 20px; 
-            margin-bottom: 8px; 
-        }
-        
-        .empty-state p { color: var(--text-muted); }
-
-        /* Loading */
-        .loading { 
-            display: flex; 
-            justify-content: center; 
-            padding: 80px; 
-        }
-        
-        .spinner { 
-            width: 44px; 
-            height: 44px; 
-            border: 3px solid var(--border-subtle); 
-            border-top-color: var(--gold-primary); 
-            border-radius: 50%; 
-            animation: spin 0.8s linear infinite; 
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Empty & Loading */
+        .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
+        .empty-state i{font-size:64px;color:var(--gold-primary);margin-bottom:20px;opacity:.4}
+        .empty-state h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px}
+        .empty-state p{color:var(--text-muted)}
+        .loading{display:flex;justify-content:center;padding:80px}
+        .spinner{width:44px;height:44px;border:3px solid var(--border-subtle);border-top-color:var(--gold-primary);border-radius:50%;animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
         /* Modal */
-        .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            background: rgba(0,0,0,0.85); 
-            backdrop-filter: blur(4px);
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1000; 
-            padding: 20px; 
-        }
-        
-        .modal-overlay.active { display: flex; }
-        
-        .modal { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-default); 
-            border-radius: 20px; 
-            width: 100%; 
-            max-width: 640px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-        }
-        
-        .modal-header { 
-            padding: 24px 28px; 
-            border-bottom: 1px solid var(--border-subtle); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
-        }
-        
-        .modal-header h3 { 
-            font-family: 'Playfair Display', serif;
-            font-size: 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-        
-        .modal-header h3 i { color: var(--gold-primary); }
-        
-        .modal-close { 
-            background: none; 
-            border: none; 
-            color: var(--text-muted); 
-            font-size: 24px; 
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--bg-card);border:1px solid var(--border-default);border-radius:20px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto}
+        .modal-header{padding:24px 28px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card))}
+        .modal-header h3{font-family:'Playfair Display',serif;font-size:20px;display:flex;align-items:center;gap:12px}
+        .modal-header h3 i{color:var(--gold-primary)}
+        .modal-close{background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;transition:all .2s;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+        .modal-close:hover{background:var(--danger-bg);color:var(--danger)}
+        .modal-body{padding:28px}
+        .modal-footer{padding:20px 28px;border-top:1px solid var(--border-subtle);display:flex;gap:14px;justify-content:flex-end}
 
-        .modal-close:hover {
-            background: var(--danger-bg);
-            color: var(--danger);
-        }
-        
-        .modal-body { padding: 28px; }
-        
-        .modal-footer { 
-            padding: 20px 28px; 
-            border-top: 1px solid var(--border-subtle); 
-            display: flex; 
-            gap: 14px; 
-            justify-content: flex-end; 
-        }
+        .acordo-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px}
+        .info-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:18px;transition:all .2s}
+        .info-item:hover{border-color:var(--border-default)}
+        .info-label{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+        .info-value{font-size:16px;font-weight:600}
+        .info-value.gold{color:var(--gold-primary)}
+        .info-value.green{color:var(--success)}
+        .info-value.red{color:var(--danger)}
 
-        .acordo-info { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 16px; 
-            margin-bottom: 28px; 
-        }
-        
-        .info-item { 
-            background: var(--bg-secondary); 
-            border: 1px solid var(--border-subtle); 
-            border-radius: 12px; 
-            padding: 18px;
-            transition: all 0.2s;
-        }
+        .parcelas-list{margin-top:24px}
+        .parcelas-list h4{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+        .parcelas-list h4 i{color:var(--gold-primary);font-size:14px}
+        .parcelas-list .summary-bar{display:flex;gap:16px;margin-bottom:16px;padding:14px 18px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;font-size:12px}
+        .summary-item{display:flex;align-items:center;gap:6px;color:var(--text-secondary)}
+        .summary-dot{width:8px;height:8px;border-radius:50%}
+        .summary-dot.pago{background:var(--success)}
+        .summary-dot.pendente{background:var(--warning)}
+        .summary-dot.vencido{background:var(--danger)}
 
-        .info-item:hover {
-            border-color: var(--border-default);
-        }
-        
-        .info-label { 
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--gold-primary); 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px; 
-        }
-        
-        .info-value { font-size: 16px; font-weight: 600; }
-        .info-value.gold { color: var(--gold-primary); }
-        .info-value.green { color: var(--success); }
+        .parcela-item{display:flex;align-items:center;padding:16px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;margin-bottom:10px;transition:all .2s;gap:14px}
+        .parcela-item:hover{border-color:var(--border-default)}
+        .parcela-item.pago{border-left:3px solid var(--success)}
+        .parcela-item.pendente{border-left:3px solid var(--warning)}
+        .parcela-item.vencido{border-left:3px solid var(--danger)}
+        .parcela-num{width:36px;height:36px;background:var(--gold-subtle);border:1px solid var(--border-default);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-primary);font-size:13px;flex-shrink:0}
+        .parcela-info{flex:1}
+        .parcela-venc{font-size:14px;font-weight:600;margin-bottom:2px}
+        .parcela-status-row{display:flex;align-items:center;gap:8px}
+        .parcela-status{font-size:11px;font-weight:600}
+        .parcela-status.pago{color:var(--success)}
+        .parcela-status.pendente{color:var(--warning)}
+        .parcela-status.vencido{color:var(--danger)}
+        .parcela-pago-em{font-size:10px;color:var(--text-muted)}
+        .parcela-valor{font-family:'Playfair Display',serif;font-weight:600;color:var(--gold-primary);font-size:15px;flex-shrink:0}
+        .parcela-actions{display:flex;gap:8px;flex-shrink:0}
+        .parcela-btn{padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;border:1px solid;display:flex;align-items:center;gap:6px}
+        .parcela-btn.pagar{background:var(--success-bg);border-color:rgba(34,197,94,.3);color:var(--success)}
+        .parcela-btn.pagar:hover{background:rgba(34,197,94,.2);transform:translateY(-1px)}
+        .parcela-btn.pix{background:var(--info-bg);border-color:rgba(59,130,246,.3);color:var(--info)}
+        .parcela-btn.pix:hover{background:rgba(59,130,246,.2);transform:translateY(-1px)}
+        .parcela-btn.link{background:var(--gold-subtle);border-color:var(--border-default);color:var(--gold-primary)}
+        .parcela-btn.link:hover{background:var(--gold-glow);transform:translateY(-1px)}
+        .parcela-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
-        .parcelas-list { margin-top: 24px; }
-        
-        .parcelas-list h4 { 
-            font-family: 'Playfair Display', serif;
-            font-size: 16px; 
-            margin-bottom: 16px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        
-        .parcelas-list h4 i { color: var(--gold-primary); font-size: 14px; }
-        
-        .parcela-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 16px; 
-            background: var(--bg-secondary); 
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px; 
-            margin-bottom: 10px;
-            transition: all 0.2s;
-        }
-
-        .parcela-item:hover {
-            border-color: var(--border-default);
-        }
-        
-        .parcela-num { 
-            width: 36px; 
-            height: 36px; 
-            background: var(--gold-subtle);
-            border: 1px solid var(--border-default);
-            border-radius: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: 700; 
-            color: var(--gold-primary); 
-            font-size: 13px; 
-        }
-        
-        .parcela-info { flex: 1; margin-left: 14px; }
-        .parcela-venc { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-        .parcela-status { font-size: 11px; font-weight: 600; }
-        .parcela-status.pago { color: var(--success); }
-        .parcela-status.pendente { color: var(--warning); }
-        .parcela-status.vencido { color: var(--danger); }
-        
-        .parcela-valor { 
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            color: var(--gold-primary);
-            margin-right: 14px;
-        }
-        
-        .parcela-btn { 
-            padding: 8px 16px; 
-            background: var(--success-bg); 
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            border-radius: 8px; 
-            color: var(--success); 
-            font-size: 12px; 
-            font-weight: 600; 
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s;
-        }
-        
-        .parcela-btn:hover { 
-            background: rgba(34, 197, 94, 0.2);
-            transform: translateY(-1px);
-        }
-        
-        .parcela-btn:disabled { 
-            opacity: 0.4; 
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-cancelar { 
-            padding: 12px 24px; 
-            background: var(--bg-secondary); 
-            border: 1px solid var(--border-default); 
-            border-radius: 10px; 
-            color: var(--text-secondary); 
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s;
-        }
-
-        .btn-cancelar:hover {
-            background: var(--bg-elevated);
-            color: var(--text-primary);
-        }
+        .btn-cancelar{padding:12px 24px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-secondary);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+        .btn-cancelar:hover{background:var(--bg-elevated);color:var(--text-primary)}
 
         /* Toast */
-        .toast { 
-            position: fixed; 
-            bottom: 28px; 
-            right: 28px; 
-            background: var(--bg-card); 
-            border: 1px solid var(--gold-primary); 
-            border-radius: 14px; 
-            padding: 18px 24px; 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-            box-shadow: var(--shadow-gold); 
-            transform: translateY(100px); 
-            opacity: 0; 
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-            z-index: 1000; 
-        }
-        
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast i { color: var(--success); font-size: 22px; }
-        .toast span { font-weight: 600; }
+        .toast{position:fixed;bottom:28px;right:28px;background:var(--bg-card);border:1px solid var(--gold-primary);border-radius:14px;padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-gold);transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.68,-.55,.265,1.55);z-index:1000}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast i{color:var(--success);font-size:22px}
+        .toast span{font-weight:600}
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
+        ::-webkit-scrollbar{width:8px;height:8px}
+        ::-webkit-scrollbar-track{background:var(--bg-secondary)}
+        ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--gold-dark)}
 
-        /* Responsive */
-        @media (max-width: 1200px) { 
-            .stats-grid { grid-template-columns: repeat(2, 1fr); } 
-            .acordo-info { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 768px) { 
-            .sidebar { transform: translateX(-100%); } 
-            .main-content { margin-left: 0; padding: 24px 20px; } 
-            .stats-grid { grid-template-columns: 1fr; }
-            .tabs { flex-wrap: wrap; }
-        }
+        @media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr)}.acordo-info{grid-template-columns:1fr 1fr}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}.tabs{flex-wrap:wrap}.filters-bar{flex-direction:column}.acordo-info{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
@@ -908,61 +254,40 @@
         </div>
     </aside>
 
-    <!-- Main -->
     <main class="main-content">
-        <header class="page-header">
-            <h1>Acordos</h1>
-        </header>
+        <header class="page-header"><h1>Acordos</h1></header>
 
-        <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card gold">
-                <div class="stat-icon"><i class="fas fa-handshake"></i></div>
-                <div class="stat-value" id="statAtivos">0</div>
-                <div class="stat-label">Acordos Ativos</div>
-            </div>
-            <div class="stat-card green">
-                <div class="stat-icon"><i class="fas fa-coins"></i></div>
-                <div class="stat-value" id="statValor">R$ 0</div>
-                <div class="stat-label">Valor Negociado</div>
-            </div>
-            <div class="stat-card blue">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="stat-value" id="statQuitados">0</div>
-                <div class="stat-label">Quitados</div>
-            </div>
-            <div class="stat-card red">
-                <div class="stat-icon"><i class="fas fa-percent"></i></div>
-                <div class="stat-value" id="statTaxa">0%</div>
-                <div class="stat-label">Taxa de Quitação</div>
-            </div>
+            <div class="stat-card gold"><div class="stat-icon"><i class="fas fa-handshake"></i></div><div class="stat-value" id="statAtivos">0</div><div class="stat-label">Acordos Ativos</div></div>
+            <div class="stat-card green"><div class="stat-icon"><i class="fas fa-coins"></i></div><div class="stat-value" id="statValor">R$ 0</div><div class="stat-label">Valor Negociado</div></div>
+            <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="statQuitados">0</div><div class="stat-label">Quitados</div></div>
+            <div class="stat-card red"><div class="stat-icon"><i class="fas fa-percent"></i></div><div class="stat-value" id="statTaxa">0%</div><div class="stat-label">Taxa de Quitação</div></div>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" data-status="" onclick="filtrarStatus('')">
-                <i class="fas fa-list"></i> Todos <span class="count" id="countTodos">0</span>
-            </button>
-            <button class="tab" data-status="ativo" onclick="filtrarStatus('ativo')">
-                <i class="fas fa-play-circle"></i> Ativos <span class="count" id="countAtivos">0</span>
-            </button>
-            <button class="tab" data-status="quitado" onclick="filtrarStatus('quitado')">
-                <i class="fas fa-check-circle"></i> Quitados <span class="count" id="countQuitados">0</span>
-            </button>
-            <button class="tab" data-status="quebrado" onclick="filtrarStatus('quebrado')">
-                <i class="fas fa-times-circle"></i> Quebrados <span class="count" id="countQuebrados">0</span>
-            </button>
+            <button class="tab active" data-status="" onclick="filtrarStatus('')"><i class="fas fa-list"></i> Todos <span class="count" id="countTodos">0</span></button>
+            <button class="tab" data-status="ativo" onclick="filtrarStatus('ativo')"><i class="fas fa-play-circle"></i> Ativos <span class="count" id="countAtivos">0</span></button>
+            <button class="tab" data-status="quitado" onclick="filtrarStatus('quitado')"><i class="fas fa-check-circle"></i> Quitados <span class="count" id="countQuitados">0</span></button>
+            <button class="tab" data-status="quebrado" onclick="filtrarStatus('quebrado')"><i class="fas fa-times-circle"></i> Quebrados <span class="count" id="countQuebrados">0</span></button>
         </div>
 
-        <!-- Search -->
-        <div class="search-bar">
+        <div class="filters-bar">
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Buscar por cliente..." onkeyup="filtrar()">
             </div>
+            <select class="filter-select" id="filterCredor" onchange="filtrar()">
+                <option value="">Todos os credores</option>
+            </select>
+            <select class="filter-select" id="filterVencimento" onchange="filtrar()">
+                <option value="">Qualquer período</option>
+                <option value="vencidas">Com parcelas vencidas</option>
+                <option value="hoje">Vence hoje</option>
+                <option value="semana">Vence esta semana</option>
+                <option value="mes">Vence este mês</option>
+            </select>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <table>
                 <thead>
@@ -976,11 +301,7 @@
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
-                    <tr>
-                        <td colspan="6">
-                            <div class="loading"><div class="spinner"></div></div>
-                        </td>
-                    </tr>
+                    <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -990,48 +311,31 @@
     <div class="modal-overlay" id="modalDetalhes">
         <div class="modal">
             <div class="modal-header">
-                <h3><i class="fas fa-handshake"></i> Detalhes do Acordo</h3>
+                <h3><i class="fas fa-handshake"></i> <span id="modalTitle">Detalhes do Acordo</span></h3>
                 <button class="modal-close" onclick="fecharModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="acordo-info">
-                    <div class="info-item">
-                        <div class="info-label">Cliente</div>
-                        <div class="info-value" id="modalCliente">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Status</div>
-                        <div class="info-value" id="modalStatus">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Valor Original</div>
-                        <div class="info-value" id="modalOriginal">R$ 0</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Valor Acordo</div>
-                        <div class="info-value gold" id="modalValor">R$ 0</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Total Pago</div>
-                        <div class="info-value green" id="modalPago">R$ 0</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Desconto</div>
-                        <div class="info-value" id="modalDesconto">0%</div>
-                    </div>
+                    <div class="info-item"><div class="info-label">Cliente</div><div class="info-value" id="modalCliente">-</div></div>
+                    <div class="info-item"><div class="info-label">Status</div><div class="info-value" id="modalStatus">-</div></div>
+                    <div class="info-item"><div class="info-label">Credor</div><div class="info-value" id="modalCredor">-</div></div>
+                    <div class="info-item"><div class="info-label">Valor Original</div><div class="info-value" id="modalOriginal">R$ 0</div></div>
+                    <div class="info-item"><div class="info-label">Valor Acordo</div><div class="info-value gold" id="modalValor">R$ 0</div></div>
+                    <div class="info-item"><div class="info-label">Desconto</div><div class="info-value green" id="modalDesconto">0%</div></div>
+                    <div class="info-item"><div class="info-label">Total Pago</div><div class="info-value green" id="modalPago">R$ 0</div></div>
+                    <div class="info-item"><div class="info-label">Restante</div><div class="info-value red" id="modalRestante">R$ 0</div></div>
+                    <div class="info-item"><div class="info-label">Criado em</div><div class="info-value" id="modalCriado">-</div></div>
                 </div>
                 <div class="parcelas-list">
                     <h4><i class="fas fa-calendar-alt"></i> Parcelas</h4>
+                    <div class="summary-bar" id="modalSummary"></div>
                     <div id="modalParcelas"></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancelar" onclick="fecharModal()">Fechar</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancelar" onclick="fecharModal()">Fechar</button></div>
         </div>
     </div>
 
-    <!-- Toast -->
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
     <script>
@@ -1039,11 +343,14 @@
         let acordos = [];
         let acordosFiltrados = [];
         let statusAtual = '';
+        let credores = [];
 
         function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
         function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-        function fmtData(d) { if (!d) return '-'; const dt = new Date(d); return dt.toLocaleDateString('pt-BR'); }
+        function fmtData(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('pt-BR'); }
+        function fmtDataHora(d) { if (!d) return '-'; return new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
         function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+        function diasAte(d) { if (!d) return 999; return Math.floor((new Date(d) - new Date()) / (1000*60*60*24)); }
 
         async function checkAuth() {
             const token = localStorage.getItem('token');
@@ -1062,9 +369,20 @@
 
         function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
 
+        async function carregarCredores() {
+            try {
+                const r = await fetch(API + '/api/credores', { headers: H() });
+                const d = await r.json();
+                credores = d.data || d || [];
+                var sel = document.getElementById('filterCredor');
+                sel.innerHTML = '<option value="">Todos os credores</option>';
+                credores.forEach(c => { sel.innerHTML += '<option value="' + c.id + '">' + c.nome + '</option>'; });
+            } catch (e) {}
+        }
+
         async function carregarAcordos() {
             try {
-                const r = await fetch(API + '/api/acordos', { headers: H() });
+                const r = await fetch(API + '/api/acordos?limit=200', { headers: H() });
                 const d = await r.json();
                 acordos = d.data || d || [];
 
@@ -1075,10 +393,21 @@
                         acordo.parcelas = dp.data || dp || [];
                         acordo.parcelas_pagas = acordo.parcelas.filter(p => p.status === 'pago').length;
                         acordo.total_parcelas = acordo.parcelas.length || acordo.numero_parcelas || 1;
+                        acordo.total_pago = acordo.parcelas.filter(p => p.status === 'pago').reduce((s, p) => s + parseFloat(p.valor || 0), 0);
+                        
+                        var pendentes = acordo.parcelas.filter(p => p.status !== 'pago');
+                        var vencidas = pendentes.filter(p => new Date(p.data_vencimento) < new Date());
+                        acordo.parcelas_vencidas = vencidas.length;
+                        
+                        var proximas = pendentes.sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
+                        acordo.proxima_vencimento = proximas.length > 0 ? proximas[0].data_vencimento : null;
+                        acordo.proxima_valor = proximas.length > 0 ? proximas[0].valor : null;
                     } catch (e) {
                         acordo.parcelas = [];
                         acordo.parcelas_pagas = 0;
                         acordo.total_parcelas = acordo.numero_parcelas || 1;
+                        acordo.total_pago = 0;
+                        acordo.parcelas_vencidas = 0;
                     }
                 }
 
@@ -1086,22 +415,21 @@
                 filtrar();
             } catch (e) {
                 console.error('Erro:', e);
-                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar</h3><p>Tente novamente mais tarde</p></div></td></tr>';
+                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar</h3><p>Tente novamente</p></div></td></tr>';
             }
         }
 
         function atualizarStats() {
-            const ativos = acordos.filter(a => a.status === 'ativo').length;
-            const quitados = acordos.filter(a => a.status === 'quitado').length;
-            const quebrados = acordos.filter(a => a.status === 'quebrado').length;
-            const valorTotal = acordos.filter(a => a.status === 'ativo').reduce((s, a) => s + (parseFloat(a.valor_acordo) || 0), 0);
-            const taxa = acordos.length > 0 ? Math.round((quitados / acordos.length) * 100) : 0;
+            var ativos = acordos.filter(a => a.status === 'ativo').length;
+            var quitados = acordos.filter(a => a.status === 'quitado').length;
+            var quebrados = acordos.filter(a => a.status === 'quebrado').length;
+            var valorTotal = acordos.filter(a => a.status === 'ativo').reduce((s, a) => s + (parseFloat(a.valor_acordo) || 0), 0);
+            var taxa = acordos.length > 0 ? Math.round((quitados / acordos.length) * 100) : 0;
 
             document.getElementById('statAtivos').textContent = ativos;
             document.getElementById('statValor').textContent = fmtMoney(valorTotal);
             document.getElementById('statQuitados').textContent = quitados;
             document.getElementById('statTaxa').textContent = taxa + '%';
-
             document.getElementById('countTodos').textContent = acordos.length;
             document.getElementById('countAtivos').textContent = ativos;
             document.getElementById('countQuitados').textContent = quitados;
@@ -1111,18 +439,30 @@
         function filtrarStatus(status) {
             statusAtual = status;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.tab[data-status="${status}"]`).classList.add('active');
+            document.querySelector('.tab[data-status="' + status + '"]').classList.add('active');
             filtrar();
         }
 
         function filtrar() {
-            const busca = document.getElementById('searchInput').value.toLowerCase();
+            var busca = document.getElementById('searchInput').value.toLowerCase();
+            var credor = document.getElementById('filterCredor').value;
+            var vencimento = document.getElementById('filterVencimento').value;
+            var hoje = new Date(); hoje.setHours(0,0,0,0);
+            var fimSemana = new Date(hoje); fimSemana.setDate(fimSemana.getDate() + 7);
+            var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
             acordosFiltrados = acordos.filter(a => {
                 if (statusAtual && a.status !== statusAtual) return false;
                 if (busca) {
-                    const nome = a.cliente_nome || a.devedor_nome || '';
-                    if (!nome.toLowerCase().includes(busca)) return false;
+                    var nome = (a.cliente_nome || a.devedor_nome || '').toLowerCase();
+                    if (!nome.includes(busca)) return false;
+                }
+                if (credor && a.credor_id !== credor && String(a.credor_id) !== credor) return false;
+                if (vencimento) {
+                    if (vencimento === 'vencidas' && !a.parcelas_vencidas) return false;
+                    if (vencimento === 'hoje' && (!a.proxima_vencimento || fmtData(a.proxima_vencimento) !== fmtData(hoje))) return false;
+                    if (vencimento === 'semana' && (!a.proxima_vencimento || new Date(a.proxima_vencimento) > fimSemana)) return false;
+                    if (vencimento === 'mes' && (!a.proxima_vencimento || new Date(a.proxima_vencimento) > fimMes)) return false;
                 }
                 return true;
             });
@@ -1130,168 +470,178 @@
             renderizar();
         }
 
+        function getProgressClass(pct) {
+            if (pct >= 100) return 'full';
+            if (pct >= 66) return 'high';
+            if (pct >= 33) return 'mid';
+            return 'low';
+        }
+
         function renderizar() {
             if (acordosFiltrados.length === 0) {
-                document.getElementById('tabelaBody').innerHTML = `
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <i class="fas fa-handshake"></i>
-                                <h3>Nenhum acordo encontrado</h3>
-                                <p>Os acordos aparecerão aqui quando forem criados</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-handshake"></i><h3>Nenhum acordo encontrado</h3><p>Os acordos aparecerão aqui quando forem criados</p></div></td></tr>';
                 return;
             }
 
             document.getElementById('tabelaBody').innerHTML = acordosFiltrados.map(a => {
-                const progresso = a.total_parcelas > 0 ? Math.round((a.parcelas_pagas / a.total_parcelas) * 100) : 0;
-                return `
-                <tr>
-                    <td>
-                        <div class="cliente-info">
-                            <div class="cliente-avatar">${(a.cliente_nome || a.devedor_nome || 'C').charAt(0)}</div>
-                            <div>
-                                <div class="cliente-nome">${a.cliente_nome || a.devedor_nome || '-'}</div>
-                                <div class="cliente-doc">${a.credor_nome || '-'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="valor-cell">${fmtMoney(a.valor_acordo)}</span></td>
-                    <td>
-                        <div class="parcelas-cell">
-                            <div class="parcelas-bar"><div class="parcelas-progress" style="width: ${progresso}%"></div></div>
-                            <span class="parcelas-text">${a.parcelas_pagas}/${a.total_parcelas}</span>
-                        </div>
-                    </td>
-                    <td><span class="status-badge status-${a.status}">${formatStatus(a.status)}</span></td>
-                    <td>${fmtData(a.created_at)}</td>
-                    <td>
-                        <div class="actions-cell">
-                            <button class="action-btn view" onclick="verDetalhes('${a.id}')" title="Ver detalhes"><i class="fas fa-eye"></i></button>
-                            ${a.status === 'ativo' ? `<button class="action-btn cancel" onclick="quebrarAcordo('${a.id}')" title="Quebrar acordo"><i class="fas fa-times"></i></button>` : ''}
-                            <button class="action-btn delete" onclick="excluirAcordo('${a.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `}).join('');
+                var pct = a.total_parcelas > 0 ? Math.round((a.parcelas_pagas / a.total_parcelas) * 100) : 0;
+                var valorParcela = a.valor_parcela || (a.total_parcelas > 0 ? (parseFloat(a.valor_acordo) / a.total_parcelas) : 0);
+                
+                var detalheHtml = '';
+                if (a.status === 'ativo') {
+                    if (a.parcelas_vencidas > 0) {
+                        detalheHtml = '<div class="parcelas-detail vencida"><i class="fas fa-exclamation-circle"></i> ' + a.parcelas_vencidas + ' vencida(s)</div>';
+                    } else if (a.proxima_vencimento) {
+                        var dias = diasAte(a.proxima_vencimento);
+                        if (dias === 0) detalheHtml = '<div class="parcelas-detail hoje"><i class="fas fa-clock"></i> Vence hoje</div>';
+                        else if (dias > 0) detalheHtml = '<div class="parcelas-detail ok"><i class="fas fa-calendar"></i> Próx: ' + fmtData(a.proxima_vencimento) + '</div>';
+                        else detalheHtml = '<div class="parcelas-detail vencida"><i class="fas fa-exclamation-circle"></i> Vencida</div>';
+                    }
+                }
+
+                return '<tr>' +
+                    '<td><div class="cliente-info"><div class="cliente-avatar">' + (a.cliente_nome || 'C').charAt(0) + '</div><div><div class="cliente-nome">' + (a.cliente_nome || a.devedor_nome || '-') + '</div><div class="cliente-doc">' + (a.credor_nome || '-') + '</div></div></div></td>' +
+                    '<td><span class="valor-cell">' + fmtMoney(a.valor_acordo) + '</span><br><span class="valor-sub">' + a.total_parcelas + 'x ' + fmtMoney(valorParcela) + '</span></td>' +
+                    '<td><div class="parcelas-cell"><div class="parcelas-bar-row"><div class="parcelas-bar"><div class="parcelas-progress ' + getProgressClass(pct) + '" style="width:' + pct + '%"></div></div><span class="parcelas-text">' + a.parcelas_pagas + '/' + a.total_parcelas + '</span></div>' + detalheHtml + '</div></td>' +
+                    '<td><span class="status-badge status-' + a.status + '">' + formatStatus(a.status) + '</span></td>' +
+                    '<td>' + fmtData(a.created_at) + '</td>' +
+                    '<td><div class="actions-cell"><button class="action-btn view" onclick="verDetalhes(\'' + a.id + '\')" title="Ver detalhes"><i class="fas fa-eye"></i></button>' +
+                    (a.status === 'ativo' ? '<button class="action-btn cancel" onclick="quebrarAcordo(\'' + a.id + '\')" title="Quebrar"><i class="fas fa-times"></i></button>' : '') +
+                    '<button class="action-btn delete" onclick="excluirAcordo(\'' + a.id + '\')" title="Excluir"><i class="fas fa-trash"></i></button></div></td></tr>';
+            }).join('');
         }
 
-        function formatStatus(s) {
-            const map = { 'ativo': 'Ativo', 'quitado': 'Quitado', 'quebrado': 'Quebrado', 'pendente': 'Pendente' };
-            return map[s] || s;
-        }
+        function formatStatus(s) { return { 'ativo': 'Ativo', 'quitado': 'Quitado', 'quebrado': 'Quebrado' }[s] || s; }
 
-        function verDetalhes(id) {
-            const acordo = acordos.find(a => a.id === id);
+        async function verDetalhes(id) {
+            var acordo = acordos.find(a => a.id === id);
             if (!acordo) return;
 
             document.getElementById('modalCliente').textContent = acordo.cliente_nome || acordo.devedor_nome || '-';
-            document.getElementById('modalStatus').innerHTML = `<span class="status-badge status-${acordo.status}">${formatStatus(acordo.status)}</span>`;
+            document.getElementById('modalStatus').innerHTML = '<span class="status-badge status-' + acordo.status + '">' + formatStatus(acordo.status) + '</span>';
+            document.getElementById('modalCredor').textContent = acordo.credor_nome || '-';
             document.getElementById('modalOriginal').textContent = fmtMoney(acordo.valor_original);
             document.getElementById('modalValor').textContent = fmtMoney(acordo.valor_acordo);
-            document.getElementById('modalPago').textContent = fmtMoney(acordo.total_pago);
-            document.getElementById('modalDesconto').textContent = (acordo.desconto_percentual || 0) + '%';
+            document.getElementById('modalDesconto').textContent = (parseFloat(acordo.desconto_percentual) || 0).toFixed(1) + '%';
+            document.getElementById('modalCriado').textContent = fmtData(acordo.created_at);
 
-            const hoje = new Date();
-            document.getElementById('modalParcelas').innerHTML = (acordo.parcelas || []).map((p, i) => {
-                const venc = new Date(p.data_vencimento);
-                const vencida = venc < hoje && p.status !== 'pago';
-                const statusClass = p.status === 'pago' ? 'pago' : (vencida ? 'vencido' : 'pendente');
-                const statusText = p.status === 'pago' ? 'Pago' : (vencida ? 'Vencida' : 'Pendente');
-                
-                return `
-                <div class="parcela-item">
-                    <div class="parcela-num">${i + 1}</div>
-                    <div class="parcela-info">
-                        <div class="parcela-venc">${fmtData(p.data_vencimento)}</div>
-                        <div class="parcela-status ${statusClass}">${statusText}</div>
-                    </div>
-                    <div class="parcela-valor">${fmtMoney(p.valor)}</div>
-                    ${p.status !== 'pago' ? `<button class="parcela-btn" onclick="pagarParcela('${acordo.id}', '${p.id}')">Pagar</button>` : ''}
-                </div>
-            `}).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 30px;">Nenhuma parcela cadastrada</p>';
+            var totalPago = acordo.total_pago || 0;
+            var restante = (parseFloat(acordo.valor_acordo) || 0) - totalPago;
+            document.getElementById('modalPago').textContent = fmtMoney(totalPago);
+            document.getElementById('modalRestante').textContent = fmtMoney(restante > 0 ? restante : 0);
+
+            var parcelas = acordo.parcelas || [];
+            var pagas = parcelas.filter(p => p.status === 'pago').length;
+            var pendentes = parcelas.filter(p => p.status !== 'pago' && new Date(p.data_vencimento) >= new Date()).length;
+            var vencidas = parcelas.filter(p => p.status !== 'pago' && new Date(p.data_vencimento) < new Date()).length;
+
+            document.getElementById('modalSummary').innerHTML =
+                '<div class="summary-item"><span class="summary-dot pago"></span> ' + pagas + ' paga(s)</div>' +
+                '<div class="summary-item"><span class="summary-dot pendente"></span> ' + pendentes + ' pendente(s)</div>' +
+                (vencidas > 0 ? '<div class="summary-item"><span class="summary-dot vencido"></span> ' + vencidas + ' vencida(s)</div>' : '');
+
+            document.getElementById('modalParcelas').innerHTML = parcelas.map((p, i) => {
+                var venc = new Date(p.data_vencimento);
+                var vencida = venc < new Date() && p.status !== 'pago';
+                var statusClass = p.status === 'pago' ? 'pago' : (vencida ? 'vencido' : 'pendente');
+                var statusText = p.status === 'pago' ? '✅ Pago' : (vencida ? '⚠️ Vencida' : '⏳ Pendente');
+                var pagoEm = p.status === 'pago' && p.data_pagamento ? '<span class="parcela-pago-em">em ' + fmtDataHora(p.data_pagamento) + '</span>' : '';
+
+                var actions = '';
+                if (p.status !== 'pago') {
+                    actions += '<button class="parcela-btn pagar" onclick="pagarParcela(\'' + acordo.id + '\',\'' + p.id + '\')"><i class="fas fa-check"></i> Pagar</button>';
+                    if (p.asaas_payment_id) {
+                        actions += '<button class="parcela-btn pix" onclick="copiarPix(\'' + p.id + '\')"><i class="fas fa-qrcode"></i> PIX</button>';
+                    }
+                }
+                if (p.asaas_payment_id) {
+                    actions += '<button class="parcela-btn link" onclick="abrirLink(\'' + p.id + '\')"><i class="fas fa-external-link-alt"></i></button>';
+                }
+
+                return '<div class="parcela-item ' + statusClass + '">' +
+                    '<div class="parcela-num">' + (p.numero || (i + 1)) + '</div>' +
+                    '<div class="parcela-info"><div class="parcela-venc">' + fmtData(p.data_vencimento) + '</div><div class="parcela-status-row"><span class="parcela-status ' + statusClass + '">' + statusText + '</span>' + pagoEm + '</div></div>' +
+                    '<div class="parcela-valor">' + fmtMoney(p.valor) + '</div>' +
+                    '<div class="parcela-actions">' + actions + '</div></div>';
+            }).join('') || '<p style="color:var(--text-muted);text-align:center;padding:30px;">Nenhuma parcela cadastrada</p>';
 
             document.getElementById('modalDetalhes').classList.add('active');
         }
 
-        function fecharModal() {
-            document.getElementById('modalDetalhes').classList.remove('active');
+        function fecharModal() { document.getElementById('modalDetalhes').classList.remove('active'); }
+
+        async function copiarPix(parcelaId) {
+            try {
+                var r = await fetch(API + '/api/suri/parcela-pix/' + parcelaId, { headers: H() });
+                var d = await r.json();
+                if (d.success && d.pix && d.pix.copiaECola) {
+                    await navigator.clipboard.writeText(d.pix.copiaECola);
+                    toast('PIX copiado!');
+                } else {
+                    toast('PIX não disponível');
+                }
+            } catch (e) {
+                toast('Erro ao buscar PIX');
+            }
+        }
+
+        async function abrirLink(parcelaId) {
+            try {
+                var r = await fetch(API + '/api/suri/parcela-pix/' + parcelaId, { headers: H() });
+                var d = await r.json();
+                if (d.success && d.parcela) {
+                    // Try to find invoice URL from Asaas
+                    toast('Abrindo link de pagamento...');
+                    // The link would be on the Asaas invoice - for now show PIX
+                    if (d.pix && d.pix.copiaECola) {
+                        await navigator.clipboard.writeText(d.pix.copiaECola);
+                        toast('PIX copiado para a área de transferência!');
+                    }
+                }
+            } catch (e) {
+                toast('Erro ao buscar link');
+            }
         }
 
         async function pagarParcela(acordoId, parcelaId) {
             if (!confirm('Confirmar pagamento desta parcela?')) return;
-
             try {
-                const r = await fetch(API + '/api/acordos/parcelas/' + parcelaId + '/pagar', {
-                    method: 'PUT',
-                    headers: H()
-                });
-
+                var r = await fetch(API + '/api/acordos/parcelas/' + parcelaId + '/pagar', { method: 'PUT', headers: H() });
                 if (r.ok) {
                     toast('Parcela paga com sucesso!');
                     fecharModal();
                     await carregarAcordos();
-                } else {
-                    toast('Erro ao registrar pagamento');
-                }
-            } catch (e) {
-                console.error(e);
-                toast('Erro ao registrar pagamento');
-            }
+                } else { toast('Erro ao registrar pagamento'); }
+            } catch (e) { toast('Erro ao registrar pagamento'); }
         }
 
         async function quebrarAcordo(id) {
             if (!confirm('Tem certeza que deseja QUEBRAR este acordo?')) return;
-
             try {
-                const r = await fetch(API + '/api/acordos/' + id + '/quebrar', {
-                    method: 'PUT',
-                    headers: H()
-                });
-
-                if (r.ok) {
-                    toast('Acordo quebrado');
-                    await carregarAcordos();
-                } else {
-                    toast('Erro ao quebrar acordo');
-                }
-            } catch (e) {
-                console.error(e);
-                toast('Erro ao quebrar acordo');
-            }
+                var r = await fetch(API + '/api/acordos/' + id + '/quebrar', { method: 'PUT', headers: H() });
+                if (r.ok) { toast('Acordo quebrado'); await carregarAcordos(); }
+                else { toast('Erro ao quebrar acordo'); }
+            } catch (e) { toast('Erro ao quebrar acordo'); }
         }
 
         async function excluirAcordo(id) {
-            if (!confirm('Tem certeza que deseja EXCLUIR este acordo?\n\nEsta ação não pode ser desfeita e removerá todas as parcelas associadas.')) return;
-
+            if (!confirm('Tem certeza que deseja EXCLUIR este acordo?\n\nEsta ação não pode ser desfeita.')) return;
             try {
-                const r = await fetch(API + '/api/acordos/' + id, {
-                    method: 'DELETE',
-                    headers: H()
-                });
-
-                if (r.ok) {
-                    toast('Acordo excluído!');
-                    await carregarAcordos();
-                } else {
-                    const err = await r.json();
-                    toast(err.error || 'Erro ao excluir acordo');
-                }
-            } catch (e) {
-                console.error(e);
-                toast('Erro ao excluir acordo');
-            }
+                var r = await fetch(API + '/api/acordos/' + id, { method: 'DELETE', headers: H() });
+                if (r.ok) { toast('Acordo excluído!'); await carregarAcordos(); }
+                else { var err = await r.json(); toast(err.error || 'Erro ao excluir acordo'); }
+            } catch (e) { toast('Erro ao excluir acordo'); }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const auth = await checkAuth();
-            if (auth) await carregarAcordos();
+            var auth = await checkAuth();
+            if (auth) {
+                await carregarCredores();
+                await carregarAcordos();
+            }
         });
 
-        document.getElementById('modalDetalhes').addEventListener('click', (e) => {
+        document.getElementById('modalDetalhes').addEventListener('click', e => {
             if (e.target.classList.contains('modal-overlay')) fecharModal();
         });
     </script>
