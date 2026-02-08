@@ -22,6 +22,16 @@
             --border-strong: rgba(212, 168, 83, 0.25);
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);--shadow-gold: 0 4px 30px rgba(212, 168, 83, 0.2);
         }
+        .search-select-container{position:relative}
+        .search-select-container input[type="text"]{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
+        .search-select-container input[type="text"]:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
+        .search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;max-height:220px;overflow-y:auto;z-index:1000;display:none;margin-top:4px;box-shadow:var(--shadow-sm)}
+        .search-dropdown.show{display:block}
+        .search-dropdown-item{padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background 0.15s}
+        .search-dropdown-item:hover{background:var(--gold-subtle)}
+        .search-dropdown-item:last-child{border-bottom:none}
+        .search-dropdown-item small{color:var(--text-muted);display:block;font-size:11px;margin-top:2px}
+        .search-dropdown-empty{padding:12px 14px;color:var(--text-muted);font-size:13px;text-align:center}
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;background-image:radial-gradient(ellipse at 0% 0%,rgba(212,168,83,0.03)0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(212,168,83,0.02)0%,transparent 50%)}
         .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
@@ -220,7 +230,7 @@
             <form id="formCobranca" onsubmit="salvar(event)">
                 <div class="modal-body">
                     <input type="hidden" id="cobrancaId">
-                    <div class="form-row"><div class="form-group"><label>Cliente *</label><select id="clienteId" required><option value="">Selecione...</option></select></div><div class="form-group"><label>Credor *</label><select id="credorId" required><option value="">Selecione...</option></select></div></div>
+                    <div class="form-row"><div class="form-group"><label>Cliente *</label><div class="search-select-container"><input type="hidden" id="clienteId" required><input type="text" id="clienteBusca" placeholder="Digite nome ou CPF..." autocomplete="off" oninput="buscarClientes()" onfocus="buscarClientes()"><div id="clienteDropdown" class="search-dropdown"></div></div></div><div class="form-group"><label>Credor *</label><select id="credorId" required><option value="">Selecione...</option></select></div></div>
                     <div class="form-group"><label>Descrição *</label><input type="text" id="descricao" placeholder="Ex: Parcela 3/12 - Crediário" required></div>
                     <div class="form-row"><div class="form-group"><label>Valor *</label><input type="text" id="valor" placeholder="R$ 0,00" required></div><div class="form-group"><label>Data de Vencimento *</label><input type="date" id="dataVencimento" required></div></div>
                     <div class="form-row"><div class="form-group"><label>Número do Documento</label><input type="text" id="numeroDocumento" placeholder="Ex: NF-00123"></div><div class="form-group"><label>Status</label><select id="status"><option value="pendente">Pendente</option><option value="vencido">Vencido</option><option value="pago">Pago</option><option value="acordo">Em Acordo</option><option value="cancelado">Cancelado</option></select></div></div>
@@ -347,17 +357,52 @@
             } catch (e) {}
         }
 
+        var clientesBuscaTimer;
+        var clienteSelecionado = null;
+
+        async function buscarClientes() {
+            clearTimeout(clientesBuscaTimer);
+            clientesBuscaTimer = setTimeout(async function() {
+                var termo = document.getElementById('clienteBusca').value.trim();
+                var dropdown = document.getElementById('clienteDropdown');
+                if (termo.length < 2) { dropdown.classList.remove('show'); return; }
+                try {
+                    var r = await fetch(API + '/api/clientes?busca=' + encodeURIComponent(termo) + '&limit=20', { headers: H() });
+                    var d = await r.json();
+                    var clientes = d.data || d || [];
+                    dropdown.innerHTML = '';
+                    if (clientes.length === 0) {
+                        dropdown.innerHTML = '<div class="search-dropdown-empty">Nenhum cliente encontrado</div>';
+                    } else {
+                        clientes.forEach(function(c) {
+                            var item = document.createElement('div');
+                            item.className = 'search-dropdown-item';
+                            item.innerHTML = '<strong>' + (c.nome || '') + '</strong><small>CPF/CNPJ: ' + (c.cpf_cnpj || 'N/A') + (c.telefone ? ' | Tel: ' + c.telefone : '') + '</small>';
+                            item.onclick = function() { selecionarCliente(c); };
+                            dropdown.appendChild(item);
+                        });
+                    }
+                    dropdown.classList.add('show');
+                } catch (e) { console.error('Erro busca clientes:', e); }
+            }, 300);
+        }
+
+        function selecionarCliente(c) {
+            clienteSelecionado = c;
+            document.getElementById('clienteId').value = c.id;
+            document.getElementById('clienteBusca').value = c.nome + ' - ' + (c.cpf_cnpj || '');
+            document.getElementById('clienteDropdown').classList.remove('show');
+        }
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-select-container')) {
+                document.getElementById('clienteDropdown').classList.remove('show');
+            }
+        });
+
         async function carregarClientes() {
-            try {
-                const r = await fetch(API + '/api/clientes?limit=500', { headers: H() });
-                const d = await r.json();
-                const clientes = d.data || d || [];
-                const select = document.getElementById('clienteId');
-                select.innerHTML = '<option value="">Selecione...</option>';
-                clientes.forEach(c => {
-                    select.innerHTML += '<option value="' + c.id + '">' + c.nome + ' - ' + (c.cpf_cnpj || '') + '</option>';
-                });
-            } catch (e) {}
+            // Não carrega mais todos - busca é feita sob demanda
         }
 
         async function atualizarStats() {
@@ -432,7 +477,7 @@
         function paginaAnterior() { if (paginaAtual > 1) { paginaAtual--; carregarCobrancas(); } }
         function proximaPagina() { paginaAtual++; carregarCobrancas(); }
 
-        function abrirModal() { document.getElementById('cobrancaId').value = ''; document.getElementById('modalTitle').textContent = 'Nova Cobrança'; document.getElementById('formCobranca').reset(); document.getElementById('modalCobranca').classList.add('active'); }
+        function abrirModal() { document.getElementById('cobrancaId').value = ''; document.getElementById('modalTitle').textContent = 'Nova Cobrança'; document.getElementById('formCobranca').reset(); document.getElementById('clienteId').value = ''; document.getElementById('clienteBusca').value = ''; clienteSelecionado = null; document.getElementById('modalCobranca').classList.add('active'); }
         function fecharModal() { document.getElementById('modalCobranca').classList.remove('active'); }
 
         function editar(id) {
@@ -441,6 +486,7 @@
             document.getElementById('cobrancaId').value = c.id;
             document.getElementById('modalTitle').textContent = 'Editar Cobrança';
             document.getElementById('clienteId').value = c.cliente_id || '';
+            document.getElementById('clienteBusca').value = (c.cliente_nome || '') + (c.cliente_cpf_cnpj ? ' - ' + c.cliente_cpf_cnpj : '');
             document.getElementById('credorId').value = c.credor_id || '';
             document.getElementById('descricao').value = c.descricao || '';
             document.getElementById('valor').value = c.valor || '';
