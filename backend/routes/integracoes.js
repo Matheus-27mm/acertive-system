@@ -53,7 +53,7 @@ module.exports = function(pool, auth, registrarLog) {
     router.post('/asaas/webhook', async (req, res) => {
         try {
             const { event, payment } = req.body;
-            console.log('[ASAAS] Webhook:', event, payment?.id);
+            console.log('[ASAAS] Webhook:', event, payment?.id, '(FIX_V3 queries separadas)');
 
             try { await pool.query('INSERT INTO asaas_webhooks_log (event, payment_id, payload, created_at) VALUES ($1, $2, $3, NOW())', [event, payment?.id, JSON.stringify(req.body)]); } catch (e) {}
 

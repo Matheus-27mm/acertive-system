@@ -992,27 +992,40 @@ module.exports = function(pool, auth, registrarLog) {
     router.post('/asaas-webhook', async function(req, res) {
         try {
             var evento = req.body;
-            console.log('[ASAAS] Evento:', evento.event);
+            console.log('[ASAAS-SURI] Evento:', evento.event, '(FIX_V3)');
 
             if (evento.event === 'PAYMENT_RECEIVED' || evento.event === 'PAYMENT_CONFIRMED') {
                 var payment = evento.payment;
                 if (payment && payment.externalReference && payment.externalReference.startsWith('acertive_')) {
                     try {
-                        await pool.query("UPDATE parcelas_acordo SET status = 'pago', data_pagamento = NOW() WHERE asaas_payment_id = $1 OR external_reference = $2", [payment.id, payment.externalReference]);
-                        
-                        var acordoRes = await pool.query("SELECT acordo_id FROM parcelas_acordo WHERE asaas_payment_id = $1 OR external_reference = $2", [payment.id, payment.externalReference]);
-                        if (acordoRes.rowCount > 0) {
-                            var acordoId = acordoRes.rows[0].acordo_id;
+                        // Buscar parcela por asaas_payment_id primeiro, depois por external_reference (queries separadas)
+                        var parcela = null;
+                        var findByPayment = await pool.query("SELECT id, acordo_id FROM parcelas_acordo WHERE asaas_payment_id = $1", [String(payment.id)]);
+                        if (findByPayment.rowCount > 0) {
+                            parcela = findByPayment.rows[0];
+                        } else if (payment.externalReference) {
+                            var findByRef = await pool.query("SELECT id, acordo_id FROM parcelas_acordo WHERE external_reference = $1", [String(payment.externalReference)]);
+                            if (findByRef.rowCount > 0) parcela = findByRef.rows[0];
+                        }
+
+                        if (parcela) {
+                            await pool.query("UPDATE parcelas_acordo SET status = 'pago', data_pagamento = NOW(), updated_at = NOW() WHERE id = $1", [parcela.id]);
+                            console.log('[ASAAS-SURI] ✅ Parcela paga:', parcela.id);
+
+                            var acordoId = parcela.acordo_id;
                             var pendentes = await pool.query("SELECT COUNT(*) as n FROM parcelas_acordo WHERE acordo_id = $1 AND status != 'pago'", [acordoId]);
                             if (parseInt(pendentes.rows[0].n) === 0) {
                                 await pool.query("UPDATE acordos SET status = 'quitado', updated_at = NOW() WHERE id = $1", [acordoId]);
                                 var cliRes = await pool.query("SELECT cliente_id FROM acordos WHERE id = $1", [acordoId]);
                                 if (cliRes.rowCount > 0) await pool.query("UPDATE clientes SET status_cobranca = 'quitado', updated_at = NOW() WHERE id = $1", [cliRes.rows[0].cliente_id]);
-                                console.log('[ASAAS] ✅ Acordo', acordoId, 'QUITADO!');
+                                console.log('[ASAAS-SURI] ✅ Acordo', acordoId, 'QUITADO!');
                             }
+                        } else {
+                            console.log('[ASAAS-SURI] ⚠️ Parcela não encontrada para:', payment.id);
                         }
+
                         await pool.query("INSERT INTO acionamentos (tipo, canal, resultado, descricao, created_at) VALUES ('pagamento', 'asaas', 'confirmado', $1, NOW())", ['Pago: ' + payment.id + ' R$ ' + payment.value]);
-                    } catch (e) { console.error('[ASAAS] Erro:', e); }
+                    } catch (e) { console.error('[ASAAS-SURI] Erro:', e.message); }
                 }
             }
             res.json({ success: true });
