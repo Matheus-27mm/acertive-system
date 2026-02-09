@@ -367,46 +367,52 @@
                 var creds = d.data || d || [];
                 var sel = document.getElementById('filterCredor');
                 sel.innerHTML = '<option value="">Todos os credores</option>';
-                // Coletar credores únicos da fila
-                var credoresNaFila = {};
-                for (var i = 0; i < filaOriginal.length; i++) {
-                    var cn = filaOriginal[i].credor_nome || '';
-                    if (cn && cn !== 'Credor') {
-                        if (!credoresNaFila[cn]) credoresNaFila[cn] = 0;
-                        credoresNaFila[cn]++;
-                    }
-                }
-                // Ordenar por quantidade decrescente
-                var sorted = Object.entries(credoresNaFila).sort(function(a, b) { return b[1] - a[1]; });
-                for (var j = 0; j < sorted.length; j++) {
+                // Usar credores cadastrados no sistema (com id pra filtro server-side)
+                creds.sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || ''); });
+                for (var i = 0; i < creds.length; i++) {
                     var opt = document.createElement('option');
-                    opt.value = sorted[j][0];
-                    opt.textContent = sorted[j][0] + ' (' + sorted[j][1] + ')';
+                    opt.value = creds[i].id;
+                    opt.textContent = creds[i].nome;
                     sel.appendChild(opt);
                 }
             } catch (e) { console.log('Erro ao carregar credores:', e); }
         }
 
-        function filtrarPorCredor() {
+        async function filtrarPorCredor() {
             credorSelecionado = document.getElementById('filterCredor').value;
-            if (credorSelecionado) {
-                fila = filaOriginal.filter(function(d) { return d.credor_nome === credorSelecionado; });
-            } else {
-                fila = filaOriginal.slice();
-            }
-            posicao = 0;
-            document.getElementById('totalFila').textContent = fila.length;
-            document.getElementById('credorCount').textContent = fila.length;
-            document.getElementById('credorCount').style.display = credorSelecionado ? 'block' : 'none';
-            if (fila.length > 0) {
-                document.getElementById('emptyState').style.display = 'none';
-                mostrarDevedor();
-            } else {
-                document.getElementById('devedorContent').style.display = 'none';
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('emptyState').style.display = 'flex';
-                document.getElementById('emptyState').querySelector('h3').textContent = 'Nenhum devedor deste credor';
-                document.getElementById('emptyState').querySelector('p').textContent = 'Selecione outro credor ou "Todos os credores"';
+            // Recarregar fila do servidor com filtro de credor
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('devedorContent').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            try {
+                var url = API + '/api/acionamentos/fila/devedores?limit=10000';
+                if (credorSelecionado) url += '&credor_id=' + credorSelecionado;
+                var r = await fetch(url, { headers: H() });
+                if (!r.ok) throw new Error('Erro');
+                var d = await r.json();
+                var devedores = d.data || [];
+                fila = [];
+                for (var i = 0; i < devedores.length; i++) {
+                    var dev = devedores[i];
+                    fila.push({ cliente_id: dev.cliente_id, nome: dev.nome || 'Cliente', cpf_cnpj: dev.cpf_cnpj || '-', telefone: dev.telefone || dev.celular || '', email: dev.email || '', credor_nome: dev.credor_nome || 'Credor', cobrancas: [], valor_total: parseFloat(dev.valor_total) || 0, maior_atraso: parseInt(dev.maior_atraso) || 0, total_cobrancas: parseInt(dev.total_cobrancas) || 0, status: dev.status_cobranca || 'novo', vencimento: dev.vencimento_mais_antigo });
+                }
+                if (!credorSelecionado) filaOriginal = fila.slice();
+                posicao = 0;
+                document.getElementById('totalFila').textContent = fila.length;
+                document.getElementById('credorCount').textContent = fila.length;
+                document.getElementById('credorCount').style.display = credorSelecionado ? 'block' : 'none';
+                if (fila.length > 0) {
+                    document.getElementById('loadingState').style.display = 'none';
+                    mostrarDevedor();
+                } else {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'flex';
+                    document.getElementById('emptyState').querySelector('h3').textContent = credorSelecionado ? 'Nenhum devedor deste credor' : 'Fila vazia';
+                    document.getElementById('emptyState').querySelector('p').textContent = credorSelecionado ? 'Selecione outro credor ou "Todos os credores"' : 'Parabéns!';
+                }
+            } catch (e) {
+                console.error('Erro ao filtrar:', e);
+                document.getElementById('loadingState').innerHTML = '<p style="color: var(--text-muted);">Erro ao carregar</p>';
             }
         }
 
