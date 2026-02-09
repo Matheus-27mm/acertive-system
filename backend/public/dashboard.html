@@ -175,9 +175,32 @@
         /* ─── Responsive ─── */
         @media(max-width:1200px){.metrics{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}.aging-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0;padding:24px 20px}.metrics{grid-template-columns:1fr}.prod-grid{grid-template-columns:1fr 1fr 1fr}}
+        /* Mobile Menu */
+        .mobile-toggle {
+            display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
+            width: 46px; height: 46px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer;
+            box-shadow: var(--shadow-gold); align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .mobile-toggle:hover { transform: scale(1.05); }
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 99; backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 768px) {
+            .mobile-toggle { display: flex; }
+            .sidebar { transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0) !important; }
+            .main-content { padding-top: 76px !important; }
+        }
     </style>
 </head>
 <body>
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
@@ -203,6 +226,7 @@
             </div>
             <div class="nav-group">
                 <div class="nav-group-label">Sistema</div>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
                 <a href="importacao.html" class="nav-link"><i class="fas fa-file-import"></i> Importação</a>
                 <a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
             </div>
@@ -633,6 +657,13 @@
             carregarProdutividade();
             carregarAtividade();
         });
+    
+        function toggleSidebar() {
+            document.querySelector(".sidebar").classList.toggle("open");
+            document.getElementById("sidebarOverlay").classList.toggle("active");
+            var icon = document.querySelector(".mobile-toggle i");
+            icon.className = document.querySelector(".sidebar").classList.contains("open") ? "fas fa-times" : "fas fa-bars";
+        }
     </script>
 </body>
 </html>
