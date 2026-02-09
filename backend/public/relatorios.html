@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - ACERTIVE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #050709;
+            --bg-secondary: #0a0d12;
+            --bg-card: #0e1219;
+            --bg-card-hover: #121924;
+            --bg-elevated: #151c28;
+            --gold-primary: #c9a84c;
+            --gold-light: #dfc070;
+            --gold-dark: #8b7434;
+            --gold-glow: rgba(201, 168, 76, 0.12);
+            --gold-subtle: rgba(201, 168, 76, 0.06);
+            --success: #3ecf8e;
+            --success-bg: rgba(62, 207, 142, 0.08);
+            --warning: #e0943e;
+            --warning-bg: rgba(224, 148, 62, 0.08);
+            --danger: #e05c5c;
+            --danger-bg: rgba(224, 92, 92, 0.08);
+            --info: #5c8ee0;
+            --info-bg: rgba(92, 142, 224, 0.08);
+            --text-primary: #e8e6e1;
+            --text-secondary: #7a7670;
+            --text-muted: #4a4640;
+            --border-subtle: rgba(201, 168, 76, 0.07);
+            --border-default: rgba(201, 168, 76, 0.14);
+            --border-strong: rgba(201, 168, 76, 0.2);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-gold: 0 8px 24px rgba(201, 168, 76, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Outfit', sans-serif; background: var(--bg-primary); 
+            color: var(--text-primary); min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 0% 0%, rgba(201, 168, 76, 0.025) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(201, 168, 76, 0.02) 0%, transparent 50%);
+        }
+
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 28px 24px; border-bottom: 1px solid var(--border-subtle); }
+        .sidebar-logo { display: flex; align-items: center; gap: 14px; }
+        .sidebar-logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+        .sidebar-logo-text { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; }
+        .sidebar-logo-text span { color: var(--gold-primary); }
+        .sidebar-nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-section { margin-bottom: 28px; }
+        .nav-section-title { font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 14px; margin-bottom: 12px; opacity: 0.8; }
+        .nav-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; color: var(--text-secondary); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.25s; font-size: 14px; font-weight: 500; position: relative; border: 1px solid transparent; }
+        .nav-item:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
+        .nav-item.active { background: linear-gradient(135deg, var(--gold-subtle) 0%, transparent 100%); color: var(--gold-light); border-color: var(--border-default); }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold-primary); border-radius: 0 4px 4px 0; }
+        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
+        .nav-item .badge { margin-left: auto; background: var(--danger); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-subtle); }
+        .user-info { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--bg-primary); }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: var(--text-muted); }
+        .user-logout { color: var(--text-muted); padding: 8px; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .user-logout:hover { background: var(--danger-bg); color: var(--danger); }
+
+        /* Main */
+        .main-content { margin-left: 280px; min-height: 100vh; padding: 36px 40px; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+        .page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; }
+        .page-header-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Outfit', sans-serif; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(201, 168, 76, 0.35); }
+        .btn-secondary { background: var(--bg-card); border: 1px solid var(--border-default); color: var(--text-secondary); }
+        .btn-secondary:hover { background: var(--gold-subtle); color: var(--gold-primary); }
+        .btn-sm { padding: 10px 18px; font-size: 13px; border-radius: 10px; }
+
+        /* Tabs */
+        .report-tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; flex-wrap: wrap; }
+        .report-tab { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: transparent; border: 1px solid transparent; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.3s; }
+        .report-tab:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
+        .report-tab.active { background: linear-gradient(135deg, var(--gold-subtle) 0%, transparent 100%); border-color: var(--gold-primary); color: var(--gold-light); }
+        .report-tab i { font-size: 15px; }
+
+        /* Panels */
+        .report-panel { display: none; }
+        .report-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Filters */
+        .filters-bar { display: flex; gap: 16px; margin-bottom: 24px; align-items: center; flex-wrap: wrap; }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label { font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-group select, .filter-group input { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 13px; font-family: 'Outfit', sans-serif; min-width: 160px; }
+        .filter-group select:focus, .filter-group input:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .filter-group select option { background: var(--bg-secondary); }
+
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; transition: all 0.3s; }
+        .stat-card:hover { border-color: var(--border-default); transform: translateY(-2px); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+        .stat-card.gold .stat-icon { background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-default); }
+        .stat-card.green .stat-icon { background: var(--success-bg); color: var(--success); border: 1px solid rgba(62, 207, 142, 0.3); }
+        .stat-card.red .stat-icon { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(224, 92, 92, 0.3); }
+        .stat-card.blue .stat-icon { background: var(--info-bg); color: var(--info); border: 1px solid rgba(92, 142, 224, 0.3); }
+        .stat-card.yellow .stat-icon { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(224, 148, 62, 0.3); }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--text-muted); }
+
+        /* Table */
+        .report-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden; margin-bottom: 24px; }
+        .report-card-header { display: flex; justify-content: space-between; align-items: center; padding: 22px 26px; border-bottom: 1px solid var(--border-subtle); background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%); }
+        .report-card-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .report-card-title i { color: var(--gold-primary); }
+
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th { text-align: left; padding: 14px 20px; font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-secondary); }
+        .report-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
+        .report-table tr:hover { background: var(--gold-subtle); }
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table .valor { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        .report-table .valor.positivo { color: var(--success); }
+        .report-table .valor.negativo { color: var(--danger); }
+        .report-table .valor.neutro { color: var(--warning); }
+
+        /* Bar Chart CSS */
+        .chart-bar-container { padding: 20px 26px; }
+        .chart-bar-item { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .chart-bar-label { min-width: 140px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-align: right; }
+        .chart-bar-track { flex: 1; height: 32px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--border-subtle); }
+        .chart-bar-fill { height: 100%; border-radius: 8px; transition: width 0.8s ease; display: flex; align-items: center; padding: 0 12px; justify-content: flex-end; }
+        .chart-bar-fill.gold { background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary)); }
+        .chart-bar-fill.green { background: linear-gradient(90deg, #16a34a, var(--success)); }
+        .chart-bar-fill.blue { background: linear-gradient(90deg, #3b5ee0, var(--info)); }
+        .chart-bar-fill.red { background: linear-gradient(90deg, #c53030, var(--danger)); }
+        .chart-bar-fill.orange { background: linear-gradient(90deg, #b86e1d, var(--warning)); }
+        .chart-bar-value { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.5); white-space: nowrap; }
+
+        /* Progress Ring */
+        .recovery-rate { display: flex; align-items: center; gap: 32px; padding: 28px; }
+        .rate-circle { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+        .rate-circle svg { transform: rotate(-90deg); }
+        .rate-circle-bg { fill: none; stroke: var(--bg-secondary); stroke-width: 12; }
+        .rate-circle-fill { fill: none; stroke: var(--gold-primary); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+        .rate-circle-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .rate-circle-value { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700; color: var(--gold-primary); }
+        .rate-circle-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .rate-details { flex: 1; }
+        .rate-detail-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); }
+        .rate-detail-item:last-child { border-bottom: none; }
+        .rate-detail-label { font-size: 14px; color: var(--text-secondary); }
+        .rate-detail-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+
+        /* Status badges */
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .status-badge.ativo { background: var(--success-bg); color: var(--success); }
+        .status-badge.vencido { background: var(--danger-bg); color: var(--danger); }
+        .status-badge.pendente { background: var(--warning-bg); color: var(--warning); }
+        .status-badge.quitado { background: var(--info-bg); color: var(--info); }
+
+        /* Loading */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted); gap: 12px; }
+        .loading i { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 28px; right: 28px; background: var(--bg-card); border: 1px solid var(--gold-primary); border-radius: 14px; padding: 18px 24px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-gold); transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { color: var(--success); font-size: 22px; }
+        .toast span { font-weight: 600; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 24px 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .filters-bar { flex-direction: column; }
+            .filter-group select, .filter-group input { min-width: 100%; }
+            .recovery-rate { flex-direction: column; align-items: center; }
+            .report-tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div>
+                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="relatorios.html" class="nav-item active"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Usuário</div>
+                    <div class="user-role" id="userRole">Operador</div>
+                </div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Relatórios</h1>
+            <div class="page-header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+                <button class="btn btn-primary btn-sm" onclick="atualizarDados()"><i class="fas fa-sync-alt"></i> Atualizar</button>
+            </div>
+        </header>
+
+        <div class="report-tabs">
+            <button class="report-tab active" onclick="showReport('geral')"><i class="fas fa-chart-pie"></i> Visão Geral</button>
+            <button class="report-tab" onclick="showReport('credores')"><i class="fas fa-building"></i> Por Credor</button>
+            <button class="report-tab" onclick="showReport('acordos')"><i class="fas fa-handshake"></i> Acordos</button>
+            <button class="report-tab" onclick="showReport('aging')"><i class="fas fa-clock"></i> Aging</button>
+            <button class="report-tab" onclick="showReport('comissoes')"><i class="fas fa-coins"></i> Comissões</button>
+        </div>
+
+        <!-- ═══════════════ VISÃO GERAL ═══════════════ -->
+        <div id="panel-geral" class="report-panel active">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Período</label>
+                    <select id="filtroPeríodoGeral" onchange="carregarGeral()">
+                        <option value="mes">Este Mês</option>
+                        <option value="trimestre">Últimos 3 Meses</option>
+                        <option value="semestre">Últimos 6 Meses</option>
+                        <option value="ano">Este Ano</option>
+                        <option value="todos">Todo Período</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Credor</label>
+                    <select id="filtroCredorGeral" onchange="carregarGeral()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card gold"><div class="stat-icon"><i class="fas fa-wallet"></i></div><div class="stat-value" id="geralCarteira">-</div><div class="stat-label">Total em Carteira</div></div>
+                <div class="stat-card green"><div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div><div class="stat-value" id="geralRecuperado">-</div><div class="stat-label">Valor Recuperado</div></div>
+                <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-handshake"></i></div><div class="stat-value" id="geralAcordos">-</div><div class="stat-label">Acordos Ativos</div></div>
+                <div class="stat-card red"><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-value" id="geralVencidos">-</div><div class="stat-label">Títulos Vencidos</div></div>
+            </div>
+
+            <!-- Taxa de Recuperação -->
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-title"><i class="fas fa-bullseye"></i> Taxa de Recuperação</div>
+                </div>
+                <div class="recovery-rate">
+                    <div class="rate-circle">
+                        <svg viewBox="0 0 180 180" width="160" height="160">
+                            <circle class="rate-circle-bg" cx="90" cy="90" r="78" />
+                            <circle class="rate-circle-fill" id="rateCircle" cx="90" cy="90" r="78" stroke-dasharray="490" stroke-dashoffset="490" />
+                        </svg>
+                        <div class="rate-circle-text">
+                            <div class="rate-circle-value" id="rateValue">0%</div>
+                            <div class="rate-circle-label">Recuperação</div>
+                        </div>
+                    </div>
+                    <div class="rate-details">
+                        <div class="rate-detail-item"><span class="rate-detail-label">Total da Carteira</span><span class="rate-detail-value" id="rateCarteira">-</span></div>
+                        <div class="rate-detail-item"><span class="rate-detail-label">Valor Recuperado</span><span class="rate-detail-value" id="rateRecuperado" style="color: var(--success);">-</span></div>
+                        <div class="rate-detail-item"><span class="rate-detail-label">Valor Pendente</span><span class="rate-detail-value" id="ratePendente" style="color: var(--warning);">-</span></div>
+                        <div class="rate-detail-item"><span class="rate-detail-label">Valor Vencido</span><span class="rate-detail-value" id="rateVencido" style="color: var(--danger);">-</span></div>
+                        <div class="rate-detail-item"><span class="rate-detail-label">Total de Devedores</span><span class="rate-detail-value" id="rateDevedores">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ POR CREDOR ═══════════════ -->
+        <div id="panel-credores" class="report-panel">
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-title"><i class="fas fa-building"></i> Performance por Credor</div>
+                    <button class="btn btn-secondary btn-sm" onclick="exportarCSV('credores')"><i class="fas fa-download"></i> Exportar</button>
+                </div>
+                <div id="credoresChart" class="chart-bar-container">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="report-table" id="credoresTable">
+                        <thead><tr><th>Credor</th><th>Cobranças</th><th>Carteira</th><th>Recuperado</th><th>Taxa</th><th>Acordos</th></tr></thead>
+                        <tbody id="credoresBody"><tr><td colspan="6"><div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ ACORDOS ═══════════════ -->
+        <div id="panel-acordos" class="report-panel">
+            <div class="stats-grid">
+                <div class="stat-card green"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="acordosAtivos">-</div><div class="stat-label">Acordos Ativos</div></div>
+                <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div><div class="stat-value" id="acordosValor">-</div><div class="stat-label">Valor em Acordos</div></div>
+                <div class="stat-card gold"><div class="stat-icon"><i class="fas fa-trophy"></i></div><div class="stat-value" id="acordosQuitados">-</div><div class="stat-label">Acordos Quitados</div></div>
+                <div class="stat-card red"><div class="stat-icon"><i class="fas fa-times-circle"></i></div><div class="stat-value" id="acordosQuebrados">-</div><div class="stat-label">Acordos Quebrados</div></div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-title"><i class="fas fa-handshake"></i> Detalhamento de Acordos</div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="report-table" id="acordosTable">
+                        <thead><tr><th>Devedor</th><th>Credor</th><th>Valor Original</th><th>Valor Acordo</th><th>Parcelas</th><th>Status</th></tr></thead>
+                        <tbody id="acordosBody"><tr><td colspan="6"><div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ AGING ═══════════════ -->
+        <div id="panel-aging" class="report-panel">
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-title"><i class="fas fa-clock"></i> Aging de Carteira (Dias de Atraso)</div>
+                </div>
+                <div id="agingChart" class="chart-bar-container">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="report-table">
+                        <thead><tr><th>Faixa de Atraso</th><th>Quantidade</th><th>Valor Total</th><th>% da Carteira</th></tr></thead>
+                        <tbody id="agingBody"><tr><td colspan="4"><div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ COMISSÕES ═══════════════ -->
+        <div id="panel-comissoes" class="report-panel">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Mês Referência</label>
+                    <input type="month" id="filtroMesComissao" onchange="carregarComissoes()">
+                </div>
+            </div>
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div class="report-card-title"><i class="fas fa-coins"></i> Comissões por Credor</div>
+                    <button class="btn btn-secondary btn-sm" onclick="exportarCSV('comissoes')"><i class="fas fa-download"></i> Exportar</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="report-table">
+                        <thead><tr><th>Credor</th><th>Comissão %</th><th>Valor Recuperado</th><th>Comissão Devida</th></tr></thead>
+                        <tbody id="comissoesBody"><tr><td colspan="4"><div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
+
+    <script>
+        const API = window.location.origin;
+        let dadosCredores = [], dadosCobrancas = [], dadosAcordos = [];
+
+        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+        function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return; }
+            try {
+                const r = await fetch(API + '/api/auth/me', { headers: H() });
+                const d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return; }
+                const user = d.user || d;
+                document.getElementById('userName').textContent = user.nome || 'Usuário';
+                document.getElementById('userRole').textContent = user.perfil || 'Operador';
+                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
+            } catch (e) {}
+        }
+
+        function showReport(tab) {
+            document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[onclick="showReport('${tab}')"]`)?.classList.add('active');
+            document.getElementById('panel-' + tab)?.classList.add('active');
+        }
+
+        // ═══════════ DATA LOADING ═══════════
+
+        async function carregarTudo() {
+            try {
+                const [credR, cobR, acR] = await Promise.all([
+                    fetch(API + '/api/credores', { headers: H() }),
+                    fetch(API + '/api/cobrancas?limit=50000', { headers: H() }),
+                    fetch(API + '/api/acordos?limit=500', { headers: H() })
+                ]);
+                const credD = await credR.json();
+                const cobD = await cobR.json();
+                const acD = await acR.json();
+
+                dadosCredores = credD.data || credD || [];
+                dadosCobrancas = cobD.data || cobD || [];
+                dadosAcordos = acD.data || acD || [];
+
+                // Populate credor filters
+                const select = document.getElementById('filtroCredorGeral');
+                select.innerHTML = '<option value="">Todos</option>';
+                dadosCredores.forEach(c => {
+                    select.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+                });
+
+                carregarGeral();
+                carregarCredoresReport();
+                carregarAcordosReport();
+                carregarAging();
+                carregarComissoes();
+            } catch (e) {
+                console.error('Erro ao carregar dados:', e);
+            }
+        }
+
+        // ═══════════ VISÃO GERAL ═══════════
+
+        function carregarGeral() {
+            const credorId = document.getElementById('filtroCredorGeral').value;
+            let cobrancas = dadosCobrancas;
+            let acordos = dadosAcordos;
+
+            if (credorId) {
+                cobrancas = cobrancas.filter(c => String(c.credor_id) === credorId);
+                acordos = acordos.filter(a => String(a.credor_id) === credorId);
+            }
+
+            const totalCarteira = cobrancas.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
+            const pagos = cobrancas.filter(c => c.status === 'pago' || c.status === 'quitado');
+            const recuperado = pagos.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
+            const acordosAtivos = acordos.filter(a => a.status === 'ativo' || a.status === 'em_dia');
+            const vencidos = cobrancas.filter(c => {
+                if (c.status === 'pago' || c.status === 'quitado') return false;
+                return c.data_vencimento && new Date(c.data_vencimento) < new Date();
+            });
+
+            document.getElementById('geralCarteira').textContent = fmtMoney(totalCarteira);
+            document.getElementById('geralRecuperado').textContent = fmtMoney(recuperado);
+            document.getElementById('geralAcordos').textContent = acordosAtivos.length;
+            document.getElementById('geralVencidos').textContent = vencidos.length;
+
+            // Taxa de recuperação
+            const taxa = totalCarteira > 0 ? (recuperado / totalCarteira * 100) : 0;
+            const circumference = 2 * Math.PI * 78;
+            const offset = circumference - (taxa / 100) * circumference;
+            
+            document.getElementById('rateCircle').style.strokeDasharray = circumference;
+            document.getElementById('rateCircle').style.strokeDashoffset = offset;
+            document.getElementById('rateValue').textContent = taxa.toFixed(1) + '%';
+
+            const pendente = totalCarteira - recuperado - vencidos.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
+            const valorVencido = vencidos.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
+
+            document.getElementById('rateCarteira').textContent = fmtMoney(totalCarteira);
+            document.getElementById('rateRecuperado').textContent = fmtMoney(recuperado);
+            document.getElementById('ratePendente').textContent = fmtMoney(Math.max(0, pendente));
+            document.getElementById('rateVencido').textContent = fmtMoney(valorVencido);
+
+            // Count unique devedores
+            const devedoresSet = new Set(cobrancas.map(c => c.cliente_id).filter(Boolean));
+            document.getElementById('rateDevedores').textContent = devedoresSet.size;
+        }
+
+        // ═══════════ POR CREDOR ═══════════
+
+        function carregarCredoresReport() {
+            const credorMap = {};
+            dadosCredores.forEach(c => {
+                credorMap[c.id] = { nome: c.nome, cobrancas: 0, carteira: 0, recuperado: 0, acordos: 0, comissao: c.comissao_percentual || c.comissao || 10 };
+            });
+
+            dadosCobrancas.forEach(c => {
+                const id = c.credor_id;
+                if (!credorMap[id]) credorMap[id] = { nome: 'Sem Credor', cobrancas: 0, carteira: 0, recuperado: 0, acordos: 0, comissao: 0 };
+                credorMap[id].cobrancas++;
+                credorMap[id].carteira += parseFloat(c.valor) || 0;
+                if (c.status === 'pago' || c.status === 'quitado') credorMap[id].recuperado += parseFloat(c.valor) || 0;
+            });
+
+            dadosAcordos.forEach(a => {
+                const id = a.credor_id;
+                if (credorMap[id] && (a.status === 'ativo' || a.status === 'em_dia')) credorMap[id].acordos++;
+            });
+
+            const lista = Object.values(credorMap).filter(c => c.cobrancas > 0).sort((a, b) => b.carteira - a.carteira);
+            const maxCarteira = Math.max(...lista.map(c => c.carteira), 1);
+
+            // Chart
+            document.getElementById('credoresChart').innerHTML = lista.slice(0, 8).map(c => {
+                const pct = (c.carteira / maxCarteira * 100).toFixed(0);
+                const taxa = c.carteira > 0 ? (c.recuperado / c.carteira * 100).toFixed(1) : 0;
+                return `<div class="chart-bar-item">
+                    <div class="chart-bar-label">${c.nome}</div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-fill gold" style="width: ${pct}%">
+                            <span class="chart-bar-value">${fmtMoney(c.carteira)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Table
+            document.getElementById('credoresBody').innerHTML = lista.map(c => {
+                const taxa = c.carteira > 0 ? (c.recuperado / c.carteira * 100).toFixed(1) : 0;
+                return `<tr>
+                    <td><strong>${c.nome}</strong></td>
+                    <td>${c.cobrancas}</td>
+                    <td class="valor neutro">${fmtMoney(c.carteira)}</td>
+                    <td class="valor positivo">${fmtMoney(c.recuperado)}</td>
+                    <td class="valor">${taxa}%</td>
+                    <td>${c.acordos}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum dado encontrado</td></tr>';
+        }
+
+        // ═══════════ ACORDOS ═══════════
+
+        function carregarAcordosReport() {
+            const ativos = dadosAcordos.filter(a => a.status === 'ativo' || a.status === 'em_dia');
+            const quitados = dadosAcordos.filter(a => a.status === 'quitado' || a.status === 'concluido');
+            const quebrados = dadosAcordos.filter(a => a.status === 'quebrado' || a.status === 'cancelado');
+            const valorTotal = dadosAcordos.reduce((s, a) => s + (parseFloat(a.valor_acordo || a.valor_total) || 0), 0);
+
+            document.getElementById('acordosAtivos').textContent = ativos.length;
+            document.getElementById('acordosValor').textContent = fmtMoney(valorTotal);
+            document.getElementById('acordosQuitados').textContent = quitados.length;
+            document.getElementById('acordosQuebrados').textContent = quebrados.length;
+
+            const credorNomes = {};
+            dadosCredores.forEach(c => credorNomes[c.id] = c.nome);
+
+            document.getElementById('acordosBody').innerHTML = dadosAcordos.slice(0, 100).map(a => {
+                const statusClass = (a.status === 'ativo' || a.status === 'em_dia') ? 'ativo' : a.status === 'quitado' ? 'quitado' : a.status === 'quebrado' ? 'vencido' : 'pendente';
+                return `<tr>
+                    <td><strong>${a.cliente_nome || a.devedor_nome || '-'}</strong></td>
+                    <td>${credorNomes[a.credor_id] || '-'}</td>
+                    <td class="valor neutro">${fmtMoney(a.valor_original || a.valor_divida)}</td>
+                    <td class="valor positivo">${fmtMoney(a.valor_acordo || a.valor_total)}</td>
+                    <td>${a.parcelas || a.num_parcelas || '-'}</td>
+                    <td><span class="status-badge ${statusClass}">${a.status || '-'}</span></td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum acordo encontrado</td></tr>';
+        }
+
+        // ═══════════ AGING ═══════════
+
+        function carregarAging() {
+            const hoje = new Date();
+            const faixas = [
+                { label: 'Em dia', min: -Infinity, max: 0, color: 'green' },
+                { label: '1-30 dias', min: 1, max: 30, color: 'blue' },
+                { label: '31-60 dias', min: 31, max: 60, color: 'orange' },
+                { label: '61-90 dias', min: 61, max: 90, color: 'orange' },
+                { label: '91-180 dias', min: 91, max: 180, color: 'red' },
+                { label: '180+ dias', min: 181, max: Infinity, color: 'red' }
+            ];
+
+            const pendentes = dadosCobrancas.filter(c => c.status !== 'pago' && c.status !== 'quitado');
+            const totalCarteira = pendentes.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0);
+            
+            const agingData = faixas.map(f => {
+                const itens = pendentes.filter(c => {
+                    if (!c.data_vencimento) return f.min <= 0;
+                    const dias = Math.floor((hoje - new Date(c.data_vencimento)) / 86400000);
+                    return dias >= f.min && dias <= f.max;
+                });
+                return { ...f, qtd: itens.length, valor: itens.reduce((s, c) => s + (parseFloat(c.valor) || 0), 0) };
+            });
+
+            const maxValor = Math.max(...agingData.map(a => a.valor), 1);
+
+            document.getElementById('agingChart').innerHTML = agingData.map(a => {
+                const pct = (a.valor / maxValor * 100).toFixed(0);
+                return `<div class="chart-bar-item">
+                    <div class="chart-bar-label">${a.label}</div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-fill ${a.color}" style="width: ${Math.max(pct, 2)}%">
+                            <span class="chart-bar-value">${fmtMoney(a.valor)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('agingBody').innerHTML = agingData.map(a => {
+                const pctCarteira = totalCarteira > 0 ? (a.valor / totalCarteira * 100).toFixed(1) : 0;
+                return `<tr>
+                    <td><strong>${a.label}</strong></td>
+                    <td>${a.qtd}</td>
+                    <td class="valor ${a.color === 'green' ? 'positivo' : a.color === 'red' ? 'negativo' : 'neutro'}">${fmtMoney(a.valor)}</td>
+                    <td class="valor">${pctCarteira}%</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ═══════════ COMISSÕES ═══════════
+
+        function carregarComissoes() {
+            const credorMap = {};
+            dadosCredores.forEach(c => {
+                credorMap[c.id] = { nome: c.nome, comissao: parseFloat(c.comissao_percentual || c.comissao) || 10, recuperado: 0 };
+            });
+
+            const pagos = dadosCobrancas.filter(c => c.status === 'pago' || c.status === 'quitado');
+            pagos.forEach(c => {
+                const id = c.credor_id;
+                if (credorMap[id]) credorMap[id].recuperado += parseFloat(c.valor) || 0;
+            });
+
+            const lista = Object.values(credorMap).filter(c => c.recuperado > 0).sort((a, b) => b.recuperado - a.recuperado);
+            let totalComissao = 0;
+
+            document.getElementById('comissoesBody').innerHTML = lista.map(c => {
+                const comissaoDevida = c.recuperado * (c.comissao / 100);
+                totalComissao += comissaoDevida;
+                return `<tr>
+                    <td><strong>${c.nome}</strong></td>
+                    <td class="valor">${c.comissao}%</td>
+                    <td class="valor positivo">${fmtMoney(c.recuperado)}</td>
+                    <td class="valor" style="color: var(--gold-primary);">${fmtMoney(comissaoDevida)}</td>
+                </tr>`;
+            }).join('');
+
+            if (lista.length > 0) {
+                document.getElementById('comissoesBody').innerHTML += `<tr style="background: var(--bg-elevated);">
+                    <td colspan="3" style="text-align: right;"><strong>Total Comissões</strong></td>
+                    <td class="valor" style="color: var(--gold-primary); font-size: 16px;"><strong>${fmtMoney(totalComissao)}</strong></td>
+                </tr>`;
+            } else {
+                document.getElementById('comissoesBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhuma comissão encontrada</td></tr>';
+            }
+        }
+
+        // ═══════════ EXPORT ═══════════
+
+        function exportarCSV(tipo) {
+            let csv = '', filename = 'relatorio';
+            
+            if (tipo === 'credores') {
+                csv = 'Credor,Cobranças,Carteira,Recuperado,Taxa\n';
+                const rows = document.querySelectorAll('#credoresBody tr');
+                rows.forEach(r => {
+                    const cells = r.querySelectorAll('td');
+                    if (cells.length >= 5) csv += Array.from(cells).map(c => '"' + c.textContent.trim() + '"').join(',') + '\n';
+                });
+                filename = 'relatorio_credores';
+            } else if (tipo === 'comissoes') {
+                csv = 'Credor,Comissão %,Valor Recuperado,Comissão Devida\n';
+                const rows = document.querySelectorAll('#comissoesBody tr');
+                rows.forEach(r => {
+                    const cells = r.querySelectorAll('td');
+                    if (cells.length >= 4) csv += Array.from(cells).map(c => '"' + c.textContent.trim() + '"').join(',') + '\n';
+                });
+                filename = 'relatorio_comissoes';
+            } else {
+                csv = 'Métrica,Valor\n';
+                csv += `"Total Carteira","${document.getElementById('geralCarteira').textContent}"\n`;
+                csv += `"Recuperado","${document.getElementById('geralRecuperado').textContent}"\n`;
+                csv += `"Acordos Ativos","${document.getElementById('geralAcordos').textContent}"\n`;
+                csv += `"Vencidos","${document.getElementById('geralVencidos').textContent}"\n`;
+                filename = 'relatorio_geral';
+            }
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+            toast('CSV exportado com sucesso!');
+        }
+
+        function atualizarDados() {
+            toast('Atualizando dados...');
+            carregarTudo();
+        }
+
+        // Set default month filter
+        const now = new Date();
+        document.getElementById('filtroMesComissao').value = now.toISOString().slice(0, 7);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await carregarTudo();
+        });
+    </script>
+</body>
+</html>
