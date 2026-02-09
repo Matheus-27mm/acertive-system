@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg-primary: #050709;
@@ -182,6 +183,23 @@
         .toast i { color: var(--success); font-size: 22px; }
         .toast span { font-weight: 600; }
 
+        /* PDF Export Styles */
+        .pdf-header {
+            display: none; text-align: center; padding: 24px 0 20px; margin-bottom: 20px;
+            border-bottom: 2px solid var(--gold-primary);
+        }
+        .pdf-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gold-primary); margin-bottom: 4px; }
+        .pdf-header p { font-size: 13px; color: var(--text-muted); }
+        .pdf-mode .pdf-header { display: block; }
+        .pdf-mode .report-tabs, .pdf-mode .page-header-actions, .pdf-mode .filters-bar, 
+        .pdf-mode .mobile-toggle, .pdf-mode .sidebar, .pdf-mode .sidebar-overlay { display: none !important; }
+        .pdf-mode .main-content { margin-left: 0 !important; padding: 0 !important; }
+        .pdf-mode .report-panel { display: block !important; margin-bottom: 32px; page-break-inside: avoid; }
+        .pdf-mode .report-card { break-inside: avoid; }
+        .pdf-mode .stat-card { break-inside: avoid; }
+        .pdf-mode .page-header { margin-bottom: 0; }
+        .pdf-mode .page-header h1 { display: none; }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-secondary); }
@@ -268,9 +286,14 @@
     </aside>
 
     <main class="main-content">
+        <div class="pdf-header" id="pdfHeader">
+            <h2>ACERTIVE — Relatório de Cobrança</h2>
+            <p id="pdfDate"></p>
+        </div>
         <header class="page-header">
             <h1>Relatórios</h1>
             <div class="page-header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportarPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
                 <button class="btn btn-secondary btn-sm" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
                 <button class="btn btn-primary btn-sm" onclick="atualizarDados()"><i class="fas fa-sync-alt"></i> Atualizar</button>
             </div>
@@ -741,6 +764,42 @@
             link.click();
             URL.revokeObjectURL(url);
             toast('CSV exportado com sucesso!');
+        }
+
+        function exportarPDF() {
+            toast('Gerando PDF... Aguarde.');
+            
+            // Set date
+            const now = new Date();
+            document.getElementById('pdfDate').textContent = 'Gerado em ' + now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            
+            // Enter PDF mode
+            document.body.classList.add('pdf-mode');
+            
+            const element = document.querySelector('.main-content');
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'ACERTIVE_Relatorio_' + now.toISOString().slice(0, 10) + '.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#050709',
+                    scrollY: 0,
+                    windowWidth: 1200
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.body.classList.remove('pdf-mode');
+                toast('PDF exportado com sucesso!');
+            }).catch(err => {
+                document.body.classList.remove('pdf-mode');
+                console.error('Erro PDF:', err);
+                toast('Erro ao gerar PDF');
+            });
         }
 
         function atualizarDados() {
