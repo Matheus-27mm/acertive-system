@@ -345,6 +345,17 @@
             transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
             z-index: 1000;
         }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: fadeIn 0.3s ease; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; border-bottom: 1px solid var(--border-subtle); }
+        .modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; display: flex; align-items: center; gap: 12px; }
+        .modal-header h3 i { color: var(--gold-primary); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all 0.2s; }
+        .modal-close:hover { background: var(--danger-bg); color: var(--danger); }
+        .modal-body { padding: 28px; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast i { color: var(--success); font-size: 22px; }
         .toast.error i { color: var(--danger); }
@@ -418,6 +429,10 @@
                 <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
             </div>
             <div class="nav-section">
+                <div class="nav-section-title">Integrações</div>
+                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
+            </div>
+            <div class="nav-section">
                 <div class="nav-section-title">Sistema</div>
                 <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
                 <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
@@ -459,7 +474,10 @@
                         <tbody id="usuariosBody"><tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr></tbody>
                     </table>
                 </div>
-                <div style="margin-top: 24px;"><button class="btn btn-primary" onclick="novoUsuario()"><i class="fas fa-plus"></i> Novo Usuário</button></div>
+                <div style="margin-top: 24px; display: flex; gap: 12px;">
+                    <button class="btn btn-primary" onclick="novoUsuario()"><i class="fas fa-plus"></i> Novo Usuário</button>
+                    <button class="btn btn-secondary" onclick="abrirAlterarSenha()"><i class="fas fa-key"></i> Alterar Minha Senha</button>
+                </div>
             </div>
         </div>
 
@@ -625,6 +643,53 @@
         </div>
     </main>
 
+    <!-- Modal Usuário -->
+    <div class="modal-overlay" id="modalUsuario">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> <span id="modalUsuarioTitle">Novo Usuário</span></h3>
+                <button class="modal-close" onclick="fecharModalUsuario()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="salvarUsuario(event)">
+                    <input type="hidden" id="modalUsuarioId">
+                    <div class="form-group"><label>Nome</label><input type="text" id="modalNome" required placeholder="Nome completo"></div>
+                    <div class="form-group"><label>E-mail</label><input type="email" id="modalEmail" required placeholder="email@exemplo.com"></div>
+                    <div class="form-group" id="senhaGroup"><label>Senha</label><input type="password" id="modalSenha" placeholder="Mínimo 6 caracteres" minlength="6"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Perfil</label><select id="modalPerfil"><option value="admin">Administrador</option><option value="operador">Operador</option></select></div>
+                        <div class="form-group" id="statusGroup" style="display:none;"><label>Status</label><select id="modalAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
+                    </div>
+                    <div style="display:flex;gap:12px;margin-top:24px;">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalUsuario()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Alterar Senha -->
+    <div class="modal-overlay" id="modalAlterarSenha">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Alterar Minha Senha</h3>
+                <button class="modal-close" onclick="fecharModalSenha()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="salvarNovaSenha(event)">
+                    <div class="form-group"><label>Senha Atual</label><input type="password" id="modalSenhaAtual" required placeholder="Digite sua senha atual"></div>
+                    <div class="form-group"><label>Nova Senha</label><input type="password" id="modalNovaSenha" required placeholder="Mínimo 6 caracteres" minlength="6"></div>
+                    <div class="form-group"><label>Confirmar Nova Senha</label><input type="password" id="modalConfirmarSenha" required placeholder="Repita a nova senha"></div>
+                    <div style="display:flex;gap:12px;margin-top:24px;">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalSenha()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Alterar Senha</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
 
     <script>
@@ -733,8 +798,98 @@
         function editarTemplate(tipo) { toast('Editor de templates em desenvolvimento'); }
         function testarEnvio() { toast('Função de teste em desenvolvimento'); }
         function verLogs() { toast('Visualização de logs em desenvolvimento'); }
-        function novoUsuario() { toast('Função em desenvolvimento'); }
-        function editarUsuario(id) { toast('Função em desenvolvimento'); }
+        function novoUsuario() {
+            document.getElementById('modalUsuarioTitle').textContent = 'Novo Usuário';
+            document.getElementById('modalUsuarioId').value = '';
+            document.getElementById('modalNome').value = '';
+            document.getElementById('modalEmail').value = '';
+            document.getElementById('modalSenha').value = '';
+            document.getElementById('modalPerfil').value = 'operador';
+            document.getElementById('senhaGroup').style.display = 'block';
+            document.getElementById('senhaGroup').querySelector('label').textContent = 'SENHA';
+            document.getElementById('modalSenha').required = true;
+            document.getElementById('statusGroup').style.display = 'none';
+            document.getElementById('modalUsuario').classList.add('active');
+        }
+
+        var usuariosCache = [];
+        async function editarUsuario(id) {
+            try {
+                var r = await fetch(API + '/api/usuarios/' + id, { headers: H() });
+                var d = await r.json();
+                var u = d.data || d;
+                document.getElementById('modalUsuarioTitle').textContent = 'Editar Usuário';
+                document.getElementById('modalUsuarioId').value = u.id;
+                document.getElementById('modalNome').value = u.nome || '';
+                document.getElementById('modalEmail').value = u.email || '';
+                document.getElementById('modalSenha').value = '';
+                document.getElementById('modalSenha').required = false;
+                document.getElementById('modalPerfil').value = u.perfil || 'operador';
+                document.getElementById('senhaGroup').style.display = 'block';
+                document.getElementById('senhaGroup').querySelector('label').textContent = 'NOVA SENHA (deixe vazio para manter)';
+                document.getElementById('statusGroup').style.display = 'block';
+                document.getElementById('modalAtivo').value = u.ativo !== false ? 'true' : 'false';
+                document.getElementById('modalUsuario').classList.add('active');
+            } catch (e) { toast('Erro ao carregar usuário', 'error'); }
+        }
+
+        function fecharModalUsuario() { document.getElementById('modalUsuario').classList.remove('active'); }
+
+        async function salvarUsuario(e) {
+            e.preventDefault();
+            var id = document.getElementById('modalUsuarioId').value;
+            var body = {
+                nome: document.getElementById('modalNome').value,
+                email: document.getElementById('modalEmail').value,
+                perfil: document.getElementById('modalPerfil').value
+            };
+            var senha = document.getElementById('modalSenha').value;
+            if (senha) body.senha = senha;
+            if (id) {
+                body.ativo = document.getElementById('modalAtivo').value === 'true';
+            }
+            try {
+                var url = id ? API + '/api/usuarios/' + id : API + '/api/usuarios';
+                var method = id ? 'PUT' : 'POST';
+                if (!id && !senha) { toast('Senha é obrigatória para novo usuário', 'error'); return; }
+                var r = await fetch(url, { method: method, headers: H(), body: JSON.stringify(body) });
+                var d = await r.json();
+                if (d.success) {
+                    toast(id ? 'Usuário atualizado!' : 'Usuário criado com sucesso!');
+                    fecharModalUsuario();
+                    carregarUsuarios();
+                } else {
+                    toast(d.error || 'Erro ao salvar', 'error');
+                }
+            } catch (e) { toast('Erro ao salvar usuário', 'error'); }
+        }
+
+        function abrirAlterarSenha() {
+            document.getElementById('modalSenhaAtual').value = '';
+            document.getElementById('modalNovaSenha').value = '';
+            document.getElementById('modalConfirmarSenha').value = '';
+            document.getElementById('modalAlterarSenha').classList.add('active');
+        }
+        function fecharModalSenha() { document.getElementById('modalAlterarSenha').classList.remove('active'); }
+
+        async function salvarNovaSenha(e) {
+            e.preventDefault();
+            var atual = document.getElementById('modalSenhaAtual').value;
+            var nova = document.getElementById('modalNovaSenha').value;
+            var confirmar = document.getElementById('modalConfirmarSenha').value;
+            if (nova !== confirmar) { toast('As senhas não coincidem', 'error'); return; }
+            if (nova.length < 6) { toast('A senha deve ter pelo menos 6 caracteres', 'error'); return; }
+            try {
+                var r = await fetch(API + '/api/usuarios/me/senha', {
+                    method: 'PUT', headers: H(),
+                    body: JSON.stringify({ senha_atual: atual, nova_senha: nova })
+                });
+                var d = await r.json();
+                if (d.success) { toast('Senha alterada com sucesso!'); fecharModalSenha(); }
+                else { toast(d.error || 'Erro ao alterar senha', 'error'); }
+            } catch (e) { toast('Erro ao alterar senha', 'error'); }
+        }
+
         function salvarEmpresa() { toast('Configurações da empresa salvas!'); }
         function salvarCobranca() { toast('Parâmetros de cobrança salvos!'); }
         function salvarAsaas() { toast('Integração Asaas salva!'); }
