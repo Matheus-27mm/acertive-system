@@ -744,7 +744,7 @@
                     html += '<td><div class="user-cell"><div class="user-cell-avatar">' + (u.nome || 'U').charAt(0).toUpperCase() + '</div><div class="user-cell-info"><div class="user-cell-name">' + (u.nome || '-') + '</div><div class="user-cell-email">' + (u.email || '-') + '</div></div></div></td>';
                     html += '<td><span class="perfil-badge">' + (u.perfil || 'Operador') + '</span></td>';
                     html += '<td><span class="status-badge status-' + (u.ativo !== false ? 'ativo' : 'inativo') + '">' + (u.ativo !== false ? 'Ativo' : 'Inativo') + '</span></td>';
-                    html += '<td><button class="table-action-btn" onclick="editarUsuario(\'' + u.id + '\')" title="Editar"><i class="fas fa-edit"></i></button></td>';
+                    html += '<td><div style="display:flex;gap:8px;"><button class="table-action-btn" onclick="editarUsuario(\'' + u.id + '\')" title="Editar"><i class="fas fa-edit"></i></button><button class="table-action-btn" onclick="excluirUsuario(\'' + u.id + '\',\'' + (u.nome || '').replace(/'/g, "\\'") + '\')" title="Desativar" style="color:var(--danger);"><i class="fas fa-trash"></i></button></div></td>';
                     html += '</tr>';
                 }
                 document.getElementById('usuariosBody').innerHTML = html;
@@ -834,6 +834,16 @@
         }
 
         function fecharModalUsuario() { document.getElementById('modalUsuario').classList.remove('active'); }
+
+        async function excluirUsuario(id, nome) {
+            if (!confirm('Desativar o usuário "' + nome + '"? Ele não poderá mais acessar o sistema.')) return;
+            try {
+                var r = await fetch(API + '/api/usuarios/' + id, { method: 'DELETE', headers: H() });
+                var d = await r.json();
+                if (d.success) { toast('Usuário desativado!'); carregarUsuarios(); }
+                else { toast(d.error || 'Erro ao desativar', 'error'); }
+            } catch (e) { toast('Erro ao desativar usuário', 'error'); }
+        }
 
         async function salvarUsuario(e) {
             e.preventDefault();
