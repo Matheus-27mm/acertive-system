@@ -6,114 +6,223 @@
     <title>Integração Suri - ACERTIVE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root{--bg-primary:#07090d;--bg-secondary:#0d1117;--bg-card:#111820;--bg-elevated:#1a222d;--gold-primary:#d4a853;--gold-light:#e8c47c;--gold-dark:#b8923e;--gold-glow:rgba(212,168,83,0.15);--gold-subtle:rgba(212,168,83,0.08);--success:#22c55e;--success-bg:rgba(34,197,94,0.12);--warning:#f59e0b;--warning-bg:rgba(245,158,11,0.12);--danger:#ef4444;--danger-bg:rgba(239,68,68,0.12);--info:#3b82f6;--info-bg:rgba(59,130,246,0.12);--whatsapp:#25d366;--whatsapp-bg:rgba(37,211,102,0.12);--text-primary:#f5f5f5;--text-secondary:#9ca3af;--text-muted:#6b7280;--border-subtle:rgba(212,168,83,0.1);--border-default:rgba(212,168,83,0.15);--border-strong:rgba(212,168,83,0.25)}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
-        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
-        .sidebar-logo{display:flex;align-items:center;gap:14px}
-        .sidebar-logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bg-primary)}
-        .sidebar-logo-text{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
-        .sidebar-logo-text span{color:var(--gold-primary)}
-        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
-        .nav-section{margin-bottom:28px}
-        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px}
-        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all 0.25s;font-size:14px;font-weight:500;border:1px solid transparent}
-        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary)}
-        .nav-item.active{background:var(--gold-subtle);color:var(--gold-light);border-color:var(--border-default)}
-        .nav-item i{width:20px;text-align:center}
-        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
-        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
-        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
-        .user-details{flex:1}
-        .user-name{font-size:14px;font-weight:600}
-        .user-role{font-size:12px;color:var(--text-muted)}
-        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px}
-        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
-        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
-        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
-        .page-header-left h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:14px}
-        .page-header-left h1 i{color:var(--whatsapp)}
-        .page-header-left p{font-size:14px;color:var(--text-muted)}
-        
-        .status-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;margin-bottom:24px}
-        .status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .status-title{font-family:'Playfair Display',serif;font-size:18px;display:flex;align-items:center;gap:10px}
-        .status-title i{color:var(--gold-primary)}
-        .status-badge{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700}
-        .status-badge.connected{background:var(--success-bg);color:var(--success)}
-        .status-badge.disconnected{background:var(--danger-bg);color:var(--danger)}
-        .status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-        .status-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:20px;text-align:center}
-        .status-item-value{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold-primary);margin-bottom:4px}
-        .status-item-label{font-size:12px;color:var(--text-muted);text-transform:uppercase}
-        
-        .cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:24px}
-        .card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px}
-        .card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-        .card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
-        .card-icon.whatsapp{background:var(--whatsapp-bg);color:var(--whatsapp)}
-        .card-icon.disparo{background:var(--warning-bg);color:var(--warning)}
-        .card-icon.chatbot{background:var(--info-bg);color:var(--info)}
-        .card-icon.config{background:var(--gold-subtle);color:var(--gold-primary)}
-        .card-title{font-family:'Playfair Display',serif;font-size:18px}
-        .card-desc{font-size:13px;color:var(--text-muted)}
-        
-        .form-group{margin-bottom:16px}
-        .form-group label{display:block;font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;margin-bottom:8px}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;font-family:'DM Sans',sans-serif}
-        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--gold-primary)}
-        .form-group select option{background:var(--bg-secondary)}
-        .form-group textarea{resize:vertical;min-height:100px}
-        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        
-        .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;border:none;font-family:'DM Sans',sans-serif;width:100%}
-        .btn-whatsapp{background:var(--whatsapp);color:white}
-        .btn-whatsapp:hover{background:#1da851;transform:translateY(-2px)}
-        .btn-primary{background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));color:var(--bg-primary)}
-        .btn-primary:hover{transform:translateY(-2px)}
-        .btn-secondary{background:var(--bg-secondary);border:1px solid var(--border-default);color:var(--text-secondary)}
-        .btn-secondary:hover{background:var(--bg-elevated);color:var(--text-primary)}
-        .btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
-        
-        .message-templates{display:grid;gap:12px}
-        .template-item{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s}
-        .template-item:hover{border-color:var(--gold-primary);background:var(--gold-subtle)}
-        .template-item.selected{border-color:var(--gold-primary);background:var(--gold-subtle)}
-        .template-name{font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-        .template-name i{color:var(--gold-primary)}
-        .template-preview{font-size:12px;color:var(--text-muted);line-height:1.5}
-        
-        .result-box{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:12px;padding:16px;margin-top:16px;display:none}
-        .result-box.show{display:block}
-        .result-box.success{border-color:var(--success);background:var(--success-bg)}
-        .result-box.error{border-color:var(--danger);background:var(--danger-bg)}
-        .result-title{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-        .result-title i{font-size:18px}
-        .result-text{font-size:13px;color:var(--text-secondary)}
-        
-        .toast{position:fixed;bottom:28px;right:28px;background:var(--bg-card);border:1px solid var(--gold-primary);border-radius:14px;padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 30px rgba(212,168,83,0.2);transform:translateY(100px);opacity:0;transition:all 0.4s;z-index:1000}
-        .toast.show{transform:translateY(0);opacity:1}
-        .toast i{color:var(--success);font-size:22px}
-        .toast span{font-weight:600}
-        
-        @media(max-width:1200px){.cards-grid{grid-template-columns:1fr}.status-grid{grid-template-columns:repeat(2,1fr)}}
-        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.form-row{grid-template-columns:1fr}}
+        :root {
+            --bg-primary: #050709;
+            --bg-secondary: #0a0d12;
+            --bg-card: #0e1219;
+            --bg-card-hover: #121924;
+            --bg-elevated: #151c28;
+            --gold-primary: #c9a84c;
+            --gold-light: #dfc070;
+            --gold-dark: #8b7434;
+            --gold-glow: rgba(201, 168, 76, 0.12);
+            --gold-subtle: rgba(201, 168, 76, 0.06);
+            --success: #3ecf8e;
+            --success-bg: rgba(62, 207, 142, 0.08);
+            --warning: #e0943e;
+            --warning-bg: rgba(224, 148, 62, 0.08);
+            --danger: #e05c5c;
+            --danger-bg: rgba(224, 92, 92, 0.08);
+            --info: #5c8ee0;
+            --info-bg: rgba(92, 142, 224, 0.08);
+            --whatsapp: #25d366;
+            --whatsapp-bg: rgba(37, 211, 102, 0.10);
+            --text-primary: #e8e6e1;
+            --text-secondary: #7a7670;
+            --text-muted: #4a4640;
+            --border-subtle: rgba(201, 168, 76, 0.07);
+            --border-default: rgba(201, 168, 76, 0.14);
+            --border-strong: rgba(201, 168, 76, 0.2);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-gold: 0 8px 24px rgba(201, 168, 76, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh;
+            background-image: radial-gradient(ellipse at 0% 0%, rgba(201, 168, 76, 0.025) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(201, 168, 76, 0.02) 0%, transparent 50%);
+        }
+
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 28px 24px; border-bottom: 1px solid var(--border-subtle); }
+        .sidebar-logo { display: flex; align-items: center; gap: 14px; }
+        .sidebar-logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+        .sidebar-logo-text { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; }
+        .sidebar-logo-text span { color: var(--gold-primary); }
+        .sidebar-nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-section { margin-bottom: 28px; }
+        .nav-section-title { font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 14px; margin-bottom: 12px; opacity: 0.8; }
+        .nav-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; color: var(--text-secondary); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.25s; font-size: 14px; font-weight: 500; position: relative; border: 1px solid transparent; }
+        .nav-item:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
+        .nav-item.active { background: linear-gradient(135deg, var(--gold-subtle) 0%, transparent 100%); color: var(--gold-light); border-color: var(--border-default); }
+        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold-primary); border-radius: 0 4px 4px 0; }
+        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
+        .nav-item .badge { margin-left: auto; background: var(--danger); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-subtle); }
+        .user-info { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--bg-primary); }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: var(--text-muted); }
+        .user-logout { color: var(--text-muted); padding: 8px; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .user-logout:hover { background: var(--danger-bg); color: var(--danger); }
+
+        /* Mobile */
+        .mobile-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer; box-shadow: var(--shadow-gold); align-items: center; justify-content: center; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 99; backdrop-filter: blur(2px); }
+        .sidebar-overlay.active { display: block; }
+        @media (max-width: 768px) { .mobile-toggle { display: flex; } .sidebar { transform: translateX(-100%); transition: transform 0.3s; } .sidebar.open { transform: translateX(0) !important; } .main-content { margin-left: 0 !important; padding: 76px 16px 24px !important; } }
+
+        /* Main */
+        .main-content { margin-left: 280px; min-height: 100vh; padding: 36px 40px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .page-header-left h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; display: flex; align-items: center; gap: 14px; }
+        .page-header-left h1 i { color: var(--whatsapp); }
+        .page-header-left p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Status Card */
+        .status-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 28px; margin-bottom: 24px; }
+        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .status-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; display: flex; align-items: center; gap: 12px; }
+        .status-title i { color: var(--gold-primary); }
+        .status-badge { padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
+        .status-badge.connected { background: var(--success-bg); color: var(--success); border: 1px solid rgba(62, 207, 142, 0.3); }
+        .status-badge.disconnected { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(224, 92, 92, 0.3); }
+        .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .status-item { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 22px; text-align: center; transition: all 0.3s; }
+        .status-item:hover { border-color: var(--border-default); transform: translateY(-2px); }
+        .status-item-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--gold-primary); margin-bottom: 6px; }
+        .status-item-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Cards Grid */
+        .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 28px; transition: all 0.3s; }
+        .card:hover { border-color: var(--border-default); }
+        .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+        .card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .card-icon.whatsapp { background: var(--whatsapp-bg); color: var(--whatsapp); border: 1px solid rgba(37, 211, 102, 0.3); }
+        .card-icon.disparo { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(224, 148, 62, 0.3); }
+        .card-icon.config { background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-default); }
+        .card-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; }
+        .card-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Forms */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .form-group select option { background: var(--bg-secondary); }
+        .form-group textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-muted); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Outfit', sans-serif; width: 100%; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-whatsapp:hover { background: #1da851; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37, 211, 102, 0.3); }
+        .btn-primary { background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(201, 168, 76, 0.35); }
+        .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border-default); color: var(--text-secondary); }
+        .btn-secondary:hover { background: var(--gold-subtle); color: var(--gold-primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* Templates */
+        .template-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 28px; }
+        .template-card .card-header { margin-bottom: 20px; }
+        .message-templates { display: grid; gap: 14px; }
+        .template-item { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 18px; cursor: pointer; transition: all 0.25s; }
+        .template-item:hover { border-color: var(--border-default); background: var(--bg-elevated); }
+        .template-item.selected { border-color: var(--whatsapp); background: var(--whatsapp-bg); }
+        .template-name { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .template-name i { color: var(--gold-primary); font-size: 15px; }
+        .template-preview { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+        /* Result Box */
+        .result-box { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 18px; margin-top: 18px; display: none; }
+        .result-box.show { display: block; animation: fadeIn 0.3s ease; }
+        .result-box.success { border-color: var(--success); background: var(--success-bg); }
+        .result-box.error { border-color: var(--danger); background: var(--danger-bg); }
+        .result-title { font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .result-title i { font-size: 18px; }
+        .result-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+        /* Search Results */
+        .search-result-item { padding: 14px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .search-result-item:hover { border-color: var(--gold-primary); background: var(--gold-subtle); }
+        .search-result-item strong { color: var(--text-primary); }
+        .search-result-item small { color: var(--text-muted); }
+        .search-selected { padding: 12px; color: var(--success); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 28px; right: 28px; background: var(--bg-card); border: 1px solid var(--gold-primary); border-radius: 14px; padding: 18px 24px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-gold); transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { font-size: 22px; }
+        .toast span { font-weight: 600; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+        @media (max-width: 1200px) { .cards-grid { grid-template-columns: 1fr; } .status-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .status-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
+    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <aside class="sidebar">
-        <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div><div class="sidebar-logo-text">ACERT<span>IVE</span></div></div></div>
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div>
+                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
+            </div>
+        </div>
         <nav class="sidebar-nav">
-            <div class="nav-section"><div class="nav-section-title">Principal</div><a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a><a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a></div>
-            <div class="nav-section"><div class="nav-section-title">Gestão</div><a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a><a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a><a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
-            <div class="nav-section"><div class="nav-section-title">Integrações</div><a href="suri.html" class="nav-item active"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a></div>
-            <div class="nav-section"><div class="nav-section-title">Sistema</div><a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a></div>
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Integrações</div>
+                <a href="suri.html" class="nav-item active"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
         </nav>
-        <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div></div></div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Usuário</div>
+                    <div class="user-role" id="userRole">Operador</div>
+                </div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -124,7 +233,7 @@
             </div>
         </header>
 
-        <!-- Status da Conexão -->
+        <!-- Status -->
         <div class="status-card">
             <div class="status-header">
                 <div class="status-title"><i class="fas fa-wifi"></i> Status da Conexão</div>
@@ -164,7 +273,7 @@
                     <div class="form-group">
                         <label>Buscar Cliente</label>
                         <input type="text" id="buscaCliente" placeholder="Digite nome ou CPF..." oninput="buscarClienteSuri(this.value)">
-                        <div id="resultadoBusca" style="margin-top:8px;"></div>
+                        <div id="resultadoBusca" style="margin-top:10px;"></div>
                         <input type="hidden" id="clienteSelecionado">
                     </div>
                     <div class="form-group">
@@ -179,7 +288,7 @@
                     </div>
                     <div class="form-group" id="mensagemPersonalizadaGroup" style="display:none;">
                         <label>Mensagem</label>
-                        <textarea id="mensagemPersonalizada" placeholder="Digite sua mensagem..."></textarea>
+                        <textarea id="mensagemPersonalizada" placeholder="Digite sua mensagem personalizada..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-whatsapp" id="btnEnviarIndividual">
                         <i class="fab fa-whatsapp"></i> Enviar WhatsApp
@@ -193,7 +302,7 @@
                 <div class="card-header">
                     <div class="card-icon disparo"><i class="fas fa-paper-plane"></i></div>
                     <div>
-                        <div class="card-title">Disparo em Massa</div>
+                        <div class="card-title">Disparo Rápido</div>
                         <div class="card-desc">Envie para múltiplos clientes por filtro</div>
                     </div>
                 </div>
@@ -232,16 +341,21 @@
                     </button>
                     <div class="result-box" id="resultMassa"></div>
                 </form>
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-subtle);text-align:center;">
+                    <a href="disparos.html" style="color:var(--gold-primary);font-size:13px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+                        <i class="fas fa-expand"></i> Disparo Avançado (com seleção manual)
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Templates de Mensagem -->
-        <div class="card">
+        <!-- Templates -->
+        <div class="template-card">
             <div class="card-header">
                 <div class="card-icon config"><i class="fas fa-file-alt"></i></div>
                 <div>
                     <div class="card-title">Templates de Mensagem</div>
-                    <div class="card-desc">Visualize os modelos de mensagem disponíveis</div>
+                    <div class="card-desc">Modelos disponíveis para envio automático</div>
                 </div>
             </div>
             <div class="message-templates">
@@ -270,26 +384,16 @@
     <script>
         var API = window.location.origin;
 
-        function H() { 
-            return { 
-                'Authorization': 'Bearer ' + localStorage.getItem('token'), 
-                'Content-Type': 'application/json' 
-            }; 
-        }
+        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+        function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('active'); var icon = document.querySelector('.mobile-toggle i'); icon.className = document.querySelector('.sidebar').classList.contains('open') ? 'fas fa-times' : 'fas fa-bars'; }
 
         function toast(msg, tipo) {
             var t = document.getElementById('toast');
             var icon = t.querySelector('i');
             document.getElementById('toastText').textContent = msg;
-            
-            if (tipo === 'error') {
-                icon.className = 'fas fa-times-circle';
-                icon.style.color = 'var(--danger)';
-            } else {
-                icon.className = 'fas fa-check-circle';
-                icon.style.color = 'var(--success)';
-            }
-            
+            icon.className = tipo === 'error' ? 'fas fa-times-circle' : 'fas fa-check-circle';
+            icon.style.color = tipo === 'error' ? 'var(--danger)' : 'var(--success)';
             t.classList.add('show');
             setTimeout(function() { t.classList.remove('show'); }, 3000);
         }
@@ -309,20 +413,14 @@
             } catch (e) { return true; }
         }
 
-        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
-
-        // Verificar status da conexão
         async function verificarStatus() {
             try {
                 var r = await fetch(API + '/api/suri/status', { headers: H() });
                 var d = await r.json();
-                
                 var badge = document.getElementById('statusBadge');
-                
                 if (d.success && d.data.conectado) {
                     badge.textContent = 'Conectado';
                     badge.className = 'status-badge connected';
-                    
                     if (d.data.estatisticas) {
                         document.getElementById('statHoje').textContent = d.data.estatisticas.mensagens_hoje || 0;
                         document.getElementById('statSemana').textContent = d.data.estatisticas.mensagens_semana || 0;
@@ -338,42 +436,31 @@
             }
         }
 
-        // Buscar cliente
         var buscaTimeout;
         async function buscarClienteSuri(termo) {
             clearTimeout(buscaTimeout);
-            
-            if (!termo || termo.length < 2) {
-                document.getElementById('resultadoBusca').innerHTML = '';
-                return;
-            }
-
+            if (!termo || termo.length < 2) { document.getElementById('resultadoBusca').innerHTML = ''; return; }
             buscaTimeout = setTimeout(async function() {
                 try {
-                    // Buscar clientes com parâmetro search
                     var r = await fetch(API + '/api/clientes?limit=10&search=' + encodeURIComponent(termo), { headers: H() });
                     var d = await r.json();
                     var clientes = d.data || [];
-
                     var html = '';
                     if (clientes.length > 0) {
                         for (var j = 0; j < clientes.length && j < 5; j++) {
                             var c = clientes[j];
                             var telefone = c.telefone || c.celular || 'Sem telefone';
-                            var nomeEscapado = (c.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                            html += '<div style="padding:12px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=\'var(--gold-primary)\'" onmouseout="this.style.borderColor=\'var(--border-subtle)\'" onclick="selecionarClienteSuri(\'' + c.id + '\',\'' + nomeEscapado + '\')">';
-                            html += '<strong style="color:var(--text-primary);">' + (c.nome || 'Sem nome') + '</strong><br>';
-                            html += '<small style="color:var(--text-muted);">CPF: ' + (c.cpf_cnpj || 'N/A') + ' | Tel: ' + telefone + '</small>';
-                            html += '</div>';
+                            var nomeEsc = (c.nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            html += '<div class="search-result-item" onclick="selecionarClienteSuri(\'' + c.id + '\',\'' + nomeEsc + '\')">';
+                            html += '<strong>' + (c.nome || 'Sem nome') + '</strong><br>';
+                            html += '<small>CPF: ' + (c.cpf_cnpj || 'N/A') + ' | Tel: ' + telefone + '</small></div>';
                         }
                     } else {
-                        html = '<p style="color:var(--text-muted);font-size:13px;padding:10px;"><i class="fas fa-search"></i> Nenhum cliente encontrado com "' + termo + '"</p>';
+                        html = '<p style="color:var(--text-muted);font-size:13px;padding:12px;"><i class="fas fa-search"></i> Nenhum cliente encontrado</p>';
                     }
-                    
                     document.getElementById('resultadoBusca').innerHTML = html;
                 } catch (e) {
-                    console.error('Erro na busca:', e);
-                    document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--danger);font-size:13px;">Erro ao buscar clientes</p>';
+                    document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--danger);font-size:13px;">Erro ao buscar</p>';
                 }
             }, 300);
         }
@@ -381,54 +468,29 @@
         function selecionarClienteSuri(id, nome) {
             document.getElementById('clienteSelecionado').value = id;
             document.getElementById('buscaCliente').value = nome;
-            document.getElementById('resultadoBusca').innerHTML = '<p style="color:var(--success);font-size:13px;padding:10px;"><i class="fas fa-check-circle"></i> Cliente selecionado: <strong>' + nome + '</strong></p>';
+            document.getElementById('resultadoBusca').innerHTML = '<div class="search-selected"><i class="fas fa-check-circle"></i> Cliente selecionado: <strong>' + nome + '</strong></div>';
         }
 
-        // Mostrar/ocultar campo de mensagem personalizada
         document.getElementById('tipoMensagemIndividual').addEventListener('change', function() {
-            var grupo = document.getElementById('mensagemPersonalizadaGroup');
-            if (this.value === 'personalizada') {
-                grupo.style.display = 'block';
-            } else {
-                grupo.style.display = 'none';
-            }
+            document.getElementById('mensagemPersonalizadaGroup').style.display = this.value === 'personalizada' ? 'block' : 'none';
         });
 
-        // Enviar mensagem individual
         async function enviarMensagemIndividual(e) {
             e.preventDefault();
-            
             var clienteId = document.getElementById('clienteSelecionado').value;
-            if (!clienteId) {
-                toast('Selecione um cliente', 'error');
-                return;
-            }
-
+            if (!clienteId) { toast('Selecione um cliente', 'error'); return; }
             var tipo = document.getElementById('tipoMensagemIndividual').value;
             var btn = document.getElementById('btnEnviarIndividual');
             var resultBox = document.getElementById('resultIndividual');
-            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-
             try {
                 var endpoint = tipo === 'personalizada' ? '/api/suri/enviar-mensagem' : '/api/suri/enviar-cobranca';
                 var body = { cliente_id: clienteId };
-                
-                if (tipo === 'personalizada') {
-                    body.mensagem = document.getElementById('mensagemPersonalizada').value;
-                } else {
-                    body.tipo_mensagem = tipo;
-                }
-
-                var r = await fetch(API + endpoint, {
-                    method: 'POST',
-                    headers: H(),
-                    body: JSON.stringify(body)
-                });
-
+                if (tipo === 'personalizada') { body.mensagem = document.getElementById('mensagemPersonalizada').value; }
+                else { body.tipo_mensagem = tipo; }
+                var r = await fetch(API + endpoint, { method: 'POST', headers: H(), body: JSON.stringify(body) });
                 var d = await r.json();
-
                 if (d.success) {
                     resultBox.className = 'result-box show success';
                     resultBox.innerHTML = '<div class="result-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> Enviado com sucesso!</div><div class="result-text">' + (d.message || 'Mensagem enviada via WhatsApp') + '</div>';
@@ -449,20 +511,13 @@
             }
         }
 
-        // Disparo em massa
         async function disparoEmMassa(e) {
             e.preventDefault();
-
-            if (!confirm('Confirma o disparo em massa? Esta ação enviará mensagens para múltiplos clientes.')) {
-                return;
-            }
-
+            if (!confirm('Confirma o disparo em massa? Esta ação enviará mensagens para múltiplos clientes.')) return;
             var btn = document.getElementById('btnDisparoMassa');
             var resultBox = document.getElementById('resultMassa');
-            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-
             try {
                 var body = {
                     tipo_mensagem: document.getElementById('tipoMensagemMassa').value,
@@ -470,23 +525,11 @@
                     filtro_atraso_max: parseInt(document.getElementById('atrasoMax').value) || 9999,
                     limite: parseInt(document.getElementById('limiteEnvios').value) || 50
                 };
-
-                var r = await fetch(API + '/api/suri/disparo-massa', {
-                    method: 'POST',
-                    headers: H(),
-                    body: JSON.stringify(body)
-                });
-
+                var r = await fetch(API + '/api/suri/disparo-massa', { method: 'POST', headers: H(), body: JSON.stringify(body) });
                 var d = await r.json();
-
                 if (d.success) {
                     resultBox.className = 'result-box show success';
-                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> Disparo concluído!</div>' +
-                        '<div class="result-text">' +
-                        '✅ Enviados: ' + d.data.enviados + '<br>' +
-                        '📊 Total processado: ' + d.data.total_clientes + '<br>' +
-                        (d.data.erros > 0 ? '❌ Erros: ' + d.data.erros : '') +
-                        '</div>';
+                    resultBox.innerHTML = '<div class="result-title"><i class="fas fa-check-circle" style="color:var(--success)"></i> Disparo concluído!</div><div class="result-text">✅ Enviados: ' + d.data.enviados + '<br>📊 Total processado: ' + d.data.total_clientes + (d.data.erros > 0 ? '<br>❌ Erros: ' + d.data.erros : '') + '</div>';
                     toast('Disparo concluído! ' + d.data.enviados + ' mensagens enviadas.');
                     verificarStatus();
                 } else {
@@ -504,12 +547,9 @@
             }
         }
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
             var auth = await checkAuth();
-            if (auth) {
-                verificarStatus();
-            }
+            if (auth) verificarStatus();
         });
     </script>
 </body>

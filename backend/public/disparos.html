@@ -243,6 +243,10 @@
                 <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
             </div>
             <div class="nav-section">
+                <div class="nav-section-title">Integrações</div>
+                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
+            </div>
+            <div class="nav-section">
                 <div class="nav-section-title">Sistema</div>
                 <a href="disparos.html" class="nav-item active"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
                 <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
@@ -541,8 +545,18 @@
                 devedores = devD.data || devD || [];
                 const credores = credD.data || credD || [];
 
+                // Build credor map for ID lookup
+                const credorMap = {};
+                credores.forEach(c => { credorMap[c.id] = c.nome; });
+
                 const sel = document.getElementById('filtroCredor');
-                credores.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`; });
+                // If credores API has data, use it. Otherwise extract from devedores
+                if (credores.length > 0) {
+                    credores.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`; });
+                } else {
+                    const nomes = [...new Set(devedores.map(d => d.credor_nome).filter(Boolean))];
+                    nomes.forEach(n => { sel.innerHTML += `<option value="${n}">${n}</option>`; });
+                }
 
                 atualizarStats();
             } catch (e) {
@@ -553,19 +567,25 @@
 
         function atualizarStats() {
             const credorId = document.getElementById('filtroCredor').value;
+            const credorSelect = document.getElementById('filtroCredor');
+            const credorNome = credorSelect.options[credorSelect.selectedIndex]?.text || '';
             const atrasoMin = parseInt(document.getElementById('filtroAtraso').value) || 0;
             const valorMin = parseFloat(document.getElementById('filtroValor').value) || 0;
 
             filtrados = devedores.filter(d => {
-                if (credorId && String(d.credor_id) !== credorId) return false;
-                if ((d.dias_atraso || 0) < atrasoMin) return false;
-                if ((parseFloat(d.valor_total || d.total_divida) || 0) < valorMin) return false;
+                if (credorId) {
+                    const matchId = String(d.credor_id || '') === credorId;
+                    const matchNome = String(d.credor_nome || '').toLowerCase() === credorNome.toLowerCase();
+                    if (!matchId && !matchNome) return false;
+                }
+                if ((parseInt(d.maior_atraso) || 0) < atrasoMin) return false;
+                if ((parseFloat(d.valor_total) || 0) < valorMin) return false;
                 return true;
             });
 
             const comTel = filtrados.filter(d => d.telefone || d.celular).length;
             const semTel = filtrados.length - comTel;
-            const valorTotal = filtrados.reduce((s, d) => s + (parseFloat(d.valor_total || d.total_divida) || 0), 0);
+            const valorTotal = filtrados.reduce((s, d) => s + (parseFloat(d.valor_total) || 0), 0);
 
             document.getElementById('statTotalDev').textContent = filtrados.length;
             document.getElementById('statComTel').textContent = comTel;
@@ -593,8 +613,8 @@
             const body = document.getElementById('destBody');
             body.innerHTML = lista.map((d, i) => {
                 const tel = d.telefone || d.celular || '';
-                const valor = parseFloat(d.valor_total || d.total_divida) || 0;
-                const atraso = d.dias_atraso || 0;
+                const valor = parseFloat(d.valor_total) || 0;
+                const atraso = parseInt(d.maior_atraso) || 0;
                 selecionados.add(i);
                 return `<tr>
                     <td><input type="checkbox" class="check-custom dest-check" data-idx="${i}" checked onchange="toggleOne(${i})"></td>
