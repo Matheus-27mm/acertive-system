@@ -13,8 +13,12 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function(pool, registrarLog) {
     const router = express.Router();
+    
+    const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET não definido');
+}
 
-    const JWT_SECRET = process.env.JWT_SECRET || 'acertive_secret_key_2024';
     const JWT_EXPIRES = '24h';
 
     // =====================================================

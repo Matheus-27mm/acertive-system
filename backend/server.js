@@ -26,8 +26,12 @@ const PORT = process.env.PORT || 3000;
 // ═══════════════════════════════════════════════════════════════
 // CONFIGURAÇÕES
 // ═══════════════════════════════════════════════════════════════
-
-app.use(cors());
+app.use(cors({
+    origin: ['https://acertivecobranca.com.br', 'https://www.acertivecobranca.com.br', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -222,8 +226,11 @@ if (asaasService) {
 // MIDDLEWARES DE AUTENTICAÇÃO
 // ═══════════════════════════════════════════════════════════════
 
-const JWT_SECRET = process.env.JWT_SECRET || 'acertive_secret_key_2024';
-
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error('ERRO FATAL: JWT_SECRET não definido no .env');
+    process.exit(1);
+}
 const auth = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
