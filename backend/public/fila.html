@@ -510,26 +510,41 @@
             var totalText = document.getElementById('acordoTotal').textContent;
             var valorTotal = parseFloat(totalText.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.')) || 0;
             var desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
+            var dataVenc = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             
             try {
+                // Buscar credor_id pelo nome
+                var credorId = null;
+                if (devedorAtual.credor_nome && devedorAtual.credor_nome !== 'Credor') {
+                    try {
+                        var rc = await fetch(API + '/api/credores', { headers: H() });
+                        var dc = await rc.json();
+                        var credores = dc.data || dc || [];
+                        for (var i = 0; i < credores.length; i++) {
+                            if (credores[i].nome === devedorAtual.credor_nome) { credorId = credores[i].id; break; }
+                        }
+                    } catch(e) {}
+                }
+
                 var body = {
                     cliente_id: devedorAtual.cliente_id,
+                    credor_id: credorId,
                     valor_original: devedorAtual.valor_total,
                     valor_acordo: valorTotal,
                     desconto_percentual: desconto,
                     numero_parcelas: parcelas,
-                    data_primeiro_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    observacao: 'Acordo criado via Fila de Trabalho'
+                    valor_entrada: 0,
+                    data_primeiro_vencimento: dataVenc,
+                    observacoes: 'Acordo criado via Fila de Trabalho'
                 };
                 
                 var r = await fetch(API + '/api/acordos', { method: 'POST', headers: H(), body: JSON.stringify(body) });
                 var d = await r.json();
                 
-                if (d.success || d.id || d.data) {
-                    toast('Acordo criado com sucesso!');
+                if (d.success) {
+                    toast('Acordo criado! ' + parcelas + 'x parcelas');
                     fecharModal();
-                    // Atualizar status do devedor
-                    try { await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'acordo' }) }); } catch(e) {}
+                    try { await fetch(API + '/api/acionamentos', { method: 'POST', headers: H(), body: JSON.stringify({ cliente_id: devedorAtual.cliente_id, tipo: 'acordo', resultado: 'acordo_fechado', descricao: 'Acordo ' + parcelas + 'x' }) }); } catch(e) {}
                     var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1;
                     document.getElementById('acordosHoje').textContent = acordosHoje;
                     setTimeout(function() { proximo(); }, 1000);
