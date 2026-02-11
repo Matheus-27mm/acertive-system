@@ -192,7 +192,7 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
         @media (max-width: 1200px) { .fila-grid { grid-template-columns: 1fr; } .side-panel { flex-direction: row; flex-wrap: wrap; } .panel-card { flex: 1; min-width: 300px; } }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 24px 20px; } .info-grid { grid-template-columns: 1fr; } .action-buttons { grid-template-columns: 1fr; } .header-stats { display: none; } }
-        .search-container { margin-bottom: 24px; }
+        .search-container { margin-bottom: 24px; display: flex; gap: 12px; align-items: flex-start; }
         .search-box { position: relative; max-width: 500px; }
         .search-box i.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .search-box input { width: 100%; padding: 14px 18px 14px 48px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-primary); font-size: 14px; font-family: 'Outfit', sans-serif; }
@@ -249,7 +249,7 @@
     </aside>
     <main class="main-content">
         <header class="page-header"><h1>Fila de Trabalho</h1><div class="header-stats"><div class="header-stat gold"><i class="fas fa-list-check"></i><div><div class="value" id="totalFila">0</div><div class="label">Na fila</div></div></div><div class="header-stat green"><i class="fas fa-phone-volume"></i><div><div class="value" id="acionamentosHoje">0</div><div class="label">Acionamentos</div></div></div><div class="header-stat blue"><i class="fas fa-handshake"></i><div><div class="value" id="acordosHoje">0</div><div class="label">Acordos</div></div></div></div></header>
-        <div class="search-container"><div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" id="searchInput" placeholder="Buscar cliente por nome ou CPF..." oninput="buscarCliente(this.value)"><div class="search-results" id="searchResults"></div></div></div>
+        <div class="search-container"><div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" id="searchInput" placeholder="Buscar cliente por nome ou CPF..." oninput="buscarCliente(this.value)"><div class="search-results" id="searchResults"></div></div><select id="filtroCredorFila" onchange="filtrarPorCredor()" style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:14px;color:var(--text-primary);font-size:14px;font-family:'Outfit',sans-serif;min-width:200px;cursor:pointer;"><option value="">Todos os Credores</option></select></div>
         <div class="fila-grid">
             <div class="devedor-card" id="devedorCard">
                 <div class="loading" id="loadingState"><div class="spinner"></div></div>
@@ -328,10 +328,37 @@
                 fila = filaOriginal.slice();
                 document.getElementById('totalFila').textContent = fila.length;
                 document.getElementById('filaBadge').textContent = fila.length > 999 ? '999+' : fila.length;
+                popularFiltroCredor();
                 carregarEstatisticas();
                 if (fila.length > 0) { posicao = 0; mostrarDevedor(); } 
                 else { document.getElementById('loadingState').style.display = 'none'; document.getElementById('emptyState').style.display = 'flex'; }
             } catch (e) { console.error('Erro:', e); document.getElementById('loadingState').innerHTML = '<p style="color: var(--text-muted);">Erro ao carregar fila</p>'; }
+        }
+
+        function popularFiltroCredor() {
+            var credores = {};
+            for (var i = 0; i < filaOriginal.length; i++) {
+                var nome = filaOriginal[i].credor_nome;
+                if (nome && nome !== 'Credor') credores[nome] = (credores[nome] || 0) + 1;
+            }
+            var sel = document.getElementById('filtroCredorFila');
+            sel.innerHTML = '<option value="">Todos os Credores (' + filaOriginal.length + ')</option>';
+            var nomes = Object.keys(credores).sort();
+            for (var j = 0; j < nomes.length; j++) {
+                sel.innerHTML += '<option value="' + nomes[j] + '">' + nomes[j] + ' (' + credores[nomes[j]] + ')</option>';
+            }
+        }
+
+        function filtrarPorCredor() {
+            var credorSel = document.getElementById('filtroCredorFila').value;
+            if (!credorSel) {
+                fila = filaOriginal.slice();
+            } else {
+                fila = filaOriginal.filter(function(d) { return d.credor_nome === credorSel; });
+            }
+            document.getElementById('totalFila').textContent = fila.length;
+            if (fila.length > 0) { posicao = 0; mostrarDevedor(); }
+            else { document.getElementById('devedorContent').style.display = 'none'; document.getElementById('loadingState').style.display = 'none'; toast('Nenhum devedor para este credor'); }
         }
 
         async function carregarEstatisticas() {
@@ -477,7 +504,43 @@
             for (var i = 0; i < sel.options.length; i++) { var p = i + 1; sel.options[i].text = p === 1 ? 'À Vista - ' + fmtMoney(total) : p + 'x de ' + fmtMoney(total / p); }
         }
 
-        async function criarAcordo() { if (!devedorAtual) return; toast('Acordo criado com sucesso!'); fecharModal(); var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1; document.getElementById('acordosHoje').textContent = acordosHoje; setTimeout(function() { proximo(); }, 1000); }
+        async function criarAcordo() {
+            if (!devedorAtual) return;
+            var parcelas = parseInt(document.getElementById('inputParcelas').value) || 1;
+            var totalText = document.getElementById('acordoTotal').textContent;
+            var valorTotal = parseFloat(totalText.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.')) || 0;
+            var desconto = parseFloat(document.getElementById('inputDesconto').value) || 0;
+            
+            try {
+                var body = {
+                    cliente_id: devedorAtual.cliente_id,
+                    valor_original: devedorAtual.valor_total,
+                    valor_acordo: valorTotal,
+                    desconto_percentual: desconto,
+                    numero_parcelas: parcelas,
+                    data_primeiro_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    observacao: 'Acordo criado via Fila de Trabalho'
+                };
+                
+                var r = await fetch(API + '/api/acordos', { method: 'POST', headers: H(), body: JSON.stringify(body) });
+                var d = await r.json();
+                
+                if (d.success || d.id || d.data) {
+                    toast('Acordo criado com sucesso!');
+                    fecharModal();
+                    // Atualizar status do devedor
+                    try { await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'acordo' }) }); } catch(e) {}
+                    var acordosHoje = parseInt(document.getElementById('acordosHoje').textContent) + 1;
+                    document.getElementById('acordosHoje').textContent = acordosHoje;
+                    setTimeout(function() { proximo(); }, 1000);
+                } else {
+                    toast(d.error || 'Erro ao criar acordo', 'error');
+                }
+            } catch (e) {
+                console.error('Erro ao criar acordo:', e);
+                toast('Erro ao criar acordo', 'error');
+            }
+        }
 
         async function marcarIncobravel() { if (!devedorAtual) return; if (!confirm('Marcar como INCOBRÁVEL?')) return; try { await fetch(API + '/api/acionamentos/cliente/' + devedorAtual.cliente_id + '/status', { method: 'PUT', headers: H(), body: JSON.stringify({ status_cobranca: 'incobravel' }) }); toast('Marcado como incobrável'); proximo(); } catch (e) { toast('Erro ao atualizar', 'error'); } }
 
