@@ -149,16 +149,68 @@
         .card-title i { color: var(--gold-primary); font-size: 16px; }
         .card-body { padding: 26px; }
 
+        /* ── SELETOR DE CREDOR ── */
+        .credor-step {
+            margin-bottom: 28px;
+        }
+        .credor-step-title {
+            font-size: 13px; font-weight: 700; color: var(--gold-primary);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .credor-step-title i { font-size: 14px; }
+        .credor-selector {
+            display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
+        }
+        .credor-selector .form-group { margin-bottom: 0; }
+        .credor-cards {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
+        }
+        .credor-card {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 13px;
+            font-weight: 500;
+        }
+        .credor-card:hover { border-color: var(--gold-primary); color: var(--gold-light); }
+        .credor-card.selected {
+            background: var(--gold-subtle); border-color: var(--gold-primary);
+            color: var(--gold-light);
+        }
+        .credor-card i { color: var(--gold-primary); font-size: 14px; }
+        .credor-novo-toggle {
+            font-size: 13px; color: var(--text-muted); margin-top: 10px;
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            transition: color 0.2s;
+        }
+        .credor-novo-toggle:hover { color: var(--gold-primary); }
+        .credor-novo-input { display: none; margin-top: 12px; }
+        .credor-novo-input.show { display: block; }
+        .credor-selecionado-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 14px; background: var(--gold-subtle);
+            border: 1px solid var(--gold-primary); border-radius: 8px;
+            font-size: 13px; font-weight: 600; color: var(--gold-light);
+            margin-top: 10px;
+        }
+
         .upload-area {
             border: 2px dashed var(--border-default); border-radius: 16px;
             padding: 60px 40px; text-align: center; transition: all 0.3s ease;
             cursor: pointer; background: var(--bg-secondary);
         }
         .upload-area:hover, .upload-area.dragover { border-color: var(--gold-primary); background: var(--gold-subtle); }
+        .upload-area.disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
         .upload-area i { font-size: 56px; color: var(--gold-primary); margin-bottom: 20px; opacity: 0.8; }
         .upload-area h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; margin-bottom: 10px; }
         .upload-area p { color: var(--text-muted); margin-bottom: 20px; }
         .upload-area input[type="file"] { display: none; }
+        .upload-area .credor-hint {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--warning-bg); border: 1px solid rgba(224,148,62,0.3);
+            color: var(--warning); padding: 8px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; margin-top: 8px;
+        }
 
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
         .stat-item {
@@ -179,6 +231,7 @@
             font-size: 14px; font-family: 'Outfit', sans-serif; transition: all 0.2s ease;
         }
         .form-control:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .form-control option { background: var(--bg-secondary); }
 
         .clients-list { max-height: 600px; overflow-y: auto; }
         .client-item {
@@ -271,6 +324,15 @@
         .actions-info strong { color: var(--gold-primary); }
         .actions-buttons { display: flex; gap: 12px; }
 
+        /* Credor badge no preview */
+        .preview-credor-badge {
+            display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px;
+            padding: 10px 16px; background: var(--gold-subtle);
+            border: 1px solid var(--gold-primary); border-radius: 10px;
+            font-size: 14px; font-weight: 600; color: var(--gold-light);
+        }
+        .preview-credor-badge i { color: var(--gold-primary); }
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-secondary); }
         ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
@@ -282,8 +344,8 @@
             .main-content { margin-left: 0; padding: 24px 20px; }
             .stats-grid { grid-template-columns: 1fr; }
             .client-contact { display: none; }
+            .credor-selector { grid-template-columns: 1fr; }
         }
-        /* Mobile Menu */
         .mobile-toggle {
             display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
             width: 46px; height: 46px; border-radius: 12px;
@@ -364,42 +426,87 @@
             </div>
         </header>
 
+        <!-- STEP 1: Upload com seleção de credor -->
         <div class="card" id="uploadCard">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-cloud-upload-alt"></i> Upload do Arquivo</h3>
             </div>
             <div class="card-body">
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+
+                <!-- SELEÇÃO DE CREDOR -->
+                <div class="credor-step">
+                    <div class="credor-step-title">
+                        <i class="fas fa-building"></i> Passo 1 — Selecione o Credor
+                    </div>
+                    <div class="credor-selector">
+                        <div class="form-group">
+                            <label>Credor existente</label>
+                            <select class="form-control" id="credorSelect" onchange="selecionarCredorExistente()">
+                                <option value="">— Carregando credores... —</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" onclick="toggleNovoCredor()" style="height: 52px;">
+                                <i class="fas fa-plus"></i> Novo Credor
+                            </button>
+                        </div>
+                    </div>
+                    <div class="credor-novo-input" id="credorNovoInput">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Nome do novo credor</label>
+                            <input type="text" class="form-control" id="credorNovoNome" placeholder="Ex: Odonto Vitta, Transbyshop..." oninput="atualizarCredorSelecionado()">
+                        </div>
+                    </div>
+                    <div id="credorSelecionadoBadge" style="display: none;" class="credor-selecionado-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="credorSelecionadoNome"></span>
+                    </div>
+                </div>
+
+                <!-- UPLOAD -->
+                <div class="credor-step-title" style="margin-top: 8px;">
+                    <i class="fas fa-file-excel" style="color: var(--gold-primary);"></i> Passo 2 — Selecione a Planilha
+                </div>
+                <div class="upload-area" id="uploadArea" onclick="iniciarUpload()">
                     <i class="fas fa-file-excel"></i>
                     <h3>Arraste a planilha aqui</h3>
                     <p>ou clique para selecionar o arquivo (.xlsx, .xls)</p>
-                    <button class="btn btn-secondary"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+                    <button class="btn btn-secondary" onclick="e => e.stopPropagation()"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+                    <br>
+                    <span class="credor-hint" id="credorHint"><i class="fas fa-exclamation-triangle"></i> Selecione um credor primeiro</span>
                     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
                 </div>
             </div>
         </div>
 
+        <!-- STEP 2: Preview -->
         <div class="card" id="previewCard" style="display: none;">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-eye"></i> Preview da Importação</h3>
                 <button class="btn btn-secondary" onclick="resetImport()"><i class="fas fa-redo"></i> Nova Importação</button>
             </div>
             <div class="card-body">
+
+                <!-- Badge do credor selecionado -->
+                <div class="preview-credor-badge">
+                    <i class="fas fa-building"></i>
+                    Credor: <span id="previewCredorNome">—</span>
+                </div>
+
                 <div class="stats-grid" id="statsGrid">
                     <div class="stat-item"><div class="stat-value" id="statClientes">0</div><div class="stat-label">Clientes</div></div>
                     <div class="stat-item"><div class="stat-value" id="statDividas">0</div><div class="stat-label">Dívidas</div></div>
                     <div class="stat-item"><div class="stat-value" id="statValor">R$ 0</div><div class="stat-label">Valor Total</div></div>
                     <div class="stat-item"><div class="stat-value" id="statAtraso">0</div><div class="stat-label">Com Atraso</div></div>
                 </div>
-                <div class="form-group">
-                    <label>Nome do Credor (será criado se não existir)</label>
-                    <input type="text" class="form-control" id="credorNome" value="Carteira Geral" placeholder="Ex: Bemol, Casas Bahia...">
-                </div>
+
                 <div class="clients-list" id="clientsList"></div>
+
                 <div class="import-progress" id="importProgress">
                     <div class="progress-spinner"></div>
                     <p class="progress-text">Importando dados... Por favor, aguarde.</p>
                 </div>
+
                 <div class="import-success" id="importSuccess">
                     <i class="fas fa-check-circle"></i>
                     <h3>Importação Concluída!</h3>
@@ -427,6 +534,8 @@
     <script>
         const API = window.location.origin;
         let dadosPreview = null;
+        let credorSelecionadoId = null;
+        let credorSelecionadoNomeVar = '';
 
         function H() {
             return { 
@@ -459,18 +568,121 @@
                     document.getElementById('userRole').textContent = user.perfil || 'Operador';
                     document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
                 }
-            } catch (e) { console.error('Auth error:', e); }
+            } catch (e) {}
         }
 
         function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
 
+        // ═══════════════════════════════════════════════════════════
+        // CREDORES
+        // ═══════════════════════════════════════════════════════════
+        async function carregarCredores() {
+            try {
+                const r = await fetch(API + '/api/credores', { headers: H() });
+                const d = await r.json();
+                const credores = d.data || d || [];
+                const select = document.getElementById('credorSelect');
+                select.innerHTML = '<option value="">— Selecione um credor —</option>';
+                credores.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nome;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                document.getElementById('credorSelect').innerHTML = '<option value="">— Erro ao carregar —</option>';
+            }
+        }
+
+        function selecionarCredorExistente() {
+            const select = document.getElementById('credorSelect');
+            const id = select.value;
+            const nome = select.options[select.selectedIndex].textContent;
+            if (id) {
+                credorSelecionadoId = id;
+                credorSelecionadoNomeVar = nome;
+                // Oculta campo novo credor se estava aberto
+                document.getElementById('credorNovoInput').classList.remove('show');
+                document.getElementById('credorNovoNome').value = '';
+                mostrarBadgeCredor(nome);
+                habilitarUpload();
+            } else {
+                credorSelecionadoId = null;
+                credorSelecionadoNomeVar = '';
+                ocultarBadgeCredor();
+                desabilitarUpload();
+            }
+        }
+
+        function toggleNovoCredor() {
+            const input = document.getElementById('credorNovoInput');
+            input.classList.toggle('show');
+            if (input.classList.contains('show')) {
+                // Limpa seleção do select
+                document.getElementById('credorSelect').value = '';
+                credorSelecionadoId = null;
+                document.getElementById('credorNovoNome').focus();
+                ocultarBadgeCredor();
+                desabilitarUpload();
+            }
+        }
+
+        function atualizarCredorSelecionado() {
+            const nome = document.getElementById('credorNovoNome').value.trim();
+            if (nome.length >= 2) {
+                credorSelecionadoId = null; // null = criar novo
+                credorSelecionadoNomeVar = nome;
+                mostrarBadgeCredor(nome + ' (novo)');
+                habilitarUpload();
+            } else {
+                credorSelecionadoNomeVar = '';
+                ocultarBadgeCredor();
+                desabilitarUpload();
+            }
+        }
+
+        function mostrarBadgeCredor(nome) {
+            const badge = document.getElementById('credorSelecionadoBadge');
+            document.getElementById('credorSelecionadoNome').textContent = nome;
+            badge.style.display = 'inline-flex';
+        }
+
+        function ocultarBadgeCredor() {
+            document.getElementById('credorSelecionadoBadge').style.display = 'none';
+        }
+
+        function habilitarUpload() {
+            document.getElementById('uploadArea').classList.remove('disabled');
+            document.getElementById('credorHint').style.display = 'none';
+        }
+
+        function desabilitarUpload() {
+            document.getElementById('uploadArea').classList.add('disabled');
+            document.getElementById('credorHint').style.display = 'inline-flex';
+        }
+
+        function iniciarUpload() {
+            if (!credorSelecionadoNomeVar) {
+                alert('Selecione ou cadastre um credor antes de importar.');
+                return;
+            }
+            document.getElementById('fileInput').click();
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // UPLOAD E PROCESSAMENTO
+        // ═══════════════════════════════════════════════════════════
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
 
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragover', (e) => { 
+            if (!credorSelecionadoNomeVar) return;
+            e.preventDefault(); uploadArea.classList.add('dragover'); 
+        });
         uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault(); uploadArea.classList.remove('dragover');
+            if (!credorSelecionadoNomeVar) { alert('Selecione um credor primeiro.'); return; }
             const file = e.dataTransfer.files[0];
             if (file) processFile(file);
         });
@@ -491,7 +703,6 @@
                 dadosPreview = data;
                 showPreview(data);
             } catch (error) {
-                console.error('Erro:', error);
                 uploadArea.innerHTML = `
                     <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
                     <h3>Erro ao processar</h3><p>${error.message}</p>
@@ -502,6 +713,10 @@
         function showPreview(data) {
             document.getElementById('uploadCard').style.display = 'none';
             document.getElementById('previewCard').style.display = 'block';
+
+            // Mostra o credor selecionado no preview
+            document.getElementById('previewCredorNome').textContent = credorSelecionadoNomeVar;
+
             document.getElementById('statClientes').textContent = data.stats.total_clientes.toLocaleString();
             document.getElementById('statDividas').textContent = data.stats.total_dividas.toLocaleString();
             document.getElementById('statValor').textContent = fmtMoney(data.stats.valor_total);
@@ -553,6 +768,8 @@
 
         function resetImport() {
             dadosPreview = null;
+            credorSelecionadoId = null;
+            credorSelecionadoNomeVar = '';
             document.getElementById('uploadCard').style.display = 'block';
             document.getElementById('previewCard').style.display = 'none';
             document.getElementById('importProgress').classList.remove('show');
@@ -560,42 +777,61 @@
             document.getElementById('clientsList').style.display = 'block';
             document.getElementById('statsGrid').style.display = 'grid';
             document.getElementById('actionsBar').style.display = 'flex';
+            document.getElementById('credorSelect').value = '';
+            document.getElementById('credorNovoNome').value = '';
+            document.getElementById('credorNovoInput').classList.remove('show');
+            ocultarBadgeCredor();
+            desabilitarUpload();
+            // Resetar upload area
             document.getElementById('uploadArea').innerHTML = `
                 <i class="fas fa-file-excel"></i><h3>Arraste a planilha aqui</h3>
                 <p>ou clique para selecionar o arquivo (.xlsx, .xls)</p>
                 <button class="btn btn-secondary"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+                <br>
+                <span class="credor-hint" id="credorHint"><i class="fas fa-exclamation-triangle"></i> Selecione um credor primeiro</span>
                 <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">`;
             document.getElementById('fileInput').addEventListener('change', (e) => { const file = e.target.files[0]; if (file) processFile(file); });
         }
 
         async function executarImportacao() {
             if (!dadosPreview) return;
-            const credorNome = document.getElementById('credorNome').value.trim() || 'Carteira Geral';
+            if (!credorSelecionadoNomeVar) { alert('Credor não selecionado.'); return; }
+
             document.getElementById('clientsList').style.display = 'none';
             document.getElementById('statsGrid').style.display = 'none';
             document.getElementById('actionsBar').style.display = 'none';
             document.getElementById('importProgress').classList.add('show');
-            document.querySelector('.form-group').style.display = 'none';
+
             try {
+                const body = { 
+                    clientes: dadosPreview.clientes, 
+                    credor_nome: credorSelecionadoNomeVar
+                };
+                // Se credor já existe, manda o ID também
+                if (credorSelecionadoId) body.credor_id = credorSelecionadoId;
+
                 const response = await fetch(API + '/api/importacao/executar', {
                     method: 'POST', headers: H(),
-                    body: JSON.stringify({ clientes: dadosPreview.clientes, credor_nome: credorNome })
+                    body: JSON.stringify(body)
                 });
                 const data = await response.json();
                 if (!data.success) throw new Error(data.error || 'Erro na importação');
                 document.getElementById('importProgress').classList.remove('show');
                 document.getElementById('importSuccess').classList.add('show');
-                document.getElementById('resultClientes').textContent = data.resultado.clientes_criados + data.resultado.clientes_atualizados;
-                document.getElementById('resultCobrancas').textContent = data.resultado.cobrancas_criadas;
+                document.getElementById('resultClientes').textContent = (data.resultado.clientes_criados || 0) + (data.resultado.clientes_atualizados || 0);
+                document.getElementById('resultCobrancas').textContent = data.resultado.cobrancas_criadas || 0;
             } catch (error) {
-                console.error('Erro:', error);
                 document.getElementById('importProgress').classList.remove('show');
                 alert('Erro na importação: ' + error.message);
                 resetImport();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', checkAuth);
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await carregarCredores();
+            desabilitarUpload(); // começa desabilitado até selecionar credor
+        });
     
         function toggleSidebar() {
             document.querySelector(".sidebar").classList.toggle("open");
