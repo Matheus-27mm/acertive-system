@@ -1,14 +1,14 @@
 /**
  * ========================================
  * ACERTIVE - Integração SURI (Chatbot Maker)
- * routes/suri.js - v3.1 PATCH
+ * routes/suri.js - v3.2 FINAL
  * ========================================
  * 
- * MUDANÇAS v3.1:
- * - Juros padrão corrigido: 1% → 9% ao mês
+ * MUDANÇAS v3.2:
+ * - Juros/multa lidos da tabela `configuracoes` (tela de configurações)
  * - Chatbot simplificado: sem menu de pagamento
  * - Bot mostra cobranças + valor atualizado e transfere pro atendente
- * - Removido: PIX automático, desconto 30%, parcelamento automático
+ * - Removido: PIX automático, desconto, parcelamento automático
  */
 
 var express = require('express');
@@ -98,7 +98,7 @@ module.exports = function(pool, auth, registrarLog) {
 
     function calcularValorAtualizado(valorOriginal, diasAtraso, credorConfig) {
         var multa_pct = parseFloat(credorConfig.multa_atraso) || 2;
-        var juros_pct = parseFloat(credorConfig.juros_atraso) || 9; // ✅ CORRIGIDO: padrão 9%
+        var juros_pct = parseFloat(credorConfig.juros_atraso) || 9;
 
         var valorMulta = 0;
         var valorJuros = 0;
@@ -123,9 +123,30 @@ module.exports = function(pool, auth, registrarLog) {
         };
     }
 
+    // ✅ Busca juros/multa da tabela configuracoes (tela de configurações do sistema)
+    async function buscarConfigGlobal() {
+        try {
+            var result = await pool.query('SELECT * FROM configuracoes WHERE id = 1');
+            if (result.rowCount > 0) {
+                var cfg = result.rows[0];
+                return {
+                    juros_atraso: parseFloat(cfg.juros_atraso) || 9,
+                    multa_atraso: parseFloat(cfg.multa_atraso) || 2
+                };
+            }
+        } catch (e) {
+            console.log('[CONFIG] Erro ao buscar configuracoes globais:', e.message);
+        }
+        return { juros_atraso: 9, multa_atraso: 2 };
+    }
+
     async function buscarConfigCredor(credorId) {
         try {
-            if (!credorId) return getConfigCredorPadrao();
+            // Sempre busca a config global primeiro (tela de configurações)
+            var configGlobal = await buscarConfigGlobal();
+
+            if (!credorId) return getConfigCredorPadrao(configGlobal);
+
             var result = await pool.query(
                 "SELECT multa_atraso, juros_atraso, permite_desconto, desconto_maximo, " +
                 "permite_parcelamento, parcelas_maximo, juros_parcelamento, nome " +
@@ -135,28 +156,29 @@ module.exports = function(pool, auth, registrarLog) {
                 var c = result.rows[0];
                 return {
                     nome: c.nome || 'Credor',
-                    multa_atraso: parseFloat(c.multa_atraso) || 2,
-                    juros_atraso: parseFloat(c.juros_atraso) || 9, // ✅ CORRIGIDO: fallback 9%
-                    permite_desconto: c.permite_desconto !== false,
-                    desconto_maximo: parseFloat(c.desconto_maximo) || 10,
-                    permite_parcelamento: c.permite_parcelamento !== false,
-                    parcelas_maximo: parseInt(c.parcelas_maximo) || 12,
-                    juros_parcelamento: parseFloat(c.juros_parcelamento) || 0
+                    // Se o credor tiver config própria usa, senão usa a global
+                    multa_atraso: parseFloat(c.multa_atraso) || configGlobal.multa_atraso,
+                    juros_atraso: parseFloat(c.juros_atraso) || configGlobal.juros_atraso,
+                    permite_desconto: false,
+                    desconto_maximo: 0,
+                    permite_parcelamento: false,
+                    parcelas_maximo: 6,
+                    juros_parcelamento: 0
                 };
             }
-            return getConfigCredorPadrao();
+            return getConfigCredorPadrao(configGlobal);
         } catch (e) {
             console.error('[CONFIG] Erro:', e);
             return getConfigCredorPadrao();
         }
     }
 
-    function getConfigCredorPadrao() {
-        // ✅ CORRIGIDO: juros_atraso era 1, agora é 9 (conforme combinado com cliente)
+    function getConfigCredorPadrao(configGlobal) {
+        var cfg = configGlobal || {};
         return {
             nome: 'Credor',
-            multa_atraso: 2,
-            juros_atraso: 9,
+            multa_atraso: cfg.multa_atraso || 2,
+            juros_atraso: cfg.juros_atraso || 9,
             permite_desconto: false,
             desconto_maximo: 0,
             permite_parcelamento: false,
@@ -173,9 +195,7 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             var cpfCnpj = (cliente.cpf_cnpj || '').replace(/\D/g, '');
             var cpfValido = cpfCnpj.length === 11 || cpfCnpj.length === 14;
-            if (!cpfValido || cpfCnpj.match(/^(\d)\1+$/)) {
-                cpfCnpj = '24971563792';
-            }
+            if (!cpfValido || cpfCnpj.match(/^(\d)\1+$/)) cpfCnpj = '24971563792';
             if (cpfCnpj) {
                 var buscaResp = await fetch(ASAAS_CONFIG.baseUrl + '/customers?cpfCnpj=' + cpfCnpj, { method: 'GET', headers: getAsaasHeaders() });
                 var buscaData = await buscaResp.json();
@@ -356,11 +376,10 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // MENSAGEM INICIAL (WhatsApp) — SEM desconto/parcelamento
+    // MENSAGEM INICIAL — SEM desconto/parcelamento
     // ═══════════════════════════════════════════════════════════════
 
     function gerarMensagemInicial(cliente, valorAtualizado, credorNome) {
-        // ✅ CORRIGIDO: removido desconto e parcelamento automático
         var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
         var msg = '📋 *ACERTIVE - Assessoria e Cobrança*\n\n';
         msg += 'Olá *' + primeiroNome + '*, tudo bem?\n\n';
@@ -423,7 +442,6 @@ module.exports = function(pool, auth, registrarLog) {
         var telefoneKey = limparTelefone(telefone);
         var sessao = sessoes[telefoneKey];
 
-        // Se não tem sessão ou já está aguardando atendente, inicia/reinicia
         if (!sessao || sessao.etapa === 'atendente') {
             return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
         }
@@ -431,12 +449,11 @@ module.exports = function(pool, auth, registrarLog) {
         sessao.timestamp = Date.now();
         if (contactId) sessao.contactId = contactId;
 
-        // Qualquer mensagem após receber o resumo → encaminha pro atendente
         return await encaminharAtendente(telefoneKey, telefone, sessao);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ✅ CHATBOT: INICIAR SESSÃO — mostra cobranças + valor e encaminha
+    // CHATBOT: INICIAR SESSÃO — mostra cobranças + valor e encaminha
     // ═══════════════════════════════════════════════════════════════
 
     async function iniciarSessao(telefoneKey, telefone, cliente, contactId) {
@@ -452,7 +469,7 @@ module.exports = function(pool, auth, registrarLog) {
 
         sessoes[telefoneKey] = {
             cliente_id: cliente.id,
-            etapa: 'atendente', // ✅ já vai direto pra etapa de atendente
+            etapa: 'atendente',
             valor_original: valorOriginal,
             valor_total: valorAtualizado,
             calculo: calculo,
@@ -461,7 +478,6 @@ module.exports = function(pool, auth, registrarLog) {
             timestamp: Date.now()
         };
 
-        // Monta mensagem com lista de cobranças e valor atualizado
         var msg = '📋 *ACERTIVE - Assessoria e Cobrança*\n\n';
         msg += 'Olá *' + primeiroNome + '*, identificamos pendências em seu nome:\n\n';
 
@@ -497,7 +513,6 @@ module.exports = function(pool, auth, registrarLog) {
         return 'resumo_enviado';
     }
 
-    // ✅ NOVO: encaminhar pro atendente quando cliente responde qualquer coisa
     async function encaminharAtendente(telefoneKey, telefone, sessao) {
         var cId = sessao.contactId;
         var msg = '✅ Sua mensagem foi recebida!\n\n';
@@ -538,10 +553,10 @@ module.exports = function(pool, auth, registrarLog) {
             } else if (tipo === 'message-received') {
                 await processarMensagemRecebida(evento);
             } else if (tipo === 'finish-attendance') {
-                var payload = evento.payload || evento.data || evento;
-                var contato = (payload.attendance || payload).contact || {};
-                var tel = contato.phone || contato.telefone;
-                if (tel) delete sessoes[limparTelefone(tel)];
+                var payload2 = evento.payload || evento.data || evento;
+                var contato = (payload2.attendance || payload2).contact || {};
+                var tel2 = contato.phone || contato.telefone;
+                if (tel2) delete sessoes[limparTelefone(tel2)];
             }
 
             res.json({ success: true });
@@ -607,7 +622,6 @@ module.exports = function(pool, auth, registrarLog) {
             if (canais.indexOf('whatsapp') !== -1) {
                 var telefone = formatarTelefone(cliente.telefone || cliente.celular);
                 if (telefone) {
-                    // ✅ gerarMensagemInicial agora sem desconto/parcelamento
                     var msgWhats = gerarMensagemInicial(cliente, calculo.atualizado, cobrancas[0].credor_nome);
                     var r = await enviarMensagemTexto(telefone, msgWhats, null);
                     resultados.whatsapp = r;
@@ -844,7 +858,6 @@ module.exports = function(pool, auth, registrarLog) {
                     if (canais.indexOf('whatsapp') !== -1) {
                         var tel = formatarTelefone(cl.telefone || cl.celular);
                         if (tel) {
-                            // ✅ sem desconto/parcelamento na mensagem
                             var r = await enviarMensagemTexto(tel, gerarMensagemInicial(cl, calc.atualizado, cl.credor_nome), null);
                             if (r.success) { enviados.whatsapp++; delete sessoes[limparTelefone(tel)]; await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1,$2,'whatsapp','suri','enviado','Disparo massa',NOW())", [cl.id, req.user.id]); }
                         }
@@ -905,7 +918,8 @@ module.exports = function(pool, auth, registrarLog) {
     router.get('/status', auth, async function(req, res) {
         try {
             var s = await pool.query("SELECT COUNT(*) FILTER (WHERE tipo='whatsapp' AND canal='suri' AND DATE(created_at)=CURRENT_DATE) as msg_hoje, COUNT(*) FILTER (WHERE resultado LIKE 'acordo%') as acordos FROM acionamentos");
-            res.json({ success: true, data: { conectado: true, chatbot_ativo: true, sessoes: Object.keys(sessoes).length, stats: s.rows[0], email_ok: !!emailTransporter } });
+            var configGlobal = await buscarConfigGlobal();
+            res.json({ success: true, data: { conectado: true, chatbot_ativo: true, sessoes: Object.keys(sessoes).length, stats: s.rows[0], email_ok: !!emailTransporter, juros_configurado: configGlobal.juros_atraso + '%', multa_configurada: configGlobal.multa_atraso + '%' } });
         } catch (e) { res.json({ success: false }); }
     });
     router.post('/teste-texto', auth, async function(req, res) {
