@@ -538,8 +538,7 @@ module.exports = function(pool, auth, registrarLog) {
             const b = req.body || {};
             const existe = await pool.query('SELECT id FROM configuracoes WHERE id = 1');
             if (!existe.rowCount) await pool.query('INSERT INTO configuracoes (id) VALUES (1)');
-
-            const campos = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'email_remetente', 'asaas_api_key', 'asaas_ambiente', 'nome_empresa', 'percentual_comissao_padrao', 'dias_aviso_vencimento', 'openai_api_key', 'ia_ativa'];
+            const campos = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'email_remetente', 'asaas_api_key', 'asaas_ambiente', 'nome_empresa', 'percentual_comissao_padrao', 'dias_aviso_vencimento', 'openai_api_key', 'ia_ativa', 'juros_atraso', 'multa_atraso'];
             const updates = [];
             const params = [];
             let idx = 1;
