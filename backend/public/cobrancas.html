@@ -118,7 +118,6 @@
         .action-btn{width:38px;height:38px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:14px}
         .action-btn.view{background:var(--gold-subtle);color:var(--gold-primary);border:1px solid var(--border-subtle)}
         .action-btn.edit{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(245,158,11,0.3)}
-        .action-btn.boleto{background:var(--success-bg);color:var(--success);border:1px solid rgba(34,197,94,0.3)}
         .action-btn.delete{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
         .action-btn:hover{transform:scale(1.1);box-shadow:var(--shadow-sm)}
         .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
@@ -164,27 +163,10 @@
         ::-webkit-scrollbar-thumb:hover{background:var(--gold-dark)}
         @media(max-width:1400px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.header-actions{flex-direction:column}}
-        /* Mobile Menu */
-        .mobile-toggle {
-            display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
-            width: 46px; height: 46px; border-radius: 12px;
-            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
-            border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer;
-            box-shadow: var(--shadow-gold); align-items: center; justify-content: center;
-            transition: all 0.3s;
-        }
-        .mobile-toggle:hover { transform: scale(1.05); }
-        .sidebar-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7); z-index: 99; backdrop-filter: blur(2px);
-        }
-        .sidebar-overlay.active { display: block; }
-        @media (max-width: 768px) {
-            .mobile-toggle { display: flex; }
-            .sidebar { transition: transform 0.3s ease; }
-            .sidebar.open { transform: translateX(0) !important; }
-            .main-content { padding-top: 76px !important; }
-        }
+        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;color:var(--bg-primary);font-size:20px;cursor:pointer;box-shadow:var(--shadow-gold);align-items:center;justify-content:center;transition:all 0.3s}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99;backdrop-filter:blur(2px)}
+        .sidebar-overlay.active{display:block}
+        @media(max-width:768px){.mobile-toggle{display:flex}.sidebar{transition:transform 0.3s ease}.sidebar.open{transform:translateX(0)!important}.main-content{padding-top:76px!important}}
     </style>
 </head>
 <body>
@@ -193,17 +175,40 @@
     <aside class="sidebar">
         <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div><div class="sidebar-logo-text">ACERT<span>IVE</span></div></div></div>
         <nav class="sidebar-nav">
-            <div class="nav-section"><div class="nav-section-title">Principal</div><a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a><a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a></div>
-            <div class="nav-section"><div class="nav-section-title">Gestão</div><a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a><a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a><a href="cobrancas.html" class="nav-item active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a></div>
-            <div class="nav-section"><div class="nav-section-title">Cadastros</div><a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a></div>
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">Integrações</div>
                 <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
-            <div class="nav-section"><div class="nav-section-title">Sistema</div><a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
-                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a><a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a><a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a></div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
         </nav>
-        <div class="sidebar-footer"><div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div><div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div></div></div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -225,7 +230,15 @@
         <div class="filters-bar">
             <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar por nome do cliente, CPF ou descrição..." onkeyup="buscarComDebounce()"></div>
             <select class="filter-select" id="filterCredor" onchange="recarregar()"><option value="">Todos os credores</option></select>
-            <select class="filter-select" id="filterMes" onchange="recarregar()"><option value="">Todos os meses</option><option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
+            <select class="filter-select" id="filterMes" onchange="recarregar()">
+                <option value="">Todos os meses</option>
+                <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+                <option value="03">Março</option><option value="04">Abril</option>
+                <option value="05">Maio</option><option value="06">Junho</option>
+                <option value="07">Julho</option><option value="08">Agosto</option>
+                <option value="09">Setembro</option><option value="10">Outubro</option>
+                <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
         </div>
 
         <div class="status-tabs">
@@ -238,8 +251,10 @@
 
         <div class="table-card">
             <div class="table-wrapper">
-                <table><thead><tr><th>Cliente</th><th>Descrição</th><th>Credor</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
-                <tbody id="tabelaBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+                <table>
+                    <thead><tr><th>Cliente</th><th>Descrição</th><th>Credor</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody id="tabelaBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+                </table>
             </div>
             <div class="pagination">
                 <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0 cobranças</div>
@@ -254,16 +269,46 @@
     <!-- Modal Nova/Editar Cobrança -->
     <div class="modal-overlay" id="modalCobranca">
         <div class="modal">
-            <div class="modal-header"><h3><i class="fas fa-file-invoice-dollar"></i> <span id="modalTitle">Nova Cobrança</span></h3><button class="modal-close" onclick="fecharModal()">&times;</button></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-file-invoice-dollar"></i> <span id="modalTitle">Nova Cobrança</span></h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
             <form id="formCobranca" onsubmit="salvar(event)">
                 <div class="modal-body">
                     <input type="hidden" id="cobrancaId">
-                    <div class="form-row"><div class="form-group"><label>Cliente *</label><div class="search-select-container"><input type="hidden" id="clienteId" required><input type="text" id="clienteBusca" placeholder="Digite nome ou CPF..." autocomplete="off" oninput="buscarClientes()" onfocus="buscarClientes()"><div id="clienteDropdown" class="search-dropdown"></div></div></div><div class="form-group"><label>Credor *</label><select id="credorId" required><option value="">Selecione...</option></select></div></div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cliente *</label>
+                            <div class="search-select-container">
+                                <input type="hidden" id="clienteId" required>
+                                <input type="text" id="clienteBusca" placeholder="Digite nome ou CPF..." autocomplete="off" oninput="buscarClientes()" onfocus="buscarClientes()">
+                                <div id="clienteDropdown" class="search-dropdown"></div>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Credor *</label><select id="credorId" required><option value="">Selecione...</option></select></div>
+                    </div>
                     <div class="form-group"><label>Descrição *</label><input type="text" id="descricao" placeholder="Ex: Parcela 3/12 - Crediário" required></div>
-                    <div class="form-row"><div class="form-group"><label>Valor *</label><input type="text" id="valor" placeholder="R$ 0,00" required></div><div class="form-group"><label>Data de Vencimento *</label><input type="date" id="dataVencimento" required></div></div>
-                    <div class="form-row"><div class="form-group"><label>Número do Documento</label><input type="text" id="numeroDocumento" placeholder="Ex: NF-00123"></div><div class="form-group"><label>Status</label><select id="status"><option value="pendente">Pendente</option><option value="vencido">Vencido</option><option value="pago">Pago</option><option value="acordo">Em Acordo</option><option value="cancelado">Cancelado</option></select></div></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Valor *</label><input type="text" id="valor" placeholder="R$ 0,00" required></div>
+                        <div class="form-group"><label>Data de Vencimento *</label><input type="date" id="dataVencimento" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Número do Documento</label><input type="text" id="numeroDocumento" placeholder="Ex: NF-00123"></div>
+                        <div class="form-group"><label>Status</label>
+                            <select id="status">
+                                <option value="pendente">Pendente</option>
+                                <option value="vencido">Vencido</option>
+                                <option value="pago">Pago</option>
+                                <option value="acordo">Em Acordo</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button><button type="submit" class="btn-salvar"><i class="fas fa-check"></i> Salvar</button></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-salvar"><i class="fas fa-check"></i> Salvar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -301,52 +346,35 @@
 
         function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
 
-        // ═══════════════════════════════════════════════════════════════
-        // BUSCA SERVER-SIDE
-        // ═══════════════════════════════════════════════════════════════
         function buscarComDebounce() {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function() {
-                paginaAtual = 1;
-                carregarCobrancas();
-            }, 400);
+            debounceTimer = setTimeout(function() { paginaAtual = 1; carregarCobrancas(); }, 400);
         }
 
-        function recarregar() {
-            paginaAtual = 1;
-            carregarCobrancas();
-        }
+        function recarregar() { paginaAtual = 1; carregarCobrancas(); }
 
         async function carregarCobrancas() {
             try {
                 document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>';
-
                 var busca = document.getElementById('searchInput').value.trim();
                 var credor = document.getElementById('filterCredor').value;
                 var mes = document.getElementById('filterMes').value;
-
-                // Build query params for server-side search
                 var params = new URLSearchParams();
                 params.set('page', paginaAtual);
                 params.set('limit', porPagina);
-                
                 if (busca) params.set('busca', busca);
                 if (statusAtual) params.set('status', statusAtual);
                 if (credor) params.set('credor_id', credor);
-                // For month filter, calculate date range
                 if (mes) {
                     var year = new Date().getFullYear();
                     params.set('data_inicio', year + '-' + mes + '-01');
                     var lastDay = new Date(year, parseInt(mes), 0).getDate();
                     params.set('data_fim', year + '-' + mes + '-' + lastDay);
                 }
-
                 const r = await fetch(API + '/api/cobrancas?' + params.toString(), { headers: H() });
                 const d = await r.json();
                 todasCobrancas = d.data || [];
                 totalCobrancas = d.total || todasCobrancas.length;
-
-                // Auto-update vencido status
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
                 todasCobrancas.forEach(c => {
@@ -356,9 +384,7 @@
                         if (venc < hoje) c.status = 'vencido';
                     }
                 });
-
                 await carregarCredores();
-                await carregarClientes();
                 atualizarStats();
                 renderizar();
             } catch (e) {
@@ -386,7 +412,6 @@
         }
 
         var clientesBuscaTimer;
-        var clienteSelecionado = null;
 
         async function buscarClientes() {
             clearTimeout(clientesBuscaTimer);
@@ -411,30 +436,23 @@
                         });
                     }
                     dropdown.classList.add('show');
-                } catch (e) { console.error('Erro busca clientes:', e); }
+                } catch (e) {}
             }, 300);
         }
 
         function selecionarCliente(c) {
-            clienteSelecionado = c;
             document.getElementById('clienteId').value = c.id;
             document.getElementById('clienteBusca').value = c.nome + ' - ' + (c.cpf_cnpj || '');
             document.getElementById('clienteDropdown').classList.remove('show');
         }
 
-        // Fechar dropdown ao clicar fora
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.search-select-container')) {
                 document.getElementById('clienteDropdown').classList.remove('show');
             }
         });
 
-        async function carregarClientes() {
-            // Não carrega mais todos - busca é feita sob demanda
-        }
-
         async function atualizarStats() {
-            // Use stats endpoint for accurate counts
             try {
                 const r = await fetch(API + '/api/cobrancas/estatisticas', { headers: H() });
                 const d = await r.json();
@@ -452,7 +470,6 @@
                     document.getElementById('filaBadge').textContent = parseInt(s.vencidas) || 0;
                 }
             } catch (e) {
-                // Fallback to local counts
                 document.getElementById('statTotal').textContent = totalCobrancas;
             }
         }
@@ -475,7 +492,6 @@
                     var venc = new Date(c.data_vencimento);
                     var diff = Math.floor((venc - hoje) / (1000*60*60*24));
                     var vencClass = diff < 0 ? 'vencido' : (diff <= 7 ? 'proximo' : 'ok');
-
                     html += '<tr>';
                     html += '<td><div class="cliente-info"><div class="cliente-avatar">' + (c.cliente_nome || 'C').charAt(0) + '</div><div><div class="cliente-nome">' + (c.cliente_nome || '-') + '</div><div class="cliente-doc">' + (c.cliente_cpf || '') + '</div></div></div></td>';
                     html += '<td>' + (c.descricao || '-') + '</td>';
@@ -486,7 +502,6 @@
                     html += '<td><div class="actions-cell">';
                     html += '<button class="action-btn view" onclick="verDetalhes(\'' + c.id + '\')" title="Ver"><i class="fas fa-eye"></i></button>';
                     html += '<button class="action-btn edit" onclick="editar(\'' + c.id + '\')" title="Editar"><i class="fas fa-edit"></i></button>';
-                    if (c.status !== 'pago') html += '<button class="action-btn boleto" onclick="gerarBoleto(\'' + c.id + '\')" title="Boleto"><i class="fas fa-barcode"></i></button>';
                     html += '<button class="action-btn delete" onclick="excluir(\'' + c.id + '\')" title="Excluir"><i class="fas fa-trash"></i></button>';
                     html += '</div></td></tr>';
                 });
@@ -505,7 +520,14 @@
         function paginaAnterior() { if (paginaAtual > 1) { paginaAtual--; carregarCobrancas(); } }
         function proximaPagina() { paginaAtual++; carregarCobrancas(); }
 
-        function abrirModal() { document.getElementById('cobrancaId').value = ''; document.getElementById('modalTitle').textContent = 'Nova Cobrança'; document.getElementById('formCobranca').reset(); document.getElementById('clienteId').value = ''; document.getElementById('clienteBusca').value = ''; clienteSelecionado = null; document.getElementById('modalCobranca').classList.add('active'); }
+        function abrirModal() {
+            document.getElementById('cobrancaId').value = '';
+            document.getElementById('modalTitle').textContent = 'Nova Cobrança';
+            document.getElementById('formCobranca').reset();
+            document.getElementById('clienteId').value = '';
+            document.getElementById('clienteBusca').value = '';
+            document.getElementById('modalCobranca').classList.add('active');
+        }
         function fecharModal() { document.getElementById('modalCobranca').classList.remove('active'); }
 
         function editar(id) {
@@ -545,7 +567,10 @@
             } catch (e) { toast('Erro ao salvar'); }
         }
 
-        function verDetalhes(id) { var c = todasCobrancas.find(x => x.id === id); if (c && c.cliente_id) window.location.href = 'devedores.html?id=' + c.cliente_id; }
+        function verDetalhes(id) {
+            var c = todasCobrancas.find(x => x.id === id);
+            if (c && c.cliente_id) window.location.href = 'devedores.html?id=' + c.cliente_id;
+        }
 
         async function excluir(id) {
             if (!confirm('Tem certeza que deseja EXCLUIR esta cobrança?\n\nEsta ação não pode ser desfeita.')) return;
@@ -554,16 +579,6 @@
                 if (r.ok) { toast('Cobrança excluída!'); await carregarCobrancas(); }
                 else { var err = await r.json(); toast(err.error || 'Erro ao excluir'); }
             } catch (e) { toast('Erro ao excluir'); }
-        }
-
-        async function gerarBoleto(id) {
-            toast('Gerando boleto...');
-            try {
-                var r = await fetch(API + '/api/cobrancas/' + id + '/boleto', { method: 'POST', headers: H() });
-                var d = await r.json();
-                if (d.success && d.data?.invoiceUrl) { window.open(d.data.invoiceUrl, '_blank'); toast('Boleto gerado!'); }
-                else toast(d.error || 'Erro ao gerar boleto');
-            } catch (e) { toast('Erro ao gerar boleto'); }
         }
 
         function exportar() {
@@ -586,8 +601,10 @@
             if (auth) await carregarCobrancas();
         });
 
-        document.getElementById('modalCobranca').addEventListener('click', (e) => { if (e.target.classList.contains('modal-overlay')) fecharModal(); });
-    
+        document.getElementById('modalCobranca').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) fecharModal();
+        });
+
         function toggleSidebar() {
             document.querySelector(".sidebar").classList.toggle("open");
             document.getElementById("sidebarOverlay").classList.toggle("active");
