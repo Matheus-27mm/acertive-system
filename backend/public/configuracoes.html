@@ -10,14 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-primary: #050709;--bg-secondary: #0a0d12;--bg-card: #0e1219;--bg-card-hover: #121924;
+            --bg-primary: #050709;--bg-secondary: #0a0d12;--bg-card: #0e1219;
             --bg-elevated: #151c28;--gold-primary: #c9a84c;--gold-light: #dfc070;--gold-dark: #8b7434;
             --gold-glow: rgba(201, 168, 76, 0.12);--gold-subtle: rgba(201, 168, 76, 0.06);
             --success: #3ecf8e;--success-bg: rgba(62, 207, 142, 0.08);
             --warning: #e0943e;--warning-bg: rgba(224, 148, 62, 0.08);
             --danger: #e05c5c;--danger-bg: rgba(224, 92, 92, 0.08);
-            --info: #5c8ee0;--info-bg: rgba(92, 142, 224, 0.08);
-            --whatsapp: #25d366;--whatsapp-bg: rgba(37, 211, 102, 0.12);
+            --whatsapp: #25d366;
             --text-primary: #e8e6e1;--text-secondary: #7a7670;--text-muted: #4a4640;
             --border-subtle: rgba(201, 168, 76, 0.07);--border-default: rgba(201, 168, 76, 0.14);
             --border-strong: rgba(201, 168, 76, 0.2);
@@ -55,8 +54,6 @@
         .config-tab { display: flex; align-items: center; gap: 10px; padding: 14px 22px; background: transparent; border: 1px solid transparent; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.3s; }
         .config-tab:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
         .config-tab.active { background: linear-gradient(135deg, var(--gold-subtle), transparent); border-color: var(--gold-primary); color: var(--gold-light); }
-        .config-tab i { font-size: 16px; }
-        .config-tab.whatsapp i { color: var(--whatsapp); }
         .config-tab.whatsapp.active { border-color: var(--whatsapp); }
         .config-panel { display: none; }
         .config-panel.active { display: block; animation: fadeIn 0.3s ease; }
@@ -68,11 +65,9 @@
         .config-card p.description { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
         .form-group input::placeholder { color: var(--text-muted); }
-        .form-group input:read-only { background: var(--bg-elevated); color: var(--text-muted); cursor: not-allowed; }
-        .form-group select option { background: var(--bg-secondary); color: var(--text-primary); }
         .form-group .help-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Outfit', sans-serif; }
@@ -81,8 +76,11 @@
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border-default); color: var(--text-secondary); }
         .btn-secondary:hover { background: var(--gold-subtle); color: var(--gold-primary); }
-        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; text-decoration: none; }
         .btn-whatsapp:hover { background: #1da851; transform: translateY(-2px); }
+        .token-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+        .token-status.configurado { background: var(--success-bg); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
+        .token-status.nao-configurado { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(224,148,62,0.3); }
         .usuarios-table { width: 100%; border-collapse: collapse; }
         .usuarios-table th { text-align: left; padding: 16px 20px; font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-secondary); }
         .usuarios-table td { padding: 18px 20px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
@@ -92,12 +90,12 @@
         .user-cell-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold-subtle), var(--bg-elevated)); border: 1px solid var(--border-default); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-primary); }
         .user-cell-name { font-weight: 600; margin-bottom: 2px; }
         .user-cell-email { font-size: 12px; color: var(--text-muted); }
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .status-ativo { background: var(--success-bg); color: #34d399; border: 1px solid rgba(62,207,142,0.3); }
         .status-inativo { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(224,92,92,0.3); }
         .perfil-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-default); }
         .table-action-btn { width: 38px; height: 38px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-subtle); transition: all 0.3s; }
-        .table-action-btn:hover { transform: scale(1.1); border-color: var(--border-default); }
+        .table-action-btn:hover { transform: scale(1.1); }
         .suri-status-box { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
         .suri-status-left { display: flex; align-items: center; gap: 16px; }
         .suri-status-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
@@ -123,20 +121,17 @@
         .toast span { font-weight: 600; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
-        .modal { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: fadeIn 0.3s ease; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; border-bottom: 1px solid var(--border-subtle); }
         .modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; display: flex; align-items: center; gap: 12px; }
         .modal-header h3 i { color: var(--gold-primary); }
         .modal-close { background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all 0.2s; }
         .modal-close:hover { background: var(--danger-bg); color: var(--danger); }
         .modal-body { padding: 28px; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 24px 20px; } .config-tabs { flex-direction: column; } .suri-stats-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
-        .mobile-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer; box-shadow: var(--shadow-gold); align-items: center; justify-content: center; transition: all 0.3s; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 99; backdrop-filter: blur(2px); }
+        .mobile-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer; box-shadow: var(--shadow-gold); align-items: center; justify-content: center; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 99; }
         .sidebar-overlay.active { display: block; }
         @media (max-width: 768px) { .mobile-toggle { display: flex; } .sidebar { transition: transform 0.3s ease; } .sidebar.open { transform: translateX(0) !important; } .main-content { padding-top: 76px !important; } }
     </style>
@@ -182,10 +177,7 @@
         <div class="sidebar-footer">
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-details">
-                    <div class="user-name" id="userName">Usuário</div>
-                    <div class="user-role" id="userRole">Operador</div>
-                </div>
+                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div>
                 <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
             </div>
         </div>
@@ -193,7 +185,6 @@
 
     <main class="main-content">
         <header class="page-header"><h1>Configurações</h1></header>
-
         <div class="config-tabs">
             <button class="config-tab active" onclick="showTab('usuarios')"><i class="fas fa-users"></i> Usuários</button>
             <button class="config-tab" onclick="showTab('empresa')"><i class="fas fa-building"></i> Empresa</button>
@@ -201,7 +192,7 @@
             <button class="config-tab whatsapp" onclick="showTab('suri')"><i class="fab fa-whatsapp"></i> Suri WhatsApp</button>
         </div>
 
-        <!-- Panel: Usuários -->
+        <!-- Usuários -->
         <div id="panel-usuarios" class="config-panel active">
             <div class="config-card">
                 <h3><i class="fas fa-users"></i> Usuários do Sistema</h3>
@@ -209,7 +200,7 @@
                 <div style="overflow-x: auto;">
                     <table class="usuarios-table">
                         <thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody id="usuariosBody"><tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr></tbody>
+                        <tbody id="usuariosBody"><tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr></tbody>
                     </table>
                 </div>
                 <div style="margin-top: 24px; display: flex; gap: 12px;">
@@ -219,7 +210,7 @@
             </div>
         </div>
 
-        <!-- Panel: Empresa -->
+        <!-- Empresa -->
         <div id="panel-empresa" class="config-panel">
             <div class="config-card">
                 <h3><i class="fas fa-building"></i> Dados da Empresa</h3>
@@ -237,7 +228,7 @@
             </div>
         </div>
 
-        <!-- Panel: Cobrança -->
+        <!-- Cobrança -->
         <div id="panel-cobranca" class="config-panel">
             <div class="config-card">
                 <h3><i class="fas fa-percent"></i> Parâmetros de Cobrança</h3>
@@ -248,17 +239,17 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group"><label>Honorários (%)</label><input type="number" id="honorarios" value="10" min="0" max="30" step="0.5"></div>
-                    <div class="form-group"><label>Desconto Máximo (%)</label><input type="number" id="descontoMax" value="50" min="0" max="100" step="1"></div>
+                    <div class="form-group"><label>Desconto Máximo (%)</label><input type="number" id="descontoMax" value="50" min="0" max="100"></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label>Parcelas Máximas</label><input type="number" id="parcelasMax" value="12" min="1" max="48" step="1"></div>
+                    <div class="form-group"><label>Parcelas Máximas</label><input type="number" id="parcelasMax" value="12" min="1" max="48"></div>
                     <div class="form-group"><label>Valor Mínimo Parcela</label><input type="text" id="valorMinParcela" value="50" placeholder="R$ 50,00"></div>
                 </div>
                 <button class="btn btn-primary" onclick="salvarCobranca()"><i class="fas fa-save"></i> Salvar Parâmetros</button>
             </div>
         </div>
 
-        <!-- Panel: Suri WhatsApp -->
+        <!-- Suri -->
         <div id="panel-suri" class="config-panel">
             <div class="suri-status-box">
                 <div class="suri-status-left">
@@ -271,18 +262,31 @@
                 <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatHoje">-</div><div class="suri-stat-label">Mensagens Hoje</div></div>
                 <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatSemana">-</div><div class="suri-stat-label">Últimos 7 dias</div></div>
                 <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatTotal">-</div><div class="suri-stat-label">Total Enviadas</div></div>
-                <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatCanal">WhatsApp</div><div class="suri-stat-label">Canal Ativo</div></div>
+                <div class="suri-stat-item"><div class="suri-stat-value">WhatsApp</div><div class="suri-stat-label">Canal Ativo</div></div>
             </div>
             <div class="config-card">
                 <h3><i class="fas fa-key"></i> Credenciais da API</h3>
-                <p class="description">Configure as credenciais de acesso à API da Suri.</p>
+                <p class="description">As credenciais são salvas de forma segura no servidor — o token nunca é exposto no navegador.</p>
                 <div class="form-row">
-                    <div class="form-group"><label>Identificador</label><input type="text" id="suriIdentificador" value="cb126955962" readonly><div class="help-text">ID único do seu chatbot</div></div>
-                    <div class="form-group"><label>Token de Acesso</label><input type="password" id="suriToken" value="c79ce62a-eb6c-495a-b102-0e780b5d2047"><div class="help-text">Token para autenticação na API</div></div>
+                    <div class="form-group">
+                        <label>Identificador</label>
+                        <input type="text" id="suriIdentificador" placeholder="cb126955962">
+                        <div class="help-text">ID único do seu chatbot</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Token de Acesso</label>
+                        <div id="suriTokenStatus" style="display:none;" class="token-status nao-configurado"></div>
+                        <input type="password" id="suriToken" placeholder="Cole o token aqui para configurar">
+                        <div class="help-text" id="suriTokenHelp">Token para autenticação na API</div>
+                    </div>
                 </div>
-                <div class="form-group"><label>Endpoint da API</label><input type="text" id="suriEndpoint" value="https://cbm-wap-babysuri-cb126955962.azurewebsites.net" readonly><div class="help-text">URL base para chamadas da API</div></div>
+                <div class="form-group">
+                    <label>Endpoint da API</label>
+                    <input type="text" id="suriEndpoint" placeholder="https://cbm-wap-babysuri-cb126955962.azurewebsites.net">
+                    <div class="help-text">URL base para chamadas da API</div>
+                </div>
                 <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-primary" onclick="salvarCredenciaisSuri()"><i class="fas fa-save"></i> Salvar Credenciais</button>
+                    <button class="btn btn-primary" onclick="salvarCredenciaisSuri(this)"><i class="fas fa-save"></i> Salvar Credenciais</button>
                     <button class="btn btn-secondary" onclick="testarConexaoSuri()"><i class="fas fa-vial"></i> Testar Conexão</button>
                 </div>
             </div>
@@ -296,9 +300,9 @@
                 <div style="margin-top: 16px;">
                     <p class="description" style="margin-bottom: 12px;">Marque as seguintes opções no painel da Suri:</p>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <span style="background: var(--success-bg); color: var(--success); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;"><i class="fas fa-check"></i> new-contact</span>
-                        <span style="background: var(--success-bg); color: var(--success); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;"><i class="fas fa-check"></i> message-received</span>
-                        <span style="background: var(--success-bg); color: var(--success); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;"><i class="fas fa-check"></i> finish-attendance</span>
+                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> new-contact</span>
+                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> message-received</span>
+                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> finish-attendance</span>
                     </div>
                 </div>
             </div>
@@ -307,8 +311,8 @@
                 <p class="description">Acesse as funcionalidades principais da integração Suri.</p>
                 <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                     <a href="suri.html" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> Abrir Painel Suri</a>
-                    <button class="btn btn-secondary" onclick="testarEnvio()"><i class="fas fa-paper-plane"></i> Enviar Teste</button>
-                    <button class="btn btn-secondary" onclick="verLogs()"><i class="fas fa-list"></i> Ver Logs</button>
+                    <button class="btn btn-secondary" onclick="toast('Função de teste em desenvolvimento')"><i class="fas fa-paper-plane"></i> Enviar Teste</button>
+                    <button class="btn btn-secondary" onclick="toast('Visualização de logs em desenvolvimento')"><i class="fas fa-list"></i> Ver Logs</button>
                 </div>
             </div>
         </div>
@@ -392,72 +396,83 @@
         function showTab(tab) {
             document.querySelectorAll('.config-tab').forEach(function(t) { t.classList.remove('active'); });
             document.querySelectorAll('.config-panel').forEach(function(p) { p.classList.remove('active'); });
-            var tabBtn = document.querySelector('[onclick="showTab(\'' + tab + '\')"]');
-            if (tabBtn) tabBtn.classList.add('active');
+            var btn = document.querySelector('[onclick="showTab(\'' + tab + '\')"]');
+            if (btn) btn.classList.add('active');
             var panel = document.getElementById('panel-' + tab);
             if (panel) panel.classList.add('active');
-            if (tab === 'suri') verificarStatusSuri();
+            if (tab === 'suri') { carregarCredenciaisSuri(); verificarStatusSuri(); }
             if (tab === 'cobranca') carregarCobranca();
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // COBRANÇA
-        // ═══════════════════════════════════════════════════════════
+        // ═══ COBRANÇA ═══
         async function carregarCobranca() {
             try {
                 var r = await fetch(API + '/api/configuracoes', { headers: H() });
                 var d = await r.json();
                 var c = d.data || {};
-                if (c.multa_atraso !== undefined && c.multa_atraso !== null) document.getElementById('multaAtraso').value = parseFloat(c.multa_atraso);
-                if (c.juros_atraso !== undefined && c.juros_atraso !== null) document.getElementById('jurosMes').value = parseFloat(c.juros_atraso);
-                if (c.percentual_comissao_padrao !== undefined && c.percentual_comissao_padrao !== null) document.getElementById('honorarios').value = parseFloat(c.percentual_comissao_padrao);
+                if (c.multa_atraso != null) document.getElementById('multaAtraso').value = parseFloat(c.multa_atraso);
+                if (c.juros_atraso != null) document.getElementById('jurosMes').value = parseFloat(c.juros_atraso);
+                if (c.percentual_comissao_padrao != null) document.getElementById('honorarios').value = parseFloat(c.percentual_comissao_padrao);
                 if (c.nome_empresa) document.getElementById('empresaNome').value = c.nome_empresa;
-            } catch (e) { console.error('Erro ao carregar configurações:', e); }
+            } catch (e) {}
         }
 
         async function salvarCobranca() {
             var btn = document.querySelector('#panel-cobranca .btn-primary');
-            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...'; }
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
             try {
-                var body = {
-                    multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2,
-                    juros_atraso: parseFloat(document.getElementById('jurosMes').value) || 9,
-                    percentual_comissao_padrao: parseFloat(document.getElementById('honorarios').value) || 10
-                };
+                var body = { multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2, juros_atraso: parseFloat(document.getElementById('jurosMes').value) || 9, percentual_comissao_padrao: parseFloat(document.getElementById('honorarios').value) || 10 };
                 var r = await fetch(API + '/api/configuracoes', { method: 'PUT', headers: H(), body: JSON.stringify(body) });
                 var d = await r.json();
                 if (d.success) toast('✅ Parâmetros salvos! Juros: ' + body.juros_atraso + '% | Multa: ' + body.multa_atraso + '%');
-                else toast(d.error || 'Erro ao salvar parâmetros', 'error');
-            } catch (e) { toast('Erro ao salvar: ' + e.message, 'error'); }
-            finally { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Parâmetros'; } }
+                else toast(d.error || 'Erro ao salvar', 'error');
+            } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Parâmetros'; }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // USUÁRIOS
-        // ═══════════════════════════════════════════════════════════
-        async function carregarUsuarios() {
+        // ═══ SURI - seguro: token salvo no banco, nunca exibido ═══
+        async function carregarCredenciaisSuri() {
             try {
-                var r = await fetch(API + '/api/usuarios', { headers: H() });
+                var r = await fetch(API + '/api/configuracoes', { headers: H() });
                 var d = await r.json();
-                var usuarios = d.data || d || [];
-                if (usuarios.length === 0) {
-                    document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum usuário cadastrado</td></tr>';
-                    return;
+                var c = d.data || {};
+                if (c.suri_identificador) document.getElementById('suriIdentificador').value = c.suri_identificador;
+                if (c.suri_endpoint) document.getElementById('suriEndpoint').value = c.suri_endpoint;
+                // Token: nunca retornado pelo servidor — só exibe status
+                var statusEl = document.getElementById('suriTokenStatus');
+                statusEl.style.display = 'inline-flex';
+                if (c.suri_token_configurado) {
+                    statusEl.className = 'token-status configurado';
+                    statusEl.innerHTML = '<i class="fas fa-lock"></i> Token configurado — deixe em branco para manter';
+                    document.getElementById('suriToken').placeholder = '••••••••••••••••••••••••••••';
+                    document.getElementById('suriTokenHelp').textContent = 'Preencha apenas se quiser trocar o token atual';
+                } else {
+                    statusEl.className = 'token-status nao-configurado';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Token ainda não configurado';
+                    document.getElementById('suriToken').placeholder = 'Cole o token aqui';
                 }
-                var html = '';
-                for (var i = 0; i < usuarios.length; i++) {
-                    var u = usuarios[i];
-                    html += '<tr>';
-                    html += '<td><div class="user-cell"><div class="user-cell-avatar">' + (u.nome || 'U').charAt(0).toUpperCase() + '</div><div><div class="user-cell-name">' + (u.nome || '-') + '</div><div class="user-cell-email">' + (u.email || '-') + '</div></div></div></td>';
-                    html += '<td><span class="perfil-badge">' + (u.perfil || 'Operador') + '</span></td>';
-                    html += '<td><span class="status-badge status-' + (u.ativo !== false ? 'ativo' : 'inativo') + '">' + (u.ativo !== false ? 'Ativo' : 'Inativo') + '</span></td>';
-                    html += '<td><div style="display:flex;gap:8px;"><button class="table-action-btn" onclick="editarUsuario(\'' + u.id + '\')" title="Editar"><i class="fas fa-edit"></i></button><button class="table-action-btn" onclick="excluirUsuario(\'' + u.id + '\',\'' + (u.nome || '').replace(/'/g, "\\'") + '\')" title="Desativar" style="color:var(--danger);"><i class="fas fa-trash"></i></button></div></td>';
-                    html += '</tr>';
-                }
-                document.getElementById('usuariosBody').innerHTML = html;
-            } catch (e) {
-                document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar usuários</td></tr>';
-            }
+            } catch (e) {}
+        }
+
+        async function salvarCredenciaisSuri(btn) {
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            try {
+                var body = {
+                    suri_identificador: document.getElementById('suriIdentificador').value.trim(),
+                    suri_endpoint: document.getElementById('suriEndpoint').value.trim()
+                };
+                var novoToken = document.getElementById('suriToken').value.trim();
+                if (novoToken) body.suri_token = novoToken; // só envia se usuário digitou algo
+                var r = await fetch(API + '/api/configuracoes', { method: 'PUT', headers: H(), body: JSON.stringify(body) });
+                var d = await r.json();
+                if (d.success) {
+                    toast('✅ Credenciais salvas com segurança!');
+                    document.getElementById('suriToken').value = '';
+                    await carregarCredenciaisSuri();
+                    verificarStatusSuri();
+                } else { toast(d.error || 'Erro ao salvar', 'error'); }
+            } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Credenciais'; }
         }
 
         async function verificarStatusSuri() {
@@ -477,17 +492,36 @@
                     desc.textContent = 'Não foi possível conectar à API';
                     badge.textContent = 'Desconectado'; badge.className = 'suri-status-badge disconnected';
                 }
-            } catch (e) {
-                document.getElementById('suriStatusBadge').textContent = 'Erro';
-                document.getElementById('suriStatusBadge').className = 'suri-status-badge disconnected';
-            }
+            } catch (e) { document.getElementById('suriStatusBadge').textContent = 'Erro'; document.getElementById('suriStatusBadge').className = 'suri-status-badge disconnected'; }
         }
 
-        function salvarCredenciaisSuri() { localStorage.setItem('suri_token', document.getElementById('suriToken').value); toast('Credenciais salvas!'); verificarStatusSuri(); }
-        async function testarConexaoSuri() { toast('Testando conexão...'); await verificarStatusSuri(); var b = document.getElementById('suriStatusBadge'); if (b.textContent === 'Conectado') toast('Conexão OK!'); else toast('Erro na conexão.', 'error'); }
-        function copiarWebhook() { var input = document.getElementById('webhookUrl'); input.select(); document.execCommand('copy'); toast('URL do webhook copiada!'); }
-        function testarEnvio() { toast('Função de teste em desenvolvimento'); }
-        function verLogs() { toast('Visualização de logs em desenvolvimento'); }
+        async function testarConexaoSuri() {
+            toast('Testando conexão...');
+            await verificarStatusSuri();
+            var b = document.getElementById('suriStatusBadge');
+            if (b.textContent === 'Conectado') toast('Conexão OK!');
+            else toast('Erro na conexão.', 'error');
+        }
+
+        function copiarWebhook() { document.getElementById('webhookUrl').select(); document.execCommand('copy'); toast('URL do webhook copiada!'); }
+
+        // ═══ USUÁRIOS ═══
+        async function carregarUsuarios() {
+            try {
+                var r = await fetch(API + '/api/usuarios', { headers: H() });
+                var d = await r.json();
+                var usuarios = d.data || d || [];
+                if (!usuarios.length) { document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum usuário cadastrado</td></tr>'; return; }
+                var html = '';
+                usuarios.forEach(function(u) {
+                    html += '<tr><td><div class="user-cell"><div class="user-cell-avatar">' + (u.nome||'U').charAt(0).toUpperCase() + '</div><div><div class="user-cell-name">' + (u.nome||'-') + '</div><div class="user-cell-email">' + (u.email||'-') + '</div></div></div></td>';
+                    html += '<td><span class="perfil-badge">' + (u.perfil||'Operador') + '</span></td>';
+                    html += '<td><span class="status-badge status-' + (u.ativo!==false?'ativo':'inativo') + '">' + (u.ativo!==false?'Ativo':'Inativo') + '</span></td>';
+                    html += '<td><div style="display:flex;gap:8px;"><button class="table-action-btn" onclick="editarUsuario(\'' + u.id + '\')"><i class="fas fa-edit"></i></button><button class="table-action-btn" style="color:var(--danger);" onclick="excluirUsuario(\'' + u.id + '\',\'' + (u.nome||'').replace(/'/g,"\\'") + '\')"><i class="fas fa-trash"></i></button></div></td></tr>';
+                });
+                document.getElementById('usuariosBody').innerHTML = html;
+            } catch (e) { document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--danger);">Erro ao carregar usuários</td></tr>'; }
+        }
 
         function novoUsuario() {
             document.getElementById('modalUsuarioTitle').textContent = 'Novo Usuário';
@@ -506,8 +540,7 @@
         async function editarUsuario(id) {
             try {
                 var r = await fetch(API + '/api/usuarios/' + id, { headers: H() });
-                var d = await r.json();
-                var u = d.data || d;
+                var d = await r.json(); var u = d.data || d;
                 document.getElementById('modalUsuarioTitle').textContent = 'Editar Usuário';
                 document.getElementById('modalUsuarioId').value = u.id;
                 document.getElementById('modalNome').value = u.nome || '';
@@ -531,8 +564,8 @@
                 var r = await fetch(API + '/api/usuarios/' + id, { method: 'DELETE', headers: H() });
                 var d = await r.json();
                 if (d.success) { toast('Usuário desativado!'); carregarUsuarios(); }
-                else { toast(d.error || 'Erro ao desativar', 'error'); }
-            } catch (e) { toast('Erro ao desativar usuário', 'error'); }
+                else toast(d.error || 'Erro ao desativar', 'error');
+            } catch (e) { toast('Erro', 'error'); }
         }
 
         async function salvarUsuario(e) {
@@ -542,39 +575,33 @@
             var senha = document.getElementById('modalSenha').value;
             if (senha) body.senha = senha;
             if (id) body.ativo = document.getElementById('modalAtivo').value === 'true';
+            if (!id && !senha) { toast('Senha obrigatória', 'error'); return; }
             try {
-                if (!id && !senha) { toast('Senha é obrigatória para novo usuário', 'error'); return; }
                 var r = await fetch(id ? API + '/api/usuarios/' + id : API + '/api/usuarios', { method: id ? 'PUT' : 'POST', headers: H(), body: JSON.stringify(body) });
                 var d = await r.json();
                 if (d.success) { toast(id ? 'Usuário atualizado!' : 'Usuário criado!'); fecharModalUsuario(); carregarUsuarios(); }
-                else { toast(d.error || 'Erro ao salvar', 'error'); }
-            } catch (e) { toast('Erro ao salvar usuário', 'error'); }
+                else toast(d.error || 'Erro ao salvar', 'error');
+            } catch (e) { toast('Erro', 'error'); }
         }
 
-        function abrirAlterarSenha() {
-            document.getElementById('modalSenhaAtual').value = '';
-            document.getElementById('modalNovaSenha').value = '';
-            document.getElementById('modalConfirmarSenha').value = '';
-            document.getElementById('modalAlterarSenha').classList.add('active');
-        }
+        function abrirAlterarSenha() { document.getElementById('modalSenhaAtual').value = ''; document.getElementById('modalNovaSenha').value = ''; document.getElementById('modalConfirmarSenha').value = ''; document.getElementById('modalAlterarSenha').classList.add('active'); }
         function fecharModalSenha() { document.getElementById('modalAlterarSenha').classList.remove('active'); }
 
         async function salvarNovaSenha(e) {
             e.preventDefault();
             var nova = document.getElementById('modalNovaSenha').value;
-            var confirmar = document.getElementById('modalConfirmarSenha').value;
-            if (nova !== confirmar) { toast('As senhas não coincidem', 'error'); return; }
+            if (nova !== document.getElementById('modalConfirmarSenha').value) { toast('Senhas não coincidem', 'error'); return; }
             try {
                 var r = await fetch(API + '/api/usuarios/me/senha', { method: 'PUT', headers: H(), body: JSON.stringify({ senha_atual: document.getElementById('modalSenhaAtual').value, nova_senha: nova }) });
                 var d = await r.json();
                 if (d.success) { toast('Senha alterada!'); fecharModalSenha(); }
-                else { toast(d.error || 'Erro ao alterar senha', 'error'); }
-            } catch (e) { toast('Erro ao alterar senha', 'error'); }
+                else toast(d.error || 'Erro', 'error');
+            } catch (e) { toast('Erro', 'error'); }
         }
 
         function salvarEmpresa() { toast('Configurações da empresa salvas!'); }
 
-        function checkUrlTab() { var params = new URLSearchParams(window.location.search); var tab = params.get('tab'); if (tab) showTab(tab); }
+        function checkUrlTab() { var tab = new URLSearchParams(window.location.search).get('tab'); if (tab) showTab(tab); }
 
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
@@ -585,10 +612,9 @@
         });
 
         function toggleSidebar() {
-            document.querySelector(".sidebar").classList.toggle("open");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
-            var icon = document.querySelector(".mobile-toggle i");
-            icon.className = document.querySelector(".sidebar").classList.contains("open") ? "fas fa-times" : "fas fa-bars";
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+            document.querySelector('.mobile-toggle i').className = document.querySelector('.sidebar').classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
         }
     </script>
 </body>
