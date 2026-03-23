@@ -89,7 +89,8 @@ module.exports = function(pool, auth, registrarLog) {
             
             const previewParcelas = [];
             let dataVencimento = new Date();
-            dataVencimento.setMonth(dataVencimento.getMonth() + 1);
+            dataVencimento.setDate(dataVencimento.getDate() + 30);
+            dataVencimento.setHours(0, 0, 0, 0);
             
             for (let i = 1; i <= parcelas; i++) {
                 previewParcelas.push({
@@ -97,6 +98,7 @@ module.exports = function(pool, auth, registrarLog) {
                     valor: Math.round(valorParcela * 100) / 100,
                     vencimento: dataVencimento.toISOString().split('T')[0]
                 });
+                dataVencimento = new Date(dataVencimento);
                 dataVencimento.setMonth(dataVencimento.getMonth() + 1);
             }
             
@@ -129,7 +131,6 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { status, periodo, credor_id, acordo_id, cliente_id, page = 1, limit = 50 } = req.query;
             
-            // Tentar parcelas_acordo primeiro, depois parcelas
             let sql = `
                 SELECT p.*, a.valor_acordo, a.numero_parcelas as total_parcelas, a.status as acordo_status,
                        cl.nome as cliente_nome, cl.cpf_cnpj as cliente_cpf, cl.telefone as cliente_telefone, cl.email as cliente_email,
@@ -159,7 +160,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             let resultado = await pool.query(sql, params);
             
-            // Se não encontrou em parcelas_acordo, buscar em parcelas (antiga)
             if (resultado.rowCount === 0) {
                 sql = sql.replace(/parcelas_acordo/g, 'parcelas');
                 resultado = await pool.query(sql, params);
@@ -216,7 +216,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('BEGIN');
             
-            // Tentar parcelas_acordo primeiro
             let parcela = await client.query('SELECT acordo_id, valor FROM parcelas_acordo WHERE id = $1', [id]);
             let tabela = 'parcelas_acordo';
             
@@ -237,7 +236,6 @@ module.exports = function(pool, auth, registrarLog) {
                 WHERE id = $2
             `, [data_pagamento || new Date(), id]);
             
-            // Verificar se acordo foi quitado
             const acordoId = parcela.rows[0].acordo_id;
             const pendentes = await client.query(`SELECT COUNT(*) FROM ${tabela} WHERE acordo_id = $1 AND status = 'pendente'`, [acordoId]);
             
@@ -269,7 +267,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             if (!nova_data) return res.status(400).json({ success: false, error: 'Nova data é obrigatória' });
             
-            // Tentar parcelas_acordo primeiro
             let resultado = await pool.query(`
                 UPDATE parcelas_acordo SET data_vencimento = $1, updated_at = NOW()
                 WHERE id = $2 AND status = 'pendente' RETURNING *
@@ -297,7 +294,6 @@ module.exports = function(pool, auth, registrarLog) {
         try {
             const { id } = req.params;
             
-            // Tentar parcelas_acordo primeiro
             let resultado = await pool.query(`
                 SELECT p.*, cl.nome as cliente_nome, cl.telefone as cliente_telefone, a.numero_parcelas, cr.nome as credor_nome
                 FROM parcelas_acordo p
@@ -328,7 +324,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             const valor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.valor || 0);
             const vencimento = p.data_vencimento ? new Date(p.data_vencimento).toLocaleDateString('pt-BR') : '-';
-            
             const vencida = p.data_vencimento && new Date(p.data_vencimento) < new Date();
             
             let mensagem = vencida
@@ -442,26 +437,43 @@ module.exports = function(pool, auth, registrarLog) {
             
             const valorRestante = valorAcordo - valorEntrada;
             const valorParcela = numParcelas > 0 ? (valorRestante / numParcelas) : 0;
+
+            // ── Calcular data do primeiro vencimento ──────────────────
+            // Se o frontend enviou uma data, usa ela.
+            // Caso contrário, 30 dias corridos a partir de hoje (meia-noite).
+            let primeiroVencimento;
+            if (b.data_primeiro_vencimento) {
+                primeiroVencimento = new Date(b.data_primeiro_vencimento);
+            } else {
+                primeiroVencimento = new Date();
+                primeiroVencimento.setDate(primeiroVencimento.getDate() + 30);
+            }
+            primeiroVencimento.setHours(0, 0, 0, 0); // zera hora para evitar drift de fuso
+            // ─────────────────────────────────────────────────────────
             
             const acordo = await client.query(`
                 INSERT INTO acordos (cobranca_id, cliente_id, credor_id, valor_original, valor_acordo, desconto_percentual, valor_entrada, numero_parcelas, valor_parcela, data_primeiro_vencimento, observacoes, status, created_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'ativo', NOW()) RETURNING *
             `, [
-                b.cobranca_id || null, clienteId, credorId, valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, Math.round(valorParcela * 100) / 100, b.data_primeiro_vencimento || new Date(), b.observacoes || null
+                b.cobranca_id || null, clienteId, credorId, valorOriginal, valorAcordo, descontoPerc, valorEntrada, numParcelas, Math.round(valorParcela * 100) / 100, primeiroVencimento, b.observacoes || null
             ]);
             
             const acordoId = acordo.rows[0].id;
-            
-            let dataVenc = new Date(b.data_primeiro_vencimento || Date.now());
-            
+
+            // ── Gerar parcelas sem drift de mês ───────────────────────
+            // Calcula cada data independentemente a partir do primeiro vencimento,
+            // evitando o problema de Jan 31 + 1 mês = Mar 3.
             for (let i = 1; i <= numParcelas; i++) {
+                const dataParc = new Date(primeiroVencimento);
+                dataParc.setMonth(dataParc.getMonth() + (i - 1));
+                dataParc.setHours(0, 0, 0, 0);
+
                 await client.query(`
                     INSERT INTO parcelas (acordo_id, numero, valor, data_vencimento, status, created_at)
                     VALUES ($1, $2, $3, $4, 'pendente', NOW())
-                `, [acordoId, i, Math.round(valorParcela * 100) / 100, new Date(dataVenc)]);
-                
-                dataVenc.setMonth(dataVenc.getMonth() + 1);
+                `, [acordoId, i, Math.round(valorParcela * 100) / 100, dataParc]);
             }
+            // ─────────────────────────────────────────────────────────
             
             if (b.cobranca_id) {
                 try {
@@ -574,7 +586,6 @@ module.exports = function(pool, auth, registrarLog) {
             
             await client.query('UPDATE acordos SET status = \'quebrado\', observacoes = $1, updated_at = NOW() WHERE id = $2', [novaObs, id]);
             
-            // Cancelar parcelas pendentes em ambas as tabelas
             await client.query('UPDATE parcelas_acordo SET status = \'cancelado\', updated_at = NOW() WHERE acordo_id = $1 AND status = \'pendente\'', [id]);
             await client.query('UPDATE parcelas SET status = \'cancelado\', updated_at = NOW() WHERE acordo_id = $1 AND status = \'pendente\'', [id]);
             
@@ -618,10 +629,8 @@ module.exports = function(pool, auth, registrarLog) {
                 await client.query('UPDATE cobrancas SET acordo_id = NULL, status = \'vencido\', updated_at = NOW() WHERE acordo_id = $1', [id]);
             } catch (e) {}
             
-            // Excluir parcelas de ambas as tabelas
             await client.query('DELETE FROM parcelas_acordo WHERE acordo_id = $1', [id]);
             await client.query('DELETE FROM parcelas WHERE acordo_id = $1', [id]);
-            
             await client.query('DELETE FROM acordos WHERE id = $1', [id]);
             
             await client.query('COMMIT');
