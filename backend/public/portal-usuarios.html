@@ -142,7 +142,30 @@
         @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}}
         .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;color:var(--bg-primary);font-size:20px;cursor:pointer;align-items:center;justify-content:center}
         @media(max-width:768px){.mobile-toggle{display:flex}.sidebar{transition:transform .3s}.sidebar.open{transform:translateX(0)!important}.main-content{padding-top:76px!important}}
-    </style>
+    
+/* Ambient background */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.025) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.015) 0%, transparent 60%);
+    animation: ambientPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+@keyframes ambientPulse {
+    0%   { opacity: 0.6; transform: scale(1) rotate(0deg); }
+    50%  { opacity: 1;   transform: scale(1.05) rotate(1deg); }
+    100% { opacity: 0.7; transform: scale(0.98) rotate(-1deg); }
+}
+
+        </style>
 </head>
 <body>
     <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
