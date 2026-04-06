@@ -546,6 +546,18 @@ module.exports = function(pool, registrarLog) {
         }
     });
 
+    // ADMIN: toggle ativo/inativo
+    router.post('/admin/toggle/:id', async (req, res) => {
+        try {
+            const token = req.headers.authorization?.replace('Bearer ', '');
+            if (!token) return res.status(401).json({ error: 'Não autorizado' });
+            jwt.verify(token, JWT_SECRET);
+            const result = await pool.query('UPDATE credores_usuarios SET ativo = NOT ativo WHERE id = $1 RETURNING ativo', [req.params.id]);
+            if (!result.rowCount) return res.status(404).json({ error: 'Usuário não encontrado' });
+            res.json({ success: true, ativo: result.rows[0].ativo });
+        } catch (e) { res.status(500).json({ error: e.message }); }
+    });
+
     // ADMIN: resetar senha
     router.post('/admin/resetar-senha/:id', async (req, res) => {
         try {

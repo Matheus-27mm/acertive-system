@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários do Portal - ACERTIVE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root{
+            --bg-primary:#050709;--bg-secondary:#0a0d12;--bg-card:#0e1219;--bg-elevated:#151c28;
+            --gold-primary:#c9a84c;--gold-light:#dfc070;--gold-dark:#8b7434;
+            --gold-glow:rgba(201,168,76,0.12);--gold-subtle:rgba(201,168,76,0.06);
+            --success:#3ecf8e;--success-bg:rgba(62,207,142,0.08);
+            --warning:#e0943e;--warning-bg:rgba(224,148,62,0.08);
+            --danger:#e05c5c;--danger-bg:rgba(224,92,92,0.08);
+            --info:#5c8ee0;--info-bg:rgba(92,142,224,0.08);
+            --text-primary:#e8e6e1;--text-secondary:#7a7670;--text-muted:#4a4640;
+            --border-subtle:rgba(201,168,76,0.07);--border-default:rgba(201,168,76,0.14);
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Outfit',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
+
+        /* Sidebar */
+        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
+        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
+        .sidebar-logo{display:flex;align-items:center;gap:14px}
+        .sidebar-logo-text{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700}
+        .sidebar-logo-text span{color:var(--gold-primary)}
+        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
+        .nav-section{margin-bottom:28px}
+        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px}
+        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all .25s;font-size:14px;font-weight:500;border:1px solid transparent}
+        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary)}
+        .nav-item.active{background:var(--gold-subtle);color:var(--gold-light);border-color:var(--border-default)}
+        .nav-item i{width:20px;text-align:center}
+        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
+        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
+        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
+        .user-details{flex:1}
+        .user-name{font-size:14px;font-weight:600}
+        .user-role{font-size:12px;color:var(--text-muted)}
+        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px}
+        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
+
+        /* Main */
+        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+        .page-header-left h1{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;margin-bottom:6px}
+        .page-header-left p{font-size:14px;color:var(--text-muted)}
+
+        /* Botões */
+        .btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;text-decoration:none;border:none;font-family:'Outfit',sans-serif}
+        .btn-primary{background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));color:var(--bg-primary)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.2)}
+        .btn-sm{padding:8px 14px;font-size:12px;border-radius:8px}
+        .btn-danger-sm{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(224,92,92,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+        .btn-danger-sm:hover{background:var(--danger);color:#fff}
+        .btn-warning-sm{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(224,148,62,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+        .btn-warning-sm:hover{opacity:.85}
+        .btn-info-sm{background:var(--info-bg);color:var(--info);border:1px solid rgba(92,142,224,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+        .btn-info-sm:hover{opacity:.85}
+
+        /* Cards de stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px}
+        .stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .stat-icon.gold{background:var(--gold-glow);color:var(--gold-primary);border:1px solid var(--border-default)}
+        .stat-icon.green{background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)}
+        .stat-icon.blue{background:var(--info-bg);color:var(--info);border:1px solid rgba(92,142,224,.2)}
+        .stat-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin-bottom:2px}
+        .stat-label{font-size:12px;color:var(--text-muted)}
+
+        /* Tabela */
+        .table-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
+        .table-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border-subtle)}
+        .table-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;display:flex;align-items:center;gap:10px}
+        .table-title i{color:var(--gold-primary)}
+        table{width:100%;border-collapse:collapse}
+        th{text-align:left;padding:16px 22px;font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border-subtle);background:var(--bg-secondary)}
+        td{padding:16px 22px;border-bottom:1px solid var(--border-subtle);font-size:14px;vertical-align:middle}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:var(--gold-subtle)}
+        .actions-cell{display:flex;gap:8px;align-items:center}
+
+        /* Badges */
+        .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase}
+        .badge-ativo{background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)}
+        .badge-inativo{background:rgba(100,100,100,.1);color:var(--text-muted);border:1px solid var(--border-subtle)}
+        .badge-primeiro{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(224,148,62,.2)}
+
+        /* Avatar credor */
+        .credor-av{width:36px;height:36px;background:var(--gold-glow);border:1px solid var(--border-default);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-primary);font-size:14px;flex-shrink:0}
+        .credor-info{display:flex;align-items:center;gap:12px}
+        .credor-nome{font-weight:600;margin-bottom:2px}
+        .credor-email{font-size:12px;color:var(--text-muted)}
+
+        /* Empty */
+        .empty-state{text-align:center;padding:60px 40px;color:var(--text-muted)}
+        .empty-state i{font-size:48px;margin-bottom:16px;display:block;opacity:.3;color:var(--gold-primary)}
+
+        /* Loading */
+        .spinner{width:36px;height:36px;border:3px solid var(--border-subtle);border-top-color:var(--gold-primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Modal */
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--bg-card);border:1px solid var(--border-default);border-radius:20px;width:100%;max-width:520px}
+        .modal-header{padding:22px 26px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
+        .modal-header h3{font-family:'Cormorant Garamond',serif;font-size:20px;display:flex;align-items:center;gap:10px}
+        .modal-header h3 i{color:var(--gold-primary)}
+        .modal-close{background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+        .modal-close:hover{background:var(--danger-bg);color:var(--danger)}
+        .modal-body{padding:26px}
+        .modal-footer{padding:18px 26px;border-top:1px solid var(--border-subtle);display:flex;gap:12px;justify-content:flex-end}
+
+        /* Form */
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+        .form-group input,.form-group select{width:100%;padding:13px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;font-family:'Outfit',sans-serif}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold-primary)}
+        .form-group select option{background:var(--bg-secondary)}
+        .form-hint{font-size:11px;color:var(--text-muted);margin-top:5px}
+
+        /* Resultado senha */
+        .senha-card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:12px;padding:20px;margin-top:16px}
+        .senha-card-title{font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .senha-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+        .senha-row:last-child{margin-bottom:0}
+        .senha-key{color:var(--text-muted)}
+        .senha-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold-light)}
+        .copy-btn{background:var(--gold-glow);border:1px solid var(--border-default);color:var(--gold-primary);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .2s}
+        .copy-btn:hover{background:var(--gold-primary);color:var(--bg-primary)}
+        .warning-box{background:var(--warning-bg);border:1px solid rgba(224,148,62,.2);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--warning);display:flex;gap:10px;margin-top:14px}
+        .warning-box i{flex-shrink:0;margin-top:1px}
+
+        .btn-cancelar{padding:12px 20px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-secondary);font-size:14px;font-weight:600;cursor:pointer}
+        .btn-salvar{padding:12px 22px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;border-radius:10px;color:var(--bg-primary);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+        .btn-salvar:disabled{opacity:.6;cursor:not-allowed}
+
+        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}}
+        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;color:var(--bg-primary);font-size:20px;cursor:pointer;align-items:center;justify-content:center}
+        @media(max-width:768px){.mobile-toggle{display:flex}.sidebar{transition:transform .3s}.sidebar.open{transform:translateX(0)!important}.main-content{padding-top:76px!important}}
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="acertivelogo.png" alt="ACERTIVE" style="width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(201,168,76,0.3));mix-blend-mode:screen;flex-shrink:0">
+                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestão</div>
+                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
+                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
+                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Operação</div>
+                <a href="operacao.html" class="nav-item"><i class="fas fa-chart-line"></i> Painel Operacional</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cadastros</div>
+                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Integrações</div>
+                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
+                <a href="portal-usuarios.html" class="nav-item active"><i class="fas fa-id-card"></i> Portal do Credor</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">admin</div></div>
+                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-left">
+                <h1>Portal do Credor</h1>
+                <p>Gerencie quem tem acesso ao portal de visualização</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalCriar()">
+                <i class="fas fa-user-plus"></i> Novo Acesso
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="fas fa-users"></i></div>
+                <div><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total de acessos</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-circle-check"></i></div>
+                <div><div class="stat-value" id="statAtivos">—</div><div class="stat-label">Ativos</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                <div><div class="stat-value" id="statPrimeiro">—</div><div class="stat-label">Aguardando 1º acesso</div></div>
+            </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title"><i class="fas fa-id-card"></i> Usuários do Portal</div>
+                <a href="/portal.html" target="_blank" style="font-size:12px;color:var(--gold-primary);text-decoration:none;display:flex;align-items:center;gap:6px">
+                    <i class="fas fa-external-link-alt"></i> Ver portal
+                </a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Credor / Usuário</th>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                        <th>Último Acesso</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaUsuarios">
+                    <tr><td colspan="6"><div style="padding:50px;text-align:center"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- MODAL CRIAR USUÁRIO -->
+    <div class="modal-overlay" id="modalCriar">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Novo Acesso ao Portal</h3>
+                <button class="modal-close" onclick="fecharModalCriar()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalCriarBody">
+                <div class="form-group">
+                    <label>Credor *</label>
+                    <select id="criarCredorId">
+                        <option value="">Carregando...</option>
+                    </select>
+                    <div class="form-hint">O usuário terá acesso apenas à carteira deste credor</div>
+                </div>
+                <div class="form-group">
+                    <label>Nome do usuário *</label>
+                    <input type="text" id="criarNome" placeholder="Ex: João da Transbyshop">
+                </div>
+                <div class="form-group">
+                    <label>E-mail de acesso *</label>
+                    <input type="email" id="criarEmail" placeholder="joao@empresa.com.br">
+                    <div class="form-hint">O credor usará este e-mail para entrar no portal</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancelar" onclick="fecharModalCriar()">Cancelar</button>
+                <button class="btn-salvar" id="btnCriar" onclick="criarUsuario()">
+                    <i class="fas fa-plus"></i> Criar Acesso
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RESULTADO (senha gerada) -->
+    <div class="modal-overlay" id="modalResultado">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Acesso Criado!</h3>
+                <button class="modal-close" onclick="fecharModalResultado()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:14px;color:var(--text-secondary);margin-bottom:4px">
+                    O acesso foi criado com sucesso. Envie as credenciais abaixo para o credor:
+                </p>
+
+                <div class="senha-card">
+                    <div class="senha-card-title"><i class="fas fa-lock"></i> Credenciais de Acesso</div>
+                    <div class="senha-row">
+                        <span class="senha-key">URL do Portal</span>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span class="senha-val" id="resUrl">—</span>
+                            <button class="copy-btn" onclick="copiar('resUrl')"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="senha-row">
+                        <span class="senha-key">E-mail</span>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span class="senha-val" id="resEmail">—</span>
+                            <button class="copy-btn" onclick="copiar('resEmail')"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="senha-row">
+                        <span class="senha-key">Senha temporária</span>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span class="senha-val" id="resSenha">—</span>
+                            <button class="copy-btn" onclick="copiar('resSenha')"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>Anote a senha agora — ela não será exibida novamente. O credor precisará trocar a senha no primeiro acesso.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-salvar" onclick="copiarTudo()" style="background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)">
+                    <i class="fas fa-copy"></i> Copiar tudo
+                </button>
+                <button class="btn-salvar" onclick="fecharModalResultado()">
+                    <i class="fas fa-check"></i> Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RESETAR SENHA -->
+    <div class="modal-overlay" id="modalReset">
+        <div class="modal" style="max-width:440px">
+            <div class="modal-header">
+                <h3><i class="fas fa-rotate"></i> Resetar Senha</h3>
+                <button class="modal-close" onclick="fecharModalReset()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:14px;color:var(--text-secondary)">Uma nova senha temporária será gerada para <strong id="resetNome">—</strong>.</p>
+                <input type="hidden" id="resetId">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancelar" onclick="fecharModalReset()">Cancelar</button>
+                <button class="btn-salvar" onclick="confirmarReset()"><i class="fas fa-rotate"></i> Gerar Nova Senha</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        let usuariosData = [];
+        let credoresData = [];
+
+        function H() { return {'Authorization':'Bearer '+localStorage.getItem('token'),'Content-Type':'application/json'}; }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/login.html'; return false; }
+            try {
+                const r = await fetch(API+'/api/auth/me', {headers:H()});
+                const d = await r.json();
+                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
+                const u = d.user||d;
+                document.getElementById('userName').textContent = u.nome||'Usuário';
+                document.getElementById('userRole').textContent = u.perfil||'admin';
+                document.getElementById('userAvatar').textContent = (u.nome||'A').charAt(0).toUpperCase();
+                return true;
+            } catch(e) { return true; }
+        }
+
+        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+
+        function fmtDataHora(d) {
+            if (!d) return '<span style="color:var(--text-muted)">Nunca</span>';
+            return new Date(d).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        }
+
+        function fmtData(d) {
+            if (!d) return '-';
+            return new Date(d).toLocaleDateString('pt-BR');
+        }
+
+        async function carregarUsuarios() {
+            try {
+                const r = await fetch(API+'/api/portal/admin/usuarios', {headers:H()});
+                const d = await r.json();
+                usuariosData = d.data || [];
+
+                // Stats
+                const ativos = usuariosData.filter(u => u.ativo).length;
+                const primeiro = usuariosData.filter(u => u.primeiro_acesso).length;
+                document.getElementById('statTotal').textContent = usuariosData.length;
+                document.getElementById('statAtivos').textContent = ativos;
+                document.getElementById('statPrimeiro').textContent = primeiro;
+
+                if (!usuariosData.length) {
+                    document.getElementById('tabelaUsuarios').innerHTML = `
+                        <tr><td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-id-card"></i>
+                                <p style="font-size:15px;font-weight:500;margin-bottom:8px">Nenhum acesso criado</p>
+                                <p>Clique em "Novo Acesso" para liberar o portal para um credor</p>
+                            </div>
+                        </td></tr>`;
+                    return;
+                }
+
+                document.getElementById('tabelaUsuarios').innerHTML = usuariosData.map(u => `
+                    <tr>
+                        <td>
+                            <div class="credor-info">
+                                <div class="credor-av">${(u.credor_nome||'C').charAt(0)}</div>
+                                <div>
+                                    <div class="credor-nome">${u.nome}</div>
+                                    <div class="credor-email">${u.credor_nome}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-secondary)">${u.email}</td>
+                        <td>
+                            ${u.ativo
+                                ? (u.primeiro_acesso
+                                    ? '<span class="badge badge-primeiro"><i class="fas fa-clock"></i> Aguardando</span>'
+                                    : '<span class="badge badge-ativo"><i class="fas fa-circle"></i> Ativo</span>')
+                                : '<span class="badge badge-inativo"><i class="fas fa-circle"></i> Inativo</span>'
+                            }
+                        </td>
+                        <td style="font-size:13px;color:var(--text-secondary)">${fmtDataHora(u.ultimo_login)}</td>
+                        <td style="font-size:13px;color:var(--text-muted)">${fmtData(u.created_at)}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn-info-sm" onclick="abrirModalReset('${u.id}','${u.nome.replace(/'/g,"\\'")}')">
+                                    <i class="fas fa-rotate"></i> Resetar senha
+                                </button>
+                                <button class="btn-danger-sm" onclick="toggleAtivo('${u.id}', ${u.ativo})">
+                                    <i class="fas fa-${u.ativo ? 'ban' : 'check'}"></i> ${u.ativo ? 'Desativar' : 'Ativar'}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                document.getElementById('tabelaUsuarios').innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar usuários</p></div></td></tr>`;
+            }
+        }
+
+        async function carregarCredores() {
+            try {
+                const r = await fetch(API+'/api/cadastros/credores', {headers:H()});
+                const d = await r.json();
+                credoresData = d.data||d||[];
+                const sel = document.getElementById('criarCredorId');
+                sel.innerHTML = '<option value="">Selecione o credor...</option>';
+                credoresData.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.id;
+                    o.textContent = c.nome;
+                    sel.appendChild(o);
+                });
+            } catch(e) {}
+        }
+
+        // ── Criar usuário ────────────────────────────────────────────
+        function abrirModalCriar() {
+            document.getElementById('criarNome').value = '';
+            document.getElementById('criarEmail').value = '';
+            carregarCredores();
+            document.getElementById('modalCriar').classList.add('active');
+        }
+
+        function fecharModalCriar() { document.getElementById('modalCriar').classList.remove('active'); }
+
+        async function criarUsuario() {
+            const credor_id = document.getElementById('criarCredorId').value;
+            const nome = document.getElementById('criarNome').value.trim();
+            const email = document.getElementById('criarEmail').value.trim();
+            const btn = document.getElementById('btnCriar');
+
+            if (!credor_id || !nome || !email) { alert('Preencha todos os campos'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+
+            try {
+                const r = await fetch(API+'/api/portal/admin/criar-usuario', {
+                    method: 'POST', headers: H(),
+                    body: JSON.stringify({credor_id, nome, email})
+                });
+                const d = await r.json();
+
+                if (!r.ok) { alert('❌ ' + (d.error||'Erro ao criar')); return; }
+
+                fecharModalCriar();
+
+                // Mostrar credenciais
+                document.getElementById('resUrl').textContent = window.location.origin + '/portal.html';
+                document.getElementById('resEmail').textContent = d.credenciais.email;
+                document.getElementById('resSenha').textContent = d.credenciais.senha_temporaria;
+                document.getElementById('modalResultado').classList.add('active');
+
+                await carregarUsuarios();
+            } catch(e) {
+                alert('❌ Erro de conexão');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Criar Acesso';
+            }
+        }
+
+        function fecharModalResultado() { document.getElementById('modalResultado').classList.remove('active'); }
+
+        // ── Resetar senha ────────────────────────────────────────────
+        function abrirModalReset(id, nome) {
+            document.getElementById('resetId').value = id;
+            document.getElementById('resetNome').textContent = nome;
+            document.getElementById('modalReset').classList.add('active');
+        }
+
+        function fecharModalReset() { document.getElementById('modalReset').classList.remove('active'); }
+
+        async function confirmarReset() {
+            const id = document.getElementById('resetId').value;
+            try {
+                const r = await fetch(API+'/api/portal/admin/resetar-senha/'+id, {method:'POST', headers:H()});
+                const d = await r.json();
+                if (!r.ok) { alert('❌ Erro ao resetar'); return; }
+
+                fecharModalReset();
+
+                // Mostrar nova senha
+                const u = usuariosData.find(u => u.id === id);
+                document.getElementById('resUrl').textContent = window.location.origin + '/portal.html';
+                document.getElementById('resEmail').textContent = u?.email || '—';
+                document.getElementById('resSenha').textContent = d.nova_senha;
+                document.getElementById('modalResultado').classList.add('active');
+
+                await carregarUsuarios();
+            } catch(e) {
+                alert('❌ Erro de conexão');
+            }
+        }
+
+        // ── Ativar/Desativar ─────────────────────────────────────────
+        async function toggleAtivo(id, ativoAtual) {
+            const acao = ativoAtual ? 'desativar' : 'ativar';
+            if (!confirm(`Deseja ${acao} este acesso?`)) return;
+            try {
+                const r = await fetch(API+'/api/portal/admin/toggle/'+id, {method:'POST', headers:H()});
+                if (!r.ok) {
+                    // Fallback: atualizar direto
+                    alert('Funcionalidade disponível após atualizar o portal.js');
+                    return;
+                }
+                await carregarUsuarios();
+            } catch(e) {
+                alert('❌ Erro ao atualizar');
+            }
+        }
+
+        // ── Utilitários ──────────────────────────────────────────────
+        function copiar(elementId) {
+            const texto = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = event.target.closest('button');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 1500);
+            });
+        }
+
+        function copiarTudo() {
+            const url = document.getElementById('resUrl').textContent;
+            const email = document.getElementById('resEmail').textContent;
+            const senha = document.getElementById('resSenha').textContent;
+            const texto = `🔐 Acesso ao Portal ACERTIVE\n\nURL: ${url}\nE-mail: ${email}\nSenha: ${senha}\n\n⚠️ Troque a senha no primeiro acesso.`;
+            navigator.clipboard.writeText(texto).then(() => alert('✅ Copiado!'));
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            const ok = await checkAuth();
+            if (ok) await carregarUsuarios();
+
+            // Fechar modais ao clicar fora
+            ['modalCriar','modalResultado','modalReset'].forEach(id => {
+                document.getElementById(id).addEventListener('click', e => {
+                    if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
