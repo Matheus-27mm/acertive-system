@@ -4,7 +4,7 @@
  * server.js - Servidor Principal
  * ========================================
  * FASE 2: Backend Consolidado (8 módulos)
- * ATUALIZADO: Integração Asaas + Suri WhatsApp
+ * ATUALIZADO: Integração Asaas + Suri WhatsApp + Painel Operacional
  */
 
 require('dotenv').config();
@@ -54,7 +54,7 @@ pool.on('connect', () => console.log('[DB] Conectado ao PostgreSQL'));
 pool.on('error', (err) => console.error('[DB] Erro:', err));
 
 // ═══════════════════════════════════════════════════════════════
-// SERVIÇO ASAAS - Para integração automática nas cobranças
+// SERVIÇO ASAAS
 // ═══════════════════════════════════════════════════════════════
 
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
@@ -63,15 +63,11 @@ const ASAAS_URL = process.env.ASAAS_SANDBOX === 'true'
     : 'https://api.asaas.com/api/v3';
 
 const asaasService = ASAAS_API_KEY ? {
-    // Criar cliente no Asaas
     async criarCliente(dados) {
         try {
             const response = await fetch(`${ASAAS_URL}/customers`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'access_token': ASAAS_API_KEY
-                },
+                headers: { 'Content-Type': 'application/json', 'access_token': ASAAS_API_KEY },
                 body: JSON.stringify({
                     name: dados.name,
                     cpfCnpj: dados.cpfCnpj,
@@ -80,18 +76,14 @@ const asaasService = ASAAS_API_KEY ? {
                     mobilePhone: dados.mobilePhone || dados.phone || null
                 })
             });
-            
             const result = await response.json();
-            
             if (!response.ok) {
                 console.error('[ASAAS] Erro ao criar cliente:', result);
-                // Se cliente já existe, buscar pelo CPF
                 if (result.errors?.some(e => e.code === 'invalid_cpfCnpj' || e.description?.includes('já cadastrado'))) {
                     return await this.buscarClientePorCpf(dados.cpfCnpj);
                 }
                 return null;
             }
-            
             console.log('[ASAAS] Cliente criado:', result.id);
             return result;
         } catch (error) {
@@ -100,23 +92,18 @@ const asaasService = ASAAS_API_KEY ? {
         }
     },
 
-    // Buscar cliente por CPF
     async buscarClientePorCpf(cpfCnpj) {
         try {
             const cpfLimpo = cpfCnpj?.replace(/\D/g, '');
             if (!cpfLimpo) return null;
-            
             const response = await fetch(`${ASAAS_URL}/customers?cpfCnpj=${cpfLimpo}`, {
                 headers: { 'access_token': ASAAS_API_KEY }
             });
-            
             const result = await response.json();
-            
             if (result.data && result.data.length > 0) {
                 console.log('[ASAAS] Cliente encontrado:', result.data[0].id);
                 return result.data[0];
             }
-            
             return null;
         } catch (error) {
             console.error('[ASAAS] Erro ao buscar cliente:', error.message);
@@ -124,7 +111,6 @@ const asaasService = ASAAS_API_KEY ? {
         }
     },
 
-    // Criar cobrança no Asaas
     async criarCobranca(dados) {
         try {
             const body = {
@@ -135,38 +121,15 @@ const asaasService = ASAAS_API_KEY ? {
                 description: dados.description || 'Cobrança ACERTIVE',
                 externalReference: dados.externalReference || null
             };
-
-            // Adicionar multa e juros se informados
-            if (dados.fine) {
-                body.fine = {
-                    value: dados.fine.value || 2,
-                    type: dados.fine.type || 'PERCENTAGE'
-                };
-            }
-            
-            if (dados.interest) {
-                body.interest = {
-                    value: dados.interest.value || 1,
-                    type: dados.interest.type || 'PERCENTAGE'
-                };
-            }
-
+            if (dados.fine) { body.fine = { value: dados.fine.value || 2, type: dados.fine.type || 'PERCENTAGE' }; }
+            if (dados.interest) { body.interest = { value: dados.interest.value || 1, type: dados.interest.type || 'PERCENTAGE' }; }
             const response = await fetch(`${ASAAS_URL}/payments`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'access_token': ASAAS_API_KEY
-                },
+                headers: { 'Content-Type': 'application/json', 'access_token': ASAAS_API_KEY },
                 body: JSON.stringify(body)
             });
-            
             const result = await response.json();
-            
-            if (!response.ok) {
-                console.error('[ASAAS] Erro ao criar cobrança:', result);
-                return null;
-            }
-            
+            if (!response.ok) { console.error('[ASAAS] Erro ao criar cobrança:', result); return null; }
             console.log('[ASAAS] Cobrança criada:', result.id, '- Link:', result.invoiceUrl);
             return result;
         } catch (error) {
@@ -175,12 +138,9 @@ const asaasService = ASAAS_API_KEY ? {
         }
     },
 
-    // Buscar cobrança por ID
     async buscarCobranca(id) {
         try {
-            const response = await fetch(`${ASAAS_URL}/payments/${id}`, {
-                headers: { 'access_token': ASAAS_API_KEY }
-            });
+            const response = await fetch(`${ASAAS_URL}/payments/${id}`, { headers: { 'access_token': ASAAS_API_KEY } });
             return await response.json();
         } catch (error) {
             console.error('[ASAAS] Erro ao buscar cobrança:', error.message);
@@ -188,7 +148,6 @@ const asaasService = ASAAS_API_KEY ? {
         }
     },
 
-    // Cancelar cobrança
     async cancelarCobranca(id) {
         try {
             const response = await fetch(`${ASAAS_URL}/payments/${id}`, {
@@ -202,7 +161,6 @@ const asaasService = ASAAS_API_KEY ? {
         }
     },
 
-    // Gerar PIX QR Code
     async gerarPixQrCode(paymentId) {
         try {
             const response = await fetch(`${ASAAS_URL}/payments/${paymentId}/pixQrCode`, {
@@ -231,18 +189,16 @@ if (!JWT_SECRET) {
     console.error('ERRO FATAL: JWT_SECRET não definido no .env');
     process.exit(1);
 }
+
 const auth = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
         if (!token) return res.status(401).json({ error: 'Token não fornecido' });
-
         const decoded = jwt.verify(token, JWT_SECRET);
         const usuario = await pool.query('SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1', [decoded.id]);
-        
         if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
             return res.status(401).json({ error: 'Usuário inválido ou desativado' });
         }
-
         req.user = usuario.rows[0];
         next();
     } catch (error) {
@@ -278,7 +234,7 @@ async function registrarLog(usuario_id, acao, tabela, registro_id, dados = {}) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ROTAS - 8 MÓDULOS CONSOLIDADOS + SURI
+// ROTAS - MÓDULOS
 // ═══════════════════════════════════════════════════════════════
 
 const authRoutes = require('./routes/auth')(pool, registrarLog);
@@ -290,7 +246,6 @@ app.use('/api/usuarios', usuariosRoutes);
 const cadastrosRoutes = require('./routes/cadastros')(pool, auth, registrarLog);
 app.use('/api/cadastros', cadastrosRoutes);
 
-// ATUALIZADO: Passando asaasService para o módulo de cobranças
 const cobrancasRoutes = require('./routes/cobrancas')(pool, auth, upload, registrarLog, asaasService);
 app.use('/api/cobrancas', cobrancasRoutes);
 
@@ -309,37 +264,32 @@ app.use('/api/integracoes', integracoesRoutes);
 const importacaoRoutes = require('./routes/importacao')(pool, auth, upload, registrarLog);
 app.use('/api/importacao', importacaoRoutes);
 
-// ═══════════════════════════════════════════════════════════════
-// SURI - INTEGRAÇÃO WHATSAPP
-// ═══════════════════════════════════════════════════════════════
-
 const suriRoutes = require('./routes/suri')(pool, auth, registrarLog);
 app.use('/api/suri', suriRoutes);
-
 console.log('[SURI] Integração WhatsApp configurada ✓');
+
+// ── NOVO: Painel Operacional ──────────────────────────────────
+const operacaoRoutes = require('./routes/operacao')(pool, auth, registrarLog);
+app.use('/api/operacao', operacaoRoutes);
+console.log('[OPERACAO] Painel Operacional configurado ✓');
 
 // ═══════════════════════════════════════════════════════════════
 // ROTAS LEGADO - Compatibilidade com frontend antigo
 // ═══════════════════════════════════════════════════════════════
 
-// Credores, Clientes, Empresas -> cadastros
 app.use('/api/credores', (req, res, next) => { req.url = '/credores' + req.url; cadastrosRoutes(req, res, next); });
 app.use('/api/clientes', (req, res, next) => { req.url = '/clientes' + req.url; cadastrosRoutes(req, res, next); });
 app.use('/api/empresas', (req, res, next) => { req.url = '/empresas' + req.url; cadastrosRoutes(req, res, next); });
 
-// Parcelas -> acordos/parcelas
 app.use('/api/parcelas', (req, res, next) => { req.url = '/parcelas' + req.url; acordosRoutes(req, res, next); });
 
-// Importação -> cobrancas/importar
 app.post('/api/importacao/clientes', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/clientes'; cobrancasRoutes(req, res, next); });
 app.post('/api/importacao/cobrancas', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/cobrancas'; cobrancasRoutes(req, res, next); });
 app.post('/api/importacao/massa', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/massa'; cobrancasRoutes(req, res, next); });
 
-// Dashboard, Config -> integracoes
 app.use('/api/dashboard', (req, res, next) => { req.url = '/dashboard' + req.url; integracoesRoutes(req, res, next); });
 app.use('/api/configuracoes', (req, res, next) => { req.url = '/configuracoes' + req.url; integracoesRoutes(req, res, next); });
 
-// Asaas, Sync, WhatsApp, Email, PDF -> integracoes
 app.use('/api/asaas', (req, res, next) => { req.url = '/asaas' + req.url; integracoesRoutes(req, res, next); });
 app.use('/api/sync', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
 app.use('/api/sync-asaas', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
@@ -347,19 +297,18 @@ app.use('/api/whatsapp', (req, res, next) => { req.url = '/whatsapp' + req.url; 
 app.use('/api/email', (req, res, next) => { req.url = '/email' + req.url; integracoesRoutes(req, res, next); });
 app.use('/api/pdf', (req, res, next) => { req.url = '/pdf' + req.url; integracoesRoutes(req, res, next); });
 
-// Régua, Agendamentos, Histórico -> acionamentos
 app.use('/api/regua', (req, res, next) => { req.url = '/regua' + req.url; acionamentosRoutes(req, res, next); });
 app.use('/api/agendamentos', (req, res, next) => { req.url = '/agendamentos' + req.url; acionamentosRoutes(req, res, next); });
 app.use('/api/historico', (req, res, next) => { req.url = '/historico' + req.url; acionamentosRoutes(req, res, next); });
 
-// Comissões, Repasses, Relatórios -> financeiro
 app.use('/api/comissoes', (req, res, next) => { req.url = '/comissoes' + req.url; financeiroRoutes(req, res, next); });
 app.use('/api/repasses', (req, res, next) => { req.url = '/repasses' + req.url; financeiroRoutes(req, res, next); });
 app.use('/api/relatorios', (req, res, next) => { req.url = '/relatorios' + req.url; financeiroRoutes(req, res, next); });
 
 // ═══════════════════════════════════════════════════════════════
-// ROTA /api/auth/me - Retorna dados do usuário logado
+// ROTA /api/auth/me
 // ═══════════════════════════════════════════════════════════════
+
 app.get('/api/auth/me', auth, async (req, res) => {
     try {
         res.json({ success: true, user: req.user });
@@ -382,8 +331,9 @@ app.get('/api/health', async (req, res) => {
             asaas: asaasService ? 'configured' : 'not_configured',
             asaas_mode: ASAAS_URL?.includes('sandbox') ? 'sandbox' : 'production',
             suri: 'configured',
-            version: '2.2.0',
-            modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes', 'suri']
+            operacao: 'configured',
+            version: '2.3.0',
+            modules: ['auth', 'usuarios', 'cadastros', 'cobrancas', 'acordos', 'acionamentos', 'financeiro', 'integracoes', 'suri', 'operacao']
         });
     } catch (error) {
         res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
@@ -398,21 +348,11 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'Endpoint não encontrado' });
     }
-    
-    // Tenta servir o arquivo HTML solicitado
     let filePath = path.join(__dirname, 'public', req.path);
-    
-    // Se não tem extensão, adiciona .html
-    if (!path.extname(filePath)) {
-        filePath += '.html';
-    }
-    
-    // Verifica se o arquivo existe E é um arquivo (não diretório)
+    if (!path.extname(filePath)) filePath += '.html';
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         return res.sendFile(filePath);
     }
-    
-    // Se não existe, manda pro login
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -423,7 +363,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log('');
     console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║            ACERTIVE - Sistema de Cobrança v2.2                ║');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.3                ║');
     console.log('╠═══════════════════════════════════════════════════════════════╣');
     console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
     console.log('║                                                               ║');
@@ -437,9 +377,11 @@ app.listen(PORT, () => {
     console.log('║     • financeiro   - Comissões, Repasses, Relatórios          ║');
     console.log('║     • integracoes  - Asaas, WhatsApp, Email, PDF              ║');
     console.log('║     • suri         - WhatsApp via Suri (Chatbot Maker)        ║');
+    console.log('║     • operacao     - Painel Operacional + KPIs                ║');
     console.log('║                                                               ║');
     console.log(`║  🔗 Asaas: ${asaasService ? (ASAAS_URL.includes('sandbox') ? 'SANDBOX ✓' : 'PRODUÇÃO ✓') : 'NÃO CONFIGURADO'}                                  ║`);
     console.log('║  💬 Suri:  CONFIGURADO ✓                                      ║');
+    console.log('║  📊 Oper:  CONFIGURADO ✓                                      ║');
     console.log('╚═══════════════════════════════════════════════════════════════╝');
     console.log('');
 });
