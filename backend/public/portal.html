@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Credor - ACERTIVE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg:#050709; --surface:#0a0d12; --card:#0e1219;
+            --gold:#c9a84c; --gold-light:#dfc070; --gold-dim:#8b7434;
+            --gold-glow:rgba(201,168,76,0.12); --gold-glow-s:rgba(201,168,76,0.06);
+            --text:#e8e6e1; --text-dim:#7a7670; --text-muted:#4a4640;
+            --border:rgba(201,168,76,0.07); --border-h:rgba(201,168,76,0.18);
+            --red:#e05c5c; --red-bg:rgba(224,92,92,0.08);
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+        /* Fundo animado */
+        .bg-rings{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0}
+        .ring{position:absolute;border-radius:50%;border:1px solid rgba(201,168,76,0.04);transform:translate(-50%,-50%)}
+        .ring:nth-child(1){width:400px;height:400px;animation:pulse-ring 4s ease-in-out infinite}
+        .ring:nth-child(2){width:650px;height:650px;animation:pulse-ring 4s ease-in-out infinite .8s}
+        .ring:nth-child(3){width:900px;height:900px;animation:pulse-ring 4s ease-in-out infinite 1.6s}
+        @keyframes pulse-ring{0%,100%{opacity:1;border-color:rgba(201,168,76,0.04)}50%{opacity:0.5;border-color:rgba(201,168,76,0.08)}}
+
+        .container{position:relative;z-index:1;width:100%;max-width:440px;padding:20px}
+
+        /* Logo */
+        .logo-area{text-align:center;margin-bottom:40px}
+        .logo-img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(201,168,76,0.4));mix-blend-mode:screen;margin-bottom:16px}
+        .logo-nome{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:3px}
+        .logo-nome span{color:var(--gold)}
+        .logo-sub{font-size:12px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+
+        /* Card */
+        .card{background:var(--card);border:1px solid var(--border-h);border-radius:20px;padding:40px;box-shadow:0 24px 60px rgba(0,0,0,0.5)}
+        .card-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;margin-bottom:6px;text-align:center}
+        .card-sub{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:32px}
+
+        /* Form */
+        .form-group{margin-bottom:20px}
+        .form-group label{display:block;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+        .input-wrap{position:relative}
+        .input-wrap i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+        .input-wrap input{width:100%;padding:14px 16px 14px 44px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;transition:border-color .2s}
+        .input-wrap input:focus{outline:none;border-color:var(--gold)}
+        .input-wrap .toggle-pass{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px}
+
+        .btn-login{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));border:none;border-radius:12px;color:#050709;font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px}
+        .btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.3)}
+        .btn-login:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+        .error-msg{background:var(--red-bg);border:1px solid rgba(224,92,92,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:16px;display:none;align-items:center;gap:10px}
+        .error-msg.show{display:flex}
+
+        .divider{display:flex;align-items:center;gap:16px;margin:24px 0}
+        .divider span{font-size:11px;color:var(--text-muted);white-space:nowrap}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+        .portal-tag{text-align:center;margin-top:24px}
+        .portal-tag a{font-size:12px;color:var(--text-muted);text-decoration:none}
+        .portal-tag a:hover{color:var(--gold)}
+
+        /* Modal trocar senha */
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border-h);border-radius:20px;width:100%;max-width:420px;padding:36px}
+        .modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+        .modal-title i{color:var(--gold)}
+        .modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+        .btn-confirmar{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));border:none;border-radius:10px;color:#050709;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif}
+        .btn-confirmar:hover{opacity:.9}
+    </style>
+</head>
+<body>
+    <div class="bg-rings">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo-area">
+            <img src="acertivelogo.png" alt="ACERTIVE" class="logo-img">
+            <div class="logo-nome">ACERT<span>IVE</span></div>
+            <div class="logo-sub">Portal do Credor</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Acesso ao Portal</div>
+            <div class="card-sub">Entre com suas credenciais para acessar sua carteira</div>
+
+            <div class="error-msg" id="errorMsg">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText">Email ou senha incorretos</span>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail</label>
+                <div class="input-wrap">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Senha</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password" id="senhaInput">
+                    <button class="toggle-pass" type="button" onclick="toggleSenha()"><i class="fas fa-eye" id="eyeIcon"></i></button>
+                </div>
+            </div>
+
+            <button class="btn-login" id="btnLogin" onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Entrar
+            </button>
+
+            <div class="portal-tag">
+                <a href="/login.html">← Acesso interno (operadores)</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: trocar senha no primeiro acesso -->
+    <div class="modal-overlay" id="modalTrocarSenha">
+        <div class="modal">
+            <div class="modal-title"><i class="fas fa-key"></i> Troque sua senha</div>
+            <div class="modal-sub">Este é seu primeiro acesso. Por segurança, defina uma nova senha.</div>
+
+            <div class="form-group">
+                <label>Senha atual (temporária)</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="senhaAtual" placeholder="Senha que você recebeu">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nova senha</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="novaSenha" placeholder="Mínimo 6 caracteres">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Confirmar nova senha</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmarSenha" placeholder="Repita a nova senha">
+                </div>
+            </div>
+
+            <div class="error-msg" id="errorTrocar" style="margin-bottom:16px">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorTrocarText"></span>
+            </div>
+
+            <button class="btn-confirmar" onclick="trocarSenha()">
+                <i class="fas fa-check"></i> Confirmar nova senha
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        let tokenTemp = null;
+
+        // Enter para logar
+        document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+        function toggleSenha() {
+            const input = document.getElementById('senha');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') { input.type = 'text'; icon.className = 'fas fa-eye-slash'; }
+            else { input.type = 'password'; icon.className = 'fas fa-eye'; }
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('errorMsg').classList.add('show');
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const btn = document.getElementById('btnLogin');
+
+            if (!email || !senha) { showError('Preencha email e senha'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+            document.getElementById('errorMsg').classList.remove('show');
+
+            try {
+                const r = await fetch(API + '/api/portal/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+                const d = await r.json();
+
+                if (!r.ok) { showError(d.error || 'Erro ao entrar'); return; }
+
+                if (d.usuario.primeiro_acesso) {
+                    tokenTemp = d.token;
+                    localStorage.setItem('portal_token', d.token);
+                    document.getElementById('modalTrocarSenha').classList.add('active');
+                } else {
+                    localStorage.setItem('portal_token', d.token);
+                    localStorage.setItem('portal_usuario', JSON.stringify(d.usuario));
+                    window.location.href = '/portal-dashboard.html';
+                }
+            } catch (e) {
+                showError('Erro de conexão. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+            }
+        }
+
+        async function trocarSenha() {
+            const senhaAtual = document.getElementById('senhaAtual').value;
+            const novaSenha = document.getElementById('novaSenha').value;
+            const confirmar = document.getElementById('confirmarSenha').value;
+
+            const showErr = msg => {
+                document.getElementById('errorTrocarText').textContent = msg;
+                document.getElementById('errorTrocar').classList.add('show');
+            };
+
+            if (!senhaAtual || !novaSenha || !confirmar) { showErr('Preencha todos os campos'); return; }
+            if (novaSenha !== confirmar) { showErr('As senhas não coincidem'); return; }
+            if (novaSenha.length < 6) { showErr('A nova senha deve ter mínimo 6 caracteres'); return; }
+
+            try {
+                const r = await fetch(API + '/api/portal/trocar-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('portal_token') },
+                    body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+                });
+                const d = await r.json();
+                if (!r.ok) { showErr(d.error || 'Erro ao trocar senha'); return; }
+
+                window.location.href = '/portal-dashboard.html';
+            } catch (e) {
+                showErr('Erro de conexão');
+            }
+        }
+
+        // Redirect se já logado
+        if (localStorage.getItem('portal_token')) {
+            fetch(API + '/api/portal/me', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('portal_token') } })
+                .then(r => { if (r.ok) window.location.href = '/portal-dashboard.html'; })
+                .catch(() => {});
+        }
+    </script>
+</body>
+</html>

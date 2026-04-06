@@ -3,8 +3,7 @@
  * ACERTIVE - Módulo de Autenticação
  * routes/auth.js
  * ========================================
- * Login, logout, verificação e recuperação de senha
- * ATUALIZADO: Adicionada rota /me
+ * v2.4.1 - Corrigido HTTP 500 no login
  */
 
 const express = require('express');
@@ -13,11 +12,9 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function(pool, registrarLog) {
     const router = express.Router();
-    
+
     const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET não definido');
-}
+    if (!JWT_SECRET) throw new Error('JWT_SECRET não definido');
 
     const JWT_EXPIRES = '24h';
 
@@ -30,8 +27,11 @@ if (!JWT_SECRET) {
             if (!token) return res.status(401).json({ error: 'Token não fornecido' });
 
             const decoded = jwt.verify(token, JWT_SECRET);
-            const usuario = await pool.query('SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1', [decoded.id]);
-            
+            const usuario = await pool.query(
+                'SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1',
+                [decoded.id]
+            );
+
             if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
                 return res.status(401).json({ error: 'Usuário inválido ou desativado' });
             }
@@ -47,12 +47,12 @@ if (!JWT_SECRET) {
     };
 
     // =====================================================
-    // GET /api/auth/me - Retorna dados do usuário logado
+    // GET /api/auth/me
     // =====================================================
     router.get('/me', authLocal, async (req, res) => {
         try {
-            res.json({ 
-                success: true, 
+            res.json({
+                success: true,
                 user: {
                     id: req.user.id,
                     nome: req.user.nome,
@@ -73,17 +73,40 @@ if (!JWT_SECRET) {
         try {
             const { email, senha } = req.body;
 
+            // Validação básica de input
             if (!email || !senha) {
                 return res.status(400).json({ error: 'Email e senha são obrigatórios' });
             }
 
-            // Buscar usuário
-            const result = await pool.query(`
-                SELECT id, nome, email, senha, perfil, ativo
-                FROM usuarios WHERE email = $1
-            `, [email.toLowerCase()]);
+            if (typeof email !== 'string' || typeof senha !== 'string') {
+                return res.status(400).json({ error: 'Dados inválidos' });
+            }
 
-            if (result.rows.length === 0) {
+            // Buscar usuário
+            const result = await pool.query(
+                'SELECT id, nome, email, senha, perfil, ativo FROM usuarios WHERE email = $1',
+                [email.toLowerCase().trim()]
+            );
+
+            // ── CORREÇÃO DO HTTP 500 ──────────────────────────────
+            // Mesmo se o usuário não existir, fazemos um bcrypt.compare
+            // com um hash falso para manter o tempo de resposta constante
+            // e evitar timing attacks + evitar que bcrypt receba null
+            const HASH_FALSO = '$2a$10$invalidhashtopreventtimingattacksXXXXXXXXXXXXXXXX';
+            const hashParaComparar = result.rows[0]?.senha || HASH_FALSO;
+
+            // Verificar senha (sempre executa, mesmo se usuário não existe)
+            let senhaCorreta = false;
+            try {
+                senhaCorreta = await bcrypt.compare(senha, hashParaComparar);
+            } catch (bcryptError) {
+                // Hash inválido no banco — trata como senha errada
+                console.error('[AUTH] Erro bcrypt:', bcryptError.message);
+                senhaCorreta = false;
+            }
+
+            // Usuário não existe ou senha errada — mesma mensagem (anti-enumeração)
+            if (result.rows.length === 0 || !senhaCorreta) {
                 return res.status(401).json({ error: 'Email ou senha incorretos' });
             }
 
@@ -93,13 +116,6 @@ if (!JWT_SECRET) {
                 return res.status(401).json({ error: 'Usuário desativado' });
             }
 
-            // Verificar senha
-            const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-            
-            if (!senhaCorreta) {
-                return res.status(401).json({ error: 'Email ou senha incorretos' });
-            }
-
             // Gerar token JWT
             const token = jwt.sign(
                 { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
@@ -107,10 +123,11 @@ if (!JWT_SECRET) {
                 { expiresIn: JWT_EXPIRES }
             );
 
-            // Atualizar último login
-            await pool.query('UPDATE usuarios SET ultimo_login = NOW() WHERE id = $1', [usuario.id]);
+            // Atualizar último login (não bloqueia resposta)
+            pool.query('UPDATE usuarios SET ultimo_login = NOW() WHERE id = $1', [usuario.id])
+                .catch(e => console.error('[AUTH] Erro ao atualizar ultimo_login:', e.message));
 
-            // Registrar log
+            // Registrar log (não bloqueia resposta)
             try {
                 await registrarLog(usuario.id, 'LOGIN', 'usuarios', usuario.id, {
                     ip: req.ip,
@@ -131,7 +148,8 @@ if (!JWT_SECRET) {
 
         } catch (error) {
             console.error('[AUTH] Erro no login:', error);
-            res.status(500).json({ error: 'Erro ao fazer login' });
+            // Nunca expõe detalhes do erro para o cliente
+            res.status(500).json({ error: 'Erro interno. Tente novamente.' });
         }
     });
 
@@ -141,16 +159,13 @@ if (!JWT_SECRET) {
     router.post('/logout', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
-            
             if (token) {
                 try {
                     const decoded = jwt.verify(token, JWT_SECRET);
                     await registrarLog(decoded.id, 'LOGOUT', 'usuarios', decoded.id, {});
                 } catch (e) {}
             }
-
             res.json({ success: true, message: 'Logout realizado' });
-
         } catch (error) {
             res.status(500).json({ error: 'Erro ao fazer logout' });
         }
@@ -162,23 +177,19 @@ if (!JWT_SECRET) {
     router.post('/verificar', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
-
-            if (!token) {
-                return res.status(401).json({ valid: false, error: 'Token não fornecido' });
-            }
+            if (!token) return res.status(401).json({ valid: false, error: 'Token não fornecido' });
 
             const decoded = jwt.verify(token, JWT_SECRET);
-
-            const usuario = await pool.query(`
-                SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1
-            `, [decoded.id]);
+            const usuario = await pool.query(
+                'SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1',
+                [decoded.id]
+            );
 
             if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
                 return res.status(401).json({ valid: false, error: 'Usuário inválido' });
             }
 
             res.json({ valid: true, usuario: usuario.rows[0] });
-
         } catch (error) {
             if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
                 return res.status(401).json({ valid: false, error: 'Token inválido ou expirado' });
@@ -193,10 +204,7 @@ if (!JWT_SECRET) {
     router.post('/refresh', async (req, res) => {
         try {
             const token = req.headers.authorization?.replace('Bearer ', '');
-
-            if (!token) {
-                return res.status(401).json({ error: 'Token não fornecido' });
-            }
+            if (!token) return res.status(401).json({ error: 'Token não fornecido' });
 
             let decoded;
             try {
@@ -205,15 +213,16 @@ if (!JWT_SECRET) {
                 return res.status(401).json({ error: 'Token inválido' });
             }
 
-            // Verificar se não é muito antigo (máximo 7 dias)
+            // Máximo 7 dias para renovar
             const tokenAge = Date.now() / 1000 - decoded.iat;
             if (tokenAge > 7 * 24 * 60 * 60) {
                 return res.status(401).json({ error: 'Token muito antigo, faça login novamente' });
             }
 
-            const usuario = await pool.query(`
-                SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1
-            `, [decoded.id]);
+            const usuario = await pool.query(
+                'SELECT id, nome, email, perfil, ativo FROM usuarios WHERE id = $1',
+                [decoded.id]
+            );
 
             if (usuario.rows.length === 0 || !usuario.rows[0].ativo) {
                 return res.status(401).json({ error: 'Usuário inválido' });
@@ -226,7 +235,6 @@ if (!JWT_SECRET) {
             );
 
             res.json({ success: true, token: novoToken, usuario: usuario.rows[0] });
-
         } catch (error) {
             res.status(500).json({ error: 'Erro ao renovar token' });
         }
@@ -238,14 +246,14 @@ if (!JWT_SECRET) {
     router.post('/recuperar-senha', async (req, res) => {
         try {
             const { email } = req.body;
+            if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
 
-            if (!email) {
-                return res.status(400).json({ error: 'Email é obrigatório' });
-            }
+            const usuario = await pool.query(
+                'SELECT id, nome FROM usuarios WHERE email = $1',
+                [email.toLowerCase().trim()]
+            );
 
-            const usuario = await pool.query('SELECT id, nome FROM usuarios WHERE email = $1', [email.toLowerCase()]);
-
-            // Sempre retornar sucesso para não revelar se email existe
+            // Sempre retorna sucesso — não revela se email existe
             if (usuario.rows.length === 0) {
                 return res.json({ success: true, message: 'Se o email existir, você receberá as instruções' });
             }
@@ -257,12 +265,11 @@ if (!JWT_SECRET) {
             );
 
             // TODO: Implementar envio de email
-            console.log(`[AUTH] Token de recuperação para ${email}: ${tokenRecuperacao}`);
+            console.log(`[AUTH] Token de recuperação gerado para: ${email}`);
 
             await registrarLog(usuario.rows[0].id, 'RECUPERACAO_SENHA_SOLICITADA', 'usuarios', usuario.rows[0].id, {});
 
             res.json({ success: true, message: 'Se o email existir, você receberá as instruções' });
-
         } catch (error) {
             res.status(500).json({ error: 'Erro ao processar solicitação' });
         }
@@ -274,9 +281,13 @@ if (!JWT_SECRET) {
     router.post('/redefinir-senha', async (req, res) => {
         try {
             const { token, nova_senha } = req.body;
-
             if (!token || !nova_senha) {
                 return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
+            }
+
+            // Senha mínima de 6 caracteres
+            if (nova_senha.length < 6) {
+                return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres' });
             }
 
             let decoded;
@@ -291,13 +302,10 @@ if (!JWT_SECRET) {
             }
 
             const senhaHash = await bcrypt.hash(nova_senha, 10);
-            
             await pool.query('UPDATE usuarios SET senha = $1 WHERE id = $2', [senhaHash, decoded.id]);
-
             await registrarLog(decoded.id, 'SENHA_REDEFINIDA', 'usuarios', decoded.id, {});
 
             res.json({ success: true, message: 'Senha redefinida com sucesso' });
-
         } catch (error) {
             res.status(500).json({ error: 'Erro ao redefinir senha' });
         }
