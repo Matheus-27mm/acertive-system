@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACERTIVE — Assessoria e Cobrança</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06080b;
+  --gold: #c9a84c;
+  --gold-l: #e8c96a;
+  --gold-d: #7a5f28;
+  --gold-w: #f0d98a;
+  --text: #f0ede8;
+  --text-d: #8a8680;
+  --text-m: #454340;
+  --border: rgba(201,168,76,0.1);
+  --border-h: rgba(201,168,76,0.22);
+  --card: rgba(14,18,25,0.8);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ─── Cursor ─────────────────────────────── */
+.cur { width:10px; height:10px; background:var(--gold); border-radius:50%; position:fixed; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform .1s; mix-blend-mode:difference; }
+.cur-r { width:40px; height:40px; border:1px solid rgba(201,168,76,.35); border-radius:50%; position:fixed; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:transform .45s cubic-bezier(.16,1,.3,1), width .3s, height .3s; }
+.cur-r.big { width:64px; height:64px; opacity:.5; }
+
+/* ─── Nav ────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  padding:28px 64px;
+  display:flex; align-items:center; justify-content:space-between;
+  transition: all .5s ease;
+}
+nav.stuck {
+  padding:16px 64px;
+  background:rgba(6,8,11,.88);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.logo { display:flex; align-items:center; gap:14px; text-decoration:none; }
+.logo img { width:38px; height:38px; object-fit:contain; mix-blend-mode:screen; filter:drop-shadow(0 0 12px rgba(201,168,76,.4)); }
+.logo-t { font-family:'Cormorant Garamond',serif; font-size:21px; font-weight:600; letter-spacing:2.5px; color:var(--text); }
+.logo-t span { color:var(--gold); }
+.nav-links { display:flex; align-items:center; gap:36px; list-style:none; }
+.nav-links a { font-size:13px; color:var(--text-d); text-decoration:none; letter-spacing:.5px; transition:color .3s; }
+.nav-links a:hover { color:var(--gold); }
+.nav-cta {
+  padding:10px 26px; border:1px solid var(--border-h);
+  border-radius:30px; color:var(--text-d) !important;
+  transition: all .3s !important;
+}
+.nav-cta:hover { background:var(--gold) !important; color:var(--bg) !important; border-color:var(--gold) !important; }
+
+/* ─── HERO ───────────────────────────────── */
+.hero {
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  position:relative; overflow:hidden;
+  padding:120px 40px 80px;
+}
+
+/* Blob animado — efeito principal */
+.blob-wrap {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none; z-index:0;
+}
+.blob {
+  width:900px; height:900px;
+  position:relative;
+  animation:blobSpin 20s linear infinite;
+}
+.blob-inner {
+  position:absolute; inset:0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(201,168,76,0.18) 60deg,
+    rgba(232,201,106,0.28) 120deg,
+    rgba(201,168,76,0.22) 180deg,
+    transparent 240deg,
+    rgba(180,140,60,0.12) 300deg,
+    transparent 360deg
+  );
+  border-radius:50%;
+  filter:blur(80px);
+  animation:blobPulse 6s ease-in-out infinite alternate;
+}
+.blob-inner-2 {
+  position:absolute; inset:80px;
+  background:radial-gradient(ellipse at 40% 40%, rgba(201,168,76,0.3) 0%, rgba(201,168,76,0.1) 40%, transparent 70%);
+  border-radius:50%;
+  filter:blur(60px);
+  animation:blobPulse 8s ease-in-out infinite alternate-reverse;
+}
+.blob-inner-3 {
+  position:absolute; inset:180px;
+  background:radial-gradient(ellipse at 60% 65%, rgba(240,217,138,0.2) 0%, transparent 60%);
+  border-radius:50%;
+  filter:blur(40px);
+  animation:blobPulse2 10s ease-in-out infinite alternate;
+}
+@keyframes blobSpin {
+  from { transform:rotate(0deg); }
+  to   { transform:rotate(360deg); }
+}
+@keyframes blobPulse {
+  0%   { transform:scale(1); opacity:.7; }
+  100% { transform:scale(1.15); opacity:1; }
+}
+@keyframes blobPulse2 {
+  0%   { transform:scale(0.9) translate(-10px,10px); }
+  100% { transform:scale(1.1) translate(10px,-10px); }
+}
+
+/* Grid sutil no fundo */
+.hero-grid {
+  position:absolute; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 70% 70% at center, black 0%, transparent 100%);
+}
+
+/* Vinheta nas bordas */
+.hero-vignette {
+  position:absolute; inset:0; z-index:1;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 0%, var(--bg) 0%, transparent 60%),
+    radial-gradient(ellipse 120% 50% at 50% 100%, var(--bg) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 100% at 0% 50%, var(--bg) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 100% at 100% 50%, var(--bg) 0%, transparent 60%);
+}
+
+/* Conteúdo */
+.hero-content { position:relative; z-index:2; max-width:900px; }
+
+.hero-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 20px;
+  background:rgba(201,168,76,0.08);
+  border:1px solid rgba(201,168,76,0.2);
+  border-radius:30px;
+  font-size:11px; letter-spacing:2.5px;
+  color:var(--gold); text-transform:uppercase;
+  margin-bottom:40px;
+  opacity:0; animation:fadeUp .8s ease forwards .2s;
+}
+.hero-pill-dot { width:5px; height:5px; background:var(--gold); border-radius:50%; animation:pulseDot 2s ease-in-out infinite; }
+@keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.6)} }
+
+.hero-h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(52px, 7.5vw, 108px);
+  font-weight:300; line-height:.95;
+  letter-spacing:-3px; margin-bottom:32px;
+}
+.hero-h1 .line { display:block; overflow:hidden; }
+.hero-h1 .li { display:block; transform:translateY(110%); animation:lineUp 1s cubic-bezier(.16,1,.3,1) forwards; }
+.hero-h1 .l1 .li { animation-delay:.35s; }
+.hero-h1 .l2 .li { animation-delay:.5s; }
+.hero-h1 .l3 .li { animation-delay:.65s; }
+.hero-h1 em { font-style:italic; color:var(--gold-l); }
+@keyframes lineUp { to { transform:translateY(0); } }
+
+.hero-sub {
+  font-size:17px; font-weight:300;
+  color:var(--text-d); line-height:1.75;
+  max-width:520px; margin:0 auto 52px;
+  opacity:0; animation:fadeUp .8s ease forwards 1s;
+}
+
+.hero-btns {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  flex-wrap:wrap;
+  opacity:0; animation:fadeUp .8s ease forwards 1.2s;
+}
+.btn-main {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:17px 40px;
+  background:linear-gradient(135deg, var(--gold-l), var(--gold), var(--gold-d));
+  background-size:200% 200%;
+  border-radius:50px; color:var(--bg);
+  font-size:14px; font-weight:600; letter-spacing:.3px;
+  text-decoration:none; border:none; cursor:pointer;
+  animation:gradShift 4s ease infinite;
+  transition:transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s;
+  box-shadow:0 8px 40px rgba(201,168,76,.25);
+}
+.btn-main:hover { transform:translateY(-4px) scale(1.02); box-shadow:0 20px 50px rgba(201,168,76,.35); }
+@keyframes gradShift {
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+.btn-line {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:17px 36px;
+  border:1px solid var(--border-h); border-radius:50px;
+  color:var(--text-d); font-size:14px; font-weight:400;
+  text-decoration:none;
+  transition:all .3s;
+  backdrop-filter:blur(8px);
+  background:rgba(255,255,255,.02);
+}
+.btn-line:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.05); }
+
+/* Stats flutuantes */
+.hero-stats {
+  position:absolute; bottom:60px; left:0; right:0;
+  display:flex; align-items:center; justify-content:center; gap:0;
+  z-index:2;
+  opacity:0; animation:fadeUp .8s ease forwards 1.4s;
+}
+.hero-stat {
+  padding:0 48px;
+  text-align:center;
+  border-right:1px solid var(--border);
+}
+.hero-stat:last-child { border-right:none; }
+.hero-stat-n {
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px; font-weight:500;
+  color:var(--gold-l); line-height:1;
+  margin-bottom:4px;
+}
+.hero-stat-l { font-size:11px; color:var(--text-m); letter-spacing:1px; text-transform:uppercase; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── Section base ───────────────────────── */
+section { position:relative; z-index:2; }
+.sec-pad { padding:120px 64px; }
+.sec-label {
+  display:block; font-size:10px; font-weight:600;
+  color:var(--gold); letter-spacing:3.5px; text-transform:uppercase;
+  margin-bottom:18px;
+}
+.sec-h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,4vw,58px);
+  font-weight:400; line-height:1.08; letter-spacing:-1px;
+}
+.sec-h2 em { font-style:italic; color:var(--gold-l); }
+
+/* ─── Ticker / Marquee ───────────────────── */
+.ticker-wrap {
+  overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding:20px 0; background:rgba(201,168,76,0.02);
+}
+.ticker {
+  display:flex; gap:0;
+  width:max-content;
+  animation:tick 30s linear infinite;
+}
+.ticker-item {
+  display:flex; align-items:center; gap:32px;
+  padding:0 32px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px; font-weight:300;
+  color:var(--text-m); white-space:nowrap;
+  letter-spacing:.5px;
+}
+.ticker-dot { color:var(--gold); font-size:8px; }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ─── Services ───────────────────────────── */
+.services-wrap {
+  display:grid; grid-template-columns:340px 1fr;
+  gap:80px; align-items:start;
+}
+.services-left { position:sticky; top:120px; }
+.services-left-sub {
+  font-size:15px; color:var(--text-d);
+  line-height:1.8; font-weight:300; margin-top:24px;
+}
+.services-right {
+  display:flex; flex-direction:column; gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:20px; overflow:hidden;
+}
+.svc {
+  background:var(--card);
+  padding:36px 40px;
+  display:grid; grid-template-columns:auto 1fr auto;
+  align-items:center; gap:28px;
+  transition:all .4s cubic-bezier(.16,1,.3,1);
+  backdrop-filter:blur(12px);
+  cursor:default;
+}
+.svc:hover { background:rgba(20,26,36,.95); padding-left:52px; }
+.svc-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; color:var(--text-m); letter-spacing:2px;
+}
+.svc-body {}
+.svc-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px; font-weight:500; margin-bottom:6px;
+  transition:color .3s;
+}
+.svc:hover .svc-name { color:var(--gold-l); }
+.svc-desc { font-size:13px; color:var(--text-d); font-weight:300; line-height:1.6; }
+.svc-arr {
+  width:36px; height:36px;
+  border:1px solid var(--border);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-m); font-size:14px;
+  transition:all .3s; flex-shrink:0;
+}
+.svc:hover .svc-arr { background:var(--gold); border-color:var(--gold); color:var(--bg); }
+
+/* ─── How it works ───────────────────────── */
+.how-bg {
+  background:linear-gradient(180deg, transparent, rgba(201,168,76,0.02), transparent);
+}
+.how-header { text-align:center; margin-bottom:80px; }
+.how-steps {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:0; position:relative;
+}
+.how-connector {
+  position:absolute; top:40px; left:12%; right:12%;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--border-h), var(--border-h), transparent);
+}
+.how-connector::after {
+  content:'';
+  position:absolute; top:-2px; left:0; right:0; height:5px;
+  background:linear-gradient(90deg, transparent, rgba(201,168,76,.15), transparent);
+  filter:blur(4px);
+}
+.how-step { padding:0 28px; text-align:center; }
+.how-n {
+  width:80px; height:80px; margin:0 auto 28px;
+  border:1px solid var(--border-h); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px; font-weight:400; color:var(--gold-l);
+  background:rgba(14,18,25,.9);
+  position:relative; z-index:1;
+  transition:all .5s cubic-bezier(.16,1,.3,1);
+}
+.how-step:hover .how-n {
+  background:var(--gold); color:var(--bg);
+  border-color:var(--gold);
+  box-shadow:0 0 40px rgba(201,168,76,.35);
+  transform:scale(1.1);
+}
+.how-t {
+  font-family:'Cormorant Garamond',serif;
+  font-size:19px; font-weight:500; margin-bottom:10px;
+}
+.how-d { font-size:13px; color:var(--text-d); line-height:1.7; font-weight:300; }
+
+/* ─── Rates ──────────────────────────────── */
+.rates-wrap {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:80px; align-items:center;
+}
+.rates-quote {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,3vw,42px);
+  font-weight:300; font-style:italic;
+  color:var(--text-d); line-height:1.4;
+  border-left:2px solid var(--gold);
+  padding-left:32px; margin-top:28px;
+}
+.rate-rows { display:flex; flex-direction:column; gap:12px; }
+.rate-row {
+  background:rgba(14,18,25,.6);
+  border:1px solid var(--border);
+  border-radius:14px; padding:20px 24px;
+  display:grid; grid-template-columns:1fr auto;
+  align-items:center; gap:20px;
+  transition:all .3s;
+  position:relative; overflow:hidden;
+}
+.rate-row::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg, var(--gold-l), var(--gold-d));
+}
+.rate-row:hover { border-color:var(--border-h); transform:translateX(6px); }
+.rate-label { font-size:13px; color:var(--text-d); font-weight:300; }
+.rate-bar-outer { width:120px; height:3px; background:rgba(255,255,255,.06); border-radius:2px; margin-top:8px; }
+.rate-bar-inner {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--gold-d), var(--gold-l));
+  width:0; transition:width 1.4s cubic-bezier(.16,1,.3,1);
+}
+.rate-pct {
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px; font-weight:500; color:var(--gold-l);
+}
+
+/* ─── Advocacy ───────────────────────────── */
+.adv-grid {
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:16px; margin-top:60px;
+}
+.adv-card {
+  padding:40px; border-radius:20px;
+  border:1px solid var(--border);
+  background:rgba(14,18,25,.5);
+  backdrop-filter:blur(12px);
+  transition:all .45s cubic-bezier(.16,1,.3,1);
+  position:relative; overflow:hidden;
+}
+.adv-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at top right, rgba(201,168,76,0.04), transparent 60%);
+  opacity:0; transition:opacity .4s;
+}
+.adv-card:hover { border-color:var(--border-h); transform:translateY(-6px); box-shadow:0 32px 64px rgba(0,0,0,.4); }
+.adv-card:hover::before { opacity:1; }
+.adv-icon { font-size:28px; margin-bottom:20px; display:block; }
+.adv-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px; font-weight:500; color:var(--gold-l);
+  margin-bottom:16px;
+}
+.adv-list { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.adv-list li {
+  font-size:13px; color:var(--text-d); font-weight:300;
+  padding-left:18px; position:relative; line-height:1.5;
+}
+.adv-list li::before { content:'—'; position:absolute; left:0; color:var(--gold); font-size:10px; top:2px; }
+
+/* ─── About ──────────────────────────────── */
+.about-inner {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:100px; align-items:start;
+}
+.about-text { font-size:15px; color:var(--text-d); line-height:1.9; font-weight:300; margin-bottom:20px; }
+.about-text strong { color:var(--text); font-weight:500; }
+.about-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:32px; }
+.tag {
+  padding:7px 16px; border:1px solid var(--border); border-radius:30px;
+  font-size:12px; color:var(--text-d);
+  transition:all .3s;
+}
+.tag:hover { border-color:var(--gold); color:var(--gold); }
+.about-callout {
+  background:rgba(201,168,76,0.04);
+  border:1px solid var(--border-h);
+  border-radius:20px; padding:40px;
+  margin-bottom:32px;
+}
+.about-callout-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(22px,2.5vw,30px); font-weight:300; font-style:italic;
+  color:var(--text-d); line-height:1.5;
+}
+.about-clients {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin-top:24px;
+}
+.about-client {
+  padding:16px 20px;
+  border:1px solid var(--border); border-radius:12px;
+  font-size:13px; color:var(--text-d);
+  display:flex; align-items:center; gap:10px;
+  transition:all .3s;
+}
+.about-client:hover { border-color:var(--border-h); color:var(--text); }
+.about-client-dot { width:6px; height:6px; background:var(--gold); border-radius:50%; opacity:.5; flex-shrink:0; }
+
+/* ─── CTA ────────────────────────────────── */
+.cta-sec {
+  text-align:center; padding:160px 40px;
+  position:relative; overflow:hidden;
+}
+.cta-blob {
+  position:absolute; width:600px; height:600px;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  background:conic-gradient(from 90deg, transparent, rgba(201,168,76,.12), rgba(201,168,76,.2), rgba(201,168,76,.12), transparent);
+  border-radius:50%; filter:blur(80px);
+  animation:blobSpin 15s linear infinite;
+  pointer-events:none;
+}
+.cta-content { position:relative; z-index:1; }
+.cta-h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(48px,6vw,88px);
+  font-weight:300; line-height:1; letter-spacing:-2px;
+  margin-bottom:24px;
+}
+.cta-h2 em { font-style:italic; color:var(--gold-l); }
+.cta-sub { font-size:16px; color:var(--text-d); font-weight:300; max-width:440px; margin:0 auto 52px; line-height:1.8; }
+.btn-wa {
+  display:inline-flex; align-items:center; gap:12px;
+  padding:18px 44px; background:#25d366; border-radius:50px;
+  color:#fff; font-size:15px; font-weight:600;
+  text-decoration:none;
+  transition:all .4s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 8px 32px rgba(37,211,102,.2);
+}
+.btn-wa:hover { transform:translateY(-4px); box-shadow:0 20px 48px rgba(37,211,102,.3); }
+.cta-or { font-size:13px; color:var(--text-m); margin:20px 0; }
+
+/* ─── Footer ─────────────────────────────── */
+footer {
+  padding:40px 64px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-links { display:flex; gap:28px; list-style:none; }
+.footer-links a { font-size:12px; color:var(--text-m); text-decoration:none; transition:color .3s; }
+.footer-links a:hover { color:var(--gold); }
+.footer-copy { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-m); }
+
+/* ─── Reveal ─────────────────────────────── */
+.rv { opacity:0; transform:translateY(36px); transition:opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+.rv.on { opacity:1; transform:translateY(0); }
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}
+
+/* ─── Responsive ──────────────────────────── */
+@media(max-width:1024px){
+  nav,.sec-pad{padding-left:32px;padding-right:32px}
+  .services-wrap{grid-template-columns:1fr;gap:48px}
+  .services-left{position:static}
+  .how-steps{grid-template-columns:1fr 1fr;gap:40px}
+  .how-connector{display:none}
+  .rates-wrap,.about-inner{grid-template-columns:1fr;gap:48px}
+  .hero-stats{flex-direction:column;gap:16px;position:static;margin-top:48px}
+  .hero-stat{border-right:none;border-bottom:1px solid var(--border);padding:16px 0}
+  .hero-stat:last-child{border-bottom:none}
+  footer{flex-direction:column;gap:20px;text-align:center;padding:32px}
+  .nav-links{display:none}
+}
+@media(max-width:768px){
+  .hero{padding:100px 24px 60px}
+  .hero-h1{font-size:48px;letter-spacing:-1px}
+  .sec-pad{padding:80px 24px}
+  .how-steps{grid-template-columns:1fr}
+  .adv-grid{grid-template-columns:1fr}
+  .about-clients{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur"></div>
+<div class="cur-r" id="curR"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <img src="acertivelogo.png" alt="ACERTIVE">
+    <span class="logo-t">ACERT<span>IVE</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#advocacia">Advocacia</a></li>
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#contato" class="nav-cta">Fale Conosco</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob-wrap">
+    <div class="blob">
+      <div class="blob-inner"></div>
+      <div class="blob-inner-2"></div>
+      <div class="blob-inner-3"></div>
+    </div>
+  </div>
+  <div class="hero-grid"></div>
+  <div class="hero-vignette"></div>
+
+  <div class="hero-content">
+    <div class="hero-pill">
+      <span class="hero-pill-dot"></span>
+      Assessoria e Cobrança · Manaus, AM
+    </div>
+
+    <h1 class="hero-h1">
+      <span class="line l1"><span class="li">Recuperamos</span></span>
+      <span class="line l2"><span class="li">o que é <em>seu.</em></span></span>
+    </h1>
+
+    <p class="hero-sub">
+      Mais de 20 anos especializados em recuperação de crédito extrajudicial, judicial e advocacia empresarial. Tecnologia + equipe dedicada = resultado.
+    </p>
+
+    <div class="hero-btns">
+      <a href="#contato" class="btn-main">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Falar com especialista
+      </a>
+      <a href="#servicos" class="btn-line">
+        Como trabalhamos
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-n">20+</div>
+        <div class="hero-stat-l">Anos no mercado</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-n">90%</div>
+        <div class="hero-stat-l">Recuperação em 30 dias</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-n">Norte</div>
+        <div class="hero-stat-l">Referência na região</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <div class="ticker-item">Cobrança Extrajudicial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Cobrança Judicial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Advocacia Empresarial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Recuperação de Crédito <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Localização de Devedores <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Gestão de Carteira <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Portal do Credor <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Zona Franca de Manaus <span class="ticker-dot">◆</span></div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item">Cobrança Extrajudicial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Cobrança Judicial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Advocacia Empresarial <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Recuperação de Crédito <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Localização de Devedores <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Gestão de Carteira <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Portal do Credor <span class="ticker-dot">◆</span></div>
+    <div class="ticker-item">Zona Franca de Manaus <span class="ticker-dot">◆</span></div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="sec-pad" id="servicos">
+  <div class="services-wrap">
+    <div class="services-left rv">
+      <span class="sec-label">Serviços</span>
+      <h2 class="sec-h2">O que <em>fazemos</em></h2>
+      <p class="services-left-sub">Combinamos expertise jurídica com tecnologia de ponta para entregar resultados reais na recuperação do seu crédito.</p>
+    </div>
+    <div class="services-right rv d2">
+      <div class="svc"><span class="svc-num">01</span><div class="svc-body"><div class="svc-name">Cobrança Extrajudicial</div><div class="svc-desc">Negociação direta, ágil e sem custos judiciais. Acordos facilitados com script direcionado e múltiplos canais de contato.</div></div><div class="svc-arr">→</div></div>
+      <div class="svc"><span class="svc-num">02</span><div class="svc-body"><div class="svc-name">Cobrança Judicial</div><div class="svc-desc">Ações conduzidas por advogados especializados quando a via extrajudicial se esgota. Resultados com respaldo jurídico.</div></div><div class="svc-arr">→</div></div>
+      <div class="svc"><span class="svc-num">03</span><div class="svc-body"><div class="svc-name">Cobrança Multicanal</div><div class="svc-desc">Discador automático, WhatsApp, SMS, e-mail, boleto e equipe de motoboy nas ruas. Abordagem ininterrupta até o contato.</div></div><div class="svc-arr">→</div></div>
+      <div class="svc"><span class="svc-num">04</span><div class="svc-body"><div class="svc-name">Localização de Devedores</div><div class="svc-desc">Sistema de pesquisa e higienização cadastral completo. Localizamos devedores desaparecidos antes de iniciar a cobrança.</div></div><div class="svc-arr">→</div></div>
+      <div class="svc"><span class="svc-num">05</span><div class="svc-body"><div class="svc-name">Gestão de Carteira</div><div class="svc-desc">Software proprietário com KPIs em tempo real e portal exclusivo para credores acompanharem seus resultados a qualquer hora.</div></div><div class="svc-arr">→</div></div>
+      <div class="svc"><span class="svc-num">06</span><div class="svc-body"><div class="svc-name">Advocacia Empresarial</div><div class="svc-desc">Assessoria jurídica completa em direito empresarial, trabalhista, fiscal e contencioso. Atuação preventiva e consultiva.</div></div><div class="svc-arr">→</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="sec-pad how-bg" id="como-funciona">
+  <div class="how-header rv">
+    <span class="sec-label">Processo</span>
+    <h2 class="sec-h2">Como <em>trabalhamos</em></h2>
+  </div>
+  <div class="how-steps">
+    <div class="how-connector"></div>
+    <div class="how-step rv d1">
+      <div class="how-n">01</div>
+      <div class="how-t">Recebemos sua carteira</div>
+      <p class="how-d">Importamos e higienizamos toda a base cadastral antes de qualquer acionamento.</p>
+    </div>
+    <div class="how-step rv d2">
+      <div class="how-n">02</div>
+      <div class="how-t">Acionamos em múltiplos canais</div>
+      <p class="how-d">WhatsApp, discador, SMS, e-mail e equipe de campo trabalhando simultaneamente.</p>
+    </div>
+    <div class="how-step rv d3">
+      <div class="how-n">03</div>
+      <div class="how-t">Negociamos e fechamos</div>
+      <p class="how-d">Equipe especializada com scripts direcionados e condições flexíveis de acordo.</p>
+    </div>
+    <div class="how-step rv d4">
+      <div class="how-n">04</div>
+      <div class="how-t">Você acompanha em tempo real</div>
+      <p class="how-d">Portal exclusivo do credor com dados atualizados, relatórios e exportações.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RATES -->
+<section class="sec-pad" id="resultados">
+  <div class="rates-wrap">
+    <div class="rv">
+      <span class="sec-label">Resultados</span>
+      <h2 class="sec-h2">Taxas de <em>recuperação</em></h2>
+      <p class="rates-quote">Quanto antes você aciona, maior a chance de recuperar.</p>
+    </div>
+    <div class="rate-rows rv d2">
+      <div class="rate-row">
+        <div><div class="rate-label">Cobrança com até 30 dias</div><div class="rate-bar-outer"><div class="rate-bar-inner" data-w="90"></div></div></div>
+        <div class="rate-pct">90%</div>
+      </div>
+      <div class="rate-row">
+        <div><div class="rate-label">45 a 60 dias</div><div class="rate-bar-outer"><div class="rate-bar-inner" data-w="75"></div></div></div>
+        <div class="rate-pct">75%</div>
+      </div>
+      <div class="rate-row">
+        <div><div class="rate-label">60 a 90 dias</div><div class="rate-bar-outer"><div class="rate-bar-inner" data-w="65"></div></div></div>
+        <div class="rate-pct">65%</div>
+      </div>
+      <div class="rate-row">
+        <div><div class="rate-label">90 a 120 dias</div><div class="rate-bar-outer"><div class="rate-bar-inner" data-w="52"></div></div></div>
+        <div class="rate-pct">52%</div>
+      </div>
+      <div class="rate-row">
+        <div><div class="rate-label">120 dias ou mais</div><div class="rate-bar-outer"><div class="rate-bar-inner" data-w="32"></div></div></div>
+        <div class="rate-pct">32%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADVOCACY -->
+<section class="sec-pad how-bg" id="advocacia">
+  <div class="rv" style="text-align:center;margin-bottom:16px">
+    <span class="sec-label">Advocacia</span>
+    <h2 class="sec-h2">Todos os <em>segmentos do direito</em></h2>
+  </div>
+  <div class="adv-grid">
+    <div class="adv-card rv d1"><span class="adv-icon">🏢</span><div class="adv-title">Empresarial</div><ul class="adv-list"><li>Negociações empresariais</li><li>Planejamento estratégico</li><li>Direito societário</li><li>Práticas comerciais desleais</li></ul></div>
+    <div class="adv-card rv d2"><span class="adv-icon">⚒️</span><div class="adv-title">Trabalhista</div><ul class="adv-list"><li>Consultoria e contencioso</li><li>Reclamações trabalhistas</li><li>Acidentes de trabalho</li><li>Convenções coletivas</li></ul></div>
+    <div class="adv-card rv d3"><span class="adv-icon">📋</span><div class="adv-title">Extrajudicial e Contenciosa</div><ul class="adv-list"><li>Recuperação de créditos mercantis</li><li>Confissões de dívidas e acordos</li><li>Responsabilidade profissional</li><li>Busca e apreensão de bens</li></ul></div>
+    <div class="adv-card rv d4"><span class="adv-icon">📊</span><div class="adv-title">Fiscal e Tributário</div><ul class="adv-list"><li>Consultoria e planejamento tributário</li><li>Contencioso fiscal</li><li>Mandado de segurança</li><li>Aduana · Zona Franca de Manaus</li></ul></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="sec-pad" id="sobre">
+  <div class="about-inner">
+    <div class="rv">
+      <span class="sec-label">Sobre nós</span>
+      <h2 class="sec-h2" style="margin-bottom:28px">Mais de <em>20 anos</em> recuperando crédito</h2>
+      <p class="about-text">Nossa empresa tem origem há mais de 20 anos, tendo na sociedade o saudoso advogado <strong>Dr. Warney M. Prestes da Costa Val</strong>. Denominada Escritório Jurídico Warney C Val até abril de 2020.</p>
+      <p class="about-text">Hoje operamos como <strong>ACERTIVE Assessoria e Cobrança Ltda.</strong>, com foco na região Norte e sede em <strong>Manaus, AM</strong>. Atendemos desde lojas de departamentos até bancos e empresas de telecomunicações.</p>
+      <div class="about-tags">
+        <span class="tag">Manaus, AM</span><span class="tag">Região Norte</span><span class="tag">20+ anos</span><span class="tag">Telecomunicações</span><span class="tag">Varejo</span><span class="tag">Bancos</span><span class="tag">Zona Franca</span>
+      </div>
+    </div>
+    <div class="rv d2">
+      <div class="about-callout">
+        <p class="about-callout-text">"Infraestrutura completa e profissionais especializados atuando de forma propositiva para alcançar os objetivos do cliente."</p>
+      </div>
+      <p style="font-size:13px;color:var(--text-m);margin-bottom:16px;letter-spacing:1px;text-transform:uppercase;font-size:10px">Atendemos clientes como</p>
+      <div class="about-clients">
+        <div class="about-client"><span class="about-client-dot"></span>Lojas de Departamento</div>
+        <div class="about-client"><span class="about-client-dot"></span>Telecomunicações</div>
+        <div class="about-client"><span class="about-client-dot"></span>Prestadoras de Serviço</div>
+        <div class="about-client"><span class="about-client-dot"></span>Instituições Financeiras</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec" id="contato">
+  <div class="cta-blob"></div>
+  <div class="cta-content">
+    <span class="sec-label" style="display:block;margin-bottom:24px">Contato</span>
+    <h2 class="cta-h2 rv">Pronto para <em>recuperar</em><br>seus créditos?</h2>
+    <p class="cta-sub rv d1">Avaliamos sua carteira sem compromisso e apresentamos a melhor estratégia para o seu caso.</p>
+    <div class="rv d2">
+      <a href="https://wa.me/5592000000000" class="btn-wa" target="_blank">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Falar pelo WhatsApp
+      </a>
+      <p class="cta-or">ou envie um e-mail para <a href="mailto:contato@acertivecobranca.com.br" style="color:var(--gold);text-decoration:none">contato@acertivecobranca.com.br</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="logo">
+    <img src="acertivelogo.png" alt="ACERTIVE">
+    <span class="logo-t">ACERT<span>IVE</span></span>
+  </a>
+  <ul class="footer-links">
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#advocacia">Advocacia</a></li>
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
+  <span class="footer-copy">© 2025 ACERTIVE · Manaus, AM</span>
+</footer>
+
+<script>
+// Cursor
+const cur = document.getElementById('cur');
+const curR = document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+(function loop(){ rx+=(mx-rx)*.1; ry+=(my-ry)*.1; curR.style.left=rx+'px'; curR.style.top=ry+'px'; requestAnimationFrame(loop); })();
+document.querySelectorAll('a,button,.svc,.adv-card,.rate-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>curR.classList.add('big'));
+  el.addEventListener('mouseleave',()=>curR.classList.remove('big'));
+});
+
+// Nav
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('stuck',scrollY>80);
+});
+
+// Reveal
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on'); });
+},{threshold:0.12});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+// Rate bars
+const rateObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.rate-bar-inner').forEach(b=>{
+        setTimeout(()=>{ b.style.width=b.dataset.w+'%'; },300);
+      });
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.rate-rows').forEach(el=>rateObs.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
+  });
+});
+</script>
+</body>
+</html>
