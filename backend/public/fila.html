@@ -67,8 +67,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
 /* ─── SIDEBAR — idêntica ao dashboard ──────── */
 .sb{position:fixed;left:0;top:0;width:244px;height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200;flex-shrink:0}
-.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
-.sb-logo{height:32px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}.sb-logo img{height:28px;max-width:120px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
 .sb-logo-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--t2);background:transparent;border:1px solid var(--br);padding:2px 8px;border-radius:20px}
 .sb-nav{flex:1;overflow-y:auto;padding:14px 10px}
 .sb-grp,.sb-section{margin-bottom:20px}
@@ -200,7 +199,6 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   justify-content:space-between;
   margin-bottom:10px;
 }
-.debtor-left {}
 .debtor-badge {
   display:inline-flex;
   align-items:center;
@@ -301,6 +299,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   padding:10px 24px;
   border-bottom:1px solid var(--br);
   background:var(--bg);
+  align-items:stretch;
 }
 .act-main {
   flex:1;
@@ -308,7 +307,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   align-items:center;
   justify-content:center;
   gap:7px;
-  padding:10px 12px;
+  padding:10px 8px;
   border-radius:var(--r);
   font-size:12.5px;
   font-weight:600;
@@ -820,20 +819,40 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         <div class="dev-badges" id="devBadges"></div>
       </div>
 
-      <!-- AÇÕES PRINCIPAIS -->
-      <div class="actions-primary">
-        <button class="act-main act-call" onclick="acaoLigar()">
-          <i class="fas fa-phone"></i> Ligar
-          <span class="k">1</span>
-        </button>
-        <button class="act-main act-wpp" onclick="acaoWhatsApp()">
-          <i class="fab fa-whatsapp"></i> WhatsApp
-          <span class="k">2</span>
-        </button>
-        <button class="act-main act-mail" onclick="acaoEmail()">
-          <i class="fas fa-envelope"></i> E-mail
+      <!-- PRÓXIMA MELHOR AÇÃO -->
+      <div class="pma-box" id="pmaBox">
+        <div class="pma-left">
+          <div class="pma-label"><i class="fas fa-bolt" style="margin-right:4px"></i>Próxima melhor ação</div>
+          <div class="pma-txt" id="pmaTxt">—</div>
+        </div>
+        <button class="pma-btn" id="pmaBtn" onclick="executarPMA()">
+          <i id="pmaBtnIco" class="fas fa-phone"></i>
+          <span id="pmaBtnTxt">Agir agora</span>
         </button>
       </div>
+
+      <!-- AÇÃO PRINCIPAL DINÂMICA -->
+      <div class="actions-primary" id="actionsPrimary">
+        <button class="act-primary-dyn apd-wpp" id="btnPrimario" onclick="executarPrimario()">
+          <i class="fas fa-phone" id="btnPrimIco"></i>
+          <span id="btnPrimTxt">Ligar Agora</span>
+          <span class="k" id="btnPrimKey">1</span>
+        </button>
+        <button class="act-main act-call" id="btnLigar" onclick="acaoLigar()" style="flex:.5">
+          <i class="fas fa-phone"></i>
+          <span class="k">1</span>
+        </button>
+        <button class="act-main act-wpp" id="btnWpp" onclick="acaoWhatsApp()" style="flex:.5">
+          <i class="fab fa-whatsapp"></i>
+          <span class="k">2</span>
+        </button>
+        <button class="act-main act-mail" id="btnMail" onclick="acaoEmail()" style="flex:.5">
+          <i class="fas fa-envelope"></i>
+        </button>
+      </div>
+
+      <!-- ALERTAS INTELIGENTES -->
+      <div class="smart-alerts" id="smartAlerts" style="padding:4px 24px 8px"></div>
 
       <!-- AÇÕES SECUNDÁRIAS -->
       <div class="actions-secondary">
@@ -853,20 +872,13 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         </button>
       </div>
 
-      <!-- RECOMENDAÇÃO INTELIGENTE -->
-      <div class="rec-box" id="recBox">
-        <div class="rec-icon"><i class="fas fa-lightbulb"></i></div>
-        <div class="rec-txt" id="recTxt">—</div>
-        <button class="rec-action" id="recBtn" onclick="executarRec()">—</button>
-      </div>
-
       <!-- REGISTRO -->
       <div class="registro">
-        <div class="reg-section-title">Registro de contato</div>
+        <div class="reg-section-title">Registrar resultado do contato</div>
 
         <div class="reg-grid">
           <div class="reg-field">
-            <label>Canal</label>
+            <label>Melhor forma de contato</label>
             <div class="chips" id="canalChips">
               <span class="chip on" onclick="sChip(this,'canal','whatsapp')">WhatsApp</span>
               <span class="chip" onclick="sChip(this,'canal','telefone')">Ligação</span>
@@ -875,7 +887,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
             <input type="hidden" id="canalVal" value="whatsapp">
           </div>
           <div class="reg-field">
-            <label>Resultado *</label>
+            <label>O que aconteceu? *</label>
             <div class="chips" id="resultChips">
               <span class="chip suc" onclick="sChip(this,'result','atendeu')">Atendeu</span>
               <span class="chip dan" onclick="sChip(this,'result','nao_atendeu')">Não atendeu</span>
@@ -890,7 +902,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
         <div>
           <label style="display:block;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Observação</label>
-          <textarea class="obs-input" id="obsInput" placeholder="Detalhes do contato..."></textarea>
+          <textarea class="obs-input" id="obsInput" placeholder="Observações sobre a negociação..."></textarea>
         </div>
 
         <button class="btn-next" onclick="salvarProximo()">
@@ -1052,7 +1064,7 @@ let acoesHoje = 0;
 let acordosHoje = 0;
 let tempos = [];
 let tStart = Date.now();
-let recAcao = null; // ação recomendada atual
+let pmaFn = null; // ação recomendada atual
 
 /* ── SCORE INTELIGENTE ──────────────────────────────────────
    Normaliza cada dimensão pelo máximo da fila (0–1)
@@ -1160,15 +1172,24 @@ async function carregarFila() {
         ultimoContato: null,
       };
 
-      map[id].valor += parseFloat(c.valor || c.valor_original || 0);
+      // Valor: usar campo normalizado pelo backend (valor || valor_original)
+      const valorCob = parseFloat(c.valor || c.valor_original || 0);
+      if (valorCob > 0) map[id].valor += valorCob;
       map[id].count++;
 
-      // FIX: calcular dias com fallback seguro — nunca NaN
+      // Dias em atraso: validar data rigorosamente
       const dv = c.data_vencimento || c.vencimento;
-      const dataVenc = dv ? new Date(dv) : null;
-      const dias = dataVenc && !isNaN(dataVenc)
-        ? Math.max(0, Math.floor((now - dataVenc) / 864e5))
-        : 0;
+      let dias = 0;
+      if (dv) {
+        // Tratar como data local (sem conversão UTC que causava off-by-one)
+        const parts = String(dv).substring(0,10).split('-');
+        if (parts.length === 3) {
+          const dataVenc = new Date(+parts[0], +parts[1]-1, +parts[2]);
+          if (!isNaN(dataVenc) && dataVenc.getFullYear() > 2000) {
+            dias = Math.max(0, Math.floor((now - dataVenc) / 864e5));
+          }
+        }
+      }
       if (dias > map[id].maxDias) map[id].maxDias = dias;
 
       // Preferir contatos preenchidos
@@ -1346,55 +1367,140 @@ async function carregarHist(d) {
   }
 }
 
-/* ── RECOMENDAÇÃO INTELIGENTE ─────────────────────────────── */
-function gerarRecomendacao(d) {
-  const box = document.getElementById('recBox');
-  const txt = document.getElementById('recTxt');
-  const btn = document.getElementById('recBtn');
-  let rec = null;
+/* ═══════════════════════════════════════════════════════════
+   MOTOR DE DECISÃO — Próxima Melhor Ação
+   Analisa: dias_atraso, valor, tentativas, ultimoContato
+   Decide: qual ação tem maior chance de conversão agora
+═══════════════════════════════════════════════════════════ */
 
-  if (d.tentativas >= 5) {
-    rec = { txt:'<strong>Múltiplas tentativas sem sucesso.</strong> Ofereça desconto para aumentar conversão.', acao:'Propor acordo', fn:'abrirAcordo' };
-  } else if (d.maxDias > 90) {
-    rec = { txt:'<strong>+90 dias de atraso.</strong> Desconto agressivo — recuperação parcial é melhor que nada.', acao:'Abrir acordo', fn:'abrirAcordo' };
+function gerarPMA(d) {
+  const pmaBox  = document.getElementById('pmaBox');
+  const pmaTxt  = document.getElementById('pmaTxt');
+  const pmaBtn  = document.getElementById('pmaBtn');
+  const pmaBIco = document.getElementById('pmaBtnIco');
+  const pmaBTxt = document.getElementById('pmaBtnTxt');
+  const btnP    = document.getElementById('btnPrimario');
+  const bpIco   = document.getElementById('btnPrimIco');
+  const bpTxt   = document.getElementById('btnPrimTxt');
+
+  let pma = null;
+
+  // Regras em ordem de prioridade
+  if (d.tentativas >= 5 && d.ultimoContato) {
+    // Cliente resistente — pressionar com desconto
+    pma = {
+      txt: `Cliente com <strong>${d.tentativas} tentativas</strong> sem sucesso — oferece desconto direto para fechar.`,
+      acao: 'Propor Acordo', ico: 'fa-handshake', fn: 'abrirAcordo',
+      btnCls: 'apd-acordo'
+    };
+  } else if (d.maxDias > 180 && d.valor > 1000) {
+    // Dívida muito antiga e valor relevante
+    pma = {
+      txt: `Dívida com <strong>+${d.maxDias} dias</strong> — desconto agressivo aumenta chance de recuperação.`,
+      acao: 'Propor Acordo', ico: 'fa-handshake', fn: 'abrirAcordo',
+      btnCls: 'apd-acordo'
+    };
   } else if (d.maxDias > 60 && d.valor > 2000) {
-    rec = { txt:'<strong>Alto valor e muito tempo em atraso.</strong> Priorize ligação — mais efetivo que mensagem.', acao:'Ligar agora', fn:'acaoLigar' };
-  } else if (d.maxDias > 30) {
-    rec = { txt:'<strong>Dívida em atraso moderado.</strong> WhatsApp com proposta costuma ter boa resposta.', acao:'WhatsApp', fn:'acaoWhatsApp' };
+    // Alto valor + tempo longo = ligar
+    pma = {
+      txt: `Alto valor <strong>em atraso há ${d.maxDias}d</strong> — ligação tem maior conversão que mensagem.`,
+      acao: 'Ligar Agora', ico: 'fa-phone', fn: 'acaoLigar',
+      btnCls: 'apd-call'
+    };
   } else if (!d.ultimoContato) {
-    rec = { txt:'<strong>Nunca foi contatado.</strong> Primeira abordagem — seja cordial.', acao:'Iniciar', fn:'acaoWhatsApp' };
+    // Nunca contatado = oportunidade
+    pma = {
+      txt: `<strong>Primeiro contato</strong> — WhatsApp com proposta tem boa taxa de resposta.`,
+      acao: 'Enviar WhatsApp', ico: 'fa-whatsapp fab', fn: 'acaoWhatsApp',
+      btnCls: 'apd-wpp'
+    };
+  } else if (d.maxDias > 30) {
+    // Atraso moderado
+    pma = {
+      txt: `Dívida com <strong>${d.maxDias} dias</strong> — WhatsApp com proposta de acordo.`,
+      acao: 'Enviar WhatsApp', ico: 'fa-whatsapp fab', fn: 'acaoWhatsApp',
+      btnCls: 'apd-wpp'
+    };
+  } else {
+    // Dívida recente
+    pma = {
+      txt: `Dívida recente — abordagem direta pelo WhatsApp.`,
+      acao: 'Enviar WhatsApp', ico: 'fa-whatsapp fab', fn: 'acaoWhatsApp',
+      btnCls: 'apd-wpp'
+    };
   }
 
-  if (rec) {
-    txt.innerHTML = rec.txt;
-    btn.textContent = rec.acao;
-    recAcao = rec.fn;
-    box.classList.add('show');
+  if (pma) {
+    pmaTxt.innerHTML = pma.txt;
+    pmaBIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
+    pmaBTxt.textContent = pma.acao;
+    pmaFn = pma.fn;
+    pmaBox.classList.add('show');
+    // Configurar botão primário dinâmico
+    btnP.className = `act-primary-dyn ${pma.btnCls}`;
+    bpIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
+    bpTxt.textContent = pma.acao;
+    btnP.style.display = 'flex';
   } else {
-    box.classList.remove('show');
-    recAcao = null;
+    pmaBox.classList.remove('show');
+    pmaFn = null;
+    btnP.style.display = 'none';
   }
 }
 
-function executarRec() {
-  if (recAcao && typeof window[recAcao] === 'function') window[recAcao]();
+function executarPMA() {
+  if (pmaFn && typeof window[pmaFn] === 'function') window[pmaFn]();
 }
+function executarPrimario() { executarPMA(); }
 
-/* ── BADGES DE PERFIL ─────────────────────────────────────── */
-function renderDevBadges(d) {
-  const wrap = document.getElementById('devBadges');
-  const tags = [];
-  if (!d.ultimoContato) {
-    tags.push('<span class="dev-tag nunca"><i class="fas fa-user-plus"></i> Nunca contatado</span>');
-  } else {
+/* ── ALERTAS INTELIGENTES ─────────────────────────────────── */
+function renderAlertas(d) {
+  const wrap = document.getElementById('smartAlerts');
+  const badges = document.getElementById('devBadges');
+  const alerts = [], tags = [];
+
+  // Alertas de risco/urgência
+  if (d.maxDias > 365)
+    alerts.push(`<span class="salert danger"><i class="fas fa-fire"></i> +${d.maxDias} dias em atraso</span>`);
+  else if (d.maxDias > 60)
+    alerts.push(`<span class="salert warn"><i class="fas fa-clock"></i> ${d.maxDias} dias em atraso</span>`);
+
+  if (d.valor > 10000)
+    alerts.push(`<span class="salert danger"><i class="fas fa-circle-dollar-to-slot"></i> Alto valor</span>`);
+  else if (d.valor > 3000)
+    alerts.push(`<span class="salert warn"><i class="fas fa-circle-dollar-to-slot"></i> Valor relevante</span>`);
+
+  // Alertas de histórico
+  if (!d.ultimoContato)
+    alerts.push(`<span class="salert ok"><i class="fas fa-user-plus"></i> Nunca contatado — oportunidade</span>`);
+  else {
     const dd = Math.floor((Date.now() - new Date(d.ultimoContato)) / 864e5);
-    if (dd <= 3) tags.push(`<span class="dev-tag recente"><i class="fas fa-clock"></i> Contatado há ${dd}d</span>`);
+    if (dd === 0)
+      alerts.push(`<span class="salert warn"><i class="fas fa-clock-rotate-left"></i> Contatado hoje</span>`);
+    else if (dd <= 2)
+      alerts.push(`<span class="salert info"><i class="fas fa-clock-rotate-left"></i> Último contato há ${dd}d</span>`);
   }
+
+  if (d.tentativas >= 5)
+    alerts.push(`<span class="salert warn"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas — considere desconto</span>`);
+  else if (d.tentativas >= 3)
+    alerts.push(`<span class="salert info"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas anteriores</span>`);
+
+  if (d.count > 5)
+    alerts.push(`<span class="salert info"><i class="fas fa-layer-group"></i> ${d.count} títulos em aberto</span>`);
+
+  wrap.innerHTML = alerts.join('');
+
+  // Badges menores no bloco do devedor
+  if (!d.ultimoContato) tags.push('<span class="dev-tag nunca"><i class="fas fa-user-plus"></i> Nunca contatado</span>');
   if (d.valor > 5000) tags.push('<span class="dev-tag alto"><i class="fas fa-arrow-up"></i> Alto valor</span>');
   if (d.tentativas >= 3) tags.push(`<span class="dev-tag multi"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas</span>`);
-  if (d.count > 4)       tags.push(`<span class="dev-tag multi"><i class="fas fa-layer-group"></i> ${d.count} títulos</span>`);
-  wrap.innerHTML = tags.join('');
+  if (badges) badges.innerHTML = tags.join('');
 }
+
+// Compatibilidade: gerarRecomendacao e renderDevBadges agora redirecionam
+function gerarRecomendacao(d) { gerarPMA(d); }
+function renderDevBadges(d) { renderAlertas(d); }
 
 function mostrarEmpty() {
   document.getElementById('debtor').style.display = 'none';
@@ -1413,7 +1519,7 @@ function mostrarEmpty() {
 ═══════════════════════════════════════════ */
 /* ── AÇÕES DE CONTATO COM ABERTURA REAL ── */
 function setAtivoCanal(cls) {
-  document.querySelectorAll('.act-main').forEach(b => b.classList.remove('canal-ativo'));
+  document.querySelectorAll('.act-main, .act-primary-dyn').forEach(b => b.classList.remove('canal-ativo'));
   const b = document.querySelector(cls);
   if (b) b.classList.add('canal-ativo');
 }
@@ -1421,14 +1527,20 @@ function setAtivoCanal(cls) {
 function acaoLigar() {
   const d = filaF[idx];
   setCanal('telefone'); setAtivoCanal('.act-call');
+  // Auto-definir resultado mais provável para agilizar operador
+  // (operador pode trocar se necessário)
+  if (!document.getElementById('resultVal').value)
+    sChipByVal('result', 'atendeu');
   if (d && d.telefone) {
     window.location.href = 'tel:' + d.telefone.replace(/\D/g,'');
-  } else { toast('Telefone não cadastrado', 'err'); }
+  } else { toast('Telefone não cadastrado — registre o contato manualmente', 'err'); }
 }
 
 function acaoWhatsApp() {
   const d = filaF[idx];
   setCanal('whatsapp'); setAtivoCanal('.act-wpp');
+  if (!document.getElementById('resultVal').value)
+    sChipByVal('result', 'nao_atendeu'); // WPP frequentemente não tem resposta imediata
   if (d && d.telefone) {
     window.open('https://wa.me/55' + d.telefone.replace(/\D/g,''), '_blank');
   } else { toast('Telefone não cadastrado', 'err'); }
@@ -1440,6 +1552,19 @@ function acaoEmail() {
   if (d && d.email) {
     window.location.href = 'mailto:' + d.email + '?subject=' + encodeURIComponent('Cobrança – ' + d.credor);
   } else { toast('E-mail não cadastrado', 'err'); }
+}
+
+// Selecionar chip por valor (para auto-definir resultado)
+function sChipByVal(campo, val) {
+  const container = campo === 'canal' ? 'canalChips' : 'resultChips';
+  const hidden = campo === 'canal' ? 'canalVal' : 'resultVal';
+  const chips = document.querySelectorAll(`#${container} .chip`);
+  chips.forEach(c => {
+    const chipVal = c.getAttribute('onclick')?.match(/'([^']+)'\)$/)?.[1];
+    c.classList.toggle('on', chipVal === val);
+  });
+  const el = document.getElementById(hidden);
+  if (el) el.value = val;
 }
 
 function setCanal(tipo) {
@@ -1618,8 +1743,8 @@ function resetForm() {
   document.querySelectorAll('#resultChips .chip').forEach(c => c.classList.remove('on'));
   document.querySelectorAll('#canalChips .chip').forEach(c => c.classList.remove('on'));
   document.querySelector('#canalChips .chip').classList.add('on');
-  document.querySelectorAll('.act-main').forEach(b => b.classList.remove('canal-ativo'));
-  recAcao = null;
+  document.querySelectorAll('.act-main, .act-primary-dyn').forEach(b => b.classList.remove('canal-ativo'));
+  pmaFn = null;
 }
 
 function togglePause() {
