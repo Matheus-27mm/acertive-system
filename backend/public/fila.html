@@ -896,6 +896,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         </div>
         <!-- UMA linha de contexto — sem badges separados -->
         <div class="debtor-insight" id="dbInsight"></div>
+        <div class="debtor-meta" id="dbMeta"></div>
         <div class="alerta-box" id="alertaHoje">
           <i class="fas fa-triangle-exclamation"></i>
           <span>Já houve contato hoje com este devedor</span>
@@ -1186,7 +1187,7 @@ function salvarEstado() {
     localStorage.setItem(LS_KEY, JSON.stringify({
       idx,
       clienteId:    d?.id || null,
-      filtroCreedor: document.getElementById('filtroCreedor').value,
+      filtroCreedor: document.getElementById('filtroCreedor')?.value || '',
       buscaTermo:   _termoBusca || '',
       ts:           Date.now(),
     }));
@@ -1222,31 +1223,45 @@ async function carregarCobracoes(clienteId) {
   atualizarBadgeSel();
 
   try {
-    // Usa rota de detalhe do devedor — retorna cobrancas[]
-    const r = await fetch(API + `/api/acionamentos/fila/devedor/${clienteId}`, { headers: H() });
-    const d = await r.json();
-    if (!d.success) return;
+    // Tenta rota de detalhe do devedor primeiro
+    let cobrancas = [];
+    try {
+      const r = await fetch(API + `/api/acionamentos/fila/devedor/${clienteId}`, { headers: H() });
+      const d = await r.json();
+      if (d.success && d.data?.cobrancas?.length) {
+        cobrancas = d.data.cobrancas;
+      } else {
+        // Fallback: buscar cobranças diretamente
+        const r2 = await fetch(API + `/api/cobrancas?cliente_id=${clienteId}&limit=100`, { headers: H() });
+        const d2 = await r2.json();
+        cobrancas = d2.data || [];
+      }
+    } catch(e2) {
+      // Fallback direto
+      const r2 = await fetch(API + `/api/cobrancas?cliente_id=${clienteId}&limit=100`, { headers: H() });
+      const d2 = await r2.json();
+      cobrancas = d2.data || [];
+    }
 
-    const cobrancas = (d.data?.cobrancas || [])
+    const cobrancas_filtradas = (cobrancas || [])
       .filter(c => ['pendente', 'vencido'].includes(c.status))
       .sort((a, b) => {
-        // Vencidas primeiro, depois por vencimento mais antigo
-        const da = new Date(a.data_vencimento || '9999'); 
+        const da = new Date(a.data_vencimento || '9999');
         const db = new Date(b.data_vencimento || '9999');
         return da - db;
       });
 
-    cobAtual = cobrancas;
-    document.getElementById('cobTotal').textContent = cobrancas.length;
+    cobAtual = cobrancas_filtradas;
+    document.getElementById('cobTotal').textContent = cobrancas_filtradas.length;
 
-    if (!cobrancas.length) {
+    if (!cobrancas_filtradas.length) {
       panel.style.display = 'none';
       return;
     }
 
     panel.style.display = '';
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-    list.innerHTML = cobrancas.map((c, i) => {
+    list.innerHTML = cobrancas_filtradas.map((c, i) => {
       const dv = c.data_vencimento || c.vencimento;
       const dt = dv ? new Date(dv) : null;
       const dtStr = dt ? dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
@@ -1584,14 +1599,16 @@ async function carregarHist(d) {
 /* pmaFn declarado no bloco de estado global acima */
 
 function gerarPMA(d) {
-  const pmaBox  = document.getElementById('pmaBox');
-  const pmaTxt  = document.getElementById('pmaTxt');
-  const pmaBtn  = document.getElementById('pmaBtn');
-  const pmaBIco = document.getElementById('pmaBtnIco');
-  const pmaBTxt = document.getElementById('pmaBtnTxt');
-  const btnP    = document.getElementById('btnPrimario');
-  const bpIco   = document.getElementById('btnPrimIco');
-  const bpTxt   = document.getElementById('btnPrimTxt');
+  // pmaBox/pmaTxt removidos do HTML — só configurar botão primário
+  const btnP = document.getElementById('btnPrimario');
+  const bpIco = document.getElementById('btnPrimIco');
+  const bpTxt = document.getElementById('btnPrimTxt');
+  // stubs para evitar crash em código legado abaixo
+  const pmaBox  = null;
+  const pmaTxt  = null;
+  const pmaBtn  = null;
+  const pmaBIco = null;
+  const pmaBTxt = null;
 
   let pma = null;
 
@@ -1641,20 +1658,17 @@ function gerarPMA(d) {
   }
 
   if (pma) {
-    pmaTxt.innerHTML = pma.txt;
-    pmaBIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
-    pmaBTxt.textContent = pma.acao;
     pmaFn = pma.fn;
-    pmaBox.classList.add('show');
-    // Configurar botão primário dinâmico
-    btnP.className = `act-primary-dyn ${pma.btnCls}`;
-    bpIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
-    bpTxt.textContent = pma.acao;
-    btnP.style.display = 'flex';
+    // Configurar botão primário dinâmico (único elemento que permanece)
+    if (btnP) {
+      btnP.className = `act-primary-dyn ${pma.btnCls}`;
+      btnP.style.display = 'flex';
+    }
+    if (bpIco) bpIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
+    if (bpTxt) bpTxt.textContent = pma.acao;
   } else {
-    pmaBox.classList.remove('show');
     pmaFn = null;
-    btnP.style.display = 'none';
+    if (btnP) btnP.style.display = 'none';
   }
 }
 
