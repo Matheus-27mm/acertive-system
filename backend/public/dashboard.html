@@ -3,1461 +3,838 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACERTIVE — Dashboard Operacional</title>
+<title>ACERTIVE — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* ─── TOKENS ─────────────────────────────────────────── */
 :root {
-  --bg:       #04050a;
-  --bg1:      #080a12;
-  --bg2:      #0c0f1a;
-  --bg3:      #111525;
-  --bg4:      #161b2e;
-  --gold:     #c9a84c;
-  --gold-l:   #e2c06a;
-  --gold-d:   #8b6e2a;
-  --gold-10:  rgba(201,168,76,.10);
-  --gold-05:  rgba(201,168,76,.05);
-  --gold-20:  rgba(201,168,76,.20);
-  --green:    #34d399;
-  --green-10: rgba(52,211,153,.10);
-  --green-30: rgba(52,211,153,.30);
-  --red:      #f87171;
-  --red-10:   rgba(248,113,113,.10);
-  --red-30:   rgba(248,113,113,.30);
-  --orange:   #fb923c;
-  --orange-10:rgba(251,146,60,.10);
-  --blue:     #60a5fa;
-  --blue-10:  rgba(96,165,250,.10);
-  --purple:   #a78bfa;
-  --purple-10:rgba(167,139,250,.10);
-  --text:     #e8e8f0;
-  --text-2:   #9898b0;
-  --text-3:   #50506a;
-  --border:   rgba(201,168,76,.08);
-  --border-h: rgba(201,168,76,.18);
-  --sidebar-w:248px;
-  --header-h: 64px;
-  --radius:   12px;
-  --radius-s: 8px;
-  --shadow:   0 4px 24px rgba(0,0,0,.4);
-  --shadow-g: 0 0 40px rgba(201,168,76,.08);
+  --bg:#000;--s1:#080808;--s2:#101010;--s3:#181818;--s4:#202020;
+  --gold:#c9a84c;--gl:#dfc070;--gd:#7a5e20;--gxl:#f0d48a;
+  --g05:rgba(201,168,76,.05);--g08:rgba(201,168,76,.08);
+  --g12:rgba(201,168,76,.12);--g20:rgba(201,168,76,.20);--g35:rgba(201,168,76,.35);
+  --green:#2dd4a0;--gn10:rgba(45,212,160,.10);--gn25:rgba(45,212,160,.25);
+  --red:#f16060;--rd10:rgba(241,96,96,.10);--rd25:rgba(241,96,96,.25);
+  --orange:#e8903a;--or10:rgba(232,144,58,.10);--or25:rgba(232,144,58,.25);
+  --text:#ede9e0;--t2:#8a8270;--t3:#4a4438;
+  --br:rgba(201,168,76,.09);--brh:rgba(201,168,76,.22);
+  --sw:244px;--hh:60px;--r:10px;--rs:7px;
 }
-
-/* ─── RESET ──────────────────────────────────────────── */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
 
-/* ─── SCROLLBAR ──────────────────────────────────────── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:4px}
+/* ─── SIDEBAR ─────────────────────────────── */
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200;transition:transform .3s ease}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
+.sb-logo{height:32px;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(201,168,76,.3));mix-blend-mode:screen}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--gold);background:var(--g08);border:1px solid var(--g20);padding:2px 8px;border-radius:20px}
+.sb-nav{flex:1;overflow-y:auto;padding:14px 10px}
+.sb-grp{margin-bottom:18px}
+.sb-gl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);padding:0 10px;margin-bottom:5px}
+.nl{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);color:var(--t2);font-size:12.5px;font-weight:500;transition:all .15s;margin-bottom:1px;position:relative;border:1px solid transparent}
+.nl:hover{background:var(--g05);color:var(--text)}
+.nl.active{background:var(--g08);color:var(--gl);border-color:var(--br)}
+.nl.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:16px;border-radius:0 2px 2px 0;background:var(--gold)}
+.nl i{width:14px;text-align:center;font-size:11px;flex-shrink:0}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px}
+.nb.w{background:var(--orange)}
+.sb-foot{padding:12px;border-top:1px solid var(--br)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--r);background:var(--s2);border:1px solid var(--br);transition:border-color .2s}
+.sb-user:hover{border-color:var(--brh)}
+.sb-av{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gd));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#000}
+.sb-un{font-size:12px;font-weight:600}
+.sb-ur{font-size:10px;color:var(--t3)}
+.sb-out{margin-left:auto;color:var(--t3);font-size:12px;padding:5px;border-radius:5px;transition:all .18s}
+.sb-out:hover{background:var(--rd10);color:var(--red)}
 
-/* ─── SIDEBAR ─────────────────────────────────────────── */
-.sidebar {
-  position: fixed; left: 0; top: 0;
-  width: var(--sidebar-w); height: 100vh;
-  background: var(--bg1);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  z-index: 200;
-  transition: transform .3s cubic-bezier(.4,0,.2,1);
-}
-.sb-logo {
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.sb-logo-mark {
-  width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--gold), var(--gold-d));
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800; font-size: 14px; color: var(--bg);
-  flex-shrink: 0;
-}
-.sb-logo-text {
-  font-family: 'Syne', sans-serif;
-  font-size: 16px; font-weight: 700; letter-spacing: .5px;
-}
-.sb-logo-text em { color: var(--gold); font-style: normal; }
-.sb-logo-badge {
-  margin-left: auto;
-  font-size: 9px; font-weight: 600;
-  color: var(--gold); border: 1px solid var(--gold-20);
-  background: var(--gold-10); padding: 2px 7px; border-radius: 20px;
-  letter-spacing: .5px;
-}
+/* ─── LAYOUT ──────────────────────────────── */
+.layout{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
 
-.sb-nav { flex: 1; overflow-y: auto; padding: 16px 10px; }
-.sb-section { margin-bottom: 20px; }
-.sb-section-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 1.8px;
-  text-transform: uppercase; color: var(--text-3);
-  padding: 0 10px; margin-bottom: 6px;
-}
-.nav-link {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border-radius: var(--radius-s);
-  color: var(--text-2); font-size: 13px; font-weight: 500;
-  transition: all .18s; margin-bottom: 2px;
-  position: relative; border: 1px solid transparent;
-}
-.nav-link:hover { background: var(--gold-05); color: var(--text); }
-.nav-link.active {
-  background: var(--gold-10); color: var(--gold-l);
-  border-color: var(--border);
-}
-.nav-link.active::before {
-  content: ''; position: absolute; left: -1px; top: 50%;
-  transform: translateY(-50%);
-  width: 3px; height: 18px; border-radius: 0 3px 3px 0;
-  background: var(--gold);
-}
-.nav-link i { width: 15px; text-align: center; font-size: 12px; opacity: .8; }
-.nav-badge {
-  margin-left: auto; background: var(--red);
-  color: #fff; font-size: 10px; font-weight: 700;
-  padding: 1px 6px; border-radius: 20px; min-width: 18px; text-align: center;
-}
-.nav-badge.warn { background: var(--orange); }
+/* ─── HEADER ──────────────────────────────── */
+.header{height:var(--hh);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(0,0,0,.94);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:20px}
+.hdr-date{font-size:11px;color:var(--t3);margin-bottom:2px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.live{width:6px;height:6px;background:var(--green);border-radius:50%;animation:lp 2s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 0 0 rgba(45,212,160,.5)}50%{box-shadow:0 0 0 5px rgba(45,212,160,0)}}
+.hdr-div{width:1px;height:28px;background:var(--br)}
+.hdr-pills{display:flex;align-items:center;gap:5px}
+.hp{display:flex;flex-direction:column;padding:7px 14px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br)}
+.hp-val{font-size:15px;font-weight:700;line-height:1;margin-bottom:2px}
+.hp-val.g{color:var(--green)}.hp-val.a{color:var(--gl)}.hp-val.o{color:var(--orange)}
+.hp-lbl{font-size:10px;color:var(--t3)}
+.hdr-r{display:flex;align-items:center;gap:7px}
+.pbar{display:flex;gap:4px}
+.pbtn{padding:6px 11px;border-radius:var(--rs);font-size:11px;font-weight:600;border:1px solid var(--br);background:transparent;color:var(--t2);transition:all .15s;font-family:'DM Sans',sans-serif}
+.pbtn:hover{border-color:var(--brh);color:var(--text)}
+.pbtn.on{background:var(--g08);border-color:var(--g20);color:var(--gold)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000;box-shadow:0 4px 20px rgba(201,168,76,.18)}
+.btn-g:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(201,168,76,.28)}
+.btn-o{background:var(--s2);border:1px solid var(--br);color:var(--t2)}
+.btn-o:hover{border-color:var(--brh);color:var(--text)}
+.ico-btn{width:34px;height:34px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .18s}
+.ico-btn:hover{border-color:var(--brh);color:var(--gold)}
 
-.sb-footer {
-  padding: 12px;
-  border-top: 1px solid var(--border);
-}
-.sb-user {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--radius);
-  background: var(--bg2); border: 1px solid var(--border);
-  transition: border-color .2s;
-}
-.sb-user:hover { border-color: var(--border-h); }
-.sb-avatar {
-  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--gold), var(--gold-d));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 12px; color: var(--bg);
-}
-.sb-user-name { font-size: 13px; font-weight: 600; }
-.sb-user-role { font-size: 11px; color: var(--text-3); }
-.sb-logout {
-  margin-left: auto; color: var(--text-3); font-size: 13px;
-  padding: 6px; border-radius: 6px; transition: all .2s;
-}
-.sb-logout:hover { background: var(--red-10); color: var(--red); }
+/* ─── MAIN ────────────────────────────────── */
+.main{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
 
-/* ─── LAYOUT ─────────────────────────────────────────── */
-.layout { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+/* ─── URGENCY ──────────────────────────────── */
+.urgency{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:var(--r);background:rgba(241,96,96,.05);border:1px solid rgba(241,96,96,.18);font-size:12.5px;color:var(--t2);animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.urgency i{color:var(--red);flex-shrink:0}
+.urgency strong{color:var(--red)}
+.u-cta{margin-left:auto;color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:5px;border:1px solid rgba(241,96,96,.25);background:var(--rd10);transition:all .15s}
+.u-cta:hover{background:rgba(241,96,96,.18)}
 
-/* ─── HEADER ─────────────────────────────────────────── */
-.header {
-  height: var(--header-h);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
-  background: rgba(4,5,10,.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100;
-}
-.header-left { display: flex; align-items: center; gap: 24px; }
-.header-date { font-size: 12px; color: var(--text-3); }
-.header-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 15px; font-weight: 600; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-.live-dot {
-  width: 7px; height: 7px; background: var(--green);
-  border-radius: 50%; flex-shrink: 0;
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.4)}
-  50%{box-shadow:0 0 0 5px rgba(52,211,153,0)}
-}
-.header-stats { display: flex; align-items: center; gap: 6px; }
-.hstat {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: var(--radius-s);
-  background: var(--bg2); border: 1px solid var(--border);
-  font-size: 12px;
-}
-.hstat-val { font-weight: 700; font-size: 14px; }
-.hstat-val.green { color: var(--green); }
-.hstat-val.gold { color: var(--gold-l); }
-.hstat-val.red { color: var(--red); }
-.hstat-val.orange { color: var(--orange); }
-.hstat-label { color: var(--text-3); font-size: 11px; }
-.hstat-sep { width: 1px; height: 32px; background: var(--border); }
-.header-actions { display: flex; gap: 8px; }
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: var(--radius-s);
-  font-size: 12px; font-weight: 600; transition: all .2s;
-  white-space: nowrap;
-}
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold), var(--gold-d));
-  color: var(--bg); box-shadow: 0 4px 16px rgba(201,168,76,.2);
-}
-.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(201,168,76,.3); }
-.btn-ghost {
-  background: var(--bg2); border: 1px solid var(--border);
-  color: var(--text-2);
-}
-.btn-ghost:hover { border-color: var(--border-h); color: var(--text); }
-.btn-icon {
-  width: 36px; height: 36px; border-radius: var(--radius-s);
-  background: var(--bg2); border: 1px solid var(--border);
-  color: var(--text-2); font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .2s;
-}
-.btn-icon:hover { border-color: var(--border-h); color: var(--gold); }
+/* ─── HERO KPIs ────────────────────────────── */
+.hero-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.hkpi{padding:20px 22px;border-radius:var(--r);background:var(--s1);border:1px solid var(--br);position:relative;overflow:hidden;transition:all .2s}
+.hkpi:hover{border-color:var(--brh);transform:translateY(-2px)}
+.hkpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px}
+.hkpi.gold::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.hkpi.green::after{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.hkpi.red::after{background:linear-gradient(90deg,transparent,var(--red),transparent)}
+.hkpi.orange::after{background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.hkpi-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:14px}
+.hkpi.gold .hkpi-ico{background:var(--g08);color:var(--gold);border:1px solid var(--g20)}
+.hkpi.green .hkpi-ico{background:var(--gn10);color:var(--green);border:1px solid var(--gn25)}
+.hkpi.red .hkpi-ico{background:var(--rd10);color:var(--red);border:1px solid var(--rd25)}
+.hkpi.orange .hkpi-ico{background:var(--or10);color:var(--orange);border:1px solid var(--or25)}
+.hkpi-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;line-height:1;margin-bottom:5px;letter-spacing:-.5px}
+.hkpi.gold .hkpi-val{color:var(--gl)}
+.hkpi.green .hkpi-val{color:var(--green)}
+.hkpi.red .hkpi-val{color:var(--red)}
+.hkpi.orange .hkpi-val{color:var(--orange)}
+.hkpi-lbl{font-size:11px;color:var(--t3)}
+.hkpi-sub{font-size:10px;color:var(--t3);margin-top:3px}
 
-/* ─── MAIN CONTENT ───────────────────────────────────── */
-.main { flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+/* ─── CENTER ROW ───────────────────────────── */
+.center-row{display:grid;grid-template-columns:1fr 296px;gap:16px;align-items:start}
 
-/* ─── URGENCY BANNER ─────────────────────────────────── */
-.urgency-bar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 18px; border-radius: var(--radius);
-  background: rgba(248,113,113,.06);
-  border: 1px solid rgba(248,113,113,.2);
-  font-size: 13px; color: var(--text-2);
-  animation: fade-in .4s ease;
-}
-.urgency-bar i { color: var(--red); font-size: 15px; flex-shrink: 0; }
-.urgency-bar strong { color: var(--red); }
-.urgency-bar .urgency-action {
-  margin-left: auto; color: var(--red); font-size: 12px; font-weight: 600;
-  padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(248,113,113,.3);
-  background: var(--red-10); transition: all .2s;
-}
-.urgency-bar .urgency-action:hover { background: rgba(248,113,113,.2); }
+/* ══════════════════════════════════════
+   BLOCO PRIORIDADE — ELEMENTO DOMINANTE
+══════════════════════════════════════ */
+.pri-block{
+  background:var(--s1);
+  border-radius:var(--r);
+  overflow:hidden;
+  display:flex;flex-direction:column;
 
-/* ─── TOP ROW: PRIORIDADE ────────────────────────────── */
-.row-main { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
-
-/* ─── PRIORITY BLOCK ─────────────────────────────────── */
-.priority-block {
-  background: var(--bg1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-}
-.block-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.block-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px; font-weight: 700;
-  display: flex; align-items: center; gap: 8px;
-}
-.block-title i { font-size: 13px; color: var(--gold); }
-.block-meta { font-size: 11px; color: var(--text-3); }
-.block-action { font-size: 12px; color: var(--text-3); transition: color .2s; }
-.block-action:hover { color: var(--gold); }
-
-.priority-filter {
-  display: flex; gap: 6px; padding: 12px 20px;
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.pfilter-btn {
-  padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
-  border: 1px solid var(--border); color: var(--text-3);
-  background: transparent; transition: all .18s;
-}
-.pfilter-btn.active { background: var(--gold-10); border-color: var(--gold-20); color: var(--gold-l); }
-.pfilter-btn:hover:not(.active) { border-color: var(--border-h); color: var(--text); }
-
-.priority-list { flex: 1; overflow-y: auto; }
-.priority-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  transition: background .15s;
-  cursor: pointer;
-}
-.priority-item:hover { background: var(--bg2); }
-.priority-item:last-child { border-bottom: none; }
-
-.p-urgency {
-  width: 36px; height: 36px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
-}
-.p-urgency.critical { background: var(--red-10); border: 1px solid var(--red-30); }
-.p-urgency.high { background: var(--orange-10); border: 1px solid rgba(251,146,60,.3); }
-.p-urgency.medium { background: var(--blue-10); border: 1px solid rgba(96,165,250,.3); }
-
-.p-info { flex: 1; min-width: 0; }
-.p-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-.p-sub { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
-.p-sub .tag {
-  padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
-}
-.tag.critical { background: var(--red-10); color: var(--red); }
-.tag.high { background: var(--orange-10); color: var(--orange); }
-.tag.medium { background: var(--blue-10); color: var(--blue); }
-
-.p-value { text-align: right; flex-shrink: 0; }
-.p-val-main { font-size: 14px; font-weight: 700; color: var(--gold-l); display: block; margin-bottom: 2px; }
-.p-val-count { font-size: 10px; color: var(--text-3); }
-
-.p-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.p-btn {
-  width: 32px; height: 32px; border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; transition: all .2s; border: 1px solid var(--border);
-  background: var(--bg2); color: var(--text-2);
-}
-.p-btn:hover { transform: scale(1.08); }
-.p-btn.wpp:hover { background: rgba(37,211,102,.1); border-color: rgba(37,211,102,.3); color: #25d366; }
-.p-btn.call:hover { background: var(--blue-10); border-color: rgba(96,165,250,.3); color: var(--blue); }
-.p-btn.deal:hover { background: var(--gold-10); border-color: var(--gold-20); color: var(--gold); }
-
-/* ─── RIGHT COLUMN ───────────────────────────────────── */
-.right-col { display: flex; flex-direction: column; gap: 14px; }
-
-/* ─── CARD ───────────────────────────────────────────── */
-.card {
-  background: var(--bg1); border: 1px solid var(--border);
-  border-radius: var(--radius); overflow: hidden;
-}
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-}
-.card-title {
-  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-  display: flex; align-items: center; gap: 7px;
-}
-.card-title i { font-size: 12px; color: var(--gold); }
-.card-body { padding: 16px 18px; }
-
-/* ─── FUNIL ──────────────────────────────────────────── */
-.funnel-steps { display: flex; flex-direction: column; gap: 8px; }
-.funnel-step { position: relative; }
-.funnel-label-row {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 5px;
-}
-.funnel-name { font-size: 12px; color: var(--text-2); font-weight: 500; }
-.funnel-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px; font-weight: 500;
-}
-.funnel-track {
-  height: 6px; background: rgba(255,255,255,.04);
-  border-radius: 4px; overflow: hidden;
-}
-.funnel-fill {
-  height: 100%; border-radius: 4px; width: 0;
-  transition: width 1.2s cubic-bezier(.16,1,.3,1);
-}
-.funnel-pct {
-  font-size: 10px; color: var(--text-3); text-align: right; margin-top: 2px;
-  font-family: 'DM Mono', monospace;
+  /* hierarquia: borda dourada mais evidente + glow */
+  border:1px solid var(--g20);
+  box-shadow:
+    0 0 0 1px rgba(201,168,76,.04),
+    0 2px 60px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(201,168,76,.15);
 }
 
-/* ─── FILA OPERACIONAL ───────────────────────────────── */
-.fila-items { display: flex; flex-direction: column; gap: 6px; }
-.fila-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; border-radius: var(--radius-s);
-  background: var(--bg2); border: 1px solid var(--border);
-  transition: all .18s; cursor: pointer; font-size: 12px;
-}
-.fila-item:hover { border-color: var(--border-h); transform: translateX(2px); }
-.fila-icon {
-  width: 28px; height: 28px; border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; flex-shrink: 0;
-}
-.fila-info { flex: 1; }
-.fila-name { font-weight: 600; margin-bottom: 1px; }
-.fila-sub { font-size: 10px; color: var(--text-3); }
-.fila-num {
-  font-family: 'DM Mono', monospace; font-size: 18px;
-  font-weight: 500; flex-shrink: 0;
+/* Linha dourada no topo — assinatura visual */
+.pri-block::before{
+  content:'';display:block;height:2px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    var(--gd) 15%,
+    var(--gold) 35%,
+    var(--gxl) 50%,
+    var(--gold) 65%,
+    var(--gd) 85%,
+    transparent 100%);
+  flex-shrink:0;
 }
 
-/* ─── SECOND ROW ─────────────────────────────────────── */
-.row-mid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.pb-hd{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:18px 22px 14px;
+  background:linear-gradient(180deg,rgba(201,168,76,.05) 0%,transparent 100%);
+  flex-shrink:0;
+}
+.pb-ttl-wrap{display:flex;flex-direction:column;gap:4px}
+.pb-eyebrow{
+  font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);display:flex;align-items:center;gap:6px;
+}
+.pb-edot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:lp 1.5s ease-in-out infinite}
+.pb-title{
+  font-family:'Syne',sans-serif;font-size:18px;font-weight:800;
+  color:var(--text);letter-spacing:-.3px;line-height:1.1;
+}
+.pb-meta{font-size:11.5px;color:var(--t2);margin-top:2px}
+.pb-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pb-cta{
+  display:flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:600;color:var(--gold);
+  padding:7px 14px;border-radius:6px;
+  border:1px solid var(--g20);background:var(--g08);
+  transition:all .15s;
+}
+.pb-cta:hover{background:var(--g12);border-color:var(--g35)}
 
-/* ─── KPI ────────────────────────────────────────────── */
-.kpi {
-  background: var(--bg1); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px 20px;
-  transition: all .2s; position: relative; overflow: hidden;
+.pb-filters{
+  display:flex;gap:5px;padding:10px 22px;
+  border-top:1px solid var(--br);border-bottom:1px solid var(--br);
+  background:rgba(0,0,0,.3);flex-shrink:0;
 }
-.kpi:hover { border-color: var(--border-h); transform: translateY(-2px); }
-.kpi::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+.pf{
+  padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;
+  border:1px solid var(--br);color:var(--t3);background:transparent;
+  transition:all .15s;font-family:'DM Sans',sans-serif;
 }
-.kpi.gold::after { background: linear-gradient(90deg, var(--gold-d), var(--gold)); }
-.kpi.green::after { background: linear-gradient(90deg, #059669, var(--green)); }
-.kpi.red::after { background: linear-gradient(90deg, #b91c1c, var(--red)); }
-.kpi.orange::after { background: linear-gradient(90deg, #c2410c, var(--orange)); }
-.kpi.blue::after { background: linear-gradient(90deg, #1d4ed8, var(--blue)); }
-.kpi.purple::after { background: linear-gradient(90deg, #6d28d9, var(--purple)); }
-.kpi-icon {
-  width: 36px; height: 36px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; margin-bottom: 14px;
-}
-.kpi.gold .kpi-icon { background: var(--gold-10); color: var(--gold); border: 1px solid var(--gold-20); }
-.kpi.green .kpi-icon { background: var(--green-10); color: var(--green); border: 1px solid var(--green-30); }
-.kpi.red .kpi-icon { background: var(--red-10); color: var(--red); border: 1px solid var(--red-30); }
-.kpi.orange .kpi-icon { background: var(--orange-10); color: var(--orange); border: 1px solid rgba(251,146,60,.3); }
-.kpi.blue .kpi-icon { background: var(--blue-10); color: var(--blue); border: 1px solid rgba(96,165,250,.3); }
-.kpi.purple .kpi-icon { background: var(--purple-10); color: var(--purple); border: 1px solid rgba(167,139,250,.3); }
-.kpi-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px;
-}
-.kpi.gold .kpi-val { color: var(--gold-l); }
-.kpi.green .kpi-val { color: var(--green); }
-.kpi.red .kpi-val { color: var(--red); }
-.kpi.orange .kpi-val { color: var(--orange); }
-.kpi.blue .kpi-val { color: var(--blue); }
-.kpi.purple .kpi-val { color: var(--purple); }
-.kpi-label { font-size: 11px; color: var(--text-3); }
-.kpi-trend {
-  position: absolute; top: 14px; right: 16px;
-  font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 3px;
-  padding: 3px 7px; border-radius: 20px;
-}
-.kpi-trend.up { background: var(--green-10); color: var(--green); }
-.kpi-trend.down { background: var(--red-10); color: var(--red); }
+.pf:hover:not(.on){border-color:var(--brh);color:var(--text)}
+.pf.on{background:var(--g08);border-color:var(--g20);color:var(--gl)}
+.pf.crit.on{background:var(--rd10);border-color:var(--rd25);color:var(--red)}
+.pf.high.on{background:var(--or10);border-color:var(--or25);color:var(--orange)}
+.pf.med.on{background:var(--g08);border-color:var(--g20);color:var(--gold)}
 
-/* ─── THIRD ROW ──────────────────────────────────────── */
-.row-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.pb-list{flex:1;overflow-y:auto;max-height:460px}
 
-/* ─── ACORDOS CARD ───────────────────────────────────── */
-.acordos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.ac-item {
-  padding: 14px; border-radius: var(--radius-s);
-  background: var(--bg2); border: 1px solid var(--border);
-  text-align: center;
+/* ITEM DA FILA */
+.pi{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 22px;
+  border-bottom:1px solid rgba(201,168,76,.06);
+  transition:background .12s;cursor:pointer;
+  position:relative;
 }
-.ac-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 24px; font-weight: 700; display: block; margin-bottom: 4px;
+.pi::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  transition:width .2s;
 }
-.ac-label { font-size: 10px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .8px; }
+.pi.crit::before{background:rgba(241,96,96,.08)}
+.pi.high::before{background:rgba(232,144,58,.06)}
+.pi.med::before{background:rgba(201,168,76,.04)}
+.pi:hover::before{width:100%}
+.pi:last-child{border-bottom:none}
 
-/* ─── AGING ──────────────────────────────────────────── */
-.aging-list { display: flex; flex-direction: column; gap: 10px; }
-.aging-item { }
-.aging-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-.aging-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
-.aging-right { display: flex; align-items: center; gap: 8px; }
-.aging-n { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; }
-.aging-v { font-size: 11px; color: var(--text-3); }
-.aging-bar { height: 5px; background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden; }
-.aging-fill { height: 100%; border-radius: 4px; width: 0; transition: width 1.2s cubic-bezier(.16,1,.3,1); }
+.pi-stripe{width:3px;height:38px;border-radius:2px;flex-shrink:0;position:relative;z-index:1}
+.pi-stripe.crit{background:var(--red)}
+.pi-stripe.high{background:var(--orange)}
+.pi-stripe.med{background:var(--gold)}
 
-/* ─── CREDORES ───────────────────────────────────────── */
-.credor-list { display: flex; flex-direction: column; }
-.credor-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 18px; border-bottom: 1px solid var(--border);
-  transition: background .15s;
-}
-.credor-item:hover { background: var(--gold-05); }
-.credor-item:last-child { border-bottom: none; }
-.credor-av {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--gold-10); border: 1px solid var(--gold-20);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; color: var(--gold); font-size: 12px; flex-shrink: 0;
-}
-.credor-info { flex: 1; min-width: 0; }
-.credor-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.credor-prog-track {
-  height: 3px; background: rgba(255,255,255,.05); border-radius: 2px; overflow: hidden;
-}
-.credor-prog-fill { height: 100%; border-radius: 2px; background: var(--gold); transition: width 1.2s cubic-bezier(.16,1,.3,1); }
-.credor-right { text-align: right; flex-shrink: 0; }
-.credor-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: var(--gold-l); display: block; }
-.credor-pct { font-size: 10px; color: var(--text-3); }
+.pi-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;position:relative;z-index:1}
+.pi-ico.crit{background:var(--rd10);border:1px solid var(--rd25)}
+.pi-ico.high{background:var(--or10);border:1px solid var(--or25)}
+.pi-ico.med{background:var(--g08);border:1px solid var(--g20)}
 
-/* ─── PAGAMENTOS + REPASSE ───────────────────────────── */
-.row-fin { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.fin-item {
-  padding: 14px 16px; border-radius: var(--radius-s);
-  background: var(--bg2); border: 1px solid var(--border);
-}
-.fin-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 6px; }
-.fin-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
-.fin-val.green { color: var(--green); }
-.fin-val.gold { color: var(--gold-l); }
-.fin-val.red { color: var(--red); }
-.fin-val.orange { color: var(--orange); }
+.pi-info{flex:1;min-width:0;position:relative;z-index:1}
+.pi-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.pi-sub{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pi-tag{display:inline-flex;padding:1px 7px;border-radius:4px;font-size:9.5px;font-weight:700;letter-spacing:.4px}
+.pi-tag.crit{background:var(--rd10);color:var(--red)}
+.pi-tag.high{background:var(--or10);color:var(--orange)}
+.pi-tag.med{background:var(--g08);color:var(--gold)}
 
-/* ─── UTILS ──────────────────────────────────────────── */
-.spin {
-  width: 28px; height: 28px;
-  border: 2px solid var(--border); border-top-color: var(--gold);
-  border-radius: 50%; animation: spin .7s linear infinite;
-  margin: 28px auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-center { display: flex; align-items: center; justify-content: center; padding: 32px; }
-.empty-state { text-align: center; padding: 32px; color: var(--text-3); font-size: 13px; }
-.empty-state i { font-size: 24px; margin-bottom: 8px; display: block; opacity: .3; }
-@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.pi-val{text-align:right;flex-shrink:0;margin-right:4px;position:relative;z-index:1}
+.pi-vmain{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--gl);display:block;margin-bottom:2px}
+.pi-vn{font-size:9.5px;color:var(--t3)}
 
-/* ─── TOAST ──────────────────────────────────────────── */
-.toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--bg2); border: 1px solid var(--border-h);
-  border-radius: var(--radius); padding: 14px 18px;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: var(--shadow);
-  transform: translateY(80px); opacity: 0;
-  transition: all .4s cubic-bezier(.68,-.55,.265,1.55);
-  z-index: 9999;
-}
-.toast.show { transform: translateY(0); opacity: 1; }
-.toast.ok { border-color: var(--green); }
-.toast.err { border-color: var(--red); }
-.toast i { font-size: 16px; }
-.toast.ok i { color: var(--green); }
-.toast.err i { color: var(--red); }
-.toast span { font-size: 13px; font-weight: 600; }
+.pi-acts{display:flex;gap:5px;flex-shrink:0;position:relative;z-index:1}
+.pa{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;transition:all .18s;border:1px solid var(--br);background:var(--s2);color:var(--t2)}
+.pa:hover{transform:scale(1.1)}
+.pa.w:hover{background:rgba(37,211,102,.1);border-color:rgba(37,211,102,.3);color:#25d366}
+.pa.c:hover{background:var(--g08);border-color:var(--g20);color:var(--gold)}
+.pa.d:hover{background:var(--gn10);border-color:var(--gn25);color:var(--green)}
 
-/* ─── MODAL ──────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.8);
-  backdrop-filter: blur(6px); display: none;
-  align-items: center; justify-content: center; z-index: 1000; padding: 20px;
-}
-.modal-overlay.active { display: flex; }
-.modal {
-  background: var(--bg2); border: 1px solid var(--border-h);
-  border-radius: 16px; width: 100%; max-width: 520px;
-  max-height: 90vh; overflow-y: auto;
-}
-.modal-header {
-  padding: 20px 24px; border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.modal-header h3 {
-  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
-  display: flex; align-items: center; gap: 8px;
-}
-.modal-header h3 i { color: var(--gold); }
-.modal-close {
-  width: 32px; height: 32px; border-radius: 7px;
-  color: var(--text-3); font-size: 18px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .18s;
-}
-.modal-close:hover { background: var(--red-10); color: var(--red); }
-.modal-body { padding: 22px 24px; }
-.modal-footer {
-  padding: 14px 24px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px; justify-content: flex-end;
-}
-.fg { margin-bottom: 16px; }
-.fg label {
-  display: block; font-size: 10px; font-weight: 700;
-  color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px;
-}
-.fg input, .fg select, .fg textarea {
-  width: 100%; padding: 11px 13px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-s); color: var(--text);
-  font-size: 13px; font-family: 'DM Sans', sans-serif; transition: border-color .2s;
-}
-.fg input:focus, .fg select:focus, .fg textarea:focus {
-  outline: none; border-color: var(--gold);
-}
-.fg textarea { resize: vertical; min-height: 80px; }
-.res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-.res-btn {
-  padding: 10px; border-radius: var(--radius-s);
-  border: 1px solid var(--border); background: var(--bg3);
-  color: var(--text-2); font-size: 12px; font-weight: 500;
-  transition: all .18s; display: flex; align-items: center; gap: 7px;
-  font-family: 'DM Sans', sans-serif;
-}
-.res-btn.atendeu.sel { border-color: var(--green-30); background: var(--green-10); color: var(--green); }
-.res-btn.nao_atendeu.sel { border-color: var(--red-30); background: var(--red-10); color: var(--red); }
-.res-btn.gerou_acordo.sel { border-color: var(--gold-20); background: var(--gold-10); color: var(--gold); }
-.res-btn.retorno_agendado.sel { border-color: rgba(96,165,250,.3); background: var(--blue-10); color: var(--blue); }
-.res-btn.recusou.sel { border-color: rgba(107,114,128,.3); background: rgba(107,114,128,.1); color: #9ca3af; }
-.res-btn.numero_errado.sel { border-color: rgba(251,146,60,.3); background: var(--orange-10); color: var(--orange); }
-.canal-tabs { display: flex; gap: 7px; }
-.canal-btn {
-  flex: 1; padding: 9px; border-radius: var(--radius-s);
-  border: 1px solid var(--border); background: var(--bg3);
-  color: var(--text-3); font-size: 12px; font-weight: 500;
-  font-family: 'DM Sans', sans-serif; transition: all .18s;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.canal-btn.sel { border-color: var(--gold-20); background: var(--gold-10); color: var(--gold); }
-.ret-field { display: none; }
-.ret-field.show { display: block; }
-.srch { position: relative; }
-.srch input { padding-left: 36px; }
-.srch-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 12px; }
-.srch-drop {
-  position: absolute; top: 100%; left: 0; right: 0;
-  background: var(--bg4); border: 1px solid var(--border-h);
-  border-radius: var(--radius-s); max-height: 180px; overflow-y: auto;
-  z-index: 100; display: none; margin-top: 4px; box-shadow: var(--shadow);
-}
-.srch-drop.show { display: block; }
-.srch-item {
-  padding: 10px 13px; cursor: pointer;
-  border-bottom: 1px solid var(--border); font-size: 12px;
-  transition: background .15s;
-}
-.srch-item:hover { background: var(--gold-05); }
-.srch-item b { display: block; margin-bottom: 2px; }
-.srch-item span { color: var(--text-3); font-size: 11px; }
-.cli-sel {
-  display: none; padding: 9px 13px;
-  background: var(--gold-10); border: 1px solid var(--gold-20);
-  border-radius: var(--radius-s); margin-top: 6px; font-size: 12px;
-  justify-content: space-between; align-items: center;
-}
-.cli-sel.show { display: flex; }
-.btn-cancel {
-  padding: 9px 16px; background: var(--bg3);
-  border: 1px solid var(--border); border-radius: var(--radius-s);
-  color: var(--text-2); font-size: 13px; font-weight: 500;
-}
+/* ─── PAINEL DIREITO ──────────────────────── */
+.rpanel{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--br)}
+.card-ttl{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.card-ttl i{font-size:11px;color:var(--gold)}
+.card-lnk{font-size:11px;color:var(--t3);transition:color .15s}
+.card-lnk:hover{color:var(--gold)}
+.card-body{padding:13px 15px}
 
-/* ─── RESPONSIVE ─────────────────────────────────────── */
-.mob-toggle {
-  display: none; position: fixed; top: 14px; left: 14px; z-index: 300;
-  width: 40px; height: 40px; border-radius: 9px;
-  background: linear-gradient(135deg, var(--gold), var(--gold-d));
-  color: var(--bg); font-size: 16px;
-  align-items: center; justify-content: center;
-}
-.sdb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 199; }
-.sdb-overlay.active { display: block; }
-@media (max-width: 1100px) {
-  .row-main { grid-template-columns: 1fr; }
-  .row-mid { grid-template-columns: 1fr 1fr; }
-  .row-bottom { grid-template-columns: 1fr 1fr; }
-  .row-fin { grid-template-columns: 1fr; }
-}
-@media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); transition: transform .3s; }
-  .sidebar.open { transform: translateX(0); }
-  .mob-toggle { display: flex; }
-  .layout { margin-left: 0; }
-  .header { padding: 0 16px 0 60px; }
-  .header-stats { display: none; }
-  .main { padding: 16px; }
-  .row-mid { grid-template-columns: 1fr 1fr; }
-  .row-bottom { grid-template-columns: 1fr; }
-}
+/* FILA OP */
+.fop{display:flex;flex-direction:column;gap:5px}
+.fop-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br);transition:all .15s;cursor:pointer}
+.fop-item:hover{border-color:var(--brh);transform:translateX(2px)}
+.fop-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.fop-info{flex:1}
+.fop-nm{font-size:12px;font-weight:600;margin-bottom:1px}
+.fop-sb{font-size:10px;color:var(--t3)}
+.fop-n{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;flex-shrink:0}
+
+/* FUNIL */
+.funnel{display:flex;flex-direction:column;gap:8px}
+.fn-step{}
+.fn-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.fn-nm{font-size:11.5px;color:var(--t2);font-weight:500;display:flex;align-items:center;gap:6px}
+.fn-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fn-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500}
+.fn-track{height:4px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
+.fn-fill{height:100%;border-radius:3px;width:0;transition:width 1.3s cubic-bezier(.16,1,.3,1)}
+
+/* ─── BOTTOM GRID ──────────────────────────── */
+.btm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.ac-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ac-cell{padding:13px 14px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br);text-align:center}
+.ac-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;display:block;margin-bottom:3px;line-height:1}
+.ac-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.ag-list{display:flex;flex-direction:column;gap:9px}
+.ag-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ag-lbl{font-size:11.5px;color:var(--t2);font-weight:500}
+.ag-r{display:flex;align-items:center;gap:8px}
+.ag-n{font-family:'DM Mono',monospace;font-size:12px;font-weight:700}
+.ag-v{font-size:10px;color:var(--t3)}
+.ag-track{height:4px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
+.ag-fill{height:100%;border-radius:3px;width:0;transition:width 1.3s cubic-bezier(.16,1,.3,1)}
+.cr-list{display:flex;flex-direction:column}
+.cr-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--br);transition:background .12s}
+.cr-item:hover{background:var(--g05)}
+.cr-item:last-child{border-bottom:none}
+.cr-av{width:30px;height:30px;border-radius:7px;background:var(--g08);border:1px solid var(--g20);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold);font-size:11px;flex-shrink:0}
+.cr-info{flex:1;min-width:0}
+.cr-nm{font-size:12.5px;font-weight:600;margin-bottom:3px}
+.cr-bt{height:2px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.cr-bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gd),var(--gold));transition:width 1.3s cubic-bezier(.16,1,.3,1)}
+.cr-r{text-align:right;flex-shrink:0}
+.cr-val{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:600;color:var(--gl);display:block}
+.cr-pct{font-size:9px;color:var(--t3)}
+
+/* ─── FIN ROW ──────────────────────────────── */
+.fin-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fc{padding:13px 15px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br)}
+.fc-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:5px}
+.fc-v{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.fc-v.g{color:var(--green)}.fc-v.a{color:var(--gl)}.fc-v.r{color:var(--red)}.fc-v.o{color:var(--orange)}
+
+/* ─── UTILS ────────────────────────────────── */
+.spin{width:24px;height:24px;border:2px solid var(--br);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;margin:24px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:28px;color:var(--t3);font-size:12px}
+.empty i{font-size:22px;margin-bottom:8px;display:block;opacity:.25}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--brh);border-radius:var(--r);padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);transform:translateY(70px);opacity:0;transition:all .4s cubic-bezier(.68,-.55,.265,1.55);z-index:9999}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--green)}.toast.err{border-color:var(--red)}
+.toast.ok i{color:var(--green)}.toast.err i{color:var(--red)}
+.toast span{font-size:12.5px;font-weight:600}
+
+/* ─── MODAL ────────────────────────────────── */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.mov.on{display:flex}
+.modal{background:var(--s2);border:1px solid var(--brh);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.mhd{padding:18px 22px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.mhd h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.mhd h3 i{color:var(--gold)}
+.mclose{width:30px;height:30px;border-radius:6px;color:var(--t3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mclose:hover{background:var(--rd10);color:var(--red)}
+.mbody{padding:20px 22px}
+.mfoot{padding:14px 22px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:9px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--text);font-size:12.5px;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--gold)}
+.fg textarea{resize:vertical;min-height:70px}
+.res-g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rb{padding:9px 10px;border-radius:var(--rs);border:1px solid var(--br);background:var(--s3);color:var(--t2);font-size:11.5px;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+.rb.atendeu.on{border-color:var(--gn25);background:var(--gn10);color:var(--green)}
+.rb.nao_atendeu.on{border-color:var(--rd25);background:var(--rd10);color:var(--red)}
+.rb.gerou_acordo.on{border-color:var(--g20);background:var(--g08);color:var(--gold)}
+.rb.retorno_agendado.on{border-color:var(--g20);background:var(--g08);color:var(--gl)}
+.rb.recusou.on{border-color:rgba(107,114,128,.3);background:rgba(107,114,128,.1);color:#9ca3af}
+.rb.numero_errado.on{border-color:var(--or25);background:var(--or10);color:var(--orange)}
+.canal-t{display:flex;gap:6px}
+.cb{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--br);background:var(--s3);color:var(--t3);font-size:11.5px;font-weight:500;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.cb.on{border-color:var(--g20);background:var(--g08);color:var(--gold)}
+.ret-f{display:none}.ret-f.show{display:block}
+.srch{position:relative}
+.srch input{padding-left:34px}
+.si-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:11px}
+.sdrop{position:absolute;top:100%;left:0;right:0;background:var(--s4);border:1px solid var(--brh);border-radius:var(--rs);max-height:160px;overflow-y:auto;z-index:100;display:none;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.sdrop.on{display:block}
+.si{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--br);font-size:11.5px;transition:background .12s}
+.si:hover{background:var(--g05)}
+.si b{display:block;margin-bottom:2px}
+.si span{color:var(--t3);font-size:10px}
+.csel{display:none;padding:8px 12px;background:var(--g08);border:1px solid var(--g12);border-radius:var(--rs);margin-top:5px;font-size:11.5px;justify-content:space-between;align-items:center}
+.csel.on{display:flex}
+.btn-cancel{padding:8px 14px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--t2);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif}
+
+/* ─── RESPONSIVE ───────────────────────────── */
+.mob-btn{display:none;position:fixed;top:12px;left:12px;z-index:300;width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gd));color:#000;font-size:15px;align-items:center;justify-content:center}
+.sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:199}
+.sov.on{display:block}
+@media(max-width:1200px){.center-row{grid-template-columns:1fr}.btm{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.hero-row{grid-template-columns:1fr 1fr}.btm{grid-template-columns:1fr}.fin-row{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);transition:transform .3s}.sidebar.open{transform:translateX(0)}.mob-btn{display:flex}.layout{margin-left:0}.header{padding:0 14px 0 56px}.hdr-pills{display:none}.main{padding:14px}}
 </style>
 </head>
 <body>
 
-<button class="mob-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-<div class="sdb-overlay" id="sdbOverlay" onclick="toggleSidebar()"></div>
+<button class="mob-btn" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
+<div class="sov" id="sov" onclick="toggleSB()"></div>
 
-<!-- ═══════════════ SIDEBAR ═══════════════ -->
-<aside class="sidebar" id="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">A</div>
-    <span class="sb-logo-text">ACERT<em>IVE</em></span>
-    <span class="sb-logo-badge">PRO</span>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sb">
+  <div class="sb-top">
+    <img src="acertivelogo.png" alt="ACERTIVE" class="sb-logo">
+    <span class="sb-badge">PRO</span>
   </div>
   <nav class="sb-nav">
-    <div class="sb-section">
-      <div class="sb-section-label">Principal</div>
-      <a href="dashboard.html" class="nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
-      <a href="fila.html" class="nav-link"><i class="fas fa-headset"></i> Fila de Trabalho <span class="nav-badge" id="filaBadge">0</span></a>
+    <div class="sb-grp"><div class="sb-gl">Principal</div>
+      <a href="dashboard.html" class="nl active"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="fila.html" class="nl"><i class="fas fa-headset"></i> Fila de Trabalho <span class="nb" id="filaBadge">0</span></a>
     </div>
-    <div class="sb-section">
-      <div class="sb-section-label">Gestão</div>
-      <a href="devedores.html" class="nav-link"><i class="fas fa-users"></i> Devedores</a>
-      <a href="acordos.html" class="nav-link"><i class="fas fa-handshake"></i> Acordos <span class="nav-badge warn" id="acordosRiscoBadge" style="display:none">!</span></a>
-      <a href="cobrancas.html" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+    <div class="sb-grp"><div class="sb-gl">Gestão</div>
+      <a href="devedores.html" class="nl"><i class="fas fa-users"></i> Devedores</a>
+      <a href="acordos.html" class="nl"><i class="fas fa-handshake"></i> Acordos <span class="nb w" id="nbRisco" style="display:none">!</span></a>
+      <a href="cobrancas.html" class="nl"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
     </div>
-    <div class="sb-section">
-      <div class="sb-section-label">Operação</div>
-      <a href="operacao.html" class="nav-link"><i class="fas fa-chart-line"></i> Painel Operacional</a>
-      <a href="portal-usuarios.html" class="nav-link"><i class="fas fa-id-card"></i> Portal do Credor</a>
+    <div class="sb-grp"><div class="sb-gl">Operação</div>
+      <a href="operacao.html" class="nl"><i class="fas fa-chart-line"></i> Painel Operacional</a>
+      <a href="portal-usuarios.html" class="nl"><i class="fas fa-id-card"></i> Portal do Credor</a>
     </div>
-    <div class="sb-section">
-      <div class="sb-section-label">Cadastros</div>
-      <a href="credores.html" class="nav-link"><i class="fas fa-building"></i> Credores</a>
+    <div class="sb-grp"><div class="sb-gl">Cadastros</div>
+      <a href="credores.html" class="nl"><i class="fas fa-building"></i> Credores</a>
     </div>
-    <div class="sb-section">
-      <div class="sb-section-label">Integrações</div>
-      <a href="suri.html" class="nav-link"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
+    <div class="sb-grp"><div class="sb-gl">Integrações</div>
+      <a href="suri.html" class="nl"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
     </div>
-    <div class="sb-section">
-      <div class="sb-section-label">Sistema</div>
-      <a href="disparos.html" class="nav-link"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
-      <a href="relatorios.html" class="nav-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
-      <a href="importacao.html" class="nav-link"><i class="fas fa-file-import"></i> Importação</a>
-      <a href="configuracoes.html" class="nav-link"><i class="fas fa-cog"></i> Configurações</a>
+    <div class="sb-grp"><div class="sb-gl">Sistema</div>
+      <a href="disparos.html" class="nl"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+      <a href="relatorios.html" class="nl"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      <a href="importacao.html" class="nl"><i class="fas fa-file-import"></i> Importação</a>
+      <a href="configuracoes.html" class="nl"><i class="fas fa-cog"></i> Configurações</a>
     </div>
   </nav>
-  <div class="sb-footer">
+  <div class="sb-foot">
     <div class="sb-user">
-      <div class="sb-avatar" id="userAv">A</div>
-      <div>
-        <div class="sb-user-name" id="userName">Usuário</div>
-        <div class="sb-user-role" id="userRole">admin</div>
-      </div>
-      <button class="sb-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      <div class="sb-av" id="userAv">A</div>
+      <div><div class="sb-un" id="userName">Usuário</div><div class="sb-ur" id="userRole">admin</div></div>
+      <button class="sb-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
 </aside>
 
-<!-- ═══════════════ LAYOUT ═══════════════ -->
+<!-- LAYOUT -->
 <div class="layout">
 
-  <!-- HEADER -->
   <header class="header">
-    <div class="header-left">
+    <div class="hdr-l">
       <div>
-        <div class="header-date" id="topDate">—</div>
-        <div class="header-title"><span class="live-dot"></span> Recuperação em tempo real</div>
+        <div class="hdr-date" id="topDate">—</div>
+        <div class="hdr-title"><span class="live"></span> Recuperação em tempo real</div>
       </div>
-      <div class="hstat-sep"></div>
-      <div class="header-stats">
-        <div class="hstat">
-          <div>
-            <div class="hstat-val green" id="hRecHoje">R$ 0</div>
-            <div class="hstat-label">Recuperado hoje</div>
-          </div>
-        </div>
-        <div class="hstat">
-          <div>
-            <div class="hstat-val gold" id="hMeta">0%</div>
-            <div class="hstat-label">Meta do dia</div>
-          </div>
-        </div>
-        <div class="hstat">
-          <div>
-            <div class="hstat-val orange" id="hRisco">0</div>
-            <div class="hstat-label">Acordos em risco</div>
-          </div>
-        </div>
+      <div class="hdr-div"></div>
+      <div class="hdr-pills">
+        <div class="hp"><div class="hp-val g" id="hRecHoje">R$ 0</div><div class="hp-lbl">Recuperado hoje</div></div>
+        <div class="hp"><div class="hp-val a" id="hAcordos">—</div><div class="hp-lbl">Acordos ativos</div></div>
+        <div class="hp"><div class="hp-val o" id="hRisco">0</div><div class="hp-lbl">Em risco</div></div>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="periodo-bar" style="display:flex;gap:5px">
-        <button class="btn btn-ghost" style="padding:7px 12px;font-size:11px" onclick="setPeriodo(7,this)" id="p7">7d</button>
-        <button class="btn btn-ghost" style="padding:7px 12px;font-size:11px;background:var(--gold-10);border-color:var(--gold-20);color:var(--gold)" onclick="setPeriodo(30,this)" id="p30">30d</button>
-        <button class="btn btn-ghost" style="padding:7px 12px;font-size:11px" onclick="setPeriodo(90,this)" id="p90">90d</button>
+    <div class="hdr-r">
+      <div class="pbar">
+        <button class="pbtn" onclick="setPer(7,this)" id="p7">7d</button>
+        <button class="pbtn on" onclick="setPer(30,this)" id="p30">30d</button>
+        <button class="pbtn" onclick="setPer(90,this)" id="p90">90d</button>
       </div>
-      <a href="importacao.html" class="btn btn-ghost"><i class="fas fa-file-import"></i> Importar</a>
-      <button class="btn btn-gold" onclick="abrirModal()"><i class="fas fa-plus"></i> Registrar Contato</button>
-      <a href="configuracoes.html" class="btn-icon"><i class="fas fa-cog"></i></a>
+      <a href="importacao.html" class="btn btn-o"><i class="fas fa-file-import"></i> Importar</a>
+      <button class="btn btn-g" onclick="openModal()"><i class="fas fa-plus"></i> Registrar Contato</button>
+      <a href="configuracoes.html" class="ico-btn"><i class="fas fa-cog"></i></a>
     </div>
   </header>
 
-  <!-- MAIN -->
   <main class="main">
 
-    <!-- URGENCY -->
-    <div class="urgency-bar" id="urgencyBar" style="display:none">
-      <i class="fas fa-triangle-exclamation"></i>
-      <span id="urgencyTxt"></span>
-      <a href="fila.html" class="urgency-action">Acionar agora →</a>
+    <div class="urgency" id="urgBar" style="display:none">
+      <i class="fas fa-circle-exclamation"></i>
+      <span id="urgTxt"></span>
+      <a href="fila.html" class="u-cta">Acionar agora →</a>
     </div>
 
-    <!-- ROW: PRIORIDADE + FUNIL/FILA -->
-    <div class="row-main">
+    <!-- KPIs HERO -->
+    <div class="hero-row">
+      <div class="hkpi gold"><div class="hkpi-ico"><i class="fas fa-wallet"></i></div><div class="hkpi-val" id="kCarteira">—</div><div class="hkpi-lbl">Total em Carteira</div></div>
+      <div class="hkpi green"><div class="hkpi-ico"><i class="fas fa-arrow-trend-up"></i></div><div class="hkpi-val" id="kRecMes">—</div><div class="hkpi-lbl">Recuperado no Mês</div><div class="hkpi-sub" id="kHojeLabel"></div></div>
+      <div class="hkpi red"><div class="hkpi-ico"><i class="fas fa-triangle-exclamation"></i></div><div class="hkpi-val" id="kVencidos">—</div><div class="hkpi-lbl">Títulos Vencidos</div></div>
+      <div class="hkpi orange"><div class="hkpi-ico"><i class="fas fa-handshake"></i></div><div class="hkpi-val" id="kAcordos">—</div><div class="hkpi-lbl">Acordos Ativos</div></div>
+    </div>
 
-      <!-- PRIORIDADE -->
-      <div class="priority-block">
-        <div class="block-header">
-          <div class="block-title"><i class="fas fa-fire"></i> Prioridade de Cobrança</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="block-meta" id="priMeta">—</span>
-            <a href="fila.html" class="block-action">Ver fila completa →</a>
+    <!-- CENTRO: PRIORIDADE + PAINEL DIREITO -->
+    <div class="center-row">
+
+      <!-- BLOCO PRIORIDADE — dominante -->
+      <div class="pri-block">
+        <div class="pb-hd">
+          <div class="pb-ttl-wrap">
+            <div class="pb-eyebrow"><span class="pb-edot"></span> Fila ativa de cobrança</div>
+            <div class="pb-title">Prioridade de Cobrança</div>
+            <div class="pb-meta" id="pbMeta">Carregando...</div>
+          </div>
+          <div class="pb-actions">
+            <a href="fila.html" class="pb-cta"><i class="fas fa-headset"></i> Abrir fila completa</a>
           </div>
         </div>
-        <div class="priority-filter">
-          <button class="pfilter-btn active" onclick="filtrarFila('todos',this)">Todos</button>
-          <button class="pfilter-btn" onclick="filtrarFila('critico',this)">🔴 Crítico</button>
-          <button class="pfilter-btn" onclick="filtrarFila('alto',this)">🟠 Alto</button>
-          <button class="pfilter-btn" onclick="filtrarFila('medio',this)">🔵 Médio</button>
+        <div class="pb-filters">
+          <button class="pf on" onclick="filFila('todos',this)">Todos</button>
+          <button class="pf crit" onclick="filFila('crit',this)">🔴 Crítico +60d</button>
+          <button class="pf high" onclick="filFila('high',this)">🟠 Alto 30–60d</button>
+          <button class="pf med"  onclick="filFila('med',this)">🟡 Médio 0–30d</button>
         </div>
-        <div class="priority-list" id="priorityList">
-          <div class="loading-center"><div class="spin"></div></div>
-        </div>
+        <div class="pb-list" id="pbList"><div class="spin"></div></div>
       </div>
 
-      <!-- COLUNA DIREITA -->
-      <div class="right-col">
+      <!-- PAINEL DIREITO -->
+      <div class="rpanel">
 
-        <!-- FUNIL -->
         <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-filter"></i> Funil de Recuperação</div>
+          <div class="card-hd">
+            <div class="card-ttl"><i class="fas fa-list-check"></i> Fila Operacional</div>
+            <a href="fila.html" class="card-lnk">Ver →</a>
+          </div>
+          <div class="card-body" style="padding:10px 12px">
+            <div class="fop" id="filaOp"><div class="spin"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-ttl"><i class="fas fa-filter"></i> Funil de Recuperação</div>
           </div>
           <div class="card-body">
-            <div class="funnel-steps" id="funnelEl">
-              <div class="spin"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FILA OPERACIONAL -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-list-check"></i> Fila Operacional</div>
-            <a href="fila.html" class="block-action" style="font-size:11px">Ver tudo →</a>
-          </div>
-          <div class="card-body" style="padding:12px 16px">
-            <div class="fila-items" id="filaOp">
-              <div class="spin"></div>
-            </div>
+            <div class="funnel" id="funnelEl"><div class="spin"></div></div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- ROW: KPIs -->
-    <div class="row-mid" id="kpiRow">
-      <div class="kpi gold">
-        <div class="kpi-icon"><i class="fas fa-wallet"></i></div>
-        <div class="kpi-val" id="kpiCarteira">—</div>
-        <div class="kpi-label">Total em Carteira</div>
+    <!-- BOTTOM -->
+    <div class="btm">
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i class="fas fa-handshake"></i> Acordos</div><a href="acordos.html" class="card-lnk">Detalhes →</a></div>
+        <div class="card-body"><div class="ac-grid" id="acGrid"><div class="spin"></div></div></div>
       </div>
-      <div class="kpi green">
-        <div class="kpi-icon"><i class="fas fa-arrow-trend-up"></i></div>
-        <div class="kpi-val" id="kpiRecMes">—</div>
-        <div class="kpi-label">Recuperado no Mês</div>
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i class="fas fa-clock"></i> Aging da Carteira</div></div>
+        <div class="card-body"><div class="ag-list" id="agList"><div class="spin"></div></div></div>
       </div>
-      <div class="kpi red">
-        <div class="kpi-icon"><i class="fas fa-triangle-exclamation"></i></div>
-        <div class="kpi-val" id="kpiVencidos">—</div>
-        <div class="kpi-label">Títulos Vencidos</div>
-      </div>
-      <div class="kpi orange">
-        <div class="kpi-icon"><i class="fas fa-handshake"></i></div>
-        <div class="kpi-val" id="kpiAcordos">—</div>
-        <div class="kpi-label">Acordos Ativos</div>
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i class="fas fa-building"></i> Credores</div><a href="credores.html" class="card-lnk">Ver todos →</a></div>
+        <div class="cr-list" id="crList"><div class="spin"></div></div>
       </div>
     </div>
 
-    <!-- ROW: ACORDOS + AGING + CREDORES -->
-    <div class="row-bottom">
-
-      <!-- ACORDOS -->
+    <!-- FIN -->
+    <div class="fin-row">
       <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-handshake"></i> Acordos</div>
-          <a href="acordos.html" class="block-action" style="font-size:11px">Detalhes →</a>
-        </div>
-        <div class="card-body">
-          <div class="acordos-grid" id="acordosGrid">
-            <div class="spin"></div>
-          </div>
-        </div>
+        <div class="card-hd"><div class="card-ttl"><i class="fas fa-dollar-sign"></i> Pagamentos</div></div>
+        <div class="card-body"><div class="fin-grid" id="pagGrid"><div class="spin"></div></div></div>
       </div>
-
-      <!-- AGING -->
       <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-clock"></i> Aging da Carteira</div>
-        </div>
-        <div class="card-body">
-          <div class="aging-list" id="agingList">
-            <div class="spin"></div>
-          </div>
-        </div>
+        <div class="card-hd"><div class="card-ttl"><i class="fas fa-paper-plane"></i> Repasse ao Credor</div></div>
+        <div class="card-body"><div class="fin-grid" id="repGrid"><div class="spin"></div></div></div>
       </div>
-
-      <!-- CREDORES -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-building"></i> Credores</div>
-          <a href="credores.html" class="block-action" style="font-size:11px">Ver todos →</a>
-        </div>
-        <div class="credor-list" id="credorList">
-          <div class="spin"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ROW: PAGAMENTOS + REPASSE -->
-    <div class="row-fin">
-
-      <!-- PAGAMENTOS -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-dollar-sign"></i> Pagamentos</div>
-        </div>
-        <div class="card-body">
-          <div class="fin-grid" id="pagGrid">
-            <div class="spin"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- REPASSE -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-paper-plane"></i> Repasse ao Credor</div>
-        </div>
-        <div class="card-body">
-          <div class="fin-grid" id="repasseGrid">
-            <div class="spin"></div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
   </main>
 </div>
 
-<!-- ═══════════════ MODAL REGISTRAR CONTATO ═══════════════ -->
-<div class="modal-overlay" id="modalReg">
+<!-- MODAL -->
+<div class="mov" id="mov">
   <div class="modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-phone"></i> Registrar Contato</h3>
-      <button class="modal-close" onclick="fecharModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="fg">
-        <label>Cliente *</label>
+    <div class="mhd"><h3><i class="fas fa-phone"></i> Registrar Contato</h3><button class="mclose" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
+    <div class="mbody">
+      <div class="fg"><label>Cliente *</label>
         <div class="srch">
-          <i class="fas fa-search srch-icon"></i>
+          <i class="fas fa-search si-ico"></i>
           <input type="text" id="buscaCli" placeholder="Nome ou CPF..." oninput="buscarCli()" autocomplete="off">
-          <div class="srch-drop" id="dropCli"></div>
+          <div class="sdrop" id="dropCli"></div>
         </div>
-        <div class="cli-sel" id="cliSel">
-          <span><strong id="cliNome"></strong> <span id="cliCpf" style="color:var(--text-3);font-size:11px;margin-left:6px"></span></span>
-          <button onclick="limparCli()" style="color:var(--red);font-size:16px;background:none;border:none;cursor:pointer">&times;</button>
+        <div class="csel" id="cliSel">
+          <span><strong id="cliNome"></strong><span id="cliCpf" style="color:var(--t3);font-size:10px;margin-left:8px"></span></span>
+          <button onclick="limparCli()" style="color:var(--red);font-size:15px">&times;</button>
         </div>
         <input type="hidden" id="cliId">
       </div>
-      <div class="fg">
-        <label>Canal</label>
-        <div class="canal-tabs">
-          <button type="button" class="canal-btn sel" onclick="setCanal('whatsapp',this)"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-          <button type="button" class="canal-btn" onclick="setCanal('telefone',this)"><i class="fas fa-phone"></i> Telefone</button>
-          <button type="button" class="canal-btn" onclick="setCanal('email',this)"><i class="fas fa-envelope"></i> E-mail</button>
+      <div class="fg"><label>Canal</label>
+        <div class="canal-t">
+          <button type="button" class="cb on" onclick="setCanal('whatsapp',this)"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button type="button" class="cb" onclick="setCanal('telefone',this)"><i class="fas fa-phone"></i> Telefone</button>
+          <button type="button" class="cb" onclick="setCanal('email',this)"><i class="fas fa-envelope"></i> E-mail</button>
         </div>
         <input type="hidden" id="canalSel" value="whatsapp">
       </div>
-      <div class="fg">
-        <label>Resultado *</label>
-        <div class="res-grid">
-          <button type="button" class="res-btn atendeu" onclick="setRes('atendeu',this)"><i class="fas fa-check-circle"></i> Atendeu</button>
-          <button type="button" class="res-btn nao_atendeu" onclick="setRes('nao_atendeu',this)"><i class="fas fa-times-circle"></i> Não atendeu</button>
-          <button type="button" class="res-btn gerou_acordo" onclick="setRes('gerou_acordo',this)"><i class="fas fa-handshake"></i> Gerou Acordo</button>
-          <button type="button" class="res-btn retorno_agendado" onclick="setRes('retorno_agendado',this)"><i class="fas fa-calendar-plus"></i> Agendar Retorno</button>
-          <button type="button" class="res-btn recusou" onclick="setRes('recusou',this)"><i class="fas fa-ban"></i> Recusou</button>
-          <button type="button" class="res-btn numero_errado" onclick="setRes('numero_errado',this)"><i class="fas fa-phone-slash"></i> Nº Errado</button>
+      <div class="fg"><label>Resultado *</label>
+        <div class="res-g">
+          <button type="button" class="rb atendeu" onclick="setRes('atendeu',this)"><i class="fas fa-check-circle"></i> Atendeu</button>
+          <button type="button" class="rb nao_atendeu" onclick="setRes('nao_atendeu',this)"><i class="fas fa-times-circle"></i> Não atendeu</button>
+          <button type="button" class="rb gerou_acordo" onclick="setRes('gerou_acordo',this)"><i class="fas fa-handshake"></i> Gerou Acordo</button>
+          <button type="button" class="rb retorno_agendado" onclick="setRes('retorno_agendado',this)"><i class="fas fa-calendar-plus"></i> Agendar Retorno</button>
+          <button type="button" class="rb recusou" onclick="setRes('recusou',this)"><i class="fas fa-ban"></i> Recusou</button>
+          <button type="button" class="rb numero_errado" onclick="setRes('numero_errado',this)"><i class="fas fa-phone-slash"></i> Nº Errado</button>
         </div>
         <input type="hidden" id="resSel">
       </div>
-      <div class="ret-field" id="retField">
-        <div class="fg"><label>Data do Retorno *</label><input type="date" id="dataRet"></div>
-      </div>
+      <div class="ret-f" id="retField"><div class="fg"><label>Data do Retorno *</label><input type="date" id="dataRet"></div></div>
       <div class="fg"><label>Observação</label><textarea id="obs" placeholder="Detalhes do contato..."></textarea></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="salvar()"><i class="fas fa-save"></i> Salvar</button>
+    <div class="mfoot">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-g" onclick="salvar()"><i class="fas fa-save"></i> Salvar</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <i class="fas fa-check-circle"></i>
-  <span id="toastTxt"></span>
-</div>
+<div class="toast" id="toast"><i></i><span id="toastTxt"></span></div>
 
-<!-- ═══════════════ JS ═══════════════ -->
 <script>
-const API = window.location.origin;
-let periodo = 30;
-let todosDevedores = [];
-let filtroAtivo = 'todos';
-let buscaT;
+const API=window.location.origin;
+let periodo=30,buscaT,allDev=[],filtro='todos';
+const H=()=>({'Authorization':'Bearer '+localStorage.getItem('token'),'Content-Type':'application/json'});
+const fmtM=v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtMK=v=>{v=parseFloat(v)||0;if(v>=1e6)return'R$ '+(v/1e6).toFixed(1)+'M';if(v>=1000)return'R$ '+(v/1000).toFixed(0)+'K';return fmtM(v)};
+const fmtN=v=>(parseInt(v)||0).toLocaleString('pt-BR');
+const ini=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1)};
+const fim=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth()+1,0,23,59,59)};
+const hj=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
 
-function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
-function fmtM(v) { return (parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function fmtMK(v) {
-  v = parseFloat(v)||0;
-  if(v >= 1000000) return 'R$ '+(v/1000000).toFixed(1)+'M';
-  if(v >= 1000) return 'R$ '+(v/1000).toFixed(0)+'K';
-  return fmtM(v);
+function toast(msg,tipo){
+  const t=document.getElementById('toast');
+  document.getElementById('toastTxt').textContent=msg;
+  t.className='toast '+(tipo==='err'?'err':'ok');
+  t.querySelector('i').className=tipo==='err'?'fas fa-times-circle':'fas fa-check-circle';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
 }
-function fmtN(v) { return (parseInt(v)||0).toLocaleString('pt-BR'); }
+function logout(){localStorage.removeItem('token');window.location.href='/login.html'}
 
-// Datas
-function inicioMes() { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),1); }
-function fimMes() { const d=new Date(); return new Date(d.getFullYear(),d.getMonth()+1,0,23,59,59); }
-function hojeInicio() { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
-
-function toast(msg, tipo) {
-  const t = document.getElementById('toast');
-  document.getElementById('toastTxt').textContent = msg;
-  t.className = 'toast '+(tipo==='err'?'err':'ok');
-  t.querySelector('i').className = tipo==='err'?'fas fa-times-circle':'fas fa-check-circle';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
-
-function logout() { localStorage.removeItem('token'); window.location.href='/login.html'; }
-
-async function checkAuth() {
-  if(!localStorage.getItem('token')){ window.location.href='/login.html'; return; }
-  try {
-    const r = await fetch(API+'/api/auth/me',{headers:H()});
-    const d = await r.json();
-    const u = d.user||d;
-    document.getElementById('userName').textContent = u.nome||'Usuário';
-    document.getElementById('userRole').textContent = u.perfil||'admin';
-    document.getElementById('userAv').textContent = (u.nome||'A').charAt(0).toUpperCase();
-  } catch(e){}
+async function checkAuth(){
+  if(!localStorage.getItem('token')){window.location.href='/login.html';return}
+  try{
+    const d=await fetch(API+'/api/auth/me',{headers:H()}).then(r=>r.json());
+    const u=d.user||d;
+    document.getElementById('userName').textContent=u.nome||'Usuário';
+    document.getElementById('userRole').textContent=u.perfil||'admin';
+    document.getElementById('userAv').textContent=(u.nome||'A').charAt(0).toUpperCase();
+  }catch(e){}
 }
 
-// Data no header
-document.getElementById('topDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('topDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-function setPeriodo(dias, btn) {
-  periodo = dias;
-  ['p7','p30','p90'].forEach(id=>{
-    const el = document.getElementById(id);
-    el.style.background=''; el.style.borderColor=''; el.style.color='';
-  });
-  btn.style.background='var(--gold-10)';
-  btn.style.borderColor='var(--gold-20)';
-  btn.style.color='var(--gold)';
+function setPer(d,btn){
+  periodo=d;
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
   carregarDashboard();
 }
 
-async function carregarDashboard() {
-  try {
-    const now = new Date();
-    const ini = inicioMes(); const fim = fimMes(); const hj = hojeInicio();
-
-    const [rCob, rAcAtivos, rCred, rOp] = await Promise.all([
+async function carregarDashboard(){
+  try{
+    const now=new Date(),I=ini(),F=fim(),H0=hj();
+    const[rCob,rAc,rCred,rOp]=await Promise.all([
       fetch(API+'/api/cobrancas?limit=10000',{headers:H()}),
       fetch(API+'/api/acordos?status=ativo&limit=10000',{headers:H()}).catch(()=>({ok:false})),
       fetch(API+'/api/cadastros/credores',{headers:H()}).catch(()=>({ok:false})),
       fetch(API+'/api/operacao/dashboard?periodo='+periodo,{headers:H()}).catch(()=>({ok:false}))
     ]);
 
-    const dCob = await rCob.json();
-    const cobrancas = dCob.data||[];
+    const cobrancas=(await rCob.json()).data||[];
+    const carteira=cobrancas.filter(c=>['pendente','vencido'].includes(c.status)).reduce((s,c)=>s+parseFloat(c.valor||0),0);
+    const recMes=cobrancas.filter(c=>{if(c.status!=='pago')return false;const d=new Date(c.data_pagamento||c.updated_at);return d>=I&&d<=F}).reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
+    const recHoje=cobrancas.filter(c=>{if(c.status!=='pago')return false;return new Date(c.data_pagamento||c.updated_at)>=H0}).reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
+    const totalPago=cobrancas.filter(c=>c.status==='pago').reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
+    const vencidos=cobrancas.filter(c=>c.status==='vencido');
+    const vencVal=vencidos.reduce((s,c)=>s+parseFloat(c.valor||0),0);
+    const aVencer=cobrancas.filter(c=>c.status==='pendente'&&new Date(c.data_vencimento)>=now).reduce((s,c)=>s+parseFloat(c.valor||0),0);
 
-    // ── CÁLCULOS BASE ──
-    const carteira = cobrancas.filter(c=>['pendente','vencido'].includes(c.status))
-      .reduce((s,c)=>s+parseFloat(c.valor||0),0);
-
-    const recMes = cobrancas.filter(c=>{
-      if(c.status!=='pago') return false;
-      const d = new Date(c.data_pagamento||c.updated_at);
-      return d>=ini && d<=fim;
-    }).reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
-
-    const recHoje = cobrancas.filter(c=>{
-      if(c.status!=='pago') return false;
-      return new Date(c.data_pagamento||c.updated_at) >= hj;
-    }).reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
-
-    const vencidos = cobrancas.filter(c=>c.status==='vencido');
-    const vencVal = vencidos.reduce((s,c)=>s+parseFloat(c.valor||0),0);
-
-    // Pago total (histórico)
-    const totalPago = cobrancas.filter(c=>c.status==='pago')
-      .reduce((s,c)=>s+parseFloat(c.valor_pago||c.valor||0),0);
-
-    // Acordos
-    let acordosN=0, acordosAtrasados=0, acordosQuebrados=0;
-    if(rAcAtivos.ok){
-      const dAc = await rAcAtivos.json();
-      const acs = dAc.data||[];
-      acordosN = typeof dAc.total==='number' ? dAc.total : acs.length;
-      // Acordos em risco: com parcelas vencidas
-      acordosAtrasados = acs.filter(a=>a.status==='em_atraso'||a.parcelas_vencidas>0).length;
-      acordosQuebrados = acs.filter(a=>a.status==='quebrado'||a.status==='cancelado').length;
+    let acordosN=0,acAtraso=0,acQuebrado=0;
+    if(rAc.ok){
+      const dAc=await rAc.json();const acs=dAc.data||[];
+      acordosN=typeof dAc.total==='number'?dAc.total:acs.length;
+      acAtraso=acs.filter(a=>a.status==='em_atraso'||a.parcelas_vencidas>0).length;
+      acQuebrado=acs.filter(a=>['quebrado','cancelado'].includes(a.status)).length;
     }
 
-    // ── HEADER STATS ──
-    document.getElementById('hRecHoje').textContent = fmtMK(recHoje);
-    const metaPct = recMes>0 ? Math.min(Math.round((recHoje/Math.max(recMes/30,1))*100),999) : 0;
-    document.getElementById('hMeta').textContent = metaPct+'%';
-    document.getElementById('hRisco').textContent = fmtN(acordosAtrasados);
-    if(acordosAtrasados>0) document.getElementById('acordosRiscoBadge').style.display='';
+    // HEADER
+    document.getElementById('hRecHoje').textContent=fmtMK(recHoje);
+    document.getElementById('hAcordos').textContent=fmtN(acordosN);
+    document.getElementById('hRisco').textContent=fmtN(acAtraso);
+    if(acAtraso>0)document.getElementById('nbRisco').style.display='';
 
-    // ── KPIs ──
-    document.getElementById('kpiCarteira').textContent = fmtMK(carteira);
-    document.getElementById('kpiRecMes').textContent = fmtMK(recMes);
-    document.getElementById('kpiVencidos').textContent = fmtN(vencidos.length);
-    document.getElementById('kpiAcordos').textContent = fmtN(acordosN);
-    document.getElementById('filaBadge').textContent = vencidos.length>999?'999+':vencidos.length;
+    // KPIs
+    document.getElementById('kCarteira').textContent=fmtMK(carteira);
+    document.getElementById('kRecMes').textContent=fmtMK(recMes);
+    document.getElementById('kHojeLabel').textContent=recHoje>0?'+ '+fmtMK(recHoje)+' recuperado hoje':'';
+    document.getElementById('kVencidos').textContent=fmtN(vencidos.length);
+    document.getElementById('kAcordos').textContent=fmtN(acordosN);
+    document.getElementById('filaBadge').textContent=vencidos.length>999?'999+':vencidos.length;
 
-    // ── URGENCY ──
-    const crit60 = vencidos.filter(c=>(now-new Date(c.data_vencimento))>60*864e5);
-    const val60 = crit60.reduce((s,c)=>s+parseFloat(c.valor||0),0);
-    if(val60>0){
-      document.getElementById('urgencyBar').style.display='flex';
-      document.getElementById('urgencyTxt').innerHTML =
-        `<strong>${fmtN(crit60.length)} devedores</strong> com mais de 60 dias de atraso — <strong>${fmtM(val60)}</strong> parados. Prioridade máxima.`;
+    // URGENCY
+    const c60=vencidos.filter(c=>(now-new Date(c.data_vencimento))>60*864e5);
+    if(c60.length){
+      const v60=c60.reduce((s,c)=>s+parseFloat(c.valor||0),0);
+      document.getElementById('urgBar').style.display='flex';
+      document.getElementById('urgTxt').innerHTML=`<strong>${fmtN(c60.length)} devedores</strong> com +60 dias em atraso — <strong>${fmtM(v60)}</strong> em risco de perda total.`;
     }
 
-    // ── PRIORIDADE (agrupado por cliente) ──
-    const porCliente = {};
+    // PRIORIDADE
+    const pC={};
     vencidos.forEach(c=>{
-      const id = c.cliente_id||c.devedor_id||c.cliente_nome||'?';
-      if(!porCliente[id]){
-        porCliente[id]={
-          nome: c.cliente_nome||c.devedor||'Devedor',
-          credor: c.credor_nome||'',
-          valor: 0, count: 0, maxDias: 0
-        };
-      }
-      porCliente[id].valor += parseFloat(c.valor||0);
-      porCliente[id].count++;
-      const dias = Math.floor((now-new Date(c.data_vencimento))/864e5);
-      if(dias>porCliente[id].maxDias) porCliente[id].maxDias=dias;
+      const id=c.cliente_id||c.devedor_id||c.cliente_nome||'?';
+      if(!pC[id])pC[id]={nome:c.cliente_nome||c.devedor||'Devedor',credor:c.credor_nome||'',valor:0,count:0,maxDias:0};
+      pC[id].valor+=parseFloat(c.valor||0);pC[id].count++;
+      const dias=Math.floor((now-new Date(c.data_vencimento))/864e5);
+      if(dias>pC[id].maxDias)pC[id].maxDias=dias;
     });
+    allDev=Object.values(pC).sort((a,b)=>b.valor-a.valor).slice(0,40)
+      .map(d=>({...d,nivel:d.maxDias>60?'crit':d.maxDias>30?'high':'med'}));
+    document.getElementById('pbMeta').textContent=fmtN(allDev.length)+' devedores · '+fmtMK(vencVal)+' em aberto';
+    renderPri(allDev);
 
-    todosDevedores = Object.values(porCliente)
-      .sort((a,b)=>b.valor-a.valor)
-      .slice(0,30)
-      .map(d=>({
-        ...d,
-        nivel: d.maxDias>60?'critico':d.maxDias>30?'alto':'medio'
-      }));
+    // FILA OP
+    document.getElementById('filaOp').innerHTML=[
+      {ico:'fas fa-exclamation-circle',cor:'var(--red)',bg:'var(--rd10)',nm:'Cobranças Vencidas',sb:'Prioridade máxima',n:vencidos.length},
+      {ico:'fas fa-calendar-check',cor:'var(--gold)',bg:'var(--g08)',nm:'Retornos Agendados',sb:'Programados hoje',n:0},
+      {ico:'fas fa-handshake',cor:'var(--green)',bg:'var(--gn10)',nm:'Acordos Ativos',sb:'Acompanhar',n:acordosN},
+      {ico:'fas fa-triangle-exclamation',cor:'var(--orange)',bg:'var(--or10)',nm:'Acordos em Risco',sb:'Requer atenção',n:acAtraso},
+    ].map(f=>`<a href="fila.html" class="fop-item">
+      <div class="fop-ico" style="background:${f.bg};color:${f.cor};border:1px solid ${f.cor}33"><i class="${f.ico}"></i></div>
+      <div class="fop-info"><div class="fop-nm">${f.nm}</div><div class="fop-sb">${f.sb}</div></div>
+      <div class="fop-n" style="color:${f.cor}">${fmtN(f.n)}</div>
+    </a>`).join('');
 
-    document.getElementById('priMeta').textContent =
-      fmtN(Object.keys(porCliente).length)+' devedores · '+fmtMK(vencVal);
-
-    renderFila(todosDevedores);
-
-    // ── FUNIL ──
-    const totalCobs = cobrancas.length;
-    const contatados = cobrancas.filter(c=>c.data_ultimo_contato||c.status!=='pendente').length;
-    const emNeg = acordosN;
-    const pagos = cobrancas.filter(c=>c.status==='pago').length;
-    const max = Math.max(totalCobs,1);
-    document.getElementById('funnelEl').innerHTML = [
-      {l:'Carteira total', n:totalCobs, v:carteira+totalPago, pct:100, cor:'var(--gold)'},
-      {l:'Contatados', n:contatados, v:null, pct:Math.round((contatados/max)*100), cor:'var(--blue)'},
-      {l:'Em acordo', n:emNeg, v:null, pct:Math.round((emNeg/max)*100), cor:'var(--purple)'},
-      {l:'Recuperados', n:pagos, v:totalPago, pct:Math.round((pagos/max)*100), cor:'var(--green)'},
-    ].map(f=>`
-      <div class="funnel-step">
-        <div class="funnel-label-row">
-          <span class="funnel-name">${f.l}</span>
-          <span class="funnel-count" style="color:${f.cor}">${fmtN(f.n)}${f.v!=null?' · '+fmtMK(f.v):''}</span>
-        </div>
-        <div class="funnel-track">
-          <div class="funnel-fill" style="background:${f.cor}" data-w="${f.pct}"></div>
-        </div>
-        <div class="funnel-pct">${f.pct}%</div>
+    // FUNIL
+    const total=cobrancas.length,pagos=cobrancas.filter(c=>c.status==='pago').length;
+    const contatados=cobrancas.filter(c=>c.status!=='pendente').length;
+    const maxF=Math.max(total,1);
+    document.getElementById('funnelEl').innerHTML=[
+      {nm:'Carteira total',dot:'var(--gold)',n:total,v:carteira+totalPago,pct:100},
+      {nm:'Contatados',dot:'var(--gl)',n:contatados,v:null,pct:Math.round(contatados/maxF*100)},
+      {nm:'Em acordo',dot:'var(--orange)',n:acordosN,v:null,pct:Math.round(acordosN/maxF*100)},
+      {nm:'Recuperados',dot:'var(--green)',n:pagos,v:totalPago,pct:Math.round(pagos/maxF*100)},
+    ].map(s=>`<div class="fn-step">
+      <div class="fn-row">
+        <span class="fn-nm"><span class="fn-dot" style="background:${s.dot}"></span>${s.nm}</span>
+        <span class="fn-val" style="color:${s.dot}">${fmtN(s.n)}${s.v!=null?' · '+fmtMK(s.v):''}</span>
       </div>
-    `).join('');
-    setTimeout(()=>document.querySelectorAll('.funnel-fill').forEach(b=>b.style.width=b.dataset.w+'%'),100);
+      <div class="fn-track"><div class="fn-fill" style="background:${s.dot}" data-w="${s.pct}"></div></div>
+    </div>`).join('');
+    setTimeout(()=>document.querySelectorAll('.fn-fill').forEach(b=>b.style.width=b.dataset.w+'%'),100);
 
-    // ── FILA OPERACIONAL ──
-    const pendentes = vencidos.length;
-    const retornos = cobrancas.filter(c=>c.status==='agendado'||c.tem_retorno).length;
-    document.getElementById('filaOp').innerHTML = [
-      {icon:'fas fa-exclamation-circle',cor:'var(--red)',bg:'var(--red-10)',nome:'Cobranças Vencidas',sub:'Acionar agora',n:pendentes},
-      {icon:'fas fa-calendar-check',cor:'var(--blue)',bg:'var(--blue-10)',nome:'Retornos Agendados',sub:'Para hoje',n:retornos},
-      {icon:'fas fa-handshake',cor:'var(--gold)',bg:'var(--gold-10)',nome:'Acordos Ativos',sub:'Acompanhar',n:acordosN},
-      {icon:'fas fa-triangle-exclamation',cor:'var(--orange)',bg:'var(--orange-10)',nome:'Acordos em Risco',sub:'Requer atenção',n:acordosAtrasados},
-    ].map(f=>`
-      <a href="fila.html" class="fila-item">
-        <div class="fila-icon" style="background:${f.bg};color:${f.cor};border:1px solid ${f.cor}33">
-          <i class="${f.icon}"></i>
-        </div>
-        <div class="fila-info">
-          <div class="fila-name">${f.nome}</div>
-          <div class="fila-sub">${f.sub}</div>
-        </div>
-        <div class="fila-num" style="color:${f.cor}">${fmtN(f.n)}</div>
-      </a>
-    `).join('');
+    // ACORDOS
+    const txS=(acordosN+acQuebrado)>0?Math.round(acordosN/(acordosN+acQuebrado)*100):0;
+    document.getElementById('acGrid').innerHTML=`
+      <div class="ac-cell"><span class="ac-n" style="color:var(--gl)">${fmtN(acordosN)}</span><span class="ac-l">Ativos</span></div>
+      <div class="ac-cell"><span class="ac-n" style="color:var(--red)">${fmtN(acAtraso)}</span><span class="ac-l">Em Atraso</span></div>
+      <div class="ac-cell"><span class="ac-n" style="color:var(--t3)">${fmtN(acQuebrado)}</span><span class="ac-l">Quebrados</span></div>
+      <div class="ac-cell"><span class="ac-n" style="color:var(--green)">${txS}%</span><span class="ac-l">Taxa Sucesso</span></div>`;
 
-    // ── ACORDOS CARD ──
-    const txSucesso = (acordosN+acordosQuebrados)>0
-      ? Math.round((acordosN/(acordosN+acordosQuebrados))*100) : 0;
-    document.getElementById('acordosGrid').innerHTML = `
-      <div class="ac-item"><span class="ac-val" style="color:var(--gold-l)">${fmtN(acordosN)}</span><span class="ac-label">Ativos</span></div>
-      <div class="ac-item"><span class="ac-val" style="color:var(--red)">${fmtN(acordosAtrasados)}</span><span class="ac-label">Em Atraso</span></div>
-      <div class="ac-item"><span class="ac-val" style="color:var(--text-3)">${fmtN(acordosQuebrados)}</span><span class="ac-label">Quebrados</span></div>
-      <div class="ac-item"><span class="ac-val" style="color:var(--green)">${txSucesso}%</span><span class="ac-label">Taxa Sucesso</span></div>
-    `;
-
-    // ── AGING ──
-    const agItems = [
-      {l:'0–30 dias',  items:vencidos.filter(c=>(now-new Date(c.data_vencimento))<=30*864e5), cor:'var(--gold)'},
-      {l:'30–60 dias', items:vencidos.filter(c=>{const d=(now-new Date(c.data_vencimento));return d>30*864e5&&d<=60*864e5}), cor:'var(--orange)'},
-      {l:'60–90 dias', items:vencidos.filter(c=>{const d=(now-new Date(c.data_vencimento));return d>60*864e5&&d<=90*864e5}), cor:'var(--red)'},
-      {l:'90+ dias',   items:vencidos.filter(c=>(now-new Date(c.data_vencimento))>90*864e5), cor:'#dc2626'},
+    // AGING
+    const agI=[
+      {l:'0–30 dias',items:vencidos.filter(c=>(now-new Date(c.data_vencimento))<=30*864e5),cor:'var(--gold)'},
+      {l:'30–60 dias',items:vencidos.filter(c=>{const d=now-new Date(c.data_vencimento);return d>30*864e5&&d<=60*864e5}),cor:'var(--orange)'},
+      {l:'60–90 dias',items:vencidos.filter(c=>{const d=now-new Date(c.data_vencimento);return d>60*864e5&&d<=90*864e5}),cor:'var(--red)'},
+      {l:'90+ dias',items:vencidos.filter(c=>(now-new Date(c.data_vencimento))>90*864e5),cor:'#dc2626'},
     ];
-    const maxAg = Math.max(...agItems.map(a=>a.items.length),1);
-    document.getElementById('agingList').innerHTML = agItems.map(a=>{
-      const val = a.items.reduce((s,c)=>s+parseFloat(c.valor||0),0);
-      return `
-        <div class="aging-item">
-          <div class="aging-row">
-            <span class="aging-label">${a.l}</span>
-            <div class="aging-right">
-              <span class="aging-n" style="color:${a.cor}">${fmtN(a.items.length)}</span>
-              <span class="aging-v">${fmtMK(val)}</span>
-            </div>
-          </div>
-          <div class="aging-bar">
-            <div class="aging-fill" style="background:${a.cor}" data-w="${Math.round((a.items.length/maxAg)*100)}"></div>
-          </div>
-        </div>
-      `;
+    const maxAg=Math.max(...agI.map(a=>a.items.length),1);
+    document.getElementById('agList').innerHTML=agI.map(a=>{
+      const v=a.items.reduce((s,c)=>s+parseFloat(c.valor||0),0);
+      return`<div><div class="ag-row"><span class="ag-lbl">${a.l}</span><div class="ag-r"><span class="ag-n" style="color:${a.cor}">${fmtN(a.items.length)}</span><span class="ag-v">${fmtMK(v)}</span></div></div><div class="ag-track"><div class="ag-fill" style="background:${a.cor}" data-w="${Math.round(a.items.length/maxAg*100)}"></div></div></div>`;
     }).join('');
-    setTimeout(()=>document.querySelectorAll('.aging-fill').forEach(b=>b.style.width=b.dataset.w+'%'),200);
+    setTimeout(()=>document.querySelectorAll('.ag-fill').forEach(b=>b.style.width=b.dataset.w+'%'),200);
 
-    // ── CREDORES ──
+    // CREDORES
     if(rCred.ok){
-      const dCred = await rCred.json();
-      const creds = dCred.data||dCred||[];
-      if(!creds.length){
-        document.getElementById('credorList').innerHTML='<div class="empty-state"><i class="fas fa-building"></i>Nenhum credor cadastrado</div>';
-      } else {
-        // Calcular valor real por credor a partir das cobranças
-        const valorPorCred = {};
-        const pagoPorCred = {};
-        cobrancas.forEach(c=>{
-          const cn = c.credor_nome||c.credor_id||'';
-          if(!cn) return;
-          if(['pendente','vencido'].includes(c.status)){
-            valorPorCred[cn]=(valorPorCred[cn]||0)+parseFloat(c.valor||0);
-          }
-          if(c.status==='pago'){
-            pagoPorCred[cn]=(pagoPorCred[cn]||0)+parseFloat(c.valor_pago||c.valor||0);
-          }
-        });
-        document.getElementById('credorList').innerHTML = creds.slice(0,5).map(cr=>{
-          const nome = cr.nome||'Credor';
-          const val = valorPorCred[nome]||cr.valor_total||cr.total||0;
-          const pago = pagoPorCred[nome]||0;
-          const pct = val>0?Math.min(Math.round((pago/val)*100),100):0;
-          return `
-            <div class="credor-item">
-              <div class="credor-av">${nome.charAt(0)}</div>
-              <div class="credor-info">
-                <div class="credor-name">${nome}</div>
-                <div class="credor-prog-track">
-                  <div class="credor-prog-fill" data-w="${pct}" style="width:0%"></div>
-                </div>
-              </div>
-              <div class="credor-right">
-                <span class="credor-val">${fmtMK(val)}</span>
-                <span class="credor-pct">${pct}% rec.</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-        setTimeout(()=>document.querySelectorAll('.credor-prog-fill').forEach(b=>b.style.width=b.dataset.w+'%'),300);
-      }
-    }
-
-    // ── PAGAMENTOS ──
-    const aVencer = cobrancas.filter(c=>c.status==='pendente'&&new Date(c.data_vencimento)>=now)
-      .reduce((s,c)=>s+parseFloat(c.valor||0),0);
-    document.getElementById('pagGrid').innerHTML = `
-      <div class="fin-item"><div class="fin-label">Recebido hoje</div><div class="fin-val green">${fmtMK(recHoje)}</div></div>
-      <div class="fin-item"><div class="fin-label">Recebido no mês</div><div class="fin-val green">${fmtMK(recMes)}</div></div>
-      <div class="fin-item"><div class="fin-label">Em atraso</div><div class="fin-val red">${fmtMK(vencVal)}</div></div>
-      <div class="fin-item"><div class="fin-label">A vencer</div><div class="fin-val gold">${fmtMK(aVencer)}</div></div>
-    `;
-
-    // ── REPASSE ──
-    // Comissão estimada (10% sobre recuperado — ajuste conforme regra real)
-    const comissao = recMes * 0.10;
-    const repasseVal = recMes - comissao;
-    document.getElementById('repasseGrid').innerHTML = `
-      <div class="fin-item"><div class="fin-label">A repassar</div><div class="fin-val gold">${fmtMK(repasseVal)}</div></div>
-      <div class="fin-item"><div class="fin-label">Total recuperado</div><div class="fin-val green">${fmtMK(recMes)}</div></div>
-      <div class="fin-item"><div class="fin-label">Comissão (10%)</div><div class="fin-val orange">${fmtMK(comissao)}</div></div>
-      <div class="fin-item"><div class="fin-label">Já repassado</div><div class="fin-val" style="color:var(--text-2)">—</div></div>
-    `;
-
-    // Operação
-    if(rOp.ok){
-      try{
-        const dOp = await rOp.json();
-        if(dOp.success && dOp.data?.kpis){
-          const k = dOp.data.kpis;
-          if(k.total_contatos) document.getElementById('hMeta').textContent = k.total_contatos+' contatos';
-        }
-      }catch(e){}
-    }
-
-  } catch(e) {
-    console.error('[DASHBOARD]', e);
-    toast('Erro ao carregar dados','err');
-  }
-}
-
-// ── RENDER FILA ──
-function renderFila(devedores) {
-  const filtered = filtroAtivo==='todos'
-    ? devedores
-    : devedores.filter(d=>d.nivel===filtroAtivo);
-
-  if(!filtered.length){
-    document.getElementById('priorityList').innerHTML =
-      '<div class="empty-state"><i class="fas fa-check-circle"></i>Nenhum devedor nesta categoria</div>';
-    return;
-  }
-
-  document.getElementById('priorityList').innerHTML = filtered.map(d=>{
-    const icone = d.nivel==='critico'?'🔴':d.nivel==='alto'?'🟠':'🔵';
-    const cls = d.nivel==='critico'?'critical':d.nivel==='alto'?'high':'medium';
-    return `
-      <div class="priority-item">
-        <div class="p-urgency ${cls}">${icone}</div>
-        <div class="p-info">
-          <div class="p-name">${d.nome}</div>
-          <div class="p-sub">
-            <span class="tag ${cls}">${d.nivel.toUpperCase()}</span>
-            ${d.maxDias} dias · ${d.count} título${d.count>1?'s':''}${d.credor?' · '+d.credor:''}
-          </div>
-        </div>
-        <div class="p-value">
-          <span class="p-val-main">${fmtM(d.valor)}</span>
-          <span class="p-val-count">${d.count} cobrança${d.count>1?'s':''}</span>
-        </div>
-        <div class="p-actions">
-          <button class="p-btn wpp" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-          <button class="p-btn call" title="Ligar"><i class="fas fa-phone"></i></button>
-          <button class="p-btn deal" title="Negociar" onclick="abrirModal()"><i class="fas fa-handshake"></i></button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function filtrarFila(nivel, btn) {
-  filtroAtivo = nivel;
-  document.querySelectorAll('.pfilter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderFila(todosDevedores);
-}
-
-// ── MODAL ──
-function abrirModal() {
-  document.getElementById('modalReg').classList.add('active');
-  ['cliId','obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('buscaCli').value='';
-  document.getElementById('cliSel').classList.remove('show');
-  document.getElementById('resSel').value='';
-  document.getElementById('dataRet').value='';
-  document.getElementById('retField').classList.remove('show');
-  document.querySelectorAll('.res-btn,.canal-btn').forEach(b=>b.classList.remove('sel'));
-  document.querySelector('.canal-btn').classList.add('sel');
-  document.getElementById('canalSel').value='whatsapp';
-}
-function fecharModal() { document.getElementById('modalReg').classList.remove('active'); }
-function setRes(r, btn) {
-  document.querySelectorAll('.res-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel'); document.getElementById('resSel').value=r;
-  document.getElementById('retField').classList.toggle('show', r==='retorno_agendado');
-}
-function setCanal(c, btn) {
-  document.querySelectorAll('.canal-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel'); document.getElementById('canalSel').value=c;
-}
-
-function buscarCli() {
-  clearTimeout(buscaT);
-  buscaT = setTimeout(async()=>{
-    const t = document.getElementById('buscaCli').value.trim();
-    const d = document.getElementById('dropCli');
-    if(t.length<2){d.classList.remove('show');return;}
-    try{
-      const r = await fetch(API+'/api/clientes?busca='+encodeURIComponent(t)+'&limit=10',{headers:H()});
-      const data = await r.json();
-      const cl = data.data||data||[];
-      d.innerHTML='';
-      if(!cl.length) d.innerHTML='<div class="srch-item" style="color:var(--text-3)">Nenhum encontrado</div>';
-      else cl.forEach(c=>{
-        const i=document.createElement('div');
-        i.className='srch-item';
-        i.innerHTML='<b>'+c.nome+'</b><span>'+(c.cpf_cnpj||'')+(c.telefone?' · '+c.telefone:'')+'</span>';
-        i.onclick=()=>selCli(c); d.appendChild(i);
+      const creds=((await rCred.json()).data)||[];
+      const vPC={},pPC={};
+      cobrancas.forEach(c=>{
+        const cn=c.credor_nome||'';if(!cn)return;
+        if(['pendente','vencido'].includes(c.status))vPC[cn]=(vPC[cn]||0)+parseFloat(c.valor||0);
+        if(c.status==='pago')pPC[cn]=(pPC[cn]||0)+parseFloat(c.valor_pago||c.valor||0);
       });
-      d.classList.add('show');
+      if(!creds.length){document.getElementById('crList').innerHTML='<div class="empty"><i class="fas fa-building"></i>Nenhum credor</div>';}
+      else document.getElementById('crList').innerHTML=creds.slice(0,5).map(cr=>{
+        const n=cr.nome||'Credor',v=vPC[n]||cr.valor_total||0,p=pPC[n]||0;
+        const pct=v>0?Math.min(Math.round(p/v*100),100):0;
+        return`<div class="cr-item"><div class="cr-av">${n.charAt(0)}</div><div class="cr-info"><div class="cr-nm">${n}</div><div class="cr-bt"><div class="cr-bf" data-w="${pct}" style="width:0%"></div></div></div><div class="cr-r"><span class="cr-val">${fmtMK(v)}</span><span class="cr-pct">${pct}% rec.</span></div></div>`;
+      }).join('');
+      setTimeout(()=>document.querySelectorAll('.cr-bf').forEach(b=>b.style.width=b.dataset.w+'%'),300);
+    }
+
+    // PAG + REPASSE
+    document.getElementById('pagGrid').innerHTML=`
+      <div class="fc"><div class="fc-l">Recebido hoje</div><div class="fc-v g">${fmtMK(recHoje)}</div></div>
+      <div class="fc"><div class="fc-l">Recebido no mês</div><div class="fc-v g">${fmtMK(recMes)}</div></div>
+      <div class="fc"><div class="fc-l">Em atraso</div><div class="fc-v r">${fmtMK(vencVal)}</div></div>
+      <div class="fc"><div class="fc-l">A vencer</div><div class="fc-v a">${fmtMK(aVencer)}</div></div>`;
+    const comis=recMes*0.1;
+    document.getElementById('repGrid').innerHTML=`
+      <div class="fc"><div class="fc-l">A repassar</div><div class="fc-v a">${fmtMK(recMes-comis)}</div></div>
+      <div class="fc"><div class="fc-l">Total recuperado</div><div class="fc-v g">${fmtMK(recMes)}</div></div>
+      <div class="fc"><div class="fc-l">Comissão (10%)</div><div class="fc-v o">${fmtMK(comis)}</div></div>
+      <div class="fc"><div class="fc-l">Já repassado</div><div class="fc-v" style="color:var(--t2)">—</div></div>`;
+
+  }catch(e){console.error('[DASH]',e);toast('Erro ao carregar dados','err')}
+}
+
+function renderPri(devs){
+  const list=filtro==='todos'?devs:devs.filter(d=>d.nivel===filtro);
+  if(!list.length){document.getElementById('pbList').innerHTML='<div class="empty"><i class="fas fa-check-circle"></i>Nenhum devedor nesta categoria</div>';return}
+  document.getElementById('pbList').innerHTML=list.map(d=>`<div class="pi ${d.nivel}">
+    <div class="pi-stripe ${d.nivel}"></div>
+    <div class="pi-ico ${d.nivel}">${d.nivel==='crit'?'🔴':d.nivel==='high'?'🟠':'🟡'}</div>
+    <div class="pi-info">
+      <div class="pi-name">${d.nome}</div>
+      <div class="pi-sub">
+        <span class="pi-tag ${d.nivel}">${d.nivel==='crit'?'CRÍTICO':d.nivel==='high'?'ALTO':'MÉDIO'}</span>
+        ${d.maxDias}d · ${d.count} título${d.count>1?'s':''}${d.credor?' · '+d.credor:''}
+      </div>
+    </div>
+    <div class="pi-val"><span class="pi-vmain">${fmtM(d.valor)}</span><span class="pi-vn">${d.count} cobrança${d.count>1?'s':''}</span></div>
+    <div class="pi-acts">
+      <button class="pa w" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+      <button class="pa c" title="Ligar"><i class="fas fa-phone"></i></button>
+      <button class="pa d" title="Negociar" onclick="openModal()"><i class="fas fa-handshake"></i></button>
+    </div>
+  </div>`).join('');
+}
+
+function filFila(nivel,btn){
+  filtro=nivel;
+  document.querySelectorAll('.pf').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderPri(allDev);
+}
+
+function openModal(){document.getElementById('mov').classList.add('on');['cliId','obs'].forEach(id=>document.getElementById(id).value='');document.getElementById('buscaCli').value='';document.getElementById('cliSel').classList.remove('on');document.getElementById('resSel').value='';document.getElementById('retField').classList.remove('show');document.querySelectorAll('.rb,.cb').forEach(b=>b.classList.remove('on'));document.querySelector('.cb').classList.add('on');document.getElementById('canalSel').value='whatsapp'}
+function closeModal(){document.getElementById('mov').classList.remove('on')}
+function setRes(r,btn){document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('resSel').value=r;document.getElementById('retField').classList.toggle('show',r==='retorno_agendado')}
+function setCanal(c,btn){document.querySelectorAll('.cb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('canalSel').value=c}
+function buscarCli(){
+  clearTimeout(buscaT);
+  buscaT=setTimeout(async()=>{
+    const t=document.getElementById('buscaCli').value.trim(),d=document.getElementById('dropCli');
+    if(t.length<2){d.classList.remove('on');return}
+    try{
+      const cl=(await fetch(API+'/api/clientes?busca='+encodeURIComponent(t)+'&limit=10',{headers:H()}).then(r=>r.json())).data||[];
+      d.innerHTML='';
+      if(!cl.length)d.innerHTML='<div class="si" style="color:var(--t3)">Nenhum encontrado</div>';
+      else cl.forEach(c=>{const i=document.createElement('div');i.className='si';i.innerHTML='<b>'+c.nome+'</b><span>'+(c.cpf_cnpj||'')+(c.telefone?' · '+c.telefone:'')+'</span>';i.onclick=()=>selCli(c);d.appendChild(i)});
+      d.classList.add('on');
     }catch(e){}
   },300);
 }
-function selCli(c) {
-  document.getElementById('cliId').value=c.id;
-  document.getElementById('cliNome').textContent=c.nome;
-  document.getElementById('cliCpf').textContent=c.cpf_cnpj||'';
-  document.getElementById('cliSel').classList.add('show');
-  document.getElementById('dropCli').classList.remove('show');
-  document.getElementById('buscaCli').value='';
+function selCli(c){document.getElementById('cliId').value=c.id;document.getElementById('cliNome').textContent=c.nome;document.getElementById('cliCpf').textContent=c.cpf_cnpj||'';document.getElementById('cliSel').classList.add('on');document.getElementById('dropCli').classList.remove('on');document.getElementById('buscaCli').value=''}
+function limparCli(){document.getElementById('cliId').value='';document.getElementById('cliSel').classList.remove('on');document.getElementById('buscaCli').value=''}
+document.addEventListener('click',e=>{if(!e.target.closest('.srch'))document.getElementById('dropCli').classList.remove('on')});
+async function salvar(){
+  const cId=document.getElementById('cliId').value,res=document.getElementById('resSel').value,canal=document.getElementById('canalSel').value,obs=document.getElementById('obs').value,dr=document.getElementById('dataRet').value;
+  if(!cId){toast('Selecione um cliente','err');return}
+  if(!res){toast('Selecione o resultado','err');return}
+  if(res==='retorno_agendado'&&!dr){toast('Informe a data de retorno','err');return}
+  try{const d=await fetch(API+'/api/operacao/registrar',{method:'POST',headers:H(),body:JSON.stringify({cliente_id:cId,resultado:res,canal,observacao:obs,data_retorno:dr||null})}).then(r=>r.json());if(d.success){toast('Contato registrado!');closeModal();carregarDashboard()}else toast(d.error||'Erro','err')}catch(e){toast('Erro ao salvar','err')}
 }
-function limparCli() {
-  document.getElementById('cliId').value='';
-  document.getElementById('cliSel').classList.remove('show');
-  document.getElementById('buscaCli').value='';
-}
-document.addEventListener('click',e=>{if(!e.target.closest('.srch'))document.getElementById('dropCli').classList.remove('show');});
+function toggleSB(){document.getElementById('sb').classList.toggle('open');document.getElementById('sov').classList.toggle('on')}
 
-async function salvar() {
-  const cId=document.getElementById('cliId').value;
-  const res=document.getElementById('resSel').value;
-  const canal=document.getElementById('canalSel').value;
-  const obs=document.getElementById('obs').value;
-  const dr=document.getElementById('dataRet').value;
-  if(!cId){toast('Selecione um cliente','err');return;}
-  if(!res){toast('Selecione o resultado','err');return;}
-  if(res==='retorno_agendado'&&!dr){toast('Informe a data de retorno','err');return;}
-  try{
-    const r=await fetch(API+'/api/operacao/registrar',{method:'POST',headers:H(),
-      body:JSON.stringify({cliente_id:cId,resultado:res,canal,observacao:obs,data_retorno:dr||null})});
-    const d=await r.json();
-    if(d.success){toast('Contato registrado!');fecharModal();carregarDashboard();}
-    else toast(d.error||'Erro','err');
-  }catch(e){toast('Erro ao salvar','err');}
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sdbOverlay').classList.toggle('active');
-}
-
-// INIT
-document.addEventListener('DOMContentLoaded',async()=>{
-  await checkAuth();
-  await carregarDashboard();
-});
+document.addEventListener('DOMContentLoaded',async()=>{await checkAuth();await carregarDashboard()});
 </script>
 </body>
 </html>
