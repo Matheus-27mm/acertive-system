@@ -199,6 +199,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   justify-content:space-between;
   margin-bottom:10px;
 }
+.debtor-left {}
 .debtor-badge {
   display:inline-flex;
   align-items:center;
@@ -1064,7 +1065,7 @@ let acoesHoje = 0;
 let acordosHoje = 0;
 let tempos = [];
 let tStart = Date.now();
-let pmaFn = null; // ação recomendada atual
+let pmaFn = null; // ação primária atual (PMA)
 
 /* ── SCORE INTELIGENTE ──────────────────────────────────────
    Normaliza cada dimensão pelo máximo da fila (0–1)
@@ -1103,114 +1104,71 @@ async function init() {
 
 async function carregarFila() {
   try {
-    // ─────────────────────────────────────────────────────────────
-    // FIX 1: buscar TODAS as páginas (backend limita a 50 por req)
-    // FIX 2: o backend não usa status='vencido' — usa 'pendente'
-    //        e a distinção é feita por data_vencimento < hoje.
-    //        Buscamos 'pendente' e filtramos aqui no frontend.
-    // ─────────────────────────────────────────────────────────────
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
+    // ────────────────────────────────────────────────────────────
+    // ROTA CORRETA: GET /api/acionamentos/fila/devedores
+    // O backend já faz tudo no SQL:
+    //   - filtra clientes com cobranças pendentes/vencidas
+    //   - soma valor_total por cliente (campo: valor_total)
+    //   - calcula maior_atraso em dias (campo: maior_atraso)
+    //   - conta cobranças (campo: total_cobrancas)
+    //   - ordena por atraso DESC + valor DESC
+    // Zero agrupamento no frontend.
+    // ────────────────────────────────────────────────────────────
 
-    // Buscar pendentes E vencidos em paralelo (backend usa ambos os status)
-    let todasCobrancas = [];
-    const PER_PAGE = 500;
+    // Buscar todas as páginas (backend default limit=50)
+    let devedores = [];
+    const PER_PAGE = 200;
+    let offset = 0;
 
-    async function fetchPaginated(statusParam) {
-      let pg = 1, batch = [];
-      while (true) {
-        const r = await fetch(
-          API + `/api/cobrancas?status=${statusParam}&limit=${PER_PAGE}&page=${pg}`,
-          { headers: H() }
-        );
-        const d = await r.json();
-        const rows = d.data || [];
-        batch = batch.concat(rows);
-        if (rows.length < PER_PAGE) break;
-        pg++;
-        if (pg > 40) break;
-      }
-      return batch;
+    while (true) {
+      const r = await fetch(
+        API + `/api/acionamentos/fila/devedores?limit=${PER_PAGE}&offset=${offset}`,
+        { headers: H() }
+      );
+      const d = await r.json();
+      const batch = d.data || [];
+      devedores = devedores.concat(batch);
+      if (batch.length < PER_PAGE) break;
+      offset += PER_PAGE;
+      if (offset > 20000) break; // segurança
     }
 
-    const [pendentes, vencidosBD] = await Promise.all([
-      fetchPaginated('pendente'),
-      fetchPaginated('vencido')
-    ]);
+    // Mapear para o shape interno da fila
+    // Campos do backend:
+    //   cliente_id, nome, cpf_cnpj, telefone, celular, email,
+    //   credor_nome, total_cobrancas, valor_total, maior_atraso,
+    //   total_acionamentos, ultimo_acionamento, data_ultimo_contato
+    const rawFila = devedores.map(d => ({
+      id:            d.cliente_id,
+      nome:          d.nome || 'Devedor',
+      doc:           d.cpf_cnpj || '—',
+      telefone:      d.celular  || d.telefone || '',
+      email:         d.email    || '',
+      credor:        d.credor_nome || '—',
+      valor:         parseFloat(d.valor_total)    || 0,   // ✅ calculado no banco
+      count:         parseInt(d.total_cobrancas)  || 0,   // ✅ calculado no banco
+      maxDias:       parseInt(d.maior_atraso)     || 0,   // ✅ calculado no banco
+      tentativas:    parseInt(d.total_acionamentos) || 0,
+      ultimoContato: d.ultimo_acionamento || d.data_ultimo_contato || null,
+    }));
 
-    // Unir sem duplicatas
-    const seen = new Set();
-    for (const c of [...pendentes, ...vencidosBD]) {
-      if (!seen.has(c.id)) { seen.add(c.id); todasCobrancas.push(c); }
-    }
-
-    // Apenas cobranças com vencimento no passado
-    const cobrancas = todasCobrancas.filter(c => {
-      const dv = c.data_vencimento || c.vencimento;
-      if (!dv) return false;
-      return new Date(dv) < hoje;
-    });
-
-    const now = new Date();
-    const map = {};
-
-    cobrancas.forEach(c => {
-      // FIX 3: agrupar APENAS por cliente_id (UUID único)
-      //        Nunca por nome — evita juntar clientes diferentes
-      const id = c.cliente_id;
-      if (!id) return; // ignorar cobranças sem cliente vinculado
-
-      if (!map[id]) map[id] = {
-        id,
-        nome:          c.cliente_nome || 'Devedor',
-        doc:           c.cliente_cpf  || c.cliente_documento || '—',
-        telefone:      c.cliente_telefone || '',
-        email:         c.cliente_email    || '',
-        credor:        c.credor_nome || '—',
-        valor:         0, count: 0, maxDias: 0,
-        tentativas:    0,
-        ultimoContato: null,
-      };
-
-      // Valor: usar campo normalizado pelo backend (valor || valor_original)
-      const valorCob = parseFloat(c.valor || c.valor_original || 0);
-      if (valorCob > 0) map[id].valor += valorCob;
-      map[id].count++;
-
-      // Dias em atraso: validar data rigorosamente
-      const dv = c.data_vencimento || c.vencimento;
-      let dias = 0;
-      if (dv) {
-        // Tratar como data local (sem conversão UTC que causava off-by-one)
-        const parts = String(dv).substring(0,10).split('-');
-        if (parts.length === 3) {
-          const dataVenc = new Date(+parts[0], +parts[1]-1, +parts[2]);
-          if (!isNaN(dataVenc) && dataVenc.getFullYear() > 2000) {
-            dias = Math.max(0, Math.floor((now - dataVenc) / 864e5));
-          }
-        }
-      }
-      if (dias > map[id].maxDias) map[id].maxDias = dias;
-
-      // Preferir contatos preenchidos
-      if (!map[id].telefone && c.cliente_telefone) map[id].telefone = c.cliente_telefone;
-      if (!map[id].email    && c.cliente_email)    map[id].email    = c.cliente_email;
-    });
-
-    const rawFila = Object.values(map);
+    // Score + nível (normalizado pelos máximos da fila)
     const maxDias  = Math.max(...rawFila.map(d => d.maxDias), 1);
     const maxValor = Math.max(...rawFila.map(d => d.valor),   1);
     const maxCount = Math.max(...rawFila.map(d => d.count),   1);
+    const maxTent  = Math.max(...rawFila.map(d => d.tentativas), 1);
 
     fila = rawFila
       .map(d => {
-        const score = calcScore(d, maxDias, maxValor, maxCount, 1);
+        const score = calcScore(d, maxDias, maxValor, maxCount, maxTent);
         return { ...d, score, nivel: nivelScore(score) };
       })
       .sort((a, b) => b.score - a.score);
 
     // Popular filtro de credor
     const credList = document.getElementById('filtroCreedor');
+    // Limpar opções antigas exceto a primeira
+    while (credList.options.length > 1) credList.remove(1);
     [...new Set(fila.map(d => d.credor).filter(Boolean))].sort().forEach(c => {
       const o = document.createElement('option');
       o.value = c; o.textContent = c;
@@ -1221,8 +1179,8 @@ async function carregarFila() {
     idx = 0;
     filaF.length ? renderDev() : mostrarEmpty();
   } catch(e) {
-    console.error(e);
-    toast('Erro ao carregar fila', 'err');
+    console.error('[FILA]', e);
+    toast('Erro ao carregar fila: ' + e.message, 'err');
   }
 }
 
@@ -1321,8 +1279,8 @@ async function carregarHist(d) {
   document.getElementById('histList').innerHTML = '<div class="hist-empty"><div class="spin"></div></div>';
   document.getElementById('sideCount').textContent = '—';
   try {
-    // Rota correta: GET /api/operacao/cliente/:id (ver operacao.js)
-    const r = await fetch(API + `/api/operacao/cliente/${d.id}`, { headers: H() });
+    // Rota correta: GET /api/acionamentos/cliente/:id (ver acionamentos.js)
+    const r = await fetch(API + `/api/acionamentos/cliente/${d.id}`, { headers: H() });
     const regs = r.ok ? ((await r.json()).data || []) : [];
     document.getElementById('sideCount').textContent = regs.length ? `${regs.length} contato${regs.length > 1 ? 's' : ''}` : 'sem histórico';
 
@@ -1340,26 +1298,33 @@ async function carregarHist(d) {
     }
 
     const rm = {
-      atendeu:     { c: 'suc', l: 'Atendeu' },
-      nao_atendeu: { c: 'dan', l: 'Não atendeu' },
-      gerou_acordo:{ c: 'suc', l: 'Gerou acordo' },
-      retorno:     { c: 'wrn', l: 'Retorno agendado' },
-      recusou:     { c: 'dan', l: 'Recusou' },
-      nr_errado:   { c: 'neu', l: 'Nº errado' },
+      atendeu:          { c: 'suc', l: 'Atendeu' },
+      nao_atendeu:      { c: 'dan', l: 'Não atendeu' },
+      gerou_acordo:     { c: 'suc', l: 'Gerou acordo' },
+      acordo:           { c: 'suc', l: 'Acordo' },
+      retorno_agendado: { c: 'wrn', l: 'Retorno agendado' },
+      retorno:          { c: 'wrn', l: 'Retorno' },
+      recusou:          { c: 'dan', l: 'Recusou' },
+      numero_errado:    { c: 'neu', l: 'Nº errado' },
+      promessa:         { c: 'wrn', l: 'Promessa' },
+      sem_contato:      { c: 'neu', l: 'Sem contato' },
     };
 
     document.getElementById('histList').innerHTML = regs.map(r => {
-      const rv = rm[r.resultado] || { c: 'neu', l: r.resultado };
-      const dt = new Date(r.created_at || r.data);
+      // Acionamentos retornam: tipo, canal, resultado, descricao, created_at, operador_nome
+      const res = r.resultado || r.tipo || '—';
+      const rv = rm[res] || { c: 'neu', l: res };
+      const dt = new Date(r.created_at);
       const ds = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' '
                + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const obs = r.descricao || r.observacao || '';
       return `<div class="hitem">
         <div class="hitem-top">
           <span class="hitem-date">${ds}</span>
-          <span class="hitem-canal">${r.canal || '—'}</span>
+          <span class="hitem-canal">${r.canal || r.tipo || '—'}</span>
         </div>
         <div class="hitem-res ${rv.c}">${rv.l}</div>
-        ${r.observacao ? `<div class="hitem-obs">${r.observacao}</div>` : ''}
+        ${obs ? `<div class="hitem-obs">${obs}</div>` : ''}
       </div>`;
     }).join('');
   } catch(e) {
@@ -1372,6 +1337,7 @@ async function carregarHist(d) {
    Analisa: dias_atraso, valor, tentativas, ultimoContato
    Decide: qual ação tem maior chance de conversão agora
 ═══════════════════════════════════════════════════════════ */
+/* pmaFn declarado no bloco de estado global acima */
 
 function gerarPMA(d) {
   const pmaBox  = document.getElementById('pmaBox');
@@ -1598,11 +1564,19 @@ async function salvarProximo() {
   tempos.push(Date.now() - tStart);
 
   try {
-    await fetch(API + '/api/operacao/registrar', {
+    // Rota correta: POST /api/acionamentos (ver acionamentos.js)
+    // Campos obrigatórios: cliente_id, tipo, resultado
+    await fetch(API + '/api/acionamentos', {
       method: 'POST', headers: H(),
-      body: JSON.stringify({ cliente_id: d.id, resultado: result, canal, observacao: obs })
+      body: JSON.stringify({
+        cliente_id: d.id,
+        tipo:       'contato_ativo',   // tipo padrão para contato operacional
+        canal,
+        resultado:  result,
+        descricao:  obs || null,
+      })
     });
-  } catch(e) { /* segue mesmo com erro de rede */ }
+  } catch(e) { console.error('[SALVAR]', e); }
 
   acoesHoje++;
   atualizarStats();
@@ -1646,11 +1620,36 @@ async function salvarAcordo() {
   const d = filaF[idx];
   const vn = parseFloat(neg.replace(/[^\d,]/g, '').replace(',', '.'));
   try {
-    await fetch(API + '/api/acordos', {
+    // Criar acordo
+    const rAc = await fetch(API + '/api/acordos', {
       method: 'POST', headers: H(),
-      body: JSON.stringify({ cliente_id: d.id, valor_original: d.valor, valor_negociado: vn, num_parcelas: parseInt(parc), data_vencimento: venc, observacao: obs })
+      body: JSON.stringify({
+        cliente_id:      d.id,
+        valor_original:  d.valor,
+        valor_negociado: vn,
+        num_parcelas:    parseInt(parc),
+        data_vencimento: venc,
+        observacao:      obs
+      })
     });
-  } catch(e) {}
+    const acData = await rAc.json();
+    // Registrar acionamento de acordo
+    await fetch(API + '/api/acionamentos', {
+      method: 'POST', headers: H(),
+      body: JSON.stringify({
+        cliente_id: d.id,
+        tipo:       'acordo',
+        canal:      document.getElementById('canalVal').value,
+        resultado:  'gerou_acordo',
+        descricao:  `Acordo de R$ ${vn.toLocaleString('pt-BR',{minimumFractionDigits:2})} em ${parc}x. ${obs||''}`.trim()
+      })
+    });
+    // Atualizar status do cliente para negociando
+    await fetch(API + `/api/acionamentos/cliente/${d.id}/status`, {
+      method: 'PUT', headers: H(),
+      body: JSON.stringify({ status_cobranca: 'acordo' })
+    });
+  } catch(e) { console.error('[ACORDO]', e); }
 
   fecharModal('ovAcordo');
   acordosHoje++;
@@ -1669,26 +1668,20 @@ async function salvarIncob() {
 
   const d = filaF[idx];
   try {
-    // Buscar IDs das cobranças vencidas deste cliente e arquivar
-    const rCobs = await fetch(API + `/api/cobrancas?cliente_id=${d.id}&status=vencido&limit=1000`, { headers: H() });
-    if (rCobs.ok) {
-      const dCobs = await rCobs.json();
-      const ids = (dCobs.data || []).map(c => c.id).filter(Boolean);
-      if (ids.length > 0) {
-        await fetch(API + '/api/cobrancas/arquivar-massa', {
-          method: 'POST', headers: H(),
-          body: JSON.stringify({ ids })
-        });
-      }
-    }
-    // Registrar contato com motivo na observação
-    await fetch(API + '/api/operacao/registrar', {
+    // 1. Atualizar status do cliente para 'incobravel'
+    await fetch(API + `/api/acionamentos/cliente/${d.id}/status`, {
+      method: 'PUT', headers: H(),
+      body: JSON.stringify({ status_cobranca: 'incobravel' })
+    });
+    // 2. Registrar o acionamento com motivo
+    await fetch(API + '/api/acionamentos', {
       method: 'POST', headers: H(),
       body: JSON.stringify({
         cliente_id: d.id,
-        resultado: 'recusou',
-        canal: document.getElementById('canalVal').value,
-        observacao: `[INCOBRÁVEL - ${motivo}] ${obs || ''}`.trim()
+        tipo:       'incobravel',
+        canal:      document.getElementById('canalVal').value,
+        resultado:  'recusou',
+        descricao:  `[INCOBRÁVEL - ${motivo}] ${obs || ''}`.trim()
       })
     });
   } catch(e) { console.error('[INCOB]', e); }
