@@ -931,9 +931,9 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
               <span class="chip suc" onclick="sChip(this,'result','atendeu')">Atendeu</span>
               <span class="chip dan" onclick="sChip(this,'result','nao_atendeu')">Não atendeu</span>
               <span class="chip" onclick="sChip(this,'result','gerou_acordo')">Acordo</span>
-              <span class="chip wrn" onclick="sChip(this,'result','retorno')">Retorno</span>
+              <span class="chip wrn" onclick="sChip(this,'result','retorno_agendado')">Retorno</span>
               <span class="chip dan" onclick="sChip(this,'result','recusou')">Recusou</span>
-              <span class="chip" onclick="sChip(this,'result','nr_errado')">Nº Errado</span>
+              <span class="chip" onclick="sChip(this,'result','numero_errado')">Nº Errado</span>
             </div>
             <input type="hidden" id="resultVal" value="">
           </div>
@@ -969,7 +969,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
       </div>
       <div class="side-body">
         <div class="sugg" id="suggBox">
-          <div class="sugg-label">Sugestão</div>
+          <div class="sugg-label"><i class="fas fa-chart-bar" style="margin-right:3px"></i> Pontuação</div>
           <span id="suggTxt"></span>
         </div>
         <div class="hist" id="histList">
@@ -1131,12 +1131,14 @@ async function carregarFila() {
       const id = c.cliente_id || c.devedor_id || c.cliente_nome || '?';
       if (!map[id]) map[id] = {
         id,
-        nome:     c.cliente_nome || c.devedor || 'Devedor',
-        doc:      c.cpf_cnpj    || c.devedor_cpf  || '—',
-        telefone: c.telefone    || c.devedor_telefone || '',
-        email:    c.email       || c.devedor_email    || '',
-        credor:   c.credor_nome || '—',
-        valor: 0, count: 0, maxDias: 0
+        nome:          c.cliente_nome || c.devedor || 'Devedor',
+        doc:           c.cliente_cpf  || c.cliente_documento || c.cpf_cnpj || '—',
+        telefone:      c.cliente_telefone || c.telefone || '',
+        email:         c.cliente_email    || c.email    || '',
+        credor:        c.credor_nome || '—',
+        valor:         0, count: 0, maxDias: 0,
+        tentativas:    0,
+        ultimoContato: null,
       };
       // Valor = soma APENAS das cobranças deste devedor
       map[id].valor += parseFloat(c.valor || 0);
@@ -1150,9 +1152,17 @@ async function carregarFila() {
         map[id].email = c.email || c.devedor_email;
     });
 
-    fila = Object.values(map)
-      .sort((a, b) => b.valor - a.valor)
-      .map(d => ({ ...d, nivel: d.maxDias > 60 ? 'crit' : d.maxDias > 30 ? 'high' : 'med' }));
+    const rawFila = Object.values(map);
+    const maxDias  = Math.max(...rawFila.map(d => d.maxDias), 1);
+    const maxValor = Math.max(...rawFila.map(d => d.valor),   1);
+    const maxCount = Math.max(...rawFila.map(d => d.count),   1);
+
+    fila = rawFila
+      .map(d => {
+        const score = calcScore(d, maxDias, maxValor, maxCount, 1);
+        return { ...d, score, nivel: nivelScore(score) };
+      })
+      .sort((a, b) => b.score - a.score);
 
     // Popular filtro de credor
     const credList = document.getElementById('filtroCreedor');
@@ -1191,16 +1201,18 @@ function renderDev() {
 
   // Prioridade
   const nivelMap = {
-    crit: { badge: 'CRÍTICO',  cls: 'crit', valCls: 'crit' },
-    high: { badge: 'ALTO',     cls: 'high', valCls: '' },
-    med:  { badge: 'MÉDIO',    cls: 'med',  valCls: '' }
+    crit: { badge: 'CRÍTICO', valCls: 'crit' },
+    high: { badge: 'ALTO',    valCls: '' },
+    med:  { badge: 'MÉDIO',   valCls: '' },
+    low:  { badge: 'BAIXO',   valCls: '' }
   };
-  const nv = nivelMap[d.nivel];
+  const nv = nivelMap[d.nivel] || nivelMap.med;
   el.className = `debtor ${d.nivel}`;
 
-  const badge = document.getElementById('dbBadge');
-  badge.className = `debtor-badge ${d.nivel}`;
-  badge.innerHTML = `<i class="fas fa-circle-dot"></i> ${nv.badge}`;
+  const sb = document.getElementById('scoreBadge');
+  sb.className = `score-badge ${d.nivel}`;
+  sb.innerHTML = `<i class="fas fa-circle-dot"></i> ${nv.badge}`;
+  document.getElementById('scoreNum').textContent = d.score != null ? `score ${d.score}` : '';
 
   document.getElementById('dbNome').textContent = d.nome;
   // Doc = CPF + telefone se disponível
@@ -1236,6 +1248,16 @@ function renderDev() {
   document.getElementById('tbProg').style.width = pct + '%';
   document.getElementById('tbPct').textContent = pct + '%';
 
+  // Score breakdown na sidebar
+  const suggBox = document.getElementById('suggBox');
+  const suggTxt = document.getElementById('suggTxt');
+  if (d.score != null) {
+    suggTxt.innerHTML = `Score <strong style="color:var(--t1)">${d.score}/100</strong> &nbsp;·&nbsp; ${d.maxDias}d atraso &nbsp;·&nbsp; ${d.count} título${d.count>1?'s':''}<br><span style="color:var(--t3);font-size:10px">Ordenado por urgência automática</span>`;
+    suggBox.classList.add('show');
+  } else {
+    suggBox.classList.remove('show');
+  }
+
   // Pré-preencher modal de acordo
   document.getElementById('acOrig').value = fmtM(d.valor);
   const amh = new Date(); amh.setDate(amh.getDate() + 1);
@@ -1245,7 +1267,8 @@ function renderDev() {
   document.getElementById('alertaHoje').classList.remove('show');
 
   carregarHist(d);
-  gerarSugestao(d);
+  gerarRecomendacao(d);
+  renderDevBadges(d);
   resetForm();
 }
 
@@ -1253,9 +1276,18 @@ async function carregarHist(d) {
   document.getElementById('histList').innerHTML = '<div class="hist-empty"><div class="spin"></div></div>';
   document.getElementById('sideCount').textContent = '—';
   try {
-    const r = await fetch(API + `/api/operacao/registros?cliente_id=${d.id}&limit=10`, { headers: H() });
+    // Rota correta: GET /api/operacao/cliente/:id (ver operacao.js)
+    const r = await fetch(API + `/api/operacao/cliente/${d.id}`, { headers: H() });
     const regs = r.ok ? ((await r.json()).data || []) : [];
     document.getElementById('sideCount').textContent = regs.length ? `${regs.length} contato${regs.length > 1 ? 's' : ''}` : 'sem histórico';
+
+    // Atualizar metadados de perfil
+    if (filaF[idx] && filaF[idx].id === d.id) {
+      filaF[idx].tentativas    = regs.length;
+      filaF[idx].ultimoContato = regs.length > 0 ? (regs[0].created_at || regs[0].data) : null;
+      renderDevBadges(filaF[idx]);
+      gerarRecomendacao(filaF[idx]);
+    }
 
     if (!regs.length) {
       document.getElementById('histList').innerHTML = '<div class="hist-empty"><i class="fas fa-clock-rotate-left"></i>Primeiro contato</div>';
@@ -1290,16 +1322,54 @@ async function carregarHist(d) {
   }
 }
 
-function gerarSugestao(d) {
-  const box = document.getElementById('suggBox');
-  const txt = document.getElementById('suggTxt');
-  let s = '';
-  if      (d.maxDias > 90) s = 'Dívida muito antiga (+90 dias). Avalie encaminhar ao jurídico ou oferecer desconto agressivo para recuperação parcial.';
-  else if (d.maxDias > 60) s = '+60 dias em atraso. Prioridade alta — ofereça desconto para pagamento à vista.';
-  else if (d.count > 3)    s = `${d.count} títulos em aberto. Tente consolidar em um acordo único com parcelamento.`;
-  else if (d.maxDias <= 30) s = 'Dívida recente. Momento favorável para negociação — proponha quitação simples.';
-  txt.textContent = s;
-  box.classList.toggle('show', !!s);
+/* ── RECOMENDAÇÃO INTELIGENTE ─────────────────────────────── */
+function gerarRecomendacao(d) {
+  const box = document.getElementById('recBox');
+  const txt = document.getElementById('recTxt');
+  const btn = document.getElementById('recBtn');
+  let rec = null;
+
+  if (d.tentativas >= 5) {
+    rec = { txt:'<strong>Múltiplas tentativas sem sucesso.</strong> Ofereça desconto para aumentar conversão.', acao:'Propor acordo', fn:'abrirAcordo' };
+  } else if (d.maxDias > 90) {
+    rec = { txt:'<strong>+90 dias de atraso.</strong> Desconto agressivo — recuperação parcial é melhor que nada.', acao:'Abrir acordo', fn:'abrirAcordo' };
+  } else if (d.maxDias > 60 && d.valor > 2000) {
+    rec = { txt:'<strong>Alto valor e muito tempo em atraso.</strong> Priorize ligação — mais efetivo que mensagem.', acao:'Ligar agora', fn:'acaoLigar' };
+  } else if (d.maxDias > 30) {
+    rec = { txt:'<strong>Dívida em atraso moderado.</strong> WhatsApp com proposta costuma ter boa resposta.', acao:'WhatsApp', fn:'acaoWhatsApp' };
+  } else if (!d.ultimoContato) {
+    rec = { txt:'<strong>Nunca foi contatado.</strong> Primeira abordagem — seja cordial.', acao:'Iniciar', fn:'acaoWhatsApp' };
+  }
+
+  if (rec) {
+    txt.innerHTML = rec.txt;
+    btn.textContent = rec.acao;
+    recAcao = rec.fn;
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show');
+    recAcao = null;
+  }
+}
+
+function executarRec() {
+  if (recAcao && typeof window[recAcao] === 'function') window[recAcao]();
+}
+
+/* ── BADGES DE PERFIL ─────────────────────────────────────── */
+function renderDevBadges(d) {
+  const wrap = document.getElementById('devBadges');
+  const tags = [];
+  if (!d.ultimoContato) {
+    tags.push('<span class="dev-tag nunca"><i class="fas fa-user-plus"></i> Nunca contatado</span>');
+  } else {
+    const dd = Math.floor((Date.now() - new Date(d.ultimoContato)) / 864e5);
+    if (dd <= 3) tags.push(`<span class="dev-tag recente"><i class="fas fa-clock"></i> Contatado há ${dd}d</span>`);
+  }
+  if (d.valor > 5000) tags.push('<span class="dev-tag alto"><i class="fas fa-arrow-up"></i> Alto valor</span>');
+  if (d.tentativas >= 3) tags.push(`<span class="dev-tag multi"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas</span>`);
+  if (d.count > 4)       tags.push(`<span class="dev-tag multi"><i class="fas fa-layer-group"></i> ${d.count} títulos</span>`);
+  wrap.innerHTML = tags.join('');
 }
 
 function mostrarEmpty() {
@@ -1318,36 +1388,34 @@ function mostrarEmpty() {
    AÇÕES
 ═══════════════════════════════════════════ */
 /* ── AÇÕES DE CONTATO COM ABERTURA REAL ── */
+function setAtivoCanal(cls) {
+  document.querySelectorAll('.act-main').forEach(b => b.classList.remove('canal-ativo'));
+  const b = document.querySelector(cls);
+  if (b) b.classList.add('canal-ativo');
+}
+
 function acaoLigar() {
   const d = filaF[idx];
-  setCanal('telefone');
+  setCanal('telefone'); setAtivoCanal('.act-call');
   if (d && d.telefone) {
     window.location.href = 'tel:' + d.telefone.replace(/\D/g,'');
-  } else {
-    toast('Telefone não cadastrado para este devedor', 'err');
-  }
+  } else { toast('Telefone não cadastrado', 'err'); }
 }
 
 function acaoWhatsApp() {
   const d = filaF[idx];
-  setCanal('whatsapp');
+  setCanal('whatsapp'); setAtivoCanal('.act-wpp');
   if (d && d.telefone) {
-    const num = '55' + d.telefone.replace(/\D/g,'');
-    window.open('https://wa.me/' + num, '_blank');
-  } else {
-    toast('Telefone não cadastrado para este devedor', 'err');
-  }
+    window.open('https://wa.me/55' + d.telefone.replace(/\D/g,''), '_blank');
+  } else { toast('Telefone não cadastrado', 'err'); }
 }
 
 function acaoEmail() {
   const d = filaF[idx];
-  setCanal('email');
+  setCanal('email'); setAtivoCanal('.act-mail');
   if (d && d.email) {
-    const subject = encodeURIComponent('Cobrança – ' + d.credor);
-    window.location.href = 'mailto:' + d.email + '?subject=' + subject;
-  } else {
-    toast('E-mail não cadastrado para este devedor', 'err');
-  }
+    window.location.href = 'mailto:' + d.email + '?subject=' + encodeURIComponent('Cobrança – ' + d.credor);
+  } else { toast('E-mail não cadastrado', 'err'); }
 }
 
 function setCanal(tipo) {
@@ -1394,8 +1462,15 @@ async function salvarProximo() {
 }
 
 function avancar() {
-  idx++;
-  idx >= filaF.length ? mostrarEmpty() : renderDev();
+  if (filaF[idx]) filaF[idx]._processado = true;
+  // Próximo não processado com maior score (já ordenado por score)
+  const prox = filaF.findIndex((d, i) => i > idx && !d._processado);
+  if (prox === -1) {
+    const qualquer = filaF.findIndex(d => !d._processado);
+    qualquer === -1 ? mostrarEmpty() : (idx = qualquer, renderDev());
+  } else {
+    idx = prox; renderDev();
+  }
 }
 
 function pular() {
@@ -1445,11 +1520,29 @@ async function salvarIncob() {
 
   const d = filaF[idx];
   try {
-    await fetch(API + '/api/cobrancas/bulk-status', {
-      method: 'PUT', headers: H(),
-      body: JSON.stringify({ cliente_id: d.id, status: 'incobravel', motivo, observacao: obs })
+    // Buscar IDs das cobranças vencidas deste cliente e arquivar
+    const rCobs = await fetch(API + `/api/cobrancas?cliente_id=${d.id}&status=vencido&limit=1000`, { headers: H() });
+    if (rCobs.ok) {
+      const dCobs = await rCobs.json();
+      const ids = (dCobs.data || []).map(c => c.id).filter(Boolean);
+      if (ids.length > 0) {
+        await fetch(API + '/api/cobrancas/arquivar-massa', {
+          method: 'POST', headers: H(),
+          body: JSON.stringify({ ids })
+        });
+      }
+    }
+    // Registrar contato com motivo na observação
+    await fetch(API + '/api/operacao/registrar', {
+      method: 'POST', headers: H(),
+      body: JSON.stringify({
+        cliente_id: d.id,
+        resultado: 'recusou',
+        canal: document.getElementById('canalVal').value,
+        observacao: `[INCOBRÁVEL - ${motivo}] ${obs || ''}`.trim()
+      })
     });
-  } catch(e) {}
+  } catch(e) { console.error('[INCOB]', e); }
 
   fecharModal('ovIncob');
   acoesHoje++;
@@ -1501,6 +1594,8 @@ function resetForm() {
   document.querySelectorAll('#resultChips .chip').forEach(c => c.classList.remove('on'));
   document.querySelectorAll('#canalChips .chip').forEach(c => c.classList.remove('on'));
   document.querySelector('#canalChips .chip').classList.add('on');
+  document.querySelectorAll('.act-main').forEach(b => b.classList.remove('canal-ativo'));
+  recAcao = null;
 }
 
 function togglePause() {
