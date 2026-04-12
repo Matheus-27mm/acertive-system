@@ -1,644 +1,806 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobranças - ACERTIVE</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-primary: #050709;--bg-secondary: #0a0d12;--bg-card: #0e1219;--bg-card-hover: #121924;
-            --bg-elevated: #151c28;--gold-primary: #c9a84c;--gold-light: #dfc070;--gold-dark: #8b7434;
-            --gold-glow: rgba(201, 168, 76, 0.12);--gold-subtle: rgba(201, 168, 76, 0.06);
-            --success: #3ecf8e;--success-bg: rgba(62, 207, 142, 0.08);
-            --warning: #e0943e;--warning-bg: rgba(224, 148, 62, 0.08);
-            --danger: #e05c5c;--danger-bg: rgba(224, 92, 92, 0.08);
-            --info: #5c8ee0;--info-bg: rgba(92, 142, 224, 0.08);
-            --text-primary: #e8e6e1;--text-secondary: #7a7670;--text-muted: #4a4640;
-            --border-subtle: rgba(201, 168, 76, 0.07);--border-default: rgba(201, 168, 76, 0.14);
-            --border-strong: rgba(201, 168, 76, 0.2);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);--shadow-gold: 0 8px 24px rgba(201, 168, 76, 0.15);
-        }
-        .search-select-container{position:relative}
-        .search-select-container input[type="text"]{width:100%;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
-        .search-select-container input[type="text"]:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
-        .search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;max-height:220px;overflow-y:auto;z-index:1000;display:none;margin-top:4px;box-shadow:var(--shadow-sm)}
-        .search-dropdown.show{display:block}
-        .search-dropdown-item{padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background 0.15s}
-        .search-dropdown-item:hover{background:var(--gold-subtle)}
-        .search-dropdown-item:last-child{border-bottom:none}
-        .search-dropdown-item small{color:var(--text-muted);display:block;font-size:11px;margin-top:2px}
-        .search-dropdown-empty{padding:12px 14px;color:var(--text-muted);font-size:13px;text-align:center}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Outfit',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;background-image:radial-gradient(ellipse at 0% 0%,rgba(201,168,76,0.025)0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(201,168,76,0.02)0%,transparent 50%)}
-        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
-        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
-        .sidebar-logo{display:flex;align-items:center;gap:14px}
-        .sidebar-logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bg-primary);box-shadow:var(--shadow-gold)}
-        .sidebar-logo-text{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700}
-        .sidebar-logo-text span{color:var(--gold-primary)}
-        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
-        .nav-section{margin-bottom:28px}
-        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px;opacity:0.8}
-        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all 0.25s;font-size:14px;font-weight:500;position:relative;border:1px solid transparent}
-        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary);border-color:var(--border-subtle)}
-        .nav-item.active{background:linear-gradient(135deg,var(--gold-subtle),transparent);color:var(--gold-light);border-color:var(--border-default)}
-        .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold-primary);border-radius:0 4px 4px 0}
-        .nav-item i{width:20px;text-align:center;font-size:15px}
-        .nav-item .badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
-        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
-        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
-        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--bg-primary)}
-        .user-details{flex:1}
-        .user-name{font-size:14px;font-weight:600}
-        .user-role{font-size:12px;color:var(--text-muted)}
-        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px;transition:all 0.2s}
-        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
-        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
-        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
-        .page-header-left h1{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:-0.5px;margin-bottom:6px}
-        .page-header-left p{font-size:14px;color:var(--text-muted)}
-        .header-actions{display:flex;gap:12px}
-        .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;text-decoration:none;border:none;font-family:'Outfit',sans-serif}
-        .btn-primary{background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));color:var(--bg-primary);box-shadow:var(--shadow-gold)}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(212,168,83,0.4)}
-        .btn-secondary{background:var(--bg-card);border:1px solid var(--border-default);color:var(--text-secondary)}
-        .btn-secondary:hover{background:var(--gold-subtle);color:var(--gold-primary)}
-        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
-        .stat-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;transition:all 0.3s}
-        .stat-card:hover{border-color:var(--border-default);transform:translateY(-2px)}
-        .stat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
-        .stat-card.gold .stat-icon{background:var(--gold-subtle);color:var(--gold-primary);border:1px solid var(--border-default)}
-        .stat-card.yellow .stat-icon{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(245,158,11,0.3)}
-        .stat-card.red .stat-icon{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
-        .stat-card.green .stat-icon{background:var(--success-bg);color:var(--success);border:1px solid rgba(34,197,94,0.3)}
-        .stat-value{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;margin-bottom:6px}
-        .stat-label{font-size:13px;color:var(--text-muted);font-weight:500}
-        .filters-bar{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
-        .search-box{flex:1;min-width:280px;position:relative}
-        .search-box i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
-        .search-box input{width:100%;padding:14px 18px 14px 48px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-size:14px;font-family:'Outfit',sans-serif;transition:all 0.2s}
-        .search-box input:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
-        .search-box input::placeholder{color:var(--text-muted)}
-        .filter-select{padding:14px 18px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-size:14px;min-width:160px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s}
-        .filter-select:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
-        .filter-select option{background:var(--bg-card);color:var(--text-primary)}
-        .status-tabs{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-        .status-tab{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:25px;color:var(--text-secondary);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.3s}
-        .status-tab:hover{background:var(--gold-subtle);color:var(--text-primary);border-color:var(--border-default)}
-        .status-tab.active{background:linear-gradient(135deg,var(--gold-subtle),transparent);border-color:var(--gold-primary);color:var(--gold-light)}
-        .status-tab .count{background:var(--bg-secondary);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700}
-        .status-tab.active .count{background:var(--gold-primary);color:var(--bg-primary)}
-        .table-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden;transition:all 0.3s}
-        .table-wrapper{overflow-x:auto}
-        table{width:100%;border-collapse:collapse}
-        th{text-align:left;padding:18px 24px;font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border-subtle);background:var(--bg-secondary)}
-        td{padding:18px 24px;border-bottom:1px solid var(--border-subtle);font-size:14px}
-        tr:hover{background:var(--gold-subtle)}
-        tr:last-child td{border-bottom:none}
-        .cliente-info{display:flex;align-items:center;gap:14px}
-        .cliente-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-subtle),var(--bg-elevated));border:1px solid var(--border-default);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-primary);font-size:15px}
-        .cliente-nome{font-weight:600;margin-bottom:3px}
-        .cliente-doc{font-size:12px;color:var(--text-muted)}
-        .status-badge{display:inline-block;padding:6px 12px;border-radius:8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-        .status-pendente{background:var(--warning-bg);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)}
-        .status-vencido{background:var(--danger-bg);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
-        .status-pago{background:var(--success-bg);color:#34d399;border:1px solid rgba(34,197,94,0.3)}
-        .status-acordo{background:var(--info-bg);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)}
-        .status-cancelado{background:rgba(107,114,128,0.12);color:#9ca3af;border:1px solid rgba(107,114,128,0.3)}
-        .valor-cell{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold-primary);font-size:15px}
-        .vencimento-cell{font-size:13px;font-weight:500}
-        .vencimento-cell.vencido{color:var(--danger)}
-        .vencimento-cell.proximo{color:var(--warning)}
-        .vencimento-cell.ok{color:var(--success)}
-        .actions-cell{display:flex;gap:8px}
-        .action-btn{width:38px;height:38px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:14px}
-        .action-btn.view{background:var(--gold-subtle);color:var(--gold-primary);border:1px solid var(--border-subtle)}
-        .action-btn.edit{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(245,158,11,0.3)}
-        .action-btn.delete{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
-        .action-btn:hover{transform:scale(1.1);box-shadow:var(--shadow-sm)}
-        .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
-        .empty-state i{font-size:64px;color:var(--gold-primary);margin-bottom:20px;opacity:0.4}
-        .empty-state h3{font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:8px}
-        .empty-state p{color:var(--text-muted)}
-        .loading{display:flex;justify-content:center;padding:80px}
-        .spinner{width:44px;height:44px;border:3px solid var(--border-subtle);border-top-color:var(--gold-primary);border-radius:50%;animation:spin 0.8s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .pagination{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-top:1px solid var(--border-subtle);background:var(--bg-secondary)}
-        .pagination-info{font-size:13px;color:var(--text-muted)}
-        .pagination-buttons{display:flex;gap:8px}
-        .pagination-btn{padding:10px 16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-secondary);font-size:13px;cursor:pointer;transition:all 0.2s;font-family:'Outfit',sans-serif}
-        .pagination-btn:hover:not(:disabled){background:var(--gold-subtle);border-color:var(--border-default);color:var(--gold-primary)}
-        .pagination-btn:disabled{opacity:0.4;cursor:not-allowed}
-        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-        .modal-overlay.active{display:flex}
-        .modal{background:var(--bg-card);border:1px solid var(--border-default);border-radius:20px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
-        .modal-header{padding:24px 28px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card))}
-        .modal-header h3{font-family:'Cormorant Garamond',serif;font-size:20px;display:flex;align-items:center;gap:12px}
-        .modal-header h3 i{color:var(--gold-primary)}
-        .modal-close{background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;transition:all 0.2s;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
-        .modal-close:hover{background:var(--danger-bg);color:var(--danger)}
-        .modal-body{padding:28px}
-        .modal-footer{padding:20px 28px;border-top:1px solid var(--border-subtle);display:flex;gap:14px;justify-content:flex-end}
-        .form-group{margin-bottom:20px}
-        .form-group label{display:block;font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:14px 16px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;font-family:'Outfit',sans-serif;transition:all 0.2s}
-        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold-primary);box-shadow:0 0 0 3px var(--gold-glow)}
-        .form-group select option{background:var(--bg-secondary);color:var(--text-primary)}
-        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        .btn-cancelar{padding:14px 28px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-secondary);font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s}
-        .btn-cancelar:hover{background:var(--bg-elevated);color:var(--text-primary)}
-        .btn-salvar{padding:14px 28px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;border-radius:10px;color:var(--bg-primary);font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:8px;transition:all 0.3s}
-        .btn-salvar:hover{box-shadow:var(--shadow-gold);transform:translateY(-2px)}
-        .toast{position:fixed;bottom:28px;right:28px;background:var(--bg-card);border:1px solid var(--gold-primary);border-radius:14px;padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-gold);transform:translateY(100px);opacity:0;transition:all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);z-index:1000}
-        .toast.show{transform:translateY(0);opacity:1}
-        .toast i{color:var(--success);font-size:22px}
-        .toast span{font-weight:600}
-        ::-webkit-scrollbar{width:8px;height:8px}
-        ::-webkit-scrollbar-track{background:var(--bg-secondary)}
-        ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
-        ::-webkit-scrollbar-thumb:hover{background:var(--gold-dark)}
-        @media(max-width:1400px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.header-actions{flex-direction:column}}
-        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;color:var(--bg-primary);font-size:20px;cursor:pointer;box-shadow:var(--shadow-gold);align-items:center;justify-content:center;transition:all 0.3s}
-        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99;backdrop-filter:blur(2px)}
-        .sidebar-overlay.active{display:block}
-        @media(max-width:768px){.mobile-toggle{display:flex}.sidebar{transition:transform 0.3s ease}.sidebar.open{transform:translateX(0)!important}.main-content{padding-top:76px!important}}
-    
-/* Ambient background */
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.025) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.015) 0%, transparent 60%);
-    animation: ambientPulse 8s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobranças — ACERTIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ── TOKENS — idênticos ao dashboard ── */
+:root {
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;--s4:#1e1e1e;
+  --gold:#c9a84c;--gl:#c9a84c;--gd:#7a5e20;--gxl:#dab85c;
+  --g03:rgba(201,168,76,.03);--g05:rgba(201,168,76,.05);
+  --g08:rgba(201,168,76,.08);--g10:rgba(201,168,76,.10);
+  --g12:rgba(201,168,76,.12);--g18:rgba(201,168,76,.18);
+  --g20:rgba(201,168,76,.20);--g30:rgba(201,168,76,.30);
+  --green:#34c98a;--red:#e55555;--orange:#d97c2e;--blue:#5b8fe8;
+  --white:#f0ede8;--text:#b8b4ae;--t2:#706c66;--t3:#3a3630;--t4:#252220;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
+  --br-gold:rgba(201,168,76,.12);--brh-gold:rgba(201,168,76,.22);
+  --sw:244px;--r:10px;--rs:7px;
 }
-body > * { position: relative; z-index: 1; }
-@keyframes ambientPulse {
-    0%   { opacity: 0.6; transform: scale(1) rotate(0deg); }
-    50%  { opacity: 1;   transform: scale(1.05) rotate(1deg); }
-    100% { opacity: 0.7; transform: scale(0.98) rotate(-1deg); }
-}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+input,select,textarea{font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
 
-        </style>
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
+.sb-logo{height:28px;max-width:120px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--t2);background:transparent;border:1px solid var(--br);padding:2px 8px;border-radius:20px}
+.sb-nav{flex:1;overflow-y:auto;padding:14px 10px}
+.sb-grp{margin-bottom:20px}
+.sb-gl{font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);padding:0 10px;margin-bottom:6px}
+.nl{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);color:var(--t2);font-size:12.5px;font-weight:400;transition:all .2s;margin-bottom:1px;position:relative;border:1px solid transparent}
+.nl:hover{background:rgba(255,255,255,.03);color:var(--white)}
+.nl.active{background:var(--g05);color:var(--white);border-color:var(--br-gold)}
+.nl.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:14px;border-radius:0 2px 2px 0;background:var(--gold)}
+.nl i{width:14px;text-align:center;font-size:11px;flex-shrink:0;opacity:.6}
+.nl.active i{opacity:1}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px}
+.nb.w{background:var(--orange)}
+.sb-foot{padding:12px;border-top:1px solid var(--br)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--r);background:transparent;border:1px solid var(--br);transition:border-color .2s}
+.sb-user:hover{border-color:var(--brh)}
+.sb-av{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gd));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#000}
+.sb-un{font-size:12px;font-weight:500;color:var(--white)}
+.sb-ur{font-size:10px;color:var(--t2)}
+.sb-out{margin-left:auto;color:var(--t3);font-size:12px;padding:5px;border-radius:5px;transition:all .18s}
+.sb-out:hover{background:rgba(229,85,85,.08);color:var(--red)}
+
+/* ── LAYOUT ── */
+.layout{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.header{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(0,0,0,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:16px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white)}
+.hdr-sub{font-size:11px;color:var(--t2)}
+.hdr-div{width:1px;height:20px;background:var(--br)}
+.hdr-stat{display:flex;flex-direction:column}
+.hdr-sv{font-size:13px;font-weight:600;color:var(--white);line-height:1}
+.hdr-sl{font-size:10px;color:var(--t2);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:8px}
+
+/* ── BOTÕES ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000}
+.btn-g:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn-o{background:transparent;border:1px solid var(--br);color:var(--t2)}
+.btn-o:hover{border-color:var(--brh);color:var(--white)}
+.ico-btn{width:28px;height:28px;border-radius:var(--rs);background:transparent;border:1px solid var(--br);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .18s}
+.ico-btn:hover{border-color:var(--brh);color:var(--white)}
+.ico-btn.danger:hover{background:rgba(229,85,85,.08);border-color:rgba(229,85,85,.2);color:var(--red)}
+.ico-btn.warn:hover{background:rgba(217,124,46,.08);border-color:rgba(217,124,46,.2);color:var(--orange)}
+.ico-btn.ok:hover{background:rgba(52,201,138,.08);border-color:rgba(52,201,138,.2);color:var(--green)}
+
+/* ── MAIN ── */
+.main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:16px}
+
+/* ── KPIs — igual hkpi.secondary do dashboard ── */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{padding:18px 20px;border-radius:var(--r);background:var(--s1);border:1px solid var(--br);position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+.kpi:hover{border-color:var(--brh);transform:translateY(-1px)}
+.kpi::after{content:'';position:absolute;bottom:0;left:20px;right:20px;height:1px;opacity:.5}
+.kpi.gold::after{background:var(--gold)}
+.kpi.orange::after{background:var(--orange)}
+.kpi.red::after{background:var(--red)}
+.kpi.gold{border-color:var(--br-gold)}
+.kpi-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;margin-bottom:12px}
+.kpi.gold .kpi-ico{background:var(--g05);color:var(--gold);border:1px solid var(--g12)}
+.kpi.orange .kpi-ico{background:rgba(217,124,46,.06);color:var(--orange);border:1px solid rgba(217,124,46,.15)}
+.kpi.red .kpi-ico{background:rgba(229,85,85,.06);color:var(--red);border:1px solid rgba(229,85,85,.15)}
+.kpi-lbl{font-size:9px;color:var(--t2);margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:.8px}
+.kpi-val{font-size:20px;font-weight:600;color:var(--white);line-height:1;display:block;margin-bottom:2px}
+.kpi.orange .kpi-val{color:var(--orange)}
+.kpi.red .kpi-val{color:var(--red)}
+.kpi-sub{font-size:10px;color:var(--t2)}
+
+/* ── CONTROLES ── */
+.controles{display:flex;gap:10px;align-items:center}
+.search-wrap{position:relative;flex:1;max-width:320px}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:10px;pointer-events:none}
+.search-wrap input{width:100%;padding:8px 10px 8px 30px;background:transparent;border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12px;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--brh)}
+.search-wrap input::placeholder{color:var(--t3)}
+.sel{padding:8px 28px 8px 10px;background:transparent;border:1px solid var(--br);border-radius:var(--rs);color:var(--t2);font-size:12px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23706c66' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s}
+.sel:focus{border-color:var(--brh);color:var(--white)}
+.sel option{background:var(--s3)}
+
+/* ── TABS — padrão .pf do dashboard ── */
+.tabs{display:flex;gap:4px}
+.tab{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid transparent;color:var(--t2);background:transparent;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.tab:hover{color:var(--white)}
+.tab.active{background:var(--g05);border-color:var(--br-gold);color:var(--white)}
+.tab.active.vencido{background:rgba(229,85,85,.06);border-color:rgba(229,85,85,.18);color:var(--red)}
+.tab.active.pendente{background:rgba(217,124,46,.06);border-color:rgba(217,124,46,.18);color:var(--orange)}
+.tab.active.pago{background:rgba(52,201,138,.06);border-color:rgba(52,201,138,.18);color:var(--green)}
+.tab .cnt{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:10px}
+
+/* ── TABELA ── */
+.tbl-wrap{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;flex:1}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:10px 16px;font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--br);background:rgba(255,255,255,.01);white-space:nowrap}
+tbody tr{transition:background .12s;cursor:pointer}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody tr:last-child td{border-bottom:none}
+tbody td{padding:11px 16px;border-bottom:1px solid var(--br);vertical-align:middle}
+
+/* Célula cliente */
+.cl-nome{font-size:12.5px;font-weight:500;color:var(--white);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.cl-doc{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2)}
+
+/* Descrição */
+.desc-txt{font-size:12px;color:var(--text);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.credor-txt{font-size:10px;color:var(--t2);margin-top:1px}
+
+/* Vencimento */
+.venc{font-size:12px;font-weight:500}
+.venc.vencido{color:var(--red)}
+.venc.proximo{color:var(--orange)}
+.venc.ok{color:var(--text)}
+
+/* Valor */
+.val{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap}
+
+/* Status — igual pi-tag do dashboard */
+.st{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.st.pendente{background:rgba(217,124,46,.08);color:var(--orange)}
+.st.vencido{background:rgba(229,85,85,.08);color:var(--red)}
+.st.pago{background:rgba(52,201,138,.08);color:var(--green)}
+.st.acordo{background:rgba(91,143,232,.08);color:var(--blue)}
+.st.cancelado{background:rgba(255,255,255,.05);color:var(--t2)}
+
+/* Ações */
+.acts{display:flex;gap:4px}
+
+/* Empty / Loading */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:8px;text-align:center}
+.empty i{font-size:28px;color:var(--t3);opacity:.3;margin-bottom:4px}
+.empty-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white)}
+.empty-sub{font-size:11px;color:var(--t2)}
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;gap:8px;color:var(--t2);font-size:12px}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.07);border-top-color:var(--gold);border-radius:50%;animation:sp .65s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Paginação */
+.paginacao{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--br);background:rgba(255,255,255,.01)}
+.pag-info{font-size:10px;color:var(--t3)}
+.pag-btns{display:flex;gap:4px}
+.pag-btn{padding:5px 12px;border-radius:var(--rs);font-size:11px;border:1px solid var(--br);color:var(--t2);background:transparent;transition:all .15s}
+.pag-btn:hover:not(:disabled){border-color:var(--brh);color:var(--white)}
+.pag-btn:disabled{opacity:.3;cursor:default}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid rgba(255,255,255,.08);border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;animation:mi .2s cubic-bezier(.16,1,.3,1)}
+.modal::-webkit-scrollbar{width:3px}
+.modal::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{flex-shrink:0;padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--s1);position:sticky;top:0;z-index:5}
+.modal-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.5}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px}
+.modal-ttl i{font-size:11px;color:var(--gold)}
+.modal-close{width:24px;height:24px;border-radius:5px;color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .12s}
+.modal-close:hover{background:rgba(229,85,85,.08);color:var(--red)}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-foot{flex-shrink:0;padding:14px 20px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end;background:rgba(255,255,255,.01)}
+
+/* Campos do modal */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.6px}
+.fg input,.fg select,.fg textarea{padding:9px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--brh)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--t3)}
+.fg select option{background:var(--s3)}
+.fg textarea{resize:none;height:56px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* Autocomplete de cliente */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s2);border:1px solid var(--brh);border-radius:var(--rs);max-height:200px;overflow-y:auto;z-index:10;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.ac-drop.show{display:block}
+.ac-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--br);transition:background .12s}
+.ac-item:hover{background:var(--g03)}
+.ac-item:last-child{border-bottom:none}
+.ac-nome{font-size:12.5px;font-weight:500;color:var(--white);margin-bottom:1px}
+.ac-doc{font-size:10px;color:var(--t2);font-family:'DM Mono',monospace}
+.ac-empty{padding:12px;text-align:center;color:var(--t3);font-size:12px}
+
+/* Toast */
+.toast{position:fixed;bottom:14px;right:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.68,-.55,.265,1.55);z-index:9999}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(52,201,138,.2)}
+.toast.err{border-color:rgba(229,85,85,.2)}
+.toast.ok i{color:var(--green)}
+.toast.err i{color:var(--red)}
+.toast span{font-size:12px;font-weight:500;color:var(--white)}
+</style>
 </head>
 <body>
-    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <img src="acertivelogo.png" alt="ACERTIVE" style="width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(201,168,76,0.3));mix-blend-mode:screen;flex-shrink:0">
-                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <div class="nav-section-title">Principal</div>
-                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Gestão</div>
-                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
-                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
-                <a href="cobrancas.html" class="nav-item active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Cadastros</div>
-                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Integrações</div>
-                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Sistema</div>
-                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
-                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
-                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
-                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
-            </div>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div>
-                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
-            </div>
-        </div>
-    </aside>
 
-    <main class="main-content">
-        <header class="page-header">
-            <div class="page-header-left"><h1>Cobranças</h1><p>Gerencie todas as cobranças do sistema</p></div>
-            <div class="header-actions">
-                <button class="btn btn-secondary" onclick="exportar()"><i class="fas fa-download"></i> Exportar</button>
-                <button class="btn btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Nova Cobrança</button>
-            </div>
-        </header>
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <img src="acertivelogo.png" alt="ACERTIVE" class="sb-logo">
+    <span class="sb-badge">PRO</span>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-grp"><div class="sb-gl">Principal</div>
+      <a href="dashboard.html" class="nl"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="fila.html" class="nl"><i class="fas fa-headset"></i> Fila de Trabalho</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Gestão</div>
+      <a href="devedores.html" class="nl"><i class="fas fa-users"></i> Devedores</a>
+      <a href="acordos.html" class="nl"><i class="fas fa-handshake"></i> Acordos</a>
+      <a href="cobrancas.html" class="nl active"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Operação</div>
+      <a href="operacao.html" class="nl"><i class="fas fa-chart-line"></i> Painel Operacional</a>
+      <a href="portal-usuarios.html" class="nl"><i class="fas fa-id-card"></i> Portal do Credor</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Cadastros</div>
+      <a href="credores.html" class="nl"><i class="fas fa-building"></i> Credores</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Sistema</div>
+      <a href="disparos.html" class="nl"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+      <a href="relatorios.html" class="nl"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      <a href="importacao.html" class="nl"><i class="fas fa-file-import"></i> Importação</a>
+      <a href="configuracoes.html" class="nl"><i class="fas fa-cog"></i> Configurações</a>
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av" id="userAvatar">U</div>
+      <div><div class="sb-un" id="userName">Usuário</div><div class="sb-ur" id="userRole">Operador</div></div>
+      <button class="sb-out" onclick="logout()" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</aside>
 
-        <div class="stats-grid">
-            <div class="stat-card gold"><div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total de Cobranças</div></div>
-            <div class="stat-card yellow"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-value" id="statPendente">R$ 0</div><div class="stat-label">Valor Pendente</div></div>
-            <div class="stat-card red"><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-value" id="statVencido">R$ 0</div><div class="stat-label">Valor Vencido</div></div>
-            <div class="stat-card green"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="statPago">R$ 0</div><div class="stat-label">Valor Recebido</div></div>
-        </div>
+<!-- ═══════════ LAYOUT ═══════════ -->
+<div class="layout">
 
-        <div class="filters-bar">
-            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar por nome do cliente, CPF ou descrição..." onkeyup="buscarComDebounce()"></div>
-            <select class="filter-select" id="filterCredor" onchange="recarregar()"><option value="">Todos os credores</option></select>
-            <select class="filter-select" id="filterMes" onchange="recarregar()">
-                <option value="">Todos os meses</option>
-                <option value="01">Janeiro</option><option value="02">Fevereiro</option>
-                <option value="03">Março</option><option value="04">Abril</option>
-                <option value="05">Maio</option><option value="06">Junho</option>
-                <option value="07">Julho</option><option value="08">Agosto</option>
-                <option value="09">Setembro</option><option value="10">Outubro</option>
-                <option value="11">Novembro</option><option value="12">Dezembro</option>
-            </select>
-        </div>
+  <div class="header">
+    <div class="hdr-l">
+      <div>
+        <div class="hdr-title">Cobranças</div>
+        <div class="hdr-sub">Cadastro e visualização</div>
+      </div>
+      <div class="hdr-div"></div>
+      <div class="hdr-stat">
+        <div class="hdr-sv" id="hTotal">—</div>
+        <div class="hdr-sl">cobranças</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <button class="btn btn-o" onclick="exportar()"><i class="fas fa-download"></i> Exportar</button>
+      <button class="btn btn-g" onclick="abrirModal()"><i class="fas fa-plus"></i> Nova cobrança</button>
+    </div>
+  </div>
 
-        <div class="status-tabs">
-            <div class="status-tab active" data-status="" onclick="filtrarStatus('')"><i class="fas fa-list"></i> Todas <span class="count" id="countTodas">0</span></div>
-            <div class="status-tab" data-status="pendente" onclick="filtrarStatus('pendente')"><i class="fas fa-clock"></i> Pendentes <span class="count" id="countPendente">0</span></div>
-            <div class="status-tab" data-status="vencido" onclick="filtrarStatus('vencido')"><i class="fas fa-exclamation-circle"></i> Vencidas <span class="count" id="countVencido">0</span></div>
-            <div class="status-tab" data-status="pago" onclick="filtrarStatus('pago')"><i class="fas fa-check-circle"></i> Pagas <span class="count" id="countPago">0</span></div>
-            <div class="status-tab" data-status="acordo" onclick="filtrarStatus('acordo')"><i class="fas fa-handshake"></i> Em Acordo <span class="count" id="countAcordo">0</span></div>
-        </div>
+  <main class="main">
 
-        <div class="table-card">
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>Cliente</th><th>Descrição</th><th>Credor</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
-                    <tbody id="tabelaBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-                </table>
-            </div>
-            <div class="pagination">
-                <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0 cobranças</div>
-                <div class="pagination-buttons">
-                    <button class="pagination-btn" id="btnPrev" onclick="paginaAnterior()" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
-                    <button class="pagination-btn" id="btnNext" onclick="proximaPagina()">Próximo <i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal Nova/Editar Cobrança -->
-    <div class="modal-overlay" id="modalCobranca">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-file-invoice-dollar"></i> <span id="modalTitle">Nova Cobrança</span></h3>
-                <button class="modal-close" onclick="fecharModal()">&times;</button>
-            </div>
-            <form id="formCobranca" onsubmit="salvar(event)">
-                <div class="modal-body">
-                    <input type="hidden" id="cobrancaId">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Cliente *</label>
-                            <div class="search-select-container">
-                                <input type="hidden" id="clienteId" required>
-                                <input type="text" id="clienteBusca" placeholder="Digite nome ou CPF..." autocomplete="off" oninput="buscarClientes()" onfocus="buscarClientes()">
-                                <div id="clienteDropdown" class="search-dropdown"></div>
-                            </div>
-                        </div>
-                        <div class="form-group"><label>Credor *</label><select id="credorId" required><option value="">Selecione...</option></select></div>
-                    </div>
-                    <div class="form-group"><label>Descrição *</label><input type="text" id="descricao" placeholder="Ex: Parcela 3/12 - Crediário" required></div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Valor *</label><input type="text" id="valor" placeholder="R$ 0,00" required></div>
-                        <div class="form-group"><label>Data de Vencimento *</label><input type="date" id="dataVencimento" required></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Número do Documento</label><input type="text" id="numeroDocumento" placeholder="Ex: NF-00123"></div>
-                        <div class="form-group"><label>Status</label>
-                            <select id="status">
-                                <option value="pendente">Pendente</option>
-                                <option value="vencido">Vencido</option>
-                                <option value="pago">Pago</option>
-                                <option value="acordo">Em Acordo</option>
-                                <option value="cancelado">Cancelado</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-                    <button type="submit" class="btn-salvar"><i class="fas fa-check"></i> Salvar</button>
-                </div>
-            </form>
-        </div>
+    <!-- KPIs — 3 únicos relevantes -->
+    <div class="kpi-row">
+      <div class="kpi gold">
+        <div class="kpi-ico"><i class="fas fa-file-invoice-dollar"></i></div>
+        <span class="kpi-lbl">Total de cobranças</span>
+        <span class="kpi-val" id="statTotal">—</span>
+        <span class="kpi-sub">na carteira</span>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-ico"><i class="fas fa-clock"></i></div>
+        <span class="kpi-lbl">Valor pendente</span>
+        <span class="kpi-val" id="statPendente">—</span>
+        <span class="kpi-sub">a receber</span>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-ico"><i class="fas fa-triangle-exclamation"></i></div>
+        <span class="kpi-lbl">Valor vencido</span>
+        <span class="kpi-val" id="statVencido">—</span>
+        <span class="kpi-sub">em atraso</span>
+      </div>
     </div>
 
-    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
+    <!-- Tabs + controles na mesma linha -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div class="tabs">
+        <button class="tab active" data-status="" onclick="filtrarStatus('',this)">
+          Todas <span class="cnt" id="countTodas">0</span>
+        </button>
+        <button class="tab pendente" data-status="pendente" onclick="filtrarStatus('pendente',this)">
+          Pendentes <span class="cnt" id="countPendente">0</span>
+        </button>
+        <button class="tab vencido" data-status="vencido" onclick="filtrarStatus('vencido',this)">
+          Vencidas <span class="cnt" id="countVencido">0</span>
+        </button>
+        <button class="tab pago" data-status="pago" onclick="filtrarStatus('pago',this)">
+          Pagas <span class="cnt" id="countPago">0</span>
+        </button>
+        <button class="tab" data-status="acordo" onclick="filtrarStatus('acordo',this)">
+          Acordo <span class="cnt" id="countAcordo">0</span>
+        </button>
+      </div>
 
-    <script>
-        const API = window.location.origin;
-        let todasCobrancas = [];
-        let statusAtual = '';
-        let paginaAtual = 1;
-        const porPagina = 50;
-        let totalCobrancas = 0;
-        let debounceTimer;
+      <div class="controles">
+        <div class="search-wrap">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" placeholder="Nome, CPF ou descrição..." onkeyup="buscarComDebounce()">
+        </div>
+        <select class="sel" id="filterCredor" onchange="recarregar()">
+          <option value="">Todos os credores</option>
+        </select>
+        <select class="sel" id="filterMes" onchange="recarregar()">
+          <option value="">Todos os meses</option>
+          <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+          <option value="03">Março</option><option value="04">Abril</option>
+          <option value="05">Maio</option><option value="06">Junho</option>
+          <option value="07">Julho</option><option value="08">Agosto</option>
+          <option value="09">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+      </div>
+    </div>
 
-        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
-        function fmtMoney(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-        function fmtData(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('pt-BR'); }
-        function toast(msg) { document.getElementById('toastText').textContent = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
+    <!-- Tabela -->
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Descrição / Credor</th>
+            <th>Vencimento</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tabelaBody">
+          <tr><td colspan="6"><div class="loading"><div class="spin"></div> Carregando...</div></td></tr>
+        </tbody>
+      </table>
+      <div class="paginacao">
+        <span class="pag-info" id="paginationInfo">—</span>
+        <div class="pag-btns">
+          <button class="pag-btn" id="btnPrev" onclick="paginaAnterior()" disabled>← Anterior</button>
+          <button class="pag-btn" id="btnNext" onclick="proximaPagina()">Próxima →</button>
+        </div>
+      </div>
+    </div>
 
-        async function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/login.html'; return false; }
-            try {
-                const r = await fetch(API + '/api/auth/me', { headers: H() });
-                const d = await r.json();
-                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
-                const user = d.user || d;
-                document.getElementById('userName').textContent = user.nome || 'Usuário';
-                document.getElementById('userRole').textContent = user.perfil || 'Operador';
-                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
-                return true;
-            } catch (e) { return true; }
-        }
+  </main>
+</div>
 
-        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="overlay" id="modalCobranca">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-ttl"><i class="fas fa-file-invoice-dollar"></i> <span id="modalTitle">Nova Cobrança</span></div>
+      <button class="modal-close" onclick="fecharModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="formCobranca" onsubmit="salvar(event)">
+      <div class="modal-body">
+        <input type="hidden" id="cobrancaId">
 
-        function buscarComDebounce() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function() { paginaAtual = 1; carregarCobrancas(); }, 400);
-        }
+        <!-- Cliente — busca com autocomplete -->
+        <div class="fg">
+          <label>Cliente *</label>
+          <div class="ac-wrap">
+            <input type="hidden" id="clienteId" required>
+            <input type="text" id="clienteBusca" placeholder="Digite nome ou CPF..." autocomplete="off"
+              oninput="buscarClientes()" onfocus="buscarClientes()">
+            <div id="clienteDropdown" class="ac-drop"></div>
+          </div>
+        </div>
 
-        function recarregar() { paginaAtual = 1; carregarCobrancas(); }
+        <!-- Credor + Valor -->
+        <div class="frow">
+          <div class="fg">
+            <label>Credor *</label>
+            <select id="credorId" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Valor *</label>
+            <input type="text" id="valor" placeholder="R$ 0,00" required>
+          </div>
+        </div>
 
-        async function carregarCobrancas() {
-            try {
-                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>';
-                var busca = document.getElementById('searchInput').value.trim();
-                var credor = document.getElementById('filterCredor').value;
-                var mes = document.getElementById('filterMes').value;
-                var params = new URLSearchParams();
-                params.set('page', paginaAtual);
-                params.set('limit', porPagina);
-                if (busca) params.set('busca', busca);
-                if (statusAtual) params.set('status', statusAtual);
-                if (credor) params.set('credor_id', credor);
-                if (mes) {
-                    var year = new Date().getFullYear();
-                    params.set('data_inicio', year + '-' + mes + '-01');
-                    var lastDay = new Date(year, parseInt(mes), 0).getDate();
-                    params.set('data_fim', year + '-' + mes + '-' + lastDay);
-                }
-                const r = await fetch(API + '/api/cobrancas?' + params.toString(), { headers: H() });
-                const d = await r.json();
-                todasCobrancas = d.data || [];
-                totalCobrancas = d.total || todasCobrancas.length;
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
-                todasCobrancas.forEach(c => {
-                    if (c.status === 'pendente') {
-                        var venc = new Date(c.data_vencimento);
-                        venc.setHours(0, 0, 0, 0);
-                        if (venc < hoje) c.status = 'vencido';
-                    }
-                });
-                await carregarCredores();
-                atualizarStats();
-                renderizar();
-            } catch (e) {
-                console.error('Erro:', e);
-                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar</h3></div></td></tr>';
-            }
-        }
+        <!-- Vencimento + Status -->
+        <div class="frow">
+          <div class="fg">
+            <label>Vencimento *</label>
+            <input type="date" id="dataVencimento" required>
+          </div>
+          <div class="fg">
+            <label>Status</label>
+            <select id="status">
+              <option value="pendente">Pendente</option>
+              <option value="vencido">Vencido</option>
+              <option value="pago">Pago</option>
+              <option value="acordo">Em Acordo</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
 
-        async function carregarCredores() {
-            try {
-                const r = await fetch(API + '/api/credores', { headers: H() });
-                const d = await r.json();
-                const credores = d.data || d || [];
-                const selectFilter = document.getElementById('filterCredor');
-                const selectForm = document.getElementById('credorId');
-                var currentVal = selectFilter.value;
-                selectFilter.innerHTML = '<option value="">Todos os credores</option>';
-                selectForm.innerHTML = '<option value="">Selecione...</option>';
-                credores.forEach(c => {
-                    selectFilter.innerHTML += '<option value="' + c.id + '">' + c.nome + '</option>';
-                    selectForm.innerHTML += '<option value="' + c.id + '">' + c.nome + '</option>';
-                });
-                if (currentVal) selectFilter.value = currentVal;
-            } catch (e) {}
-        }
+        <!-- Descrição -->
+        <div class="fg">
+          <label>Descrição *</label>
+          <input type="text" id="descricao" placeholder="Ex: Parcela 3/12 — Crediário" required>
+        </div>
 
-        var clientesBuscaTimer;
+        <!-- Nº documento (opcional) -->
+        <div class="fg">
+          <label>Número do documento <span style="color:var(--t3);font-size:9px;text-transform:none;letter-spacing:0">opcional</span></label>
+          <input type="text" id="numeroDocumento" placeholder="NF-00123">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-o" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-g"><i class="fas fa-check"></i> Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        async function buscarClientes() {
-            clearTimeout(clientesBuscaTimer);
-            clientesBuscaTimer = setTimeout(async function() {
-                var termo = document.getElementById('clienteBusca').value.trim();
-                var dropdown = document.getElementById('clienteDropdown');
-                if (termo.length < 2) { dropdown.classList.remove('show'); return; }
-                try {
-                    var r = await fetch(API + '/api/clientes?busca=' + encodeURIComponent(termo) + '&limit=20', { headers: H() });
-                    var d = await r.json();
-                    var clientes = d.data || d || [];
-                    dropdown.innerHTML = '';
-                    if (clientes.length === 0) {
-                        dropdown.innerHTML = '<div class="search-dropdown-empty">Nenhum cliente encontrado</div>';
-                    } else {
-                        clientes.forEach(function(c) {
-                            var item = document.createElement('div');
-                            item.className = 'search-dropdown-item';
-                            item.innerHTML = '<strong>' + (c.nome || '') + '</strong><small>CPF/CNPJ: ' + (c.cpf_cnpj || 'N/A') + (c.telefone ? ' | Tel: ' + c.telefone : '') + '</small>';
-                            item.onclick = function() { selecionarCliente(c); };
-                            dropdown.appendChild(item);
-                        });
-                    }
-                    dropdown.classList.add('show');
-                } catch (e) {}
-            }, 300);
-        }
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-check" id="toastIco"></i>
+  <span id="toastText">Sucesso!</span>
+</div>
 
-        function selecionarCliente(c) {
-            document.getElementById('clienteId').value = c.id;
-            document.getElementById('clienteBusca').value = c.nome + ' - ' + (c.cpf_cnpj || '');
-            document.getElementById('clienteDropdown').classList.remove('show');
-        }
+<script>
+const API = window.location.origin;
+let todasCobrancas = [];
+let statusAtual = '';
+let paginaAtual = 1;
+const porPagina = 50;
+let totalCobrancas = 0;
+let debounceTimer;
+let clientesBuscaTimer;
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-select-container')) {
-                document.getElementById('clienteDropdown').classList.remove('show');
-            }
+function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
+function fmtMoney(v) { return (parseFloat(v)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
+function fmtData(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('pt-BR'); }
+function esc(s) { return String(s||'').replace(/[<>&"]/g, m=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m])); }
+
+let _tt;
+function toast(msg, tipo='ok') {
+  const el=document.getElementById('toast');
+  document.getElementById('toastIco').className=tipo==='ok'?'fas fa-check':'fas fa-triangle-exclamation';
+  el.className='toast '+tipo;
+  document.getElementById('toastText').textContent=msg;
+  el.classList.add('on');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>el.classList.remove('on'),3000);
+}
+
+function logout() { localStorage.removeItem('token'); window.location.href='login.html'; }
+
+async function checkAuth() {
+  const token=localStorage.getItem('token');
+  if(!token){window.location.href='login.html';return false;}
+  try {
+    const r=await fetch(API+'/api/usuarios/me',{headers:H()});
+    const d=await r.json();
+    if(!d.success){window.location.href='login.html';return false;}
+    const u=d.data||d;
+    document.getElementById('userName').textContent=u.nome||'Usuário';
+    document.getElementById('userRole').textContent=u.perfil||'Operador';
+    document.getElementById('userAvatar').textContent=(u.nome||'U').charAt(0).toUpperCase();
+    return true;
+  } catch(e){return true;}
+}
+
+function buscarComDebounce() {
+  clearTimeout(debounceTimer);
+  debounceTimer=setTimeout(()=>{paginaAtual=1;carregarCobrancas();},400);
+}
+
+function recarregar() { paginaAtual=1; carregarCobrancas(); }
+
+async function carregarCobrancas() {
+  document.getElementById('tabelaBody').innerHTML='<tr><td colspan="6"><div class="loading"><div class="spin"></div> Carregando...</div></td></tr>';
+  try {
+    const busca=document.getElementById('searchInput').value.trim();
+    const credor=document.getElementById('filterCredor').value;
+    const mes=document.getElementById('filterMes').value;
+    const params=new URLSearchParams();
+    params.set('page',paginaAtual);
+    params.set('limit',porPagina);
+    if(busca) params.set('busca',busca);
+    if(statusAtual) params.set('status',statusAtual);
+    if(credor) params.set('credor_id',credor);
+    if(mes){
+      const y=new Date().getFullYear();
+      params.set('data_inicio',y+'-'+mes+'-01');
+      const last=new Date(y,parseInt(mes),0).getDate();
+      params.set('data_fim',y+'-'+mes+'-'+last);
+    }
+    const r=await fetch(API+'/api/cobrancas?'+params,{headers:H()});
+    const d=await r.json();
+    todasCobrancas=d.data||[];
+    totalCobrancas=d.total||todasCobrancas.length;
+
+    // Normalizar status vencido
+    const hoje=new Date(); hoje.setHours(0,0,0,0);
+    todasCobrancas.forEach(c=>{
+      if(c.status==='pendente'){
+        const v=new Date(c.data_vencimento||c.vencimento); v.setHours(0,0,0,0);
+        if(v<hoje) c.status='vencido';
+      }
+    });
+
+    await carregarCredores();
+    atualizarStats();
+    renderizar();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('tabelaBody').innerHTML='<tr><td colspan="6"><div class="empty"><i class="fas fa-triangle-exclamation"></i><div class="empty-ttl">Erro ao carregar</div><div class="empty-sub">Verifique a conexão</div></div></td></tr>';
+  }
+}
+
+async function carregarCredores() {
+  try {
+    const r=await fetch(API+'/api/credores',{headers:H()});
+    const d=await r.json();
+    const credores=d.data||d||[];
+    const sf=document.getElementById('filterCredor');
+    const sm=document.getElementById('credorId');
+    const cv=sf.value;
+    sf.innerHTML='<option value="">Todos os credores</option>';
+    sm.innerHTML='<option value="">Selecione...</option>';
+    credores.forEach(c=>{
+      sf.innerHTML+=`<option value="${c.id}">${esc(c.nome)}</option>`;
+      sm.innerHTML+=`<option value="${c.id}">${esc(c.nome)}</option>`;
+    });
+    if(cv) sf.value=cv;
+  } catch(e){}
+}
+
+// Autocomplete de clientes no modal
+async function buscarClientes() {
+  clearTimeout(clientesBuscaTimer);
+  clientesBuscaTimer=setTimeout(async()=>{
+    const termo=document.getElementById('clienteBusca').value.trim();
+    const drop=document.getElementById('clienteDropdown');
+    if(termo.length<2){drop.classList.remove('show');return;}
+    try {
+      const r=await fetch(API+'/api/clientes?busca='+encodeURIComponent(termo)+'&limit=20',{headers:H()});
+      const d=await r.json();
+      const clientes=d.data||[];
+      drop.innerHTML='';
+      if(!clientes.length){
+        drop.innerHTML='<div class="ac-empty">Nenhum cliente encontrado</div>';
+      } else {
+        clientes.forEach(c=>{
+          const item=document.createElement('div');
+          item.className='ac-item';
+          item.innerHTML=`<div class="ac-nome">${esc(c.nome)}</div><div class="ac-doc">${c.cpf_cnpj||'—'}${c.telefone?' · '+c.telefone:''}</div>`;
+          item.onclick=()=>selecionarCliente(c);
+          drop.appendChild(item);
         });
+      }
+      drop.classList.add('show');
+    } catch(e){}
+  },300);
+}
 
-        async function atualizarStats() {
-            try {
-                const r = await fetch(API + '/api/cobrancas/estatisticas', { headers: H() });
-                const d = await r.json();
-                if (d.success && d.data) {
-                    var s = d.data;
-                    document.getElementById('statTotal').textContent = parseInt(s.total) || 0;
-                    document.getElementById('statPendente').textContent = fmtMoney(parseFloat(s.valor_pendente) || 0);
-                    document.getElementById('statVencido').textContent = fmtMoney(parseFloat(s.valor_total) - parseFloat(s.valor_pendente) - parseFloat(s.valor_pago) || 0);
-                    document.getElementById('statPago').textContent = fmtMoney(parseFloat(s.valor_pago) || 0);
-                    document.getElementById('countTodas').textContent = parseInt(s.total) || 0;
-                    document.getElementById('countPendente').textContent = parseInt(s.pendentes) || 0;
-                    document.getElementById('countVencido').textContent = parseInt(s.vencidas) || 0;
-                    document.getElementById('countPago').textContent = parseInt(s.pagas) || 0;
-                    document.getElementById('countAcordo').textContent = 0;
-                    document.getElementById('filaBadge').textContent = parseInt(s.vencidas) || 0;
-                }
-            } catch (e) {
-                document.getElementById('statTotal').textContent = totalCobrancas;
-            }
-        }
+function selecionarCliente(c) {
+  document.getElementById('clienteId').value=c.id;
+  document.getElementById('clienteBusca').value=c.nome+(c.cpf_cnpj?' — '+c.cpf_cnpj:'');
+  document.getElementById('clienteDropdown').classList.remove('show');
+}
 
-        function filtrarStatus(status) {
-            statusAtual = status;
-            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector('.status-tab[data-status="' + status + '"]').classList.add('active');
-            paginaAtual = 1;
-            carregarCobrancas();
-        }
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ac-wrap')) document.getElementById('clienteDropdown').classList.remove('show');
+});
 
-        function renderizar() {
-            if (todasCobrancas.length === 0) {
-                document.getElementById('tabelaBody').innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-file-invoice-dollar"></i><h3>Nenhuma cobrança encontrada</h3><p>Ajuste os filtros ou cadastre uma nova cobrança</p></div></td></tr>';
-            } else {
-                var hoje = new Date();
-                var html = '';
-                todasCobrancas.forEach(function(c) {
-                    var venc = new Date(c.data_vencimento);
-                    var diff = Math.floor((venc - hoje) / (1000*60*60*24));
-                    var vencClass = diff < 0 ? 'vencido' : (diff <= 7 ? 'proximo' : 'ok');
-                    html += '<tr>';
-                    html += '<td><div class="cliente-info"><div class="cliente-avatar">' + (c.cliente_nome || 'C').charAt(0) + '</div><div><div class="cliente-nome">' + (c.cliente_nome || '-') + '</div><div class="cliente-doc">' + (c.cliente_cpf || '') + '</div></div></div></td>';
-                    html += '<td>' + (c.descricao || '-') + '</td>';
-                    html += '<td>' + (c.credor_nome || '-') + '</td>';
-                    html += '<td><span class="vencimento-cell ' + vencClass + '">' + fmtData(c.data_vencimento) + '</span></td>';
-                    html += '<td><span class="valor-cell">' + fmtMoney(c.valor) + '</span></td>';
-                    html += '<td><span class="status-badge status-' + c.status + '">' + formatStatus(c.status) + '</span></td>';
-                    html += '<td><div class="actions-cell">';
-                    html += '<button class="action-btn view" onclick="verDetalhes(\'' + c.id + '\')" title="Ver"><i class="fas fa-eye"></i></button>';
-                    html += '<button class="action-btn edit" onclick="editar(\'' + c.id + '\')" title="Editar"><i class="fas fa-edit"></i></button>';
-                    html += '<button class="action-btn delete" onclick="excluir(\'' + c.id + '\')" title="Excluir"><i class="fas fa-trash"></i></button>';
-                    html += '</div></td></tr>';
-                });
-                document.getElementById('tabelaBody').innerHTML = html;
-            }
+async function atualizarStats() {
+  try {
+    const r=await fetch(API+'/api/cobrancas/estatisticas',{headers:H()});
+    const d=await r.json();
+    if(d.success&&d.data){
+      const s=d.data;
+      const total=parseInt(s.total)||0;
+      document.getElementById('statTotal').textContent=total;
+      document.getElementById('hTotal').textContent=total;
+      document.getElementById('statPendente').textContent=fmtMoney(s.valor_pendente);
+      const vencido=(parseFloat(s.valor_total)||0)-(parseFloat(s.valor_pendente)||0)-(parseFloat(s.valor_pago)||0);
+      document.getElementById('statVencido').textContent=fmtMoney(Math.max(0,vencido));
+      document.getElementById('countTodas').textContent=total;
+      document.getElementById('countPendente').textContent=parseInt(s.pendentes)||0;
+      document.getElementById('countVencido').textContent=parseInt(s.vencidas)||0;
+      document.getElementById('countPago').textContent=parseInt(s.pagas)||0;
+      document.getElementById('countAcordo').textContent=0;
+    }
+  } catch(e){
+    document.getElementById('statTotal').textContent=totalCobrancas;
+    document.getElementById('hTotal').textContent=totalCobrancas;
+  }
+}
 
-            var totalPaginas = Math.ceil(totalCobrancas / porPagina);
-            var inicio = (paginaAtual - 1) * porPagina;
-            var fim = Math.min(inicio + porPagina, totalCobrancas);
-            document.getElementById('paginationInfo').textContent = 'Mostrando ' + (inicio + 1) + '-' + fim + ' de ' + totalCobrancas + ' cobranças';
-            document.getElementById('btnPrev').disabled = paginaAtual === 1;
-            document.getElementById('btnNext').disabled = paginaAtual >= totalPaginas;
-        }
+function filtrarStatus(status, btn) {
+  statusAtual=status;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  paginaAtual=1;
+  carregarCobrancas();
+}
 
-        function formatStatus(s) { return {'pendente':'Pendente','vencido':'Vencido','pago':'Pago','acordo':'Em Acordo','cancelado':'Cancelado'}[s] || s; }
-        function paginaAnterior() { if (paginaAtual > 1) { paginaAtual--; carregarCobrancas(); } }
-        function proximaPagina() { paginaAtual++; carregarCobrancas(); }
+function renderizar() {
+  if(!todasCobrancas.length){
+    document.getElementById('tabelaBody').innerHTML=
+      '<tr><td colspan="6"><div class="empty"><i class="fas fa-file-invoice-dollar"></i><div class="empty-ttl">Nenhuma cobrança encontrada</div><div class="empty-sub">Ajuste os filtros ou cadastre uma nova cobrança.</div></div></td></tr>';
+  } else {
+    const hoje=new Date();
+    document.getElementById('tabelaBody').innerHTML=todasCobrancas.map(c=>{
+      const dv=c.data_vencimento||c.vencimento;
+      const venc=dv?new Date(dv):null;
+      const diff=venc?Math.floor((venc-hoje)/(864e5)):99;
+      const vencCls=diff<0?'vencido':diff<=7?'proximo':'ok';
+      const stMap={pendente:'Pendente',vencido:'Vencido',pago:'Pago',acordo:'Em Acordo',cancelado:'Cancelado'};
+      const st=c.status||'pendente';
+      return `<tr onclick="verDetalhes('${c.id}')">
+        <td>
+          <div class="cl-nome">${esc(c.cliente_nome||'—')}</div>
+          <div class="cl-doc">${esc(c.cliente_cpf||c.cliente_cpf_cnpj||'')}</div>
+        </td>
+        <td>
+          <div class="desc-txt">${esc(c.descricao||'—')}</div>
+          <div class="credor-txt">${esc(c.credor_nome||'—')}</div>
+        </td>
+        <td><span class="venc ${vencCls}">${fmtData(dv)}</span></td>
+        <td><span class="val">${fmtMoney(c.valor)}</span></td>
+        <td><span class="st ${st}">${stMap[st]||st}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div class="acts">
+            <button class="ico-btn ok" onclick="verDetalhes('${c.id}')" title="Ver devedor"><i class="fas fa-arrow-up-right-from-square"></i></button>
+            <button class="ico-btn warn" onclick="editar('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+            <button class="ico-btn danger" onclick="excluir('${c.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
 
-        function abrirModal() {
-            document.getElementById('cobrancaId').value = '';
-            document.getElementById('modalTitle').textContent = 'Nova Cobrança';
-            document.getElementById('formCobranca').reset();
-            document.getElementById('clienteId').value = '';
-            document.getElementById('clienteBusca').value = '';
-            document.getElementById('modalCobranca').classList.add('active');
-        }
-        function fecharModal() { document.getElementById('modalCobranca').classList.remove('active'); }
+  const totalPags=Math.ceil(totalCobrancas/porPagina);
+  const inicio=(paginaAtual-1)*porPagina+1;
+  const fim=Math.min(paginaAtual*porPagina,totalCobrancas);
+  document.getElementById('paginationInfo').textContent=
+    totalCobrancas?`${inicio}–${fim} de ${totalCobrancas} cobranças`:'0 cobranças';
+  document.getElementById('btnPrev').disabled=paginaAtual===1;
+  document.getElementById('btnNext').disabled=paginaAtual>=totalPags;
+}
 
-        function editar(id) {
-            var c = todasCobrancas.find(x => x.id === id);
-            if (!c) return;
-            document.getElementById('cobrancaId').value = c.id;
-            document.getElementById('modalTitle').textContent = 'Editar Cobrança';
-            document.getElementById('clienteId').value = c.cliente_id || '';
-            document.getElementById('clienteBusca').value = (c.cliente_nome || '') + (c.cliente_cpf_cnpj ? ' - ' + c.cliente_cpf_cnpj : '');
-            document.getElementById('credorId').value = c.credor_id || '';
-            document.getElementById('descricao').value = c.descricao || '';
-            document.getElementById('valor').value = c.valor || '';
-            document.getElementById('dataVencimento').value = c.data_vencimento?.split('T')[0] || '';
-            document.getElementById('numeroDocumento').value = c.numero_documento || '';
-            document.getElementById('status').value = c.status || 'pendente';
-            document.getElementById('modalCobranca').classList.add('active');
-        }
+function paginaAnterior() { if(paginaAtual>1){paginaAtual--;carregarCobrancas();} }
+function proximaPagina()  { paginaAtual++; carregarCobrancas(); }
 
-        async function salvar(e) {
-            e.preventDefault();
-            var id = document.getElementById('cobrancaId').value;
-            var dados = {
-                cliente_id: document.getElementById('clienteId').value,
-                credor_id: document.getElementById('credorId').value,
-                descricao: document.getElementById('descricao').value,
-                valor: parseFloat(document.getElementById('valor').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
-                data_vencimento: document.getElementById('dataVencimento').value,
-                numero_documento: document.getElementById('numeroDocumento').value,
-                status: document.getElementById('status').value
-            };
-            try {
-                var url = id ? API + '/api/cobrancas/' + id : API + '/api/cobrancas';
-                var method = id ? 'PUT' : 'POST';
-                var r = await fetch(url, { method: method, headers: H(), body: JSON.stringify(dados) });
-                if (r.ok) { toast(id ? 'Cobrança atualizada!' : 'Cobrança cadastrada!'); fecharModal(); await carregarCobrancas(); }
-                else { var err = await r.json(); toast(err.error || 'Erro ao salvar'); }
-            } catch (e) { toast('Erro ao salvar'); }
-        }
+function abrirModal() {
+  document.getElementById('cobrancaId').value='';
+  document.getElementById('modalTitle').textContent='Nova Cobrança';
+  document.getElementById('formCobranca').reset();
+  document.getElementById('clienteId').value='';
+  document.getElementById('clienteBusca').value='';
+  document.getElementById('clienteDropdown').classList.remove('show');
+  document.getElementById('modalCobranca').classList.add('on');
+  setTimeout(()=>document.getElementById('clienteBusca').focus(),80);
+}
 
-        function verDetalhes(id) {
-            var c = todasCobrancas.find(x => x.id === id);
-            if (c && c.cliente_id) window.location.href = 'devedores.html?id=' + c.cliente_id;
-        }
+function fecharModal() {
+  document.getElementById('modalCobranca').classList.remove('on');
+}
 
-        async function excluir(id) {
-            if (!confirm('Tem certeza que deseja EXCLUIR esta cobrança?\n\nEsta ação não pode ser desfeita.')) return;
-            try {
-                var r = await fetch(API + '/api/cobrancas/' + id, { method: 'DELETE', headers: H() });
-                if (r.ok) { toast('Cobrança excluída!'); await carregarCobrancas(); }
-                else { var err = await r.json(); toast(err.error || 'Erro ao excluir'); }
-            } catch (e) { toast('Erro ao excluir'); }
-        }
+function editar(id) {
+  const c=todasCobrancas.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('cobrancaId').value=c.id;
+  document.getElementById('modalTitle').textContent='Editar Cobrança';
+  document.getElementById('clienteId').value=c.cliente_id||'';
+  document.getElementById('clienteBusca').value=(c.cliente_nome||'')+(c.cliente_cpf?' — '+c.cliente_cpf:'');
+  document.getElementById('credorId').value=c.credor_id||'';
+  document.getElementById('valor').value=c.valor||'';
+  document.getElementById('dataVencimento').value=(c.data_vencimento||c.vencimento||'').split('T')[0];
+  document.getElementById('descricao').value=c.descricao||'';
+  document.getElementById('numeroDocumento').value=c.numero_documento||c.referencia||'';
+  document.getElementById('status').value=c.status||'pendente';
+  document.getElementById('modalCobranca').classList.add('on');
+}
 
-        function exportar() {
-            toast('Exportando...');
-            var csv = ['Cliente,Descrição,Credor,Vencimento,Valor,Status'];
-            todasCobrancas.forEach(c => { csv.push('"' + (c.cliente_nome||'') + '","' + (c.descricao||'') + '","' + (c.credor_nome||'') + '","' + fmtData(c.data_vencimento) + '","' + c.valor + '","' + c.status + '"'); });
-            var blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-            var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cobrancas.csv'; a.click();
-            toast('Exportado!');
-        }
+async function salvar(e) {
+  e.preventDefault();
+  const id=document.getElementById('cobrancaId').value;
+  const dados={
+    cliente_id:       document.getElementById('clienteId').value,
+    credor_id:        document.getElementById('credorId').value,
+    descricao:        document.getElementById('descricao').value,
+    valor:            parseFloat(document.getElementById('valor').value.replace(/[^\d,]/g,'').replace(',','.'))||0,
+    data_vencimento:  document.getElementById('dataVencimento').value,
+    numero_documento: document.getElementById('numeroDocumento').value,
+    status:           document.getElementById('status').value,
+  };
+  try {
+    const url=id?API+'/api/cobrancas/'+id:API+'/api/cobrancas';
+    const method=id?'PUT':'POST';
+    const r=await fetch(url,{method,headers:H(),body:JSON.stringify(dados)});
+    if(r.ok){toast(id?'Cobrança atualizada!':'Cobrança cadastrada!');fecharModal();await carregarCobrancas();}
+    else{const err=await r.json();toast(err.error||'Erro ao salvar','err');}
+  } catch(e){toast('Erro ao salvar','err');}
+}
 
-        document.getElementById('valor')?.addEventListener('input', function(e) {
-            var v = e.target.value.replace(/\D/g, '');
-            v = (parseInt(v) / 100).toFixed(2);
-            e.target.value = 'R$ ' + v.replace('.', ',');
-        });
+function verDetalhes(id) {
+  const c=todasCobrancas.find(x=>x.id===id);
+  if(c&&c.cliente_id) window.location.href='devedores.html?id='+c.cliente_id;
+}
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            var auth = await checkAuth();
-            if (auth) await carregarCobrancas();
-        });
+async function excluir(id) {
+  if(!confirm('Excluir esta cobrança?\n\nEsta ação não pode ser desfeita.')) return;
+  try {
+    const r=await fetch(API+'/api/cobrancas/'+id,{method:'DELETE',headers:H()});
+    if(r.ok){toast('Cobrança excluída!');await carregarCobrancas();}
+    else{const e=await r.json();toast(e.error||'Erro ao excluir','err');}
+  } catch(e){toast('Erro ao excluir','err');}
+}
 
-        document.getElementById('modalCobranca').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) fecharModal();
-        });
+function exportar() {
+  if(!todasCobrancas.length){toast('Nenhuma cobrança para exportar','err');return;}
+  const csv=['Cliente,Descrição,Credor,Vencimento,Valor,Status'];
+  todasCobrancas.forEach(c=>{
+    csv.push(`"${c.cliente_nome||''}","${c.descricao||''}","${c.credor_nome||''}","${fmtData(c.data_vencimento)}","${c.valor||0}","${c.status||''}"`);
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv.join('\n')],{type:'text/csv'}));
+  a.download='cobrancas.csv'; a.click();
+  toast('Exportado!');
+}
 
-        function toggleSidebar() {
-            document.querySelector(".sidebar").classList.toggle("open");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
-            var icon = document.querySelector(".mobile-toggle i");
-            icon.className = document.querySelector(".sidebar").classList.contains("open") ? "fas fa-times" : "fas fa-bars";
-        }
-    </script>
+// Máscara de valor
+document.getElementById('valor')?.addEventListener('input', function(e){
+  let v=e.target.value.replace(/\D/g,'');
+  if(!v){e.target.value='';return;}
+  v=(parseInt(v)/100).toFixed(2);
+  e.target.value='R$ '+v.replace('.',',');
+});
+
+// Atalhos de teclado
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') fecharModal();
+  if(e.key==='Enter'&&document.getElementById('modalCobranca').classList.contains('on')){
+    // Enter só submete se o foco não estiver em input/select (exceto submit)
+    const active=document.activeElement;
+    if(active&&(active.tagName==='TEXTAREA')) return;
+    // Enter no autocomplete seleciona o primeiro item
+    const drop=document.getElementById('clienteDropdown');
+    if(drop.classList.contains('show')){
+      const first=drop.querySelector('.ac-item');
+      if(first) first.click();
+    }
+  }
+});
+
+// Fechar modal clicando fora
+document.getElementById('modalCobranca').addEventListener('click', e=>{
+  if(e.target===document.getElementById('modalCobranca')) fecharModal();
+});
+
+document.addEventListener('DOMContentLoaded', async()=>{
+  const ok=await checkAuth();
+  if(ok){ await carregarCobrancas(); }
+});
+</script>
 </body>
 </html>
