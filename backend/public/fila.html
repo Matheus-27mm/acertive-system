@@ -233,7 +233,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 ══════════════════════════════════════════ */
 .debtor {
   flex-shrink:0;
-  padding:20px 24px 18px;
+  padding:16px 24px 14px;
   border-bottom:1px solid var(--br);
   position:relative;
   background:var(--s1);
@@ -258,7 +258,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 .debtor-left {}
 .debtor-badge {
@@ -267,10 +267,10 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   gap:5px;
   font-size:10px;
   font-weight:600;
-  letter-spacing:.3px;
+  letter-spacing:.2px;
   padding:2px 8px;
   border-radius:3px;
-  margin-bottom:7px;
+  margin-bottom:5px;
 }
 .debtor-badge.crit { background:var(--crit-s); color:var(--crit); border:1px solid var(--crit-b) }
 .debtor-badge.high { background:var(--high-s); color:var(--high); border:1px solid var(--high-b) }
@@ -279,12 +279,12 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
 /* NOME — máximo destaque, legível imediatamente */
 .debtor-name {
-  font-size:20px;
+  font-size:21px;
   font-weight:700;
   color:var(--t1);
   line-height:1.15;
-  letter-spacing:-.2px;
-  margin-bottom:3px;
+  letter-spacing:-.3px;
+  margin-bottom:4px;
 }
 .debtor-doc {
   font-family:var(--mono);
@@ -304,21 +304,22 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 }
 .debtor-valor {
   font-family:var(--mono);
-  font-size:26px;
+  font-size:24px;
   font-weight:500;
   color:var(--t1);
   line-height:1;
   letter-spacing:-.5px;
 }
+/* Valor só fica colorido quando crítico — alta dívida vencida */
 .debtor-valor.crit { color:var(--crit) }
-.debtor-valor.high { color:var(--high) }
 
 /* LINHA DE META-INFO — compacta, em linha */
 .debtor-meta {
   display:flex;
   align-items:center;
-  gap:16px;
+  gap:14px;
   flex-wrap:wrap;
+  margin-top:1px;
 }
 .dmeta {
   display:flex;
@@ -357,7 +358,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   flex-shrink:0;
   display:flex;
   gap:8px;
-  padding:12px 24px;
+  padding:10px 24px;
   border-bottom:1px solid var(--br);
   background:var(--bg);
 }
@@ -366,8 +367,8 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  padding:11px 12px;
+  gap:7px;
+  padding:10px 12px;
   border-radius:var(--r);
   font-size:12.5px;
   font-weight:600;
@@ -400,7 +401,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   display:flex;
   align-items:center;
   gap:6px;
-  padding:8px 24px;
+  padding:7px 24px;
   border-bottom:1px solid var(--br);
 }
 .act-sec {
@@ -436,10 +437,10 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 .registro {
   flex:1;
   overflow-y:auto;
-  padding:16px 24px;
+  padding:14px 24px;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:12px;
 }
 
 .reg-section-title {
@@ -879,15 +880,15 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
       <!-- AÇÕES PRINCIPAIS -->
       <div class="actions-primary">
-        <button class="act-main act-call" onclick="setCanal('telefone')">
+        <button class="act-main act-call" onclick="acaoLigar()">
           <i class="fas fa-phone"></i> Ligar
           <span class="k">1</span>
         </button>
-        <button class="act-main act-wpp" onclick="setCanal('whatsapp')">
+        <button class="act-main act-wpp" onclick="acaoWhatsApp()">
           <i class="fab fa-whatsapp"></i> WhatsApp
           <span class="k">2</span>
         </button>
-        <button class="act-main act-mail" onclick="setCanal('email')">
+        <button class="act-main act-mail" onclick="acaoEmail()">
           <i class="fas fa-envelope"></i> E-mail
         </button>
       </div>
@@ -901,10 +902,6 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         <button class="act-sec" onclick="abrirIncob()">
           <i class="fas fa-ban"></i> Incobrável
           <span class="k">[4]</span>
-        </button>
-        <button class="act-sec act-jur" onclick="abrirJur()">
-          <i class="fas fa-gavel"></i> Jurídico
-          <span class="k">[5]</span>
         </button>
         <button class="act-sec act-det" onclick="verDetalhes()">
           <i class="fas fa-list"></i> Detalhes
@@ -1062,35 +1059,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   </div>
 </div>
 
-<!-- ═══════════ MODAL JURÍDICO ═══════════ -->
-<div class="overlay" id="ovJur">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title"><i class="fas fa-gavel"></i> Enviar ao Jurídico</div>
-      <button class="modal-close" onclick="fecharModal('ovJur')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="mfg">
-        <label>Fundamento *</label>
-        <select id="jurMot">
-          <option value="">Selecione...</option>
-          <option value="recusa">Recusa de pagamento</option>
-          <option value="valor_alto">Valor elevado</option>
-          <option value="acordo_quebrado">Acordo quebrado reincidente</option>
-          <option value="protesto">Protesto / ação judicial</option>
-        </select>
-      </div>
-      <div class="mfg">
-        <label>Observação</label>
-        <textarea id="jurObs" placeholder="Histórico relevante para o jurídico..."></textarea>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="mbtn mbtn-cancel" onclick="fecharModal('ovJur')">Cancelar</button>
-      <button class="mbtn mbtn-blue" onclick="salvarJur()"><i class="fas fa-gavel"></i> Enviar</button>
-    </div>
-  </div>
-</div>
+<!-- modal jurídico removido -->
 
 <!-- FLASH -->
 <div class="flash" id="flash">
@@ -1114,7 +1083,6 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   <span class="kbh">2 <span style="color:var(--t4)">WhatsApp</span></span>
   <span class="kbh">3 <span style="color:var(--t4)">Acordo</span></span>
   <span class="kbh">4 <span style="color:var(--t4)">Incobrável</span></span>
-  <span class="kbh">5 <span style="color:var(--t4)">Jurídico</span></span>
   <span class="kbh">↵ <span style="color:var(--t4)">Próximo</span></span>
 </div>
 
@@ -1162,15 +1130,24 @@ async function carregarFila() {
     cobrancas.filter(c => c.status === 'vencido').forEach(c => {
       const id = c.cliente_id || c.devedor_id || c.cliente_nome || '?';
       if (!map[id]) map[id] = {
-        id, nome: c.cliente_nome || c.devedor || 'Devedor',
-        doc: c.cpf_cnpj || c.devedor_cpf || '—',
-        credor: c.credor_nome || '—',
+        id,
+        nome:     c.cliente_nome || c.devedor || 'Devedor',
+        doc:      c.cpf_cnpj    || c.devedor_cpf  || '—',
+        telefone: c.telefone    || c.devedor_telefone || '',
+        email:    c.email       || c.devedor_email    || '',
+        credor:   c.credor_nome || '—',
         valor: 0, count: 0, maxDias: 0
       };
+      // Valor = soma APENAS das cobranças deste devedor
       map[id].valor += parseFloat(c.valor || 0);
       map[id].count++;
       const dias = Math.floor((now - new Date(c.data_vencimento)) / 864e5);
       if (dias > map[id].maxDias) map[id].maxDias = dias;
+      // Pegar contatos das cobrancas subsequentes se o primeiro não tinha
+      if (!map[id].telefone && (c.telefone || c.devedor_telefone))
+        map[id].telefone = c.telefone || c.devedor_telefone;
+      if (!map[id].email && (c.email || c.devedor_email))
+        map[id].email = c.email || c.devedor_email;
     });
 
     fila = Object.values(map)
@@ -1215,7 +1192,7 @@ function renderDev() {
   // Prioridade
   const nivelMap = {
     crit: { badge: 'CRÍTICO',  cls: 'crit', valCls: 'crit' },
-    high: { badge: 'ALTO',     cls: 'high', valCls: 'high' },
+    high: { badge: 'ALTO',     cls: 'high', valCls: '' },
     med:  { badge: 'MÉDIO',    cls: 'med',  valCls: '' }
   };
   const nv = nivelMap[d.nivel];
@@ -1226,7 +1203,11 @@ function renderDev() {
   badge.innerHTML = `<i class="fas fa-circle-dot"></i> ${nv.badge}`;
 
   document.getElementById('dbNome').textContent = d.nome;
-  document.getElementById('dbDoc').textContent = d.doc;
+  // Doc = CPF + telefone se disponível
+  const docParts = [d.doc];
+  if (d.telefone) docParts.push(d.telefone);
+  if (d.email) docParts.push(d.email);
+  document.getElementById('dbDoc').textContent = docParts.filter(x=>x&&x!=='—').join(' · ');
 
   const val = document.getElementById('dbValor');
   val.className = `debtor-valor${nv.valCls ? ' ' + nv.valCls : ''}`;
@@ -1336,6 +1317,39 @@ function mostrarEmpty() {
 /* ═══════════════════════════════════════════
    AÇÕES
 ═══════════════════════════════════════════ */
+/* ── AÇÕES DE CONTATO COM ABERTURA REAL ── */
+function acaoLigar() {
+  const d = filaF[idx];
+  setCanal('telefone');
+  if (d && d.telefone) {
+    window.location.href = 'tel:' + d.telefone.replace(/\D/g,'');
+  } else {
+    toast('Telefone não cadastrado para este devedor', 'err');
+  }
+}
+
+function acaoWhatsApp() {
+  const d = filaF[idx];
+  setCanal('whatsapp');
+  if (d && d.telefone) {
+    const num = '55' + d.telefone.replace(/\D/g,'');
+    window.open('https://wa.me/' + num, '_blank');
+  } else {
+    toast('Telefone não cadastrado para este devedor', 'err');
+  }
+}
+
+function acaoEmail() {
+  const d = filaF[idx];
+  setCanal('email');
+  if (d && d.email) {
+    const subject = encodeURIComponent('Cobrança – ' + d.credor);
+    window.location.href = 'mailto:' + d.email + '?subject=' + subject;
+  } else {
+    toast('E-mail não cadastrado para este devedor', 'err');
+  }
+}
+
 function setCanal(tipo) {
   const mapa = { whatsapp: 'WhatsApp', telefone: 'Ligação', email: 'E-mail' };
   document.querySelectorAll('#canalChips .chip').forEach(c =>
@@ -1444,27 +1458,7 @@ async function salvarIncob() {
   setTimeout(avancar, 600);
 }
 
-/* ── JURÍDICO ── */
-function abrirJur() { document.getElementById('ovJur').classList.add('on'); }
-async function salvarJur() {
-  const motivo = document.getElementById('jurMot').value;
-  const obs = document.getElementById('jurObs').value;
-  if (!motivo) { toast('Selecione o fundamento', 'err'); return; }
-
-  const d = filaF[idx];
-  try {
-    await fetch(API + '/api/cobrancas/bulk-status', {
-      method: 'PUT', headers: H(),
-      body: JSON.stringify({ cliente_id: d.id, status: 'juridico', motivo, observacao: obs })
-    });
-  } catch(e) {}
-
-  fecharModal('ovJur');
-  acoesHoje++;
-  atualizarStats();
-  flashMsg('Enviado ao Jurídico!');
-  setTimeout(avancar, 600);
-}
+/* jurídico removido */
 
 function verDetalhes() {
   const d = filaF[idx];
@@ -1558,7 +1552,6 @@ document.addEventListener('keydown', e => {
     case '2': setCanal('whatsapp'); break;
     case '3': abrirAcordo(); break;
     case '4': abrirIncob(); break;
-    case '5': abrirJur(); break;
   }
 });
 
