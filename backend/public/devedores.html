@@ -154,6 +154,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
 .di-vmain-high{color:var(--orange)}
 .di-vmain-med{color:var(--white)}
 .di-vmain-low{color:var(--t2)}
+.di-vmain-warn{color:var(--t2);font-size:11px;font-style:italic}
 .di-vsub{font-size:9px;color:var(--t2)}
 /* Insight inline na lista */
 .di-insight{font-size:10.5px;color:var(--t2);margin-top:1px;white-space:normal;line-height:1.35;word-break:break-word}
@@ -805,24 +806,34 @@ function gerarInsightLista(c, divida, nunca, titulos) {
   if (divida > 5000)            return 'Alta dívida — foco prioritário na negociação.';
   if (titulos > 5)              return `${titulos} cobranças em aberto — possível acordo consolidado.`;
   if (divida > 500)             return 'Cobrança pendente — manter acompanhamento.';
+  // divida_pendente=0 mas tem cobranças = cobranças vencidas ou em acordo
+  if (divida === 0 && titulos > 0) return 'Cobranças vencidas — ver detalhe para valor real.';
   return '';
 }
 
 function renderItem(c) {
   const dias       = calcDiasAtraso(c);
   const prioridade = calcPrioridade(dias, c);
-  const divida   = parseFloat(c.divida_pendente) || 0;
-  const titulos  = parseInt(c.total_cobrancas)  || 0;
-  const nunca    = !c.data_ultimo_contato;
-  const ativo    = clienteAtual?.id === c.id;
 
-  // Tags inline
-  const tags = [];
-  if (nunca)           tags.push('<span class="di-tag ok">nunca contatado</span>');
-  if (divida > 5000)   tags.push('<span class="di-tag crit">alto valor</span>');
-  if (titulos > 5)     tags.push(`<span class="di-tag high">${titulos} títulos</span>`);
+  // divida_pendente: só status='pendente' (backend)
+  // total_pago:      só status='pago'
+  // cobranças 'vencido' não entram no divida_pendente — usamos
+  // o campo como está e indicamos "pendente" ao usuário.
+  // O valor real completo (pendente + vencido) aparece no painel.
+  const dividaPendente = parseFloat(c.divida_pendente) || 0;
+  const totalPago      = parseFloat(c.total_pago)      || 0;
+  const titulos        = parseInt(c.total_cobrancas)   || 0;
+  const titulosAbertos = Math.max(0, titulos - Math.round(totalPago > 0 ? totalPago / Math.max(dividaPendente / Math.max(titulos,1), 1) : 0));
+  const nunca          = !c.data_ultimo_contato;
+  const ativo          = clienteAtual?.id === c.id;
 
-  const insight = gerarInsightLista(c, divida, nunca, titulos);
+  // Valor a exibir: se divida_pendente=0 mas tem cobranças,
+  // o cliente provavelmente tem só vencidas — indicar com "—"
+  // para não passar impressão de dívida zero.
+  const valorExibido   = dividaPendente > 0 ? fmtM(dividaPendente) : (titulos > 0 ? 'ver detalhe' : 'R$ 0,00');
+  const valorClass     = dividaPendente > 0 ? `di-vmain-${prioridade.cls}` : (titulos > 0 ? 'di-vmain-warn' : 'di-vmain-low');
+
+  const insight = gerarInsightLista(c, dividaPendente, nunca, titulos);
 
   return `<div class="di ${ativo ? 'active' : ''}" data-pri="${prioridade.cls}" onclick="abrirDevedor('${c.id}')">
     <div class="di-stripe ${prioridade.cls}"></div>
@@ -831,12 +842,12 @@ function renderItem(c) {
       <div class="di-sub">
         <span style="font-family:'DM Mono',monospace;font-size:10px">${c.cpf_cnpj || '—'}</span>
         ${nunca ? '<span class="di-tag ok" style="margin-left:2px">nunca contatado</span>' : ''}
-        ${titulos > 5 ? `<span class="di-tag high" style="margin-left:2px">${titulos} títulos</span>` : ''}
+        ${titulos > 1 ? `<span class="di-tag ${prioridade.cls}" style="margin-left:2px">${titulos} títulos</span>` : ''}
       </div>
       ${insight ? `<div class="di-insight">${insight}</div>` : ''}
     </div>
     <div class="di-val">
-      <span class="di-vmain di-vmain-${prioridade.cls}">${fmtM(divida)}</span>
+      <span class="di-vmain ${valorClass}">${valorExibido}</span>
       <span class="di-vsub"><span class="di-tag ${prioridade.cls}">${prioridade.label}</span></span>
     </div>
   </div>`;
@@ -850,22 +861,26 @@ function calcDiasAtraso(c) {
 }
 
 function calcPrioridade(dias, c) {
-  // Derivar prioridade dos campos disponíveis na listagem
   const divida  = parseFloat(c.divida_pendente) || 0;
   const status  = c.status_cobranca || 'novo';
   const nunca   = !c.data_ultimo_contato;
   const titulos = parseInt(c.total_cobrancas) || 0;
 
-  // Casos críticos por status
+  // Já resolvido — baixa prioridade
   if (['incobravel', 'juridico'].includes(status))
-    return { cls:'low', label:'BAIXO', dias:0 };   // já resolvido, baixa prioridade
+    return { cls:'low', label:'BAIXO', dias:0 };
 
-  // Crítico: dívida muito alta
+  // Crítico: dívida pendente muito alta
   if (divida > 10000)
     return { cls:'crit', label:'CRÍTICO', dias:0 };
 
-  // Alto: dívida relevante ou muitos títulos
+  // Alto: dívida pendente relevante OU muitos títulos (inclui vencidos)
+  // total_cobrancas > 5 captura clientes com cobranças vencidas (divida_pendente=0)
   if (divida > 3000 || titulos > 5)
+    return { cls:'high', label:'ALTO', dias:0 };
+
+  // Médio com cobranças mas sem valor pendente = provavelmente tem vencidas
+  if (divida === 0 && titulos > 0 && !['acordo','pago'].includes(status))
     return { cls:'high', label:'ALTO', dias:0 };
 
   // Médio: nunca contatado (oportunidade) ou dívida moderada
