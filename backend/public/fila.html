@@ -177,8 +177,80 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   flex:1;
   overflow:hidden;
   display:grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 320px;
 }
+
+/* ── PAINEL DE COBRANÇAS (dentro do work-main) ── */
+.cob-panel {
+  flex-shrink:0;
+  border-bottom:1px solid var(--br);
+  background:var(--bg);
+  max-height:180px;
+  overflow-y:auto;
+}
+.cob-panel::-webkit-scrollbar{width:2px}
+.cob-panel::-webkit-scrollbar-thumb{background:var(--g20);border-radius:2px}
+.cob-panel-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 16px 6px; border-bottom:1px solid var(--br);
+  background:var(--s1); flex-shrink:0; position:sticky; top:0; z-index:2;
+}
+.cob-panel-ttl {
+  font-size:9px; font-weight:700; letter-spacing:1.2px;
+  text-transform:uppercase; color:var(--t2);
+  display:flex; align-items:center; gap:6px;
+}
+.cob-panel-acts {
+  display:flex; gap:5px;
+}
+.cob-panel-btn {
+  padding:3px 10px; border-radius:20px; font-size:10px; font-weight:600;
+  border:1px solid var(--br); color:var(--t2); background:transparent;
+  transition:all .15s; font-family:'DM Sans',sans-serif; cursor:pointer;
+}
+.cob-panel-btn:hover { border-color:var(--brh); color:var(--white) }
+.cob-panel-btn.gold  { border-color:var(--br-gold); background:var(--g05); color:var(--gold) }
+.cob-panel-btn.gold:hover { background:var(--g08) }
+
+/* Linha de cobrança */
+.cob-row {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 14px; border-bottom:1px solid var(--br);
+  transition:background .12s; cursor:pointer;
+}
+.cob-row:hover { background:rgba(255,255,255,.015) }
+.cob-row:last-child { border-bottom:none }
+.cob-row.selected { background:var(--g03); }
+.cob-chk {
+  width:14px; height:14px; border-radius:3px; flex-shrink:0;
+  border:1px solid var(--br); background:transparent;
+  display:flex; align-items:center; justify-content:center;
+  font-size:8px; color:var(--gold); transition:all .12s;
+}
+.cob-row.selected .cob-chk { background:var(--g08); border-color:var(--br-gold) }
+.cob-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-top:1px }
+.cob-dot.pendente  { background:var(--orange) }
+.cob-dot.vencido   { background:var(--red) }
+.cob-dot.pago      { background:var(--green) }
+.cob-dot.acordo    { background:var(--blue) }
+.cob-info { flex:1; min-width:0 }
+.cob-desc { font-size:11.5px; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.cob-meta { font-size:10px; color:var(--t2); display:flex; gap:6px; margin-top:1px }
+.cob-val  { font-family:'DM Mono',monospace; font-size:12px; font-weight:600; color:var(--gold); flex-shrink:0 }
+.cob-st   { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px }
+.cob-st.vencido  { background:rgba(229,85,85,.08); color:var(--red) }
+.cob-st.pendente { background:rgba(217,124,46,.08); color:var(--orange) }
+.cob-st.pago     { background:rgba(52,201,138,.08); color:var(--green) }
+.cob-st.acordo   { background:rgba(91,143,232,.08); color:var(--blue) }
+.cob-empty { padding:14px; text-align:center; color:var(--t3); font-size:11px }
+
+/* Indicador de cobranças selecionadas no botão salvar */
+.selecionadas-badge {
+  display:none; background:var(--gold); color:#000;
+  font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px;
+  margin-left:4px;
+}
+.selecionadas-badge.show { display:inline }
 
 /* ─── PAINEL DE TRABALHO (ESQUERDA) ───────── */
 .work-main {
@@ -832,6 +904,24 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
       <!-- PMA: integrado no botão primário, sem bloco separado -->
 
+      <!-- PAINEL DE COBRANÇAS DO CLIENTE -->
+      <div class="cob-panel" id="cobPanel" style="display:none">
+        <div class="cob-panel-head">
+          <div class="cob-panel-ttl">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Cobranças — <span id="cobTotal">0</span> em aberto
+          </div>
+          <div class="cob-panel-acts">
+            <button class="cob-panel-btn" onclick="selecionarTodasCob()">Todas</button>
+            <button class="cob-panel-btn" onclick="desselecionarCob()">Nenhuma</button>
+            <button class="cob-panel-btn gold" id="btnCobrarSel" onclick="cobrarSelecionadas()" style="display:none">
+              <i class="fas fa-bolt"></i> Cobrar selecionadas
+            </button>
+          </div>
+        </div>
+        <div id="cobList"></div>
+      </div>
+
       <!-- AÇÃO PRINCIPAL DINÂMICA -->
       <div class="actions-primary" id="actionsPrimary">
         <button class="act-primary-dyn apd-wpp" id="btnPrimario" onclick="executarPrimario()">
@@ -907,6 +997,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         <button class="btn-next" onclick="salvarProximo()">
           <i class="fas fa-check"></i>
           Salvar e Próximo
+          <span class="selecionadas-badge" id="selBadge"></span>
           <span class="enter-hint">↵</span>
         </button>
       </div>
@@ -1082,6 +1173,158 @@ function nivelScore(score) {
   if (score >= 60) return 'high';
   if (score >= 40) return 'med';
   return 'low';
+}
+
+/* ══════════════════════════════════════════════════════
+   PERSISTÊNCIA — localStorage
+══════════════════════════════════════════════════════ */
+const LS_KEY = 'acertive_fila_v1';
+
+function salvarEstado() {
+  try {
+    const d = filaF[idx];
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      idx,
+      clienteId:    d?.id || null,
+      filtroCreedor: document.getElementById('filtroCreedor').value,
+      buscaTermo:   _termoBusca || '',
+      ts:           Date.now(),
+    }));
+  } catch(e) {}
+}
+
+function restaurarEstado() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const st = JSON.parse(raw);
+    // Ignora estado com mais de 8h
+    if (Date.now() - st.ts > 8 * 3600 * 1000) { localStorage.removeItem(LS_KEY); return null; }
+    return st;
+  } catch(e) { return null; }
+}
+
+function limparEstado() { localStorage.removeItem(LS_KEY); }
+
+/* ══════════════════════════════════════════════════════
+   COBRANÇAS DO CLIENTE ATUAL
+   Rota: GET /api/acionamentos/fila/devedor/:id
+   Retorna: { data: { cobrancas: [...] } }
+══════════════════════════════════════════════════════ */
+let cobAtual     = [];  // cobranças do devedor em foco
+let cobSelecionadas = new Set(); // ids selecionados
+
+async function carregarCobracoes(clienteId) {
+  const panel = document.getElementById('cobPanel');
+  const list  = document.getElementById('cobList');
+  cobAtual = [];
+  cobSelecionadas.clear();
+  atualizarBadgeSel();
+
+  try {
+    // Usa rota de detalhe do devedor — retorna cobrancas[]
+    const r = await fetch(API + `/api/acionamentos/fila/devedor/${clienteId}`, { headers: H() });
+    const d = await r.json();
+    if (!d.success) return;
+
+    const cobrancas = (d.data?.cobrancas || [])
+      .filter(c => ['pendente', 'vencido'].includes(c.status))
+      .sort((a, b) => {
+        // Vencidas primeiro, depois por vencimento mais antigo
+        const da = new Date(a.data_vencimento || '9999'); 
+        const db = new Date(b.data_vencimento || '9999');
+        return da - db;
+      });
+
+    cobAtual = cobrancas;
+    document.getElementById('cobTotal').textContent = cobrancas.length;
+
+    if (!cobrancas.length) {
+      panel.style.display = 'none';
+      return;
+    }
+
+    panel.style.display = '';
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    list.innerHTML = cobrancas.map((c, i) => {
+      const dv = c.data_vencimento || c.vencimento;
+      const dt = dv ? new Date(dv) : null;
+      const dtStr = dt ? dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+      const dias = dt ? Math.floor((hoje - dt) / 864e5) : 0;
+      const diasStr = dias > 0 ? ` · ${dias}d atraso` : '';
+      const st = c.status || 'pendente';
+      const stLbl = { pendente:'Pendente', vencido:'Vencido', pago:'Pago', acordo:'Acordo' }[st] || st;
+      return `<div class="cob-row" id="cobrow-${c.id}" onclick="toggleCob('${c.id}', ${i})">
+        <div class="cob-chk" id="cobchk-${c.id}"></div>
+        <div class="cob-dot ${st}"></div>
+        <div class="cob-info">
+          <div class="cob-desc">${c.descricao || c.credor_nome || 'Cobrança'}</div>
+          <div class="cob-meta"><span>${dtStr}${diasStr}</span></div>
+        </div>
+        <div class="cob-val">${fmtM(c.valor)}</div>
+        <div class="cob-st ${st}">${stLbl}</div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error('[COB]', e);
+    panel.style.display = 'none';
+  }
+}
+
+function toggleCob(id, i) {
+  if (cobSelecionadas.has(id)) {
+    cobSelecionadas.delete(id);
+    document.getElementById('cobrow-'+id)?.classList.remove('selected');
+    document.getElementById('cobchk-'+id).innerHTML = '';
+  } else {
+    cobSelecionadas.add(id);
+    document.getElementById('cobrow-'+id)?.classList.add('selected');
+    document.getElementById('cobchk-'+id).innerHTML = '<i class="fas fa-check"></i>';
+  }
+  atualizarBadgeSel();
+}
+
+function selecionarTodasCob() {
+  cobAtual.forEach(c => {
+    cobSelecionadas.add(c.id);
+    document.getElementById('cobrow-'+c.id)?.classList.add('selected');
+    const chk = document.getElementById('cobchk-'+c.id);
+    if (chk) chk.innerHTML = '<i class="fas fa-check"></i>';
+  });
+  atualizarBadgeSel();
+}
+
+function desselecionarCob() {
+  cobSelecionadas.forEach(id => {
+    document.getElementById('cobrow-'+id)?.classList.remove('selected');
+    const chk = document.getElementById('cobchk-'+id);
+    if (chk) chk.innerHTML = '';
+  });
+  cobSelecionadas.clear();
+  atualizarBadgeSel();
+}
+
+function atualizarBadgeSel() {
+  const n = cobSelecionadas.size;
+  const badge = document.getElementById('selBadge');
+  const btnCob = document.getElementById('btnCobrarSel');
+  if (n > 0) {
+    badge.textContent = n + ' selecionada' + (n > 1 ? 's' : '');
+    badge.classList.add('show');
+    if (btnCob) btnCob.style.display = '';
+  } else {
+    badge.classList.remove('show');
+    if (btnCob) btnCob.style.display = 'none';
+  }
+}
+
+function cobrarSelecionadas() {
+  // Preenche canal+resultado sugeridos e foca na obs
+  document.getElementById('obsInput').value =
+    `Cobradas ${cobSelecionadas.size} cobrança(s) selecionada(s)`;
+  document.getElementById('obsInput').focus();
+  toast(`${cobSelecionadas.size} cobrança(s) marcadas — registre o resultado`, 'ok');
 }
 
 /* ═══════════════════════════════════════════
@@ -1553,17 +1796,26 @@ async function salvarProximo() {
 
   tempos.push(Date.now() - tStart);
 
+  // Enriquecer descrição com cobranças selecionadas
+  let descFinal = obs || null;
+  if (cobSelecionadas.size > 0) {
+    const cobNomes = cobAtual
+      .filter(c => cobSelecionadas.has(c.id))
+      .map(c => `${c.descricao || 'Cobrança'} (${fmtM(c.valor)})`)
+      .join(', ');
+    if (cobNomes) descFinal = [obs, `Cob: ${cobNomes}`].filter(Boolean).join(' | ');
+  }
+
   try {
-    // Rota correta: POST /api/acionamentos (ver acionamentos.js)
-    // Campos obrigatórios: cliente_id, tipo, resultado
+    // POST /api/acionamentos — tipo = canal (padrão do sistema)
     await fetch(API + '/api/acionamentos', {
       method: 'POST', headers: H(),
       body: JSON.stringify({
         cliente_id: d.id,
-        tipo:       'contato_ativo',   // tipo padrão para contato operacional
+        tipo:       canal || 'whatsapp',
         canal,
         resultado:  result,
-        descricao:  obs || null,
+        descricao:  descFinal,
       })
     });
   } catch(e) { console.error('[SALVAR]', e); }
@@ -1576,11 +1828,13 @@ async function salvarProximo() {
 
 function avancar() {
   if (filaF[idx]) filaF[idx]._processado = true;
-  // Próximo não processado com maior score (já ordenado por score)
+  cobSelecionadas.clear();
+  atualizarBadgeSel();
   const prox = filaF.findIndex((d, i) => i > idx && !d._processado);
   if (prox === -1) {
     const qualquer = filaF.findIndex(d => !d._processado);
-    qualquer === -1 ? mostrarEmpty() : (idx = qualquer, renderDev());
+    if (qualquer === -1) { limparEstado(); mostrarEmpty(); }
+    else { idx = qualquer; renderDev(); }
   } else {
     idx = prox; renderDev();
   }
