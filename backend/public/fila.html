@@ -273,6 +273,16 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 .dmeta.warn strong   { color:var(--orange) }
 
 /* Alerta — já contatado hoje */
+/* Insight de uma linha — substitui badges múltiplos */
+.debtor-insight {
+  font-size:11.5px; color:var(--t2); margin-top:6px;
+  display:none; align-items:center; gap:6px; flex-wrap:wrap;
+  line-height:1.4;
+}
+.debtor-insight.show { display:flex }
+.debtor-insight strong { color:var(--text); font-weight:600 }
+.di-sep { color:var(--t3); font-size:10px; margin:0 2px }
+
 .alerta-box {
   display:none; align-items:center; gap:6px;
   margin-top:8px; padding:6px 12px;
@@ -812,27 +822,15 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
             <div class="debtor-valor" id="dbValor">—</div>
           </div>
         </div>
-        <div class="debtor-meta" id="dbMeta">
-          <div class="dmeta"><i class="fas fa-spinner fa-spin"></i> carregando</div>
-        </div>
+        <!-- UMA linha de contexto — sem badges separados -->
+        <div class="debtor-insight" id="dbInsight"></div>
         <div class="alerta-box" id="alertaHoje">
           <i class="fas fa-triangle-exclamation"></i>
           <span>Já houve contato hoje com este devedor</span>
         </div>
-        <div class="dev-badges" id="devBadges"></div>
       </div>
 
-      <!-- PRÓXIMA MELHOR AÇÃO -->
-      <div class="pma-box" id="pmaBox">
-        <div class="pma-left">
-          <div class="pma-label"><i class="fas fa-bolt" style="margin-right:4px"></i>Próxima melhor ação</div>
-          <div class="pma-txt" id="pmaTxt">—</div>
-        </div>
-        <button class="pma-btn" id="pmaBtn" onclick="executarPMA()">
-          <i id="pmaBtnIco" class="fas fa-phone"></i>
-          <span id="pmaBtnTxt">Agir agora</span>
-        </button>
-      </div>
+      <!-- PMA: integrado no botão primário, sem bloco separado -->
 
       <!-- AÇÃO PRINCIPAL DINÂMICA -->
       <div class="actions-primary" id="actionsPrimary">
@@ -854,8 +852,6 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         </button>
       </div>
 
-      <!-- ALERTAS INTELIGENTES -->
-      <div class="smart-alerts" id="smartAlerts" style="padding:6px 24px 0"></div>
 
       <!-- AÇÕES SECUNDÁRIAS -->
       <div class="actions-secondary">
@@ -1424,54 +1420,43 @@ function executarPMA() {
 }
 function executarPrimario() { executarPMA(); }
 
-/* ── ALERTAS INTELIGENTES ─────────────────────────────────── */
-function renderAlertas(d) {
-  const wrap = document.getElementById('smartAlerts');
-  const badges = document.getElementById('devBadges');
-  const alerts = [], tags = [];
+/* ── INSIGHT EM UMA LINHA ─────────────────────────────────── */
+function renderInsight(d) {
+  const el = document.getElementById('dbInsight');
+  const partes = [];
 
-  // Alertas de risco/urgência
-  if (d.maxDias > 365)
-    alerts.push(`<span class="salert danger"><i class="fas fa-fire"></i> +${d.maxDias} dias em atraso</span>`);
-  else if (d.maxDias > 60)
-    alerts.push(`<span class="salert warn"><i class="fas fa-clock"></i> ${d.maxDias} dias em atraso</span>`);
-
-  if (d.valor > 10000)
-    alerts.push(`<span class="salert danger"><i class="fas fa-circle-dollar-to-slot"></i> Alto valor</span>`);
-  else if (d.valor > 3000)
-    alerts.push(`<span class="salert warn"><i class="fas fa-circle-dollar-to-slot"></i> Valor relevante</span>`);
-
-  // Alertas de histórico
-  if (!d.ultimoContato)
-    alerts.push(`<span class="salert ok"><i class="fas fa-user-plus"></i> Nunca contatado — oportunidade</span>`);
-  else {
-    const dd = Math.floor((Date.now() - new Date(d.ultimoContato)) / 864e5);
-    if (dd === 0)
-      alerts.push(`<span class="salert warn"><i class="fas fa-clock-rotate-left"></i> Contatado hoje</span>`);
-    else if (dd <= 2)
-      alerts.push(`<span class="salert info"><i class="fas fa-clock-rotate-left"></i> Último contato há ${dd}d</span>`);
+  // Dias em atraso
+  if (d.maxDias > 0) {
+    const cls = d.maxDias > 90 ? 'danger' : d.maxDias > 30 ? 'warn' : '';
+    partes.push(`<strong style="${cls==='danger'?'color:var(--red)':cls==='warn'?'color:var(--orange)':''}">${d.maxDias} dias em atraso</strong>`);
   }
 
-  if (d.tentativas >= 5)
-    alerts.push(`<span class="salert warn"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas — considere desconto</span>`);
-  else if (d.tentativas >= 3)
-    alerts.push(`<span class="salert info"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas anteriores</span>`);
+  // Contato
+  if (!d.ultimoContato) {
+    partes.push('<strong style="color:var(--green)">Nunca contatado</strong>');
+  } else {
+    const dd = Math.floor((Date.now() - new Date(d.ultimoContato)) / 864e5);
+    if (dd === 0) partes.push('<strong style="color:var(--orange)">Contatado hoje</strong>');
+  }
 
-  if (d.count > 5)
-    alerts.push(`<span class="salert info"><i class="fas fa-layer-group"></i> ${d.count} títulos em aberto</span>`);
+  // Títulos
+  if (d.count > 1) partes.push(`${d.count} títulos`);
 
-  wrap.innerHTML = alerts.join('');
+  // Tentativas
+  if (d.tentativas >= 3) partes.push(`${d.tentativas} tentativas`);
 
-  // Badges menores no bloco do devedor
-  if (!d.ultimoContato) tags.push('<span class="dev-tag nunca"><i class="fas fa-user-plus"></i> Nunca contatado</span>');
-  if (d.valor > 5000) tags.push('<span class="dev-tag alto"><i class="fas fa-arrow-up"></i> Alto valor</span>');
-  if (d.tentativas >= 3) tags.push(`<span class="dev-tag multi"><i class="fas fa-rotate-right"></i> ${d.tentativas} tentativas</span>`);
-  if (badges) badges.innerHTML = tags.join('');
+  if (partes.length) {
+    el.innerHTML = partes.join('<span class="di-sep">·</span>');
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
 }
 
-// Compatibilidade: gerarRecomendacao e renderDevBadges agora redirecionam
+// Compatibilidade
 function gerarRecomendacao(d) { gerarPMA(d); }
-function renderDevBadges(d) { renderAlertas(d); }
+function renderDevBadges(d) { renderInsight(d); }
+function renderAlertas(d) { renderInsight(d); }
 
 function mostrarEmpty() {
   document.getElementById('debtor').style.display = 'none';

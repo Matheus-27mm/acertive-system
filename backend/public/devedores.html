@@ -506,22 +506,13 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
           </div>
         </div>
 
-        <!-- Card: Próxima melhor ação -->
-        <div class="card">
+        <!-- Insight leve — sem CTA de execução -->
+        <div class="card" id="cardInsight" style="display:none">
           <div class="card-hd">
-            <div class="card-ttl"><i class="fas fa-bolt"></i> Próxima ação</div>
+            <div class="card-ttl"><i class="fas fa-lightbulb"></i> Contexto</div>
           </div>
           <div class="card-body">
-            <div class="pma" id="pmaBox">
-              <div class="pma-left">
-                <div class="pma-lbl">Recomendação</div>
-                <div class="pma-txt" id="pmaTxt">—</div>
-              </div>
-              <button class="pma-btn" id="pmaBtn" onclick="executarPMA()">
-                <i class="fas fa-bolt" id="pmaBtnIco"></i>
-                <span id="pmaBtnTxt">Agir</span>
-              </button>
-            </div>
+            <div id="pmaTxt" style="font-size:12px;color:var(--text);line-height:1.5"></div>
           </div>
         </div>
 
@@ -550,17 +541,20 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
           <div class="card-body" id="pContato"></div>
         </div>
 
-        <!-- Card: Ações -->
+        <!-- Card: Ações — CTA principal + secundários -->
         <div class="card">
           <div class="card-hd">
-            <div class="card-ttl"><i class="fas fa-bolt"></i> Ações rápidas</div>
+            <div class="card-ttl"><i class="fas fa-bolt"></i> Ações</div>
           </div>
           <div class="card-body">
-            <div class="acoes-grid">
+            <!-- CTA principal: ir para fila com este devedor -->
+            <button class="acao-btn gold full" onclick="iniciarCobranca()" style="margin-bottom:8px;font-size:13px;padding:12px">
+              <i class="fas fa-headset"></i> Iniciar cobrança na fila
+            </button>
+            <!-- Secundários: menor destaque -->
+            <div class="acoes-grid" style="margin-top:4px">
               <button class="acao-btn call" onclick="acaoLigar()"><i class="fas fa-phone"></i> Ligar</button>
               <button class="acao-btn wpp"  onclick="acaoWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-              <button class="acao-btn gold full" onclick="acaoAcordo()"><i class="fas fa-handshake"></i> Criar acordo</button>
-              <button class="acao-btn full" onclick="irParaFila()"><i class="fas fa-headset"></i> Acionar na fila</button>
             </div>
           </div>
         </div>
@@ -1007,14 +1001,16 @@ function renderPainel(c, cobrancas, historico, stats) {
   // Status
   document.getElementById('pStatus').value = c.status_cobranca || 'novo';
 
-  // PMA
+  // Insight leve (sem botão de execução)
+  const cardInsight = document.getElementById('cardInsight');
   const pmaTxt = document.getElementById('pmaTxt');
-  const pmaBtnIco = document.getElementById('pmaBtnIco');
-  const pmaBtnTxt = document.getElementById('pmaBtnTxt');
-  pmaTxt.innerHTML = pma.txt;
-  pmaBtnIco.className = pma.ico.startsWith('fab') ? `fab ${pma.ico.replace('fab ','')}` : `fas ${pma.ico}`;
-  pmaBtnTxt.textContent = pma.acao;
-  pmaFnAtual = pma.fn;
+  if (pma && pma.txt) {
+    pmaTxt.innerHTML = pma.txt;
+    cardInsight.style.display = '';
+  } else {
+    cardInsight.style.display = 'none';
+  }
+  pmaFnAtual = pma ? pma.fn : null;
 
   // Score
   const ring  = document.getElementById('scoreRing');
@@ -1154,6 +1150,14 @@ function acaoAcordo() {
 
 function irParaFila() {
   window.location.href = 'fila.html';
+}
+
+function iniciarCobranca() {
+  // Vai para fila passando o ID do cliente como parâmetro
+  // A fila já suporta ?id= para abrir um devedor específico
+  const c = clienteAtual;
+  if (!c) { toast('Nenhum devedor selecionado', 'err'); return; }
+  window.location.href = `fila.html?cliente=${c.id}`;
 }
 
 async function salvarStatus(val) {
