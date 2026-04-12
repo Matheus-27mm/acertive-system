@@ -1151,34 +1151,75 @@ async function init() {
 
 async function carregarFila() {
   try {
-    const cobrancas = ((await fetch(API + '/api/cobrancas?limit=10000', { headers: H() }).then(r => r.json())).data) || [];
-    const now = new Date();
+    // ─────────────────────────────────────────────────────────────
+    // FIX 1: buscar TODAS as páginas (backend limita a 50 por req)
+    // FIX 2: o backend não usa status='vencido' — usa 'pendente'
+    //        e a distinção é feita por data_vencimento < hoje.
+    //        Buscamos 'pendente' e filtramos aqui no frontend.
+    // ─────────────────────────────────────────────────────────────
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
 
-    // Agrupar por cliente, excluindo já pagos/acordados
+    let todasCobrancas = [];
+    let page = 1;
+    const PER_PAGE = 500; // máximo que o backend aceita
+    while (true) {
+      const r = await fetch(
+        API + `/api/cobrancas?status=pendente&limit=${PER_PAGE}&page=${page}`,
+        { headers: H() }
+      );
+      const d = await r.json();
+      const batch = d.data || [];
+      todasCobrancas = todasCobrancas.concat(batch);
+      // parar se vieram menos itens que o limite (última página)
+      if (batch.length < PER_PAGE) break;
+      page++;
+      if (page > 40) break; // segurança: máx 20.000 registros
+    }
+
+    // FIX 2: filtrar apenas cobranças com vencimento no passado
+    //        (status 'pendente' + data < hoje = vencido de fato)
+    const cobrancas = todasCobrancas.filter(c => {
+      const dv = c.data_vencimento || c.vencimento;
+      if (!dv) return false; // sem data = ignorar
+      return new Date(dv) < hoje;
+    });
+
+    const now = new Date();
     const map = {};
-    cobrancas.filter(c => c.status === 'vencido').forEach(c => {
-      const id = c.cliente_id || c.devedor_id || c.cliente_nome || '?';
+
+    cobrancas.forEach(c => {
+      // FIX 3: agrupar APENAS por cliente_id (UUID único)
+      //        Nunca por nome — evita juntar clientes diferentes
+      const id = c.cliente_id;
+      if (!id) return; // ignorar cobranças sem cliente vinculado
+
       if (!map[id]) map[id] = {
         id,
-        nome:          c.cliente_nome || c.devedor || 'Devedor',
-        doc:           c.cliente_cpf  || c.cliente_documento || c.cpf_cnpj || '—',
-        telefone:      c.cliente_telefone || c.telefone || '',
-        email:         c.cliente_email    || c.email    || '',
+        nome:          c.cliente_nome || 'Devedor',
+        doc:           c.cliente_cpf  || c.cliente_documento || '—',
+        telefone:      c.cliente_telefone || '',
+        email:         c.cliente_email    || '',
         credor:        c.credor_nome || '—',
         valor:         0, count: 0, maxDias: 0,
         tentativas:    0,
         ultimoContato: null,
       };
-      // Valor = soma APENAS das cobranças deste devedor
-      map[id].valor += parseFloat(c.valor || 0);
+
+      map[id].valor += parseFloat(c.valor || c.valor_original || 0);
       map[id].count++;
-      const dias = Math.floor((now - new Date(c.data_vencimento)) / 864e5);
+
+      // FIX: calcular dias com fallback seguro — nunca NaN
+      const dv = c.data_vencimento || c.vencimento;
+      const dataVenc = dv ? new Date(dv) : null;
+      const dias = dataVenc && !isNaN(dataVenc)
+        ? Math.max(0, Math.floor((now - dataVenc) / 864e5))
+        : 0;
       if (dias > map[id].maxDias) map[id].maxDias = dias;
-      // Pegar contatos das cobrancas subsequentes se o primeiro não tinha
-      if (!map[id].telefone && (c.telefone || c.devedor_telefone))
-        map[id].telefone = c.telefone || c.devedor_telefone;
-      if (!map[id].email && (c.email || c.devedor_email))
-        map[id].email = c.email || c.devedor_email;
+
+      // Preferir contatos preenchidos
+      if (!map[id].telefone && c.cliente_telefone) map[id].telefone = c.cliente_telefone;
+      if (!map[id].email    && c.cliente_email)    map[id].email    = c.cliente_email;
     });
 
     const rawFila = Object.values(map);
