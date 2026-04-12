@@ -97,12 +97,12 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 ─────────────────────────────────────────── */
 .topbar {
   flex-shrink:0;
-  height:44px;
+  height:52px;
   display:flex;
   align-items:center;
   gap:0;
   background:rgba(0,0,0,.96);
-  backdrop-filter:blur(24px);
+  backdrop-filter:blur(20px);
   border-bottom:1px solid var(--br);
   font-size:12px;
 }
@@ -130,9 +130,32 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 
 .tb-filter select {
   background:transparent; border:none; color:var(--t2);
-  font-size:11px; font-family:var(--font); cursor:pointer; outline:none;
+  font-size:11px; font-family:'DM Sans',sans-serif; cursor:pointer; outline:none;
 }
-.tb-filter select option { background:#1c1c1c }
+.tb-filter select option { background:var(--s3) }
+
+/* Busca */
+.tb-search {
+  display:flex; align-items:center; gap:6px;
+  width:100%;
+  background:var(--s2); border:1px solid var(--br);
+  border-radius:var(--rs); padding:4px 9px;
+  transition:border-color .15s;
+}
+.tb-search:focus-within { border-color:rgba(255,255,255,.14) }
+.tb-search i { font-size:10px; color:var(--t2); flex-shrink:0 }
+.tb-search input {
+  background:transparent; border:none; outline:none;
+  color:var(--white); font-size:11.5px;
+  font-family:'DM Sans',sans-serif; width:100%;
+}
+.tb-search input::placeholder { color:var(--t3) }
+.tb-search button {
+  background:none; border:none; color:var(--t3);
+  font-size:9px; padding:0; cursor:pointer; flex-shrink:0;
+  transition:color .12s;
+}
+.tb-search button:hover { color:var(--text) }
 
 .tb-stat { flex-direction:column; gap:0; padding:0 12px; min-width:60px; align-items:center }
 .tb-stat-n { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--white); line-height:1 }
@@ -165,128 +188,101 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   border-right:1px solid var(--br);
 }
 
-/* ══════════════════════════════════════════
-   BLOCO DO DEVEDOR
-   O elemento mais importante da tela.
-   Deve ser lido em 2 segundos.
-══════════════════════════════════════════ */
+/* ══ BLOCO DO DEVEDOR ══════════════════════ */
 .debtor {
   flex-shrink:0;
-  padding:16px 24px 14px;
+  padding:18px 24px 14px;
   border-bottom:1px solid var(--br);
   position:relative;
   background:var(--s1);
 }
-
-/* Indicador lateral de prioridade — 3px, sem mais */
 .debtor::before {
-  content:'';
-  position:absolute;
-  left:0; top:0; bottom:0;
-  width:3px;
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
 }
 .debtor.crit::before { background:var(--crit) }
 .debtor.high::before { background:var(--high) }
 .debtor.med::before  { background:var(--med) }
+.debtor.low::before  { background:var(--t3) }
 
-/* Animação de entrada — sutil, funcional */
-@keyframes enter { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:translateY(0) } }
-.debtor-animate { animation:enter .22s ease }
+@keyframes enter { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
+/* Score badge — linha compacta acima do nome */
+.score-wrap { display:flex; align-items:center; gap:7px; margin-bottom:6px }
+.score-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:700; letter-spacing:.3px;
+  padding:2px 9px; border-radius:3px;
+}
+.score-badge.crit { background:var(--crit-s); color:var(--crit); border:1px solid var(--crit-b) }
+.score-badge.high { background:var(--high-s); color:var(--high); border:1px solid var(--high-b) }
+.score-badge.med  { background:var(--med-s);  color:var(--med);  border:1px solid var(--med-b) }
+.score-badge.low  { background:rgba(255,255,255,.04); color:var(--t2); border:1px solid var(--br) }
+.score-badge i { font-size:8px }
+.score-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--t2) }
+
+/* Linha principal: nome + valor */
 .debtor-row1 {
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
+  display:flex; align-items:flex-start;
+  justify-content:space-between; gap:16px;
   margin-bottom:10px;
 }
-.debtor-left {}
-.debtor-badge {
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  font-size:10px;
-  font-weight:600;
-  letter-spacing:.2px;
-  padding:2px 8px;
-  border-radius:3px;
-  margin-bottom:5px;
-}
-.debtor-badge.crit { background:var(--crit-s); color:var(--crit); border:1px solid var(--crit-b) }
-.debtor-badge.high { background:var(--high-s); color:var(--high); border:1px solid var(--high-b) }
-.debtor-badge.med  { background:var(--med-s);  color:var(--med);  border:1px solid var(--med-b) }
-.debtor-badge i { font-size:8px }
+.debtor-left { flex:1; min-width:0 }
 
-/* NOME — máximo destaque, legível imediatamente */
+/* NOME */
 .debtor-name {
-  font-size:21px;
-  font-weight:700;
-  color:var(--t1);
-  line-height:1.15;
-  letter-spacing:-.3px;
-  margin-bottom:4px;
+  font-family:'Syne',sans-serif;
+  font-size:21px; font-weight:700;
+  color:var(--white);
+  line-height:1.2; letter-spacing:-.3px;
+  margin-bottom:3px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+/* CPF / contatos */
 .debtor-doc {
-  font-family:var(--mono);
-  font-size:11px;
-  color:var(--t3);
+  font-family:'DM Mono',monospace;
+  font-size:11px; color:var(--t2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
-/* VALOR — lado direito, destaque imediato */
-.debtor-right { text-align:right }
+/* VALOR — lado direito */
+.debtor-right { text-align:right; flex-shrink:0 }
 .debtor-valor-label {
-  font-size:10px;
-  font-weight:500;
-  color:var(--t3);
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  margin-bottom:4px;
+  font-size:9px; font-weight:600; color:var(--t3);
+  text-transform:uppercase; letter-spacing:.8px; margin-bottom:5px;
 }
 .debtor-valor {
-  font-family:var(--mono);
-  font-size:24px;
-  font-weight:500;
-  color:var(--t1);
-  line-height:1;
-  letter-spacing:-.5px;
+  font-family:'DM Mono',monospace;
+  font-size:22px; font-weight:500;
+  color:var(--white); line-height:1; letter-spacing:-.5px;
 }
-/* Valor só fica colorido quando crítico — alta dívida vencida */
 .debtor-valor.crit { color:var(--crit) }
+.debtor-valor.high { color:var(--orange) }
 
-/* LINHA DE META-INFO — compacta, em linha */
+/* Meta-info em linha */
 .debtor-meta {
-  display:flex;
-  align-items:center;
-  gap:14px;
-  flex-wrap:wrap;
-  margin-top:1px;
+  display:flex; align-items:center;
+  gap:14px; flex-wrap:wrap; margin-top:2px;
 }
 .dmeta {
-  display:flex;
-  align-items:center;
-  gap:5px;
-  font-size:11.5px;
-  color:var(--t2);
+  display:flex; align-items:center; gap:5px;
+  font-size:12px; color:var(--text);
 }
-.dmeta i { font-size:9.5px; color:var(--t3) }
+.dmeta i { font-size:9px; color:var(--t2) }
 .dmeta strong { font-weight:600; color:var(--white) }
-.dmeta.danger strong { color:var(--crit) }
-.dmeta.warn strong { color:var(--high) }
+.dmeta.danger strong { color:var(--red) }
+.dmeta.warn strong   { color:var(--orange) }
 
 /* Alerta — já contatado hoje */
 .alerta-box {
-  display:none;
-  align-items:center;
-  gap:6px;
-  margin-top:10px;
-  padding:7px 11px;
+  display:none; align-items:center; gap:6px;
+  margin-top:8px; padding:6px 10px;
   border-radius:var(--rs);
-  background:var(--high-s);
-  border:1px solid var(--high-b);
-  font-size:11.5px;
-  color:var(--high);
+  background:var(--or10); border:1px solid var(--high-b);
+  font-size:11px; color:var(--orange);
 }
 .alerta-box.show { display:flex }
-.alerta-box i { font-size:10px }
+.alerta-box i { font-size:9px }
+.dev-badges { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px }
 
 /* ══════════════════════════════════════════
    AÇÕES PRINCIPAIS
@@ -356,7 +352,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   color:var(--t2);
   transition:all .15s;
 }
-.act-sec:hover { border-color:var(--brh); color:var(--t1); transform:translateY(-1px) }
+.act-sec:hover { border-color:var(--brh); color:var(--white); transform:translateY(-1px) }
 .act-sec:active { transform:translateY(0) }
 .act-sec i { font-size:11px }
 .act-sec .k { font-size:9px; color:var(--t4); font-family:var(--mono) }
@@ -431,7 +427,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
   background:var(--s2);
   border:1px solid var(--br);
   border-radius:var(--rs);
-  color:var(--t1);
+  color:var(--white);
   font-size:12.5px;
   font-family:var(--font);
   resize:none;
@@ -614,7 +610,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
 .mfg input, .mfg select, .mfg textarea {
   width:100%; padding:8px 11px;
   background:var(--s3); border:1px solid var(--br);
-  border-radius:var(--rs); color:var(--t1);
+  border-radius:var(--rs); color:var(--white);
   font-size:12.5px; font-family:var(--font); outline:none;
   transition:border-color .12s;
 }
@@ -767,6 +763,16 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
       </div>
     </div>
 
+    <div class="tb-cell" style="flex:0 1 200px">
+      <div class="tb-search">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="buscaInput" placeholder="Buscar devedor..." oninput="aplicarBusca(this.value)">
+        <button id="buscaClear" onclick="limparBusca()" style="display:none">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
     <div class="tb-cell tb-stat">
       <div class="tb-stat-n" id="stAcoes">0</div>
       <div class="tb-stat-l">ações hoje</div>
@@ -853,7 +859,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
       </div>
 
       <!-- ALERTAS INTELIGENTES -->
-      <div class="smart-alerts" id="smartAlerts" style="padding:4px 24px 8px"></div>
+      <div class="smart-alerts" id="smartAlerts" style="padding:6px 24px 0"></div>
 
       <!-- AÇÕES SECUNDÁRIAS -->
       <div class="actions-secondary">
@@ -1206,24 +1212,26 @@ function renderDev() {
   // Prioridade
   const nivelMap = {
     crit: { badge: 'CRÍTICO', valCls: 'crit' },
-    high: { badge: 'ALTO',    valCls: '' },
+    high: { badge: 'ALTO',    valCls: 'high' },
     med:  { badge: 'MÉDIO',   valCls: '' },
     low:  { badge: 'BAIXO',   valCls: '' }
   };
   const nv = nivelMap[d.nivel] || nivelMap.med;
   el.className = `debtor ${d.nivel}`;
+  el.style.animation = 'none';
+  el.offsetHeight; // force reflow
+  el.style.animation = 'enter .22s ease';
 
   const sb = document.getElementById('scoreBadge');
   sb.className = `score-badge ${d.nivel}`;
   sb.innerHTML = `<i class="fas fa-circle-dot"></i> ${nv.badge}`;
-  document.getElementById('scoreNum').textContent = d.score != null ? `score ${d.score}` : '';
+  document.getElementById('scoreNum').textContent = d.score != null ? `score ${d.score}/100` : '';
 
   document.getElementById('dbNome').textContent = d.nome;
-  // Doc = CPF + telefone se disponível
-  const docParts = [d.doc];
+  // Doc: CPF + telefone (email omitido para não poluir)
+  const docParts = [d.doc].filter(x => x && x !== '—');
   if (d.telefone) docParts.push(d.telefone);
-  if (d.email) docParts.push(d.email);
-  document.getElementById('dbDoc').textContent = docParts.filter(x=>x&&x!=='—').join(' · ');
+  document.getElementById('dbDoc').textContent = docParts.join('  ·  ') || '—';
 
   const val = document.getElementById('dbValor');
   val.className = `debtor-valor${nv.valCls ? ' ' + nv.valCls : ''}`;
@@ -1256,7 +1264,7 @@ function renderDev() {
   const suggBox = document.getElementById('suggBox');
   const suggTxt = document.getElementById('suggTxt');
   if (d.score != null) {
-    suggTxt.innerHTML = `Score <strong style="color:var(--t1)">${d.score}/100</strong> &nbsp;·&nbsp; ${d.maxDias}d atraso &nbsp;·&nbsp; ${d.count} título${d.count>1?'s':''}<br><span style="color:var(--t3);font-size:10px">Ordenado por urgência automática</span>`;
+    suggTxt.innerHTML = `Score <strong style="color:var(--white)">${d.score}/100</strong> &nbsp;·&nbsp; ${d.maxDias}d atraso &nbsp;·&nbsp; ${d.count} título${d.count>1?'s':''}<br><span style="color:var(--t3);font-size:10px">Ordenado por urgência automática</span>`;
     suggBox.classList.add('show');
   } else {
     suggBox.classList.remove('show');
@@ -1749,9 +1757,39 @@ function togglePause() {
   document.getElementById('pausedOv').classList.toggle('on', paused);
 }
 
+let _termoBusca = '';
+
 function aplicarFiltro() {
+  _aplicarTodosFiltros();
+}
+
+function aplicarBusca(val) {
+  _termoBusca = val.trim().toLowerCase();
+  document.getElementById('buscaClear').style.display = val ? 'block' : 'none';
+  _aplicarTodosFiltros();
+}
+
+function limparBusca() {
+  document.getElementById('buscaInput').value = '';
+  document.getElementById('buscaClear').style.display = 'none';
+  _termoBusca = '';
+  _aplicarTodosFiltros();
+}
+
+function _aplicarTodosFiltros() {
   const cred = document.getElementById('filtroCreedor').value;
-  filaF = cred ? fila.filter(d => d.credor === cred) : [...fila];
+  filaF = fila.filter(d => {
+    // Filtro credor
+    if (cred && d.credor !== cred) return false;
+    // Filtro busca: nome ou CPF
+    if (_termoBusca) {
+      const nome = (d.nome || '').toLowerCase();
+      const doc  = (d.doc  || '').toLowerCase();
+      const tel  = (d.telefone || '').toLowerCase();
+      if (!nome.includes(_termoBusca) && !doc.includes(_termoBusca) && !tel.includes(_termoBusca)) return false;
+    }
+    return true;
+  });
   idx = 0;
   filaF.length ? renderDev() : mostrarEmpty();
 }
