@@ -1223,25 +1223,41 @@ async function carregarCobracoes(clienteId) {
   atualizarBadgeSel();
 
   try {
-    // Tenta rota de detalhe do devedor primeiro
     let cobrancas = [];
+
+    // Estratégia 1: rota de detalhe da fila (retorna cobrancas[] junto)
     try {
-      const r = await fetch(API + `/api/acionamentos/fila/devedor/${clienteId}`, { headers: H() });
-      const d = await r.json();
-      if (d.success && d.data?.cobrancas?.length) {
-        cobrancas = d.data.cobrancas;
-      } else {
-        // Fallback: buscar cobranças diretamente
-        const r2 = await fetch(API + `/api/cobrancas?cliente_id=${clienteId}&limit=100`, { headers: H() });
-        const d2 = await r2.json();
-        cobrancas = d2.data || [];
+      const r1 = await fetch(API + `/api/acionamentos/fila/devedor/${clienteId}`, { headers: H() });
+      const d1 = await r1.json();
+      if (d1.success && Array.isArray(d1.data?.cobrancas) && d1.data.cobrancas.length) {
+        cobrancas = d1.data.cobrancas;
+        console.log('[COB] estratégia 1 ok:', cobrancas.length);
       }
-    } catch(e2) {
-      // Fallback direto
-      const r2 = await fetch(API + `/api/cobrancas?cliente_id=${clienteId}&limit=100`, { headers: H() });
-      const d2 = await r2.json();
-      cobrancas = d2.data || [];
+    } catch(e1) { console.warn('[COB] estratégia 1 falhou:', e1.message); }
+
+    // Estratégia 2: rota de cadastro do cliente (sempre tem cobrancas[])
+    if (!cobrancas.length) {
+      try {
+        const r2 = await fetch(API + `/api/cadastros/clientes/${clienteId}`, { headers: H() });
+        const d2 = await r2.json();
+        if (d2.success && Array.isArray(d2.data?.cobrancas)) {
+          cobrancas = d2.data.cobrancas;
+          console.log('[COB] estratégia 2 ok:', cobrancas.length);
+        }
+      } catch(e2) { console.warn('[COB] estratégia 2 falhou:', e2.message); }
     }
+
+    // Estratégia 3: rota direta de cobranças com cliente_id
+    if (!cobrancas.length) {
+      try {
+        const r3 = await fetch(API + `/api/cobrancas?cliente_id=${clienteId}&limit=100`, { headers: H() });
+        const d3 = await r3.json();
+        cobrancas = d3.data || [];
+        console.log('[COB] estratégia 3 ok:', cobrancas.length);
+      } catch(e3) { console.warn('[COB] estratégia 3 falhou:', e3.message); }
+    }
+
+    console.log('[COB] total carregado:', cobrancas.length, 'para cliente', clienteId);
 
     const cobrancas_filtradas = (cobrancas || [])
       .filter(c => ['pendente', 'vencido'].includes(c.status))
@@ -1532,6 +1548,10 @@ function renderDev() {
   gerarRecomendacao(d);
   renderDevBadges(d);
   resetForm();
+
+  // Carregar cobranças do cliente + salvar posição
+  carregarCobracoes(d.id);
+  salvarEstado();
 }
 
 async function carregarHist(d) {
