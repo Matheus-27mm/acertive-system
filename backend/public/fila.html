@@ -858,8 +858,9 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
       <div class="debtor crit" id="debtor">
         <div class="debtor-row1">
           <div class="debtor-left">
-            <div class="debtor-badge crit" id="dbBadge">
-              <i class="fas fa-circle-dot"></i> CRÍTICO
+            <div class="score-wrap">
+              <span class="score-badge crit" id="scoreBadge"><i class="fas fa-circle-dot"></i> CRÍTICO</span>
+              <span class="score-num" id="scoreNum"></span>
             </div>
             <div class="debtor-name" id="dbNome">Carregando...</div>
             <div class="debtor-doc" id="dbDoc">—</div>
@@ -876,6 +877,7 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
           <i class="fas fa-triangle-exclamation"></i>
           <span>Já houve contato hoje com este devedor</span>
         </div>
+        <div class="dev-badges" id="devBadges"></div>
       </div>
 
       <!-- AÇÕES PRINCIPAIS -->
@@ -909,6 +911,13 @@ button { cursor:pointer; font-family:var(--font); border:none; background:none; 
         <button class="act-sec act-skip" onclick="pular()">
           <i class="fas fa-forward-step"></i> Pular
         </button>
+      </div>
+
+      <!-- RECOMENDAÇÃO INTELIGENTE -->
+      <div class="rec-box" id="recBox">
+        <div class="rec-icon"><i class="fas fa-lightbulb"></i></div>
+        <div class="rec-txt" id="recTxt">—</div>
+        <button class="rec-action" id="recBtn" onclick="executarRec()">—</button>
       </div>
 
       <!-- REGISTRO -->
@@ -1103,6 +1112,26 @@ let acoesHoje = 0;
 let acordosHoje = 0;
 let tempos = [];
 let tStart = Date.now();
+let recAcao = null; // ação recomendada atual
+
+/* ── SCORE INTELIGENTE ──────────────────────────────────────
+   Normaliza cada dimensão pelo máximo da fila (0–1)
+   e aplica os pesos definidos.
+────────────────────────────────────────────────────────── */
+function calcScore(d, maxDias, maxValor, maxCount, maxTent) {
+  const nDias  = maxDias  > 0 ? Math.min(d.maxDias         / maxDias,  1) : 0;
+  const nValor = maxValor > 0 ? Math.min(d.valor            / maxValor, 1) : 0;
+  const nCount = maxCount > 0 ? Math.min(d.count            / maxCount, 1) : 0;
+  const nTent  = maxTent  > 0 ? Math.min((d.tentativas||0)  / maxTent,  1) : 0;
+  return Math.round((nDias*0.4 + nValor*0.3 + nCount*0.2 + nTent*0.1) * 100);
+}
+
+function nivelScore(score) {
+  if (score >= 80) return 'crit';
+  if (score >= 60) return 'high';
+  if (score >= 40) return 'med';
+  return 'low';
+}
 
 /* ═══════════════════════════════════════════
    INIT
