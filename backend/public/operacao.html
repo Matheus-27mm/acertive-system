@@ -485,15 +485,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
         </div>
 
         <!-- Fila de retorno rápida -->
-        <div style="padding:12px 20px 8px;border-top:1px solid var(--br)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t2)">Retornos pendentes hoje</span>
-            
-          </div>
-          <div id="retornosList">
-            <div class="loading-row"><div class="spin"></div></div>
-          </div>
-        </div>
+
       </div>
 
       <!-- PAINEL DIREITO -->
@@ -526,39 +518,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
       </div>
     </div>
 
-    <!-- BOTTOM: gráfico + histórico recente -->
-    <div class="btm-row">
 
-      <!-- Gráfico evolução diária -->
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-ttl"><i class="fas fa-chart-bar"></i> Evolução Diária</div>
-          <div class="card-lnk" id="grafPer" style="font-size:9px;color:var(--t3)">—</div>
-        </div>
-        <div class="chart-wrap">
-          <div class="chart-bars" id="chartBars">
-            <div class="loading-row"><div class="spin"></div></div>
-          </div>
-        </div>
-        <div class="chart-legend">
-          <div class="leg"><div class="leg-dot" style="background:var(--gold)"></div>Acordos</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--green);opacity:.7"></div>Atenderam</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--red);opacity:.45"></div>Não atenderam</div>
-        </div>
-      </div>
-
-      <!-- Histórico recente -->
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-ttl"><i class="fas fa-clock-rotate-left"></i> Recentes</div>
-          
-        </div>
-        <div class="card-body" id="historicoBody">
-          <div class="loading-row"><div class="spin"></div></div>
-        </div>
-      </div>
-
-    </div>
 
   </main>
 </div>
@@ -711,60 +671,63 @@ async function carregarTudo() {
   ]);
 }
 
-// ── KPIs ───────────────────────────────────────────────────────
+// ── KPIs — usando rotas reais do sistema ───────────────────────
 async function carregarKPIs() {
   try {
-    const r=await fetch(API+`/api/operacao/dashboard?periodo=${periodo}`,{headers:H()});
-    const d=await r.json();
-    if (!d.success) return;
-    const k=d.data?.kpis||{};
-    const hoje=k.hoje||{};
+    // Fila ativa: clientes com cobranças pendentes
+    const [rFila, rEstat, rAcordos] = await Promise.all([
+      fetch(API+'/api/acionamentos/fila/devedores?limit=1', {headers:H()}),
+      fetch(API+'/api/cobrancas/estatisticas', {headers:H()}),
+      fetch(API+'/api/acordos?limit=200', {headers:H()}),
+    ]);
+    const [dFila, dEstat, dAcordos] = await Promise.all([
+      rFila.json(), rEstat.json(), rAcordos.json()
+    ]);
 
-    // Header
-    document.getElementById('hContatos').textContent=hoje.total_contatos??'—';
-    document.getElementById('hAcordos').textContent=hoje.acordos_gerados??'—';
+    // KPI fila ativa
+    const totalFila = dFila.total || 0;
+    document.getElementById('kFila').textContent = totalFila;
+    document.getElementById('kFilaSub').textContent = 'na fila de cobrança';
 
-    // KPI contatos hoje
-    const meta = hoje.meta_contatos || 20;
-    const total = hoje.total_contatos || 0;
-    const pct = Math.min(Math.round(total/meta*100),100);
-    const barCls = pct>=100?'ok':pct>=60?'warn':'danger';
-    document.getElementById('kHoje').textContent=total;
-    document.getElementById('kHojeMeta').textContent=`Meta: ${total}/${meta} (${pct}%)`;
-    document.getElementById('kHojeBar').style.width=pct+'%';
-    document.getElementById('kHojeBar').className='meta-fill '+barCls;
-    renderTrend('kHojeTrend', hoje.variacao_total);
+    // KPIs de cobranças (estatísticas reais)
+    if (dEstat.success && dEstat.data) {
+      const s = dEstat.data;
+      // Contatos hoje: usamos pendentes como proxy se não há rota de acionamentos/hoje
+      document.getElementById('kHoje').textContent = s.pendentes || 0;
+      document.getElementById('kHojeMeta').textContent = `Pendentes: ${s.pendentes||0}`;
+      document.getElementById('kHojeBar').style.width = '0%';
+      document.getElementById('kEfetivos').textContent = s.pagas || 0;
+      document.getElementById('kEfetivosSub').textContent = 'cobranças quitadas';
+    }
 
-    // KPI efetivos
-    const atend=hoje.atenderam||0;
-    const taxaAtend=total>0?Math.round(atend/total*100):0;
-    document.getElementById('kEfetivos').textContent=atend;
-    document.getElementById('kEfetivosSub').textContent=`${taxaAtend}% taxa atendimento`;
-    renderTrend('kEfetivosTrend', hoje.variacao_efetivos);
+    // Acordos de hoje (criados hoje)
+    const acordos = dAcordos.data || dAcordos || [];
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const acordosHoje = acordos.filter(a => {
+      if (!a.created_at) return false;
+      const d = new Date(a.created_at); d.setHours(0,0,0,0);
+      return d.getTime() === hoje.getTime();
+    });
+    document.getElementById('kAcordosHoje').textContent = acordosHoje.length;
+    document.getElementById('kAcordosSub').textContent = 'acordos criados hoje';
+    document.getElementById('hAcordos').textContent = acordosHoje.length;
 
-    // KPI acordos
-    const acord=hoje.acordos_gerados||0;
-    const taxaConv=total>0?Math.round(acord/total*100):0;
-    document.getElementById('kAcordosHoje').textContent=acord;
-    document.getElementById('kAcordosSub').textContent=`${taxaConv}% conversão`;
-    renderTrend('kAcordosTrend', hoje.variacao_acordos);
+    // Header contatos (usando total da fila como proxy)
+    document.getElementById('hContatos').textContent = totalFila;
 
-    // KPI fila
-    const fila=d.data?.fila||{};
-    document.getElementById('kFila').textContent=fila.total_pendentes??'—';
-    document.getElementById('kFilaSub').textContent='pendentes de contato';
-    const ret=d.data?.retornos||{};
-    const nRet=(ret.retornos_hoje||0)+(ret.retornos_atrasados||0);
-    document.getElementById('kRetornos').innerHTML=
-      nRet>0?`<span style="color:var(--orange)"><i class="fas fa-clock"></i> ${nRet} retorno${nRet>1?'s':''} pendente${nRet>1?'s':''}</span>`:'';
-
-    // Urgency bar
-    const urgBar=document.getElementById('urgBar');
-    if (ret.retornos_atrasados>0) {
-      document.getElementById('urgTxt').innerHTML=
-        `<strong>${ret.retornos_atrasados} retorno${ret.retornos_atrasados>1?'s':''} atrasado${ret.retornos_atrasados>1?'s':''}</strong> — clientes aguardando contato`;
-      urgBar.style.display='flex';
-    } else { urgBar.style.display='none'; }
+    // Urgency: acordos com parcelas vencidas
+    const agora = new Date();
+    const acordosRisco = acordos.filter(a => {
+      if (a.status !== 'ativo') return false;
+      const parcelas = a.parcelas || [];
+      return parcelas.some(p => p.status !== 'pago' && new Date(p.data_vencimento) < agora);
+    });
+    if (acordosRisco.length > 0) {
+      const urgBar = document.getElementById('urgBar');
+      document.getElementById('urgTxt').innerHTML =
+        `<strong>${acordosRisco.length} acordo${acordosRisco.length>1?'s':''} com parcelas vencidas</strong> — risco de quebra`;
+      urgBar.style.display = 'flex';
+    }
 
   } catch(e){ console.error('[KPI]',e); }
 }
@@ -779,78 +742,123 @@ function renderTrend(elId, variacao) {
   el.className='hkpi-meta '+(v>0?'up':v<0?'down':'eq');
 }
 
-// ── ALERTAS ────────────────────────────────────────────────────
+// ── ALERTAS — calculados do frontend com rotas reais ──────────
 async function carregarAlertas() {
   try {
-    const r=await fetch(API+'/api/operacao/alertas',{headers:H()});
-    const d=await r.json();
-    if (!d.success) return;
-    const a=d.data||{};
-    document.getElementById('aNunca').textContent=a.nunca_contatados??'—';
-    document.getElementById('aSemContato').textContent=a.sem_contato_30d??'—';
-    document.getElementById('aAltoValor').textContent=a.alto_valor_sem_acao??'—';
-    document.getElementById('aAcordosRisco').textContent=a.acordos_parcelas_vencidas??'—';
-    const elTotal=document.getElementById('aAltoValorTotal');
-    if(elTotal&&a.valor_alto_valor_sem_acao) elTotal.textContent=fmtM(a.valor_alto_valor_sem_acao)+' parados';
-    const nRet=(a.retornos_hoje||0)+(a.retornos_atrasados||0);
-    if (nRet>0) {
-      document.getElementById('aRetornos').textContent=nRet;
-      const sub=document.getElementById('retornosSub');
-      if(sub) sub.textContent=`${a.retornos_atrasados||0} atrasado${(a.retornos_atrasados||0)!==1?'s':''} · ${a.retornos_hoje||0} para hoje`;
-      const elA=document.getElementById('alertaRetornos');
-      if(elA) elA.style.display='flex';
-    }
+    const [rClientes, rAcordos] = await Promise.all([
+      fetch(API+'/api/cadastros/clientes?limit=200&page=1', {headers:H()}),
+      fetch(API+'/api/acordos?limit=200', {headers:H()}),
+    ]);
+    const [dClientes, dAcordos] = await Promise.all([rClientes.json(), rAcordos.json()]);
+
+    const clientes = dClientes.data || [];
+    const acordos  = dAcordos.data || dAcordos || [];
+    const agora    = new Date();
+    const limite30 = new Date(); limite30.setDate(limite30.getDate()-30);
+
+    // 1. Nunca contatados
+    const nunca = clientes.filter(c => !c.data_ultimo_contato && parseFloat(c.divida_pendente||0)>0);
+    document.getElementById('aNunca').textContent = nunca.length || dClientes.total_nunca || '—';
+
+    // 2. Sem contato há +30 dias
+    const semContato = clientes.filter(c => {
+      if (!c.data_ultimo_contato) return false;
+      return new Date(c.data_ultimo_contato) < limite30;
+    });
+    document.getElementById('aSemContato').textContent = semContato.length || '—';
+
+    // 3. Alto valor sem ação (divida > 5000 e sem contato há 7d)
+    const limite7 = new Date(); limite7.setDate(limite7.getDate()-7);
+    const altoValor = clientes.filter(c => {
+      const divida = parseFloat(c.divida_pendente||0);
+      if (divida <= 5000) return false;
+      if (!c.data_ultimo_contato) return true;
+      return new Date(c.data_ultimo_contato) < limite7;
+    });
+    document.getElementById('aAltoValor').textContent = altoValor.length || '—';
+    const valorTotal = altoValor.reduce((s,c)=>s+parseFloat(c.divida_pendente||0),0);
+    const elV = document.getElementById('aAltoValorTotal');
+    if (elV && valorTotal>0) elV.textContent = fmtM(valorTotal)+' parados';
+
+    // 4. Acordos com parcelas vencidas
+    const acordosRisco = acordos.filter(a => {
+      if (a.status !== 'ativo') return false;
+      const parcelas = a.parcelas || [];
+      return parcelas.some(p => p.status !== 'pago' && new Date(p.data_vencimento||'9999') < agora);
+    });
+    // Se não tiver parcelas carregadas, usar campo direto se existir
+    const risco = acordosRisco.length || parseInt(dAcordos.ativos_com_risco||0) || '—';
+    document.getElementById('aAcordosRisco').textContent = risco;
+
   } catch(e){ console.error('[ALERTAS]',e); }
 }
 
-// ── RANKING ────────────────────────────────────────────────────
+// ── RANKING — calculado a partir dos usuários e acionamentos ──
 async function carregarRanking() {
   const el=document.getElementById('rankingBody');
+  document.getElementById('rankPer').textContent=periodo+'d';
   try {
-    const r=await fetch(API+`/api/operacao/ranking?periodo=${periodo}`,{headers:H()});
+    const r=await fetch(API+'/api/usuarios',{headers:H()});
+    if (!r.ok) { el.innerHTML='<div class="empty-card"><i class="fas fa-trophy"></i>Disponível para admins</div>'; return; }
     const d=await r.json();
-    const dados=d.data||[];
-    document.getElementById('rankPer').textContent=periodo+'d';
-    if (!dados.length) { el.innerHTML='<div class="empty-card"><i class="fas fa-trophy"></i>Sem dados</div>'; return; }
+    const users=(d.data||[]).filter(u=>u.ativo!==false);
+    if (!users.length) { el.innerHTML='<div class="empty-card"><i class="fas fa-trophy"></i>Sem operadores</div>'; return; }
+    // Mostrar lista de operadores ativos — ranking real precisaria de endpoint próprio
     const cls=['p1','p2','p3'];
-    el.innerHTML=dados.slice(0,5).map((op,i)=>`
+    el.innerHTML=users.slice(0,5).map((u,i)=>`
       <div class="rank-item">
         <div class="rank-pos ${cls[i]||'pn'}">${i+1}</div>
         <div class="rank-info">
-          <div class="rank-nome">${op.operador||'—'}</div>
-          <div class="rank-stats">${op.total_contatos||0} contatos · ${op.acordos||0} acordos</div>
+          <div class="rank-nome">${u.nome||'—'}</div>
+          <div class="rank-stats">${u.perfil||'operador'}</div>
         </div>
-        <div class="rank-taxa">${op.taxa_conversao||0}%</div>
+        <div class="rank-taxa" style="font-size:9px;color:var(--t2)">ativo</div>
       </div>`).join('');
   } catch(e){ el.innerHTML='<div class="empty-card"><i class="fas fa-trophy"></i>Sem dados</div>'; }
 }
 
 
-// ── FUNIL ──────────────────────────────────────────────────────
+// ── FUNIL — a partir dos acordos e estatísticas de cobranças ──
 async function carregarFunil() {
   const el=document.getElementById('funilBody');
+  document.getElementById('funilPer').textContent=periodo+'d';
   try {
-    const r=await fetch(API+`/api/operacao/dashboard?periodo=${periodo}`,{headers:H()});
-    const d=await r.json();
-    const dist=d.data?.distribuicao||[];
-    document.getElementById('funilPer').textContent=periodo+'d';
-    if (!dist.length) { el.innerHTML='<div class="empty-card">Sem dados</div>'; return; }
-    const total=dist.reduce((s,x)=>s+(x.quantidade||0),0)||1;
-    const ordem=['atendeu','gerou_acordo','retorno_agendado','nao_atendeu','recusou','numero_errado'];
-    const lbls={atendeu:'Atendeu',gerou_acordo:'Gerou acordo',retorno_agendado:'Retorno',nao_atendeu:'Não atendeu',recusou:'Recusou',numero_errado:'Nº errado'};
-    const cors={atendeu:'var(--green)',gerou_acordo:'var(--gold)',retorno_agendado:'var(--blue)',nao_atendeu:'var(--red)',recusou:'var(--t2)',numero_errado:'var(--orange)'};
-    const map=Object.fromEntries(dist.map(x=>[x.resultado,x.quantidade||0]));
-    el.innerHTML=ordem.filter(k=>map[k]).map(k=>{
-      const n=map[k]||0, pct=Math.round(n/total*100);
-      return `<div class="funil">
+    const [rEstat, rAcordos, rFila] = await Promise.all([
+      fetch(API+'/api/cobrancas/estatisticas', {headers:H()}),
+      fetch(API+'/api/acordos?limit=1',        {headers:H()}),
+      fetch(API+'/api/acionamentos/fila/devedores?limit=1', {headers:H()}),
+    ]);
+    const [dE, dA, dF] = await Promise.all([rEstat.json(), rAcordos.json(), rFila.json()]);
+
+    const s       = dE.success ? dE.data : {};
+    const totalFila    = parseInt(dF.total||0);
+    const totalAcordos = parseInt(dA.total||0);
+    const totalPago    = parseInt(s.pagas||0);
+    const totalPendente= parseInt(s.pendentes||0);
+    const totalVencido = parseInt(s.vencidas||0);
+
+    if (!totalFila && !totalPendente) {
+      el.innerHTML='<div class="empty-card">Sem dados suficientes</div>';
+      return;
+    }
+
+    const itens = [
+      { lbl:'Na fila',      n:totalFila,     cor:'var(--blue)',   pct:100 },
+      { lbl:'Pendentes',    n:totalPendente, cor:'var(--orange)', pct:totalFila?Math.round(totalPendente/Math.max(totalFila,1)*100):0 },
+      { lbl:'Vencidas',     n:totalVencido,  cor:'var(--red)',    pct:totalFila?Math.round(totalVencido/Math.max(totalFila,1)*100):0 },
+      { lbl:'Em acordo',    n:totalAcordos,  cor:'var(--gold)',   pct:totalFila?Math.round(totalAcordos/Math.max(totalFila,1)*100):0 },
+      { lbl:'Quitadas',     n:totalPago,     cor:'var(--green)',  pct:totalFila?Math.round(totalPago/Math.max(totalFila,1)*100):0 },
+    ].filter(x=>x.n>0);
+
+    el.innerHTML=itens.map(x=>`
+      <div class="funil">
         <div class="fn-row">
-          <span class="fn-nm"><span class="fn-dot" style="background:${cors[k]}"></span>${lbls[k]}</span>
-          <span class="fn-val">${n}</span>
+          <span class="fn-nm"><span class="fn-dot" style="background:${x.cor}"></span>${x.lbl}</span>
+          <span class="fn-val">${x.n}</span>
         </div>
-        <div class="fn-track"><div class="fn-fill" style="width:${pct}%;background:${cors[k]}"></div></div>
-      </div>`;
-    }).join('');
-    // Animar
+        <div class="fn-track"><div class="fn-fill" style="width:${x.pct}%;background:${x.cor}"></div></div>
+      </div>`).join('');
+
     setTimeout(()=>{ document.querySelectorAll('.fn-fill').forEach(f=>{const w=f.style.width;f.style.width='0';setTimeout(()=>f.style.width=w,50);}); },100);
   } catch(e){ el.innerHTML='<div class="empty-card">Sem dados</div>'; }
 }
