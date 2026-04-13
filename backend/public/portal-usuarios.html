@@ -1,627 +1,924 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usuários do Portal - ACERTIVE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root{
-            --bg-primary:#050709;--bg-secondary:#0a0d12;--bg-card:#0e1219;--bg-elevated:#151c28;
-            --gold-primary:#c9a84c;--gold-light:#dfc070;--gold-dark:#8b7434;
-            --gold-glow:rgba(201,168,76,0.12);--gold-subtle:rgba(201,168,76,0.06);
-            --success:#3ecf8e;--success-bg:rgba(62,207,142,0.08);
-            --warning:#e0943e;--warning-bg:rgba(224,148,62,0.08);
-            --danger:#e05c5c;--danger-bg:rgba(224,92,92,0.08);
-            --info:#5c8ee0;--info-bg:rgba(92,142,224,0.08);
-            --text-primary:#e8e6e1;--text-secondary:#7a7670;--text-muted:#4a4640;
-            --border-subtle:rgba(201,168,76,0.07);--border-default:rgba(201,168,76,0.14);
-        }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Outfit',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh}
-
-        /* Sidebar */
-        .sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;z-index:100}
-        .sidebar-header{padding:28px 24px;border-bottom:1px solid var(--border-subtle)}
-        .sidebar-logo{display:flex;align-items:center;gap:14px}
-        .sidebar-logo-text{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700}
-        .sidebar-logo-text span{color:var(--gold-primary)}
-        .sidebar-nav{flex:1;padding:24px 16px;overflow-y:auto}
-        .nav-section{margin-bottom:28px}
-        .nav-section-title{font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1.5px;padding:0 14px;margin-bottom:12px}
-        .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;color:var(--text-secondary);text-decoration:none;border-radius:10px;margin-bottom:4px;transition:all .25s;font-size:14px;font-weight:500;border:1px solid transparent}
-        .nav-item:hover{background:var(--gold-subtle);color:var(--text-primary)}
-        .nav-item.active{background:var(--gold-subtle);color:var(--gold-light);border-color:var(--border-default)}
-        .nav-item i{width:20px;text-align:center}
-        .sidebar-footer{padding:20px;border-top:1px solid var(--border-subtle)}
-        .user-info{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px}
-        .user-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--bg-primary)}
-        .user-details{flex:1}
-        .user-name{font-size:14px;font-weight:600}
-        .user-role{font-size:12px;color:var(--text-muted)}
-        .user-logout{color:var(--text-muted);padding:8px;cursor:pointer;border-radius:8px}
-        .user-logout:hover{background:var(--danger-bg);color:var(--danger)}
-
-        /* Main */
-        .main-content{margin-left:280px;min-height:100vh;padding:36px 40px}
-        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
-        .page-header-left h1{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;margin-bottom:6px}
-        .page-header-left p{font-size:14px;color:var(--text-muted)}
-
-        /* Botões */
-        .btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;text-decoration:none;border:none;font-family:'Outfit',sans-serif}
-        .btn-primary{background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));color:var(--bg-primary)}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.2)}
-        .btn-sm{padding:8px 14px;font-size:12px;border-radius:8px}
-        .btn-danger-sm{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(224,92,92,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
-        .btn-danger-sm:hover{background:var(--danger);color:#fff}
-        .btn-warning-sm{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(224,148,62,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
-        .btn-warning-sm:hover{opacity:.85}
-        .btn-info-sm{background:var(--info-bg);color:var(--info);border:1px solid rgba(92,142,224,.2);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
-        .btn-info-sm:hover{opacity:.85}
-
-        /* Cards de stats */
-        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
-        .stat-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px}
-        .stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px}
-        .stat-icon.gold{background:var(--gold-glow);color:var(--gold-primary);border:1px solid var(--border-default)}
-        .stat-icon.green{background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)}
-        .stat-icon.blue{background:var(--info-bg);color:var(--info);border:1px solid rgba(92,142,224,.2)}
-        .stat-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin-bottom:2px}
-        .stat-label{font-size:12px;color:var(--text-muted)}
-
-        /* Tabela */
-        .table-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
-        .table-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border-subtle)}
-        .table-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;display:flex;align-items:center;gap:10px}
-        .table-title i{color:var(--gold-primary)}
-        table{width:100%;border-collapse:collapse}
-        th{text-align:left;padding:16px 22px;font-size:10px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border-subtle);background:var(--bg-secondary)}
-        td{padding:16px 22px;border-bottom:1px solid var(--border-subtle);font-size:14px;vertical-align:middle}
-        tr:last-child td{border-bottom:none}
-        tr:hover td{background:var(--gold-subtle)}
-        .actions-cell{display:flex;gap:8px;align-items:center}
-
-        /* Badges */
-        .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase}
-        .badge-ativo{background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)}
-        .badge-inativo{background:rgba(100,100,100,.1);color:var(--text-muted);border:1px solid var(--border-subtle)}
-        .badge-primeiro{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(224,148,62,.2)}
-
-        /* Avatar credor */
-        .credor-av{width:36px;height:36px;background:var(--gold-glow);border:1px solid var(--border-default);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-primary);font-size:14px;flex-shrink:0}
-        .credor-info{display:flex;align-items:center;gap:12px}
-        .credor-nome{font-weight:600;margin-bottom:2px}
-        .credor-email{font-size:12px;color:var(--text-muted)}
-
-        /* Empty */
-        .empty-state{text-align:center;padding:60px 40px;color:var(--text-muted)}
-        .empty-state i{font-size:48px;margin-bottom:16px;display:block;opacity:.3;color:var(--gold-primary)}
-
-        /* Loading */
-        .spinner{width:36px;height:36px;border:3px solid var(--border-subtle);border-top-color:var(--gold-primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
-        @keyframes spin{to{transform:rotate(360deg)}}
-
-        /* Modal */
-        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-        .modal-overlay.active{display:flex}
-        .modal{background:var(--bg-card);border:1px solid var(--border-default);border-radius:20px;width:100%;max-width:520px}
-        .modal-header{padding:22px 26px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
-        .modal-header h3{font-family:'Cormorant Garamond',serif;font-size:20px;display:flex;align-items:center;gap:10px}
-        .modal-header h3 i{color:var(--gold-primary)}
-        .modal-close{background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center}
-        .modal-close:hover{background:var(--danger-bg);color:var(--danger)}
-        .modal-body{padding:26px}
-        .modal-footer{padding:18px 26px;border-top:1px solid var(--border-subtle);display:flex;gap:12px;justify-content:flex-end}
-
-        /* Form */
-        .form-group{margin-bottom:18px}
-        .form-group label{display:block;font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
-        .form-group input,.form-group select{width:100%;padding:13px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;font-family:'Outfit',sans-serif}
-        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold-primary)}
-        .form-group select option{background:var(--bg-secondary)}
-        .form-hint{font-size:11px;color:var(--text-muted);margin-top:5px}
-
-        /* Resultado senha */
-        .senha-card{background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:12px;padding:20px;margin-top:16px}
-        .senha-card-title{font-size:11px;font-weight:700;color:var(--gold-primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-        .senha-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
-        .senha-row:last-child{margin-bottom:0}
-        .senha-key{color:var(--text-muted)}
-        .senha-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold-light)}
-        .copy-btn{background:var(--gold-glow);border:1px solid var(--border-default);color:var(--gold-primary);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .2s}
-        .copy-btn:hover{background:var(--gold-primary);color:var(--bg-primary)}
-        .warning-box{background:var(--warning-bg);border:1px solid rgba(224,148,62,.2);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--warning);display:flex;gap:10px;margin-top:14px}
-        .warning-box i{flex-shrink:0;margin-top:1px}
-
-        .btn-cancelar{padding:12px 20px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:10px;color:var(--text-secondary);font-size:14px;font-weight:600;cursor:pointer}
-        .btn-salvar{padding:12px 22px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;border-radius:10px;color:var(--bg-primary);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
-        .btn-salvar:disabled{opacity:.6;cursor:not-allowed}
-
-        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main-content{margin-left:0;padding:24px 20px}.stats-grid{grid-template-columns:1fr}}
-        .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));border:none;color:var(--bg-primary);font-size:20px;cursor:pointer;align-items:center;justify-content:center}
-        @media(max-width:768px){.mobile-toggle{display:flex}.sidebar{transition:transform .3s}.sidebar.open{transform:translateX(0)!important}.main-content{padding-top:76px!important}}
-    
-/* Ambient background */
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.025) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.015) 0%, transparent 60%);
-    animation: ambientPulse 8s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Credor — ACERTIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;--s4:#1e1e1e;
+  --gold:#c9a84c;--gd:#7a5e20;--gxl:#dab85c;
+  --g03:rgba(201,168,76,.03);--g05:rgba(201,168,76,.05);
+  --g08:rgba(201,168,76,.08);--g12:rgba(201,168,76,.12);
+  --g20:rgba(201,168,76,.20);
+  --green:#34c98a;--red:#e55555;--orange:#d97c2e;--blue:#5b8fe8;
+  --white:#f0ede8;--text:#b8b4ae;--t2:#706c66;--t3:#3a3630;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
+  --br-gold:rgba(201,168,76,.12);
+  --sw:244px;--r:10px;--rs:7px;
 }
-body > * { position: relative; z-index: 1; }
-@keyframes ambientPulse {
-    0%   { opacity: 0.6; transform: scale(1) rotate(0deg); }
-    50%  { opacity: 1;   transform: scale(1.05) rotate(1deg); }
-    100% { opacity: 0.7; transform: scale(0.98) rotate(-1deg); }
-}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
 
-        </style>
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
+.sb-logo{height:28px;max-width:120px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--t2);border:1px solid var(--br);padding:2px 8px;border-radius:20px}
+.sb-nav{flex:1;overflow-y:auto;padding:14px 10px}
+.sb-grp{margin-bottom:20px}
+.sb-gl{font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);padding:0 10px;margin-bottom:6px}
+.nl{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);color:var(--t2);font-size:12.5px;transition:all .2s;margin-bottom:1px;position:relative;border:1px solid transparent}
+.nl:hover{background:rgba(255,255,255,.03);color:var(--white)}
+.nl.active{background:var(--g05);color:var(--white);border-color:var(--br-gold)}
+.nl.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:14px;border-radius:0 2px 2px 0;background:var(--gold)}
+.nl i{width:14px;text-align:center;font-size:11px;flex-shrink:0;opacity:.6}
+.nl.active i{opacity:1}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px}
+.sb-foot{padding:12px;border-top:1px solid var(--br)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--br);transition:border-color .2s}
+.sb-user:hover{border-color:var(--brh)}
+.sb-av{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gd));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#000}
+.sb-un{font-size:12px;font-weight:500;color:var(--white)}
+.sb-ur{font-size:10px;color:var(--t2)}
+.sb-out{margin-left:auto;color:var(--t3);font-size:12px;padding:5px;border-radius:5px;transition:all .18s}
+.sb-out:hover{background:rgba(229,85,85,.08);color:var(--red)}
+
+/* ── LAYOUT ── */
+.layout{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.header{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(0,0,0,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:16px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white)}
+.hdr-sub{font-size:11px;color:var(--t2)}
+.hdr-div{width:1px;height:20px;background:var(--br)}
+.hdr-stat{display:flex;flex-direction:column}
+.hdr-sv{font-size:13px;font-weight:600;color:var(--white);line-height:1}
+.hdr-sl{font-size:10px;color:var(--t2);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:8px}
+
+/* ── BOTÕES ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .2s;white-space:nowrap}
+.btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000}
+.btn-g:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn-o{background:transparent;border:1px solid var(--br);color:var(--t2)}
+.btn-o:hover{border-color:var(--brh);color:var(--white)}
+.btn-o:disabled{opacity:.35;cursor:default}
+.ico-btn{width:28px;height:28px;border-radius:var(--rs);background:transparent;border:1px solid var(--br);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .18s}
+.ico-btn:hover{border-color:var(--brh);color:var(--white)}
+.ico-btn.danger:hover{background:rgba(229,85,85,.08);border-color:rgba(229,85,85,.2);color:var(--red)}
+.ico-btn.warn:hover{background:rgba(217,124,46,.08);border-color:rgba(217,124,46,.2);color:var(--orange)}
+.ico-btn.ok:hover{background:rgba(52,201,138,.08);border-color:rgba(52,201,138,.2);color:var(--green)}
+
+/* ── MAIN ── */
+.main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:18px}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{padding:18px 20px;border-radius:var(--r);background:var(--s1);border:1px solid var(--br);position:relative;overflow:hidden;transition:border-color .2s,transform .2s}
+.kpi:hover{border-color:var(--brh);transform:translateY(-1px)}
+.kpi::after{content:'';position:absolute;bottom:0;left:20px;right:20px;height:1px;opacity:.5}
+.kpi.gold{border-color:var(--br-gold)}.kpi.gold::after{background:var(--gold)}
+.kpi.green::after{background:var(--green)}
+.kpi.orange::after{background:var(--orange)}
+.kpi.red::after{background:var(--red)}
+.kpi-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;margin-bottom:12px}
+.kpi.gold .kpi-ico{background:var(--g05);color:var(--gold);border:1px solid var(--g12)}
+.kpi.green .kpi-ico{background:rgba(52,201,138,.06);color:var(--green);border:1px solid rgba(52,201,138,.15)}
+.kpi.orange .kpi-ico{background:rgba(217,124,46,.06);color:var(--orange);border:1px solid rgba(217,124,46,.15)}
+.kpi.red .kpi-ico{background:rgba(229,85,85,.06);color:var(--red);border:1px solid rgba(229,85,85,.15)}
+.kpi-lbl{font-size:9px;color:var(--t2);margin-bottom:8px;display:block;text-transform:uppercase;letter-spacing:.8px}
+.kpi-val{font-size:22px;font-weight:600;color:var(--white);line-height:1;display:block;margin-bottom:3px}
+.kpi.gold .kpi-val{color:var(--gold)}
+.kpi.red .kpi-val{color:var(--red)}
+.kpi-sub{font-size:10px;color:var(--t2)}
+
+/* ── GRID PRINCIPAL ── */
+.grid-main{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+
+/* ── BLOCO CREDORES (esquerda) ── */
+.credores-block{background:var(--s1);border:1px solid var(--br-gold);border-radius:var(--r);overflow:hidden;position:relative}
+.credores-block::before{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.7}
+.block-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px}
+.block-eyebrow{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t2);margin-bottom:3px}
+.block-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--white)}
+.block-search{display:flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--br);border-radius:var(--rs);padding:6px 10px;transition:border-color .2s;max-width:200px}
+.block-search:focus-within{border-color:var(--brh)}
+.block-search i{font-size:10px;color:var(--t2);flex-shrink:0}
+.block-search input{background:transparent;border:none;outline:none;color:var(--white);font-size:12px;font-family:'DM Sans',sans-serif;width:100%}
+.block-search input::placeholder{color:var(--t3)}
+
+/* Item de credor */
+.cr-item{display:flex;align-items:center;gap:12px;padding:13px 20px;border-top:1px solid var(--br);transition:background .15s;cursor:pointer}
+.cr-item:hover{background:rgba(255,255,255,.02)}
+.cr-item.selected{background:var(--g03);border-left:2px solid var(--gold)}
+.cr-av{width:36px;height:36px;border-radius:8px;background:var(--g05);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold);font-size:14px;flex-shrink:0}
+.cr-av.sem{background:rgba(255,255,255,.03);border-color:var(--br);color:var(--t2)}
+.cr-info{flex:1;min-width:0}
+.cr-nome{font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-meta{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cr-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.cr-tag.ativo{background:rgba(52,201,138,.08);color:var(--green)}
+.cr-tag.sem-acesso{background:rgba(255,255,255,.04);color:var(--t2)}
+.cr-tag.inativo{background:rgba(229,85,85,.08);color:var(--red)}
+.cr-tag.aguardando{background:rgba(217,124,46,.08);color:var(--orange)}
+.cr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cr-acesso-dt{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2);text-align:right}
+
+/* ── PAINEL DIREITO ── */
+.rpanel{display:flex;flex-direction:column;gap:12px}
+
+/* Card padrão dashboard */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--brh)}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--br)}
+.card-ttl{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px}
+.card-ttl i{font-size:9px;color:var(--t2)}
+.card-lnk{font-size:10px;color:var(--t2);transition:color .15s}
+.card-lnk:hover{color:var(--white)}
+.card-body{padding:12px 14px}
+
+/* Detalhe do credor selecionado */
+.det-hd{padding:16px 16px 12px;border-bottom:1px solid var(--br)}
+.det-nome{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px}
+.det-stat{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.det-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.4px}
+.det-tag.ativo{background:rgba(52,201,138,.08);color:var(--green)}
+.det-tag.sem{background:rgba(255,255,255,.04);color:var(--t2)}
+.det-tag.inativo{background:rgba(229,85,85,.08);color:var(--red)}
+.det-tag.aguardando{background:rgba(217,124,46,.08);color:var(--orange)}
+
+/* Usuarios do credor */
+.usr-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--br)}
+.usr-item:last-child{border-bottom:none}
+.usr-av{width:26px;height:26px;border-radius:5px;background:var(--g05);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold);font-size:10px;flex-shrink:0}
+.usr-info{flex:1;min-width:0}
+.usr-nome{font-size:12px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.usr-email{font-size:10px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.usr-acoes{display:flex;gap:4px;flex-shrink:0}
+
+/* Alertas */
+.alerta{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--rs);border:1px solid var(--br);margin-bottom:6px;transition:border-color .15s;cursor:pointer}
+.alerta:last-child{margin-bottom:0}
+.alerta:hover{border-color:var(--brh)}
+.alerta-ico{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.alerta-ico.crit{background:rgba(229,85,85,.07);color:var(--red);border:1px solid rgba(229,85,85,.15)}
+.alerta-ico.warn{background:rgba(217,124,46,.07);color:var(--orange);border:1px solid rgba(217,124,46,.15)}
+.alerta-ico.gold{background:var(--g05);color:var(--gold);border:1px solid var(--br-gold)}
+.alerta-info{flex:1;min-width:0}
+.alerta-ttl{font-size:12px;font-weight:500;color:var(--white);margin-bottom:1px}
+.alerta-sub{font-size:10px;color:var(--t2)}
+.alerta-n{font-family:'DM Mono',monospace;font-size:15px;font-weight:600;flex-shrink:0}
+.alerta-n.crit{color:var(--red)}.alerta-n.warn{color:var(--orange)}.alerta-n.gold{color:var(--gold)}
+
+/* Empty */
+.empty{text-align:center;padding:32px 20px;color:var(--t3);font-size:12px}
+.empty i{font-size:24px;display:block;margin-bottom:8px;opacity:.2}
+.loading-row{display:flex;align-items:center;justify-content:center;padding:28px;gap:8px;color:var(--t2);font-size:12px}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.07);border-top-color:var(--gold);border-radius:50%;animation:sp .65s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid rgba(255,255,255,.08);border-radius:12px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:mi .2s cubic-bezier(.16,1,.3,1)}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal::-webkit-scrollbar{width:3px}
+.modal::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--s1);position:sticky;top:0;z-index:5}
+.modal-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.5}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px}
+.modal-ttl i{font-size:11px;color:var(--gold)}
+.modal-close{width:24px;height:24px;border-radius:5px;color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .12s}
+.modal-close:hover{background:rgba(229,85,85,.08);color:var(--red)}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
+.fg input,.fg select{padding:9px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--brh)}
+.fg select option{background:var(--s3)}
+.fg .hint{font-size:10px;color:var(--t2);margin-top:2px}
+
+/* Credenciais */
+.cred-card{background:var(--s3);border:1px solid var(--br-gold);border-radius:var(--rs);padding:14px}
+.cred-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px}
+.cred-row:last-child{margin-bottom:0}
+.cred-key{color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.cred-val{font-family:'DM Mono',monospace;font-weight:600;color:var(--gxl)}
+.copy-btn{background:var(--g05);border:1px solid var(--br-gold);color:var(--gold);padding:3px 9px;border-radius:4px;font-size:10px;transition:all .15s}
+.copy-btn:hover{background:var(--g12)}
+.aviso{display:flex;gap:8px;padding:10px 12px;background:rgba(217,124,46,.06);border:1px solid rgba(217,124,46,.15);border-radius:var(--rs);font-size:11.5px;color:var(--orange);margin-top:4px}
+.aviso i{flex-shrink:0;margin-top:1px}
+
+/* Toast */
+.toast{position:fixed;bottom:14px;right:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.68,-.55,.265,1.55);z-index:9999}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(52,201,138,.2)}.toast.err{border-color:rgba(229,85,85,.2)}
+.toast.ok i{color:var(--green)}.toast.err i{color:var(--red)}
+.toast span{font-size:12px;font-weight:500;color:var(--white)}
+</style>
 </head>
 <body>
-    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <img src="acertivelogo.png" alt="ACERTIVE" style="width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(201,168,76,0.3));mix-blend-mode:screen;flex-shrink:0">
-                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <div class="nav-section-title">Principal</div>
-                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Gestão</div>
-                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
-                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
-                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Operação</div>
-                <a href="operacao.html" class="nav-item"><i class="fas fa-chart-line"></i> Painel Operacional</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Cadastros</div>
-                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Integrações</div>
-                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Sistema</div>
-                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
-                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
-                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
-                <a href="portal-usuarios.html" class="nav-item active"><i class="fas fa-id-card"></i> Portal do Credor</a>
-                <a href="configuracoes.html" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
-            </div>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">A</div>
-                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">admin</div></div>
-                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
-            </div>
-        </div>
-    </aside>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <img src="acertivelogo.png" alt="ACERTIVE" class="sb-logo">
+    <span class="sb-badge">PRO</span>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-grp"><div class="sb-gl">Principal</div>
+      <a href="dashboard.html" class="nl"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="fila.html" class="nl"><i class="fas fa-headset"></i> Fila de Trabalho</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Gestão</div>
+      <a href="devedores.html" class="nl"><i class="fas fa-users"></i> Devedores</a>
+      <a href="acordos.html" class="nl"><i class="fas fa-handshake"></i> Acordos</a>
+      <a href="cobrancas.html" class="nl"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Operação</div>
+      <a href="operacao.html" class="nl"><i class="fas fa-chart-line"></i> Painel Operacional</a>
+      <a href="portal-usuarios.html" class="nl active"><i class="fas fa-id-card"></i> Portal do Credor</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Cadastros</div>
+      <a href="credores.html" class="nl"><i class="fas fa-building"></i> Credores</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Sistema</div>
+      <a href="disparos.html" class="nl"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+      <a href="relatorios.html" class="nl"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      <a href="importacao.html" class="nl"><i class="fas fa-file-import"></i> Importação</a>
+      <a href="configuracoes.html" class="nl"><i class="fas fa-cog"></i> Configurações</a>
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av" id="uAv">A</div>
+      <div><div class="sb-un" id="uNome">Usuário</div><div class="sb-ur" id="uRole">admin</div></div>
+      <button class="sb-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</aside>
 
-    <main class="main-content">
-        <div class="page-header">
-            <div class="page-header-left">
-                <h1>Portal do Credor</h1>
-                <p>Gerencie quem tem acesso ao portal de visualização</p>
-            </div>
-            <button class="btn btn-primary" onclick="abrirModalCriar()">
-                <i class="fas fa-user-plus"></i> Novo Acesso
-            </button>
-        </div>
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon gold"><i class="fas fa-users"></i></div>
-                <div><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total de acessos</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-circle-check"></i></div>
-                <div><div class="stat-value" id="statAtivos">—</div><div class="stat-label">Ativos</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
-                <div><div class="stat-value" id="statPrimeiro">—</div><div class="stat-label">Aguardando 1º acesso</div></div>
-            </div>
-        </div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="hdr-l">
+      <div>
+        <div class="hdr-title">Portal do Credor</div>
+        <div class="hdr-sub">Gestão de acesso e engajamento</div>
+      </div>
+      <div class="hdr-div"></div>
+      <div class="hdr-stat">
+        <div class="hdr-sv" id="hAtivos" style="color:var(--green)">—</div>
+        <div class="hdr-sl">com acesso ativo</div>
+      </div>
+      <div class="hdr-div"></div>
+      <div class="hdr-stat">
+        <div class="hdr-sv" id="hSemAcesso" style="color:var(--orange)">—</div>
+        <div class="hdr-sl">sem acesso</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <a href="/portal.html" target="_blank" class="btn btn-o"><i class="fas fa-external-link-alt"></i> Ver portal</a>
+      <button class="btn btn-g" onclick="abrirModalCriar()"><i class="fas fa-user-plus"></i> Novo acesso</button>
+    </div>
+  </div>
 
-        <!-- Tabela -->
-        <div class="table-card">
-            <div class="table-header">
-                <div class="table-title"><i class="fas fa-id-card"></i> Usuários do Portal</div>
-                <a href="/portal.html" target="_blank" style="font-size:12px;color:var(--gold-primary);text-decoration:none;display:flex;align-items:center;gap:6px">
-                    <i class="fas fa-external-link-alt"></i> Ver portal
-                </a>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Credor / Usuário</th>
-                        <th>E-mail</th>
-                        <th>Status</th>
-                        <th>Último Acesso</th>
-                        <th>Criado em</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaUsuarios">
-                    <tr><td colspan="6"><div style="padding:50px;text-align:center"><div class="spinner"></div></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
+  <!-- MAIN -->
+  <main class="main">
 
-    <!-- MODAL CRIAR USUÁRIO -->
-    <div class="modal-overlay" id="modalCriar">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-user-plus"></i> Novo Acesso ao Portal</h3>
-                <button class="modal-close" onclick="fecharModalCriar()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalCriarBody">
-                <div class="form-group">
-                    <label>Credor *</label>
-                    <select id="criarCredorId">
-                        <option value="">Carregando...</option>
-                    </select>
-                    <div class="form-hint">O usuário terá acesso apenas à carteira deste credor</div>
-                </div>
-                <div class="form-group">
-                    <label>Nome do usuário *</label>
-                    <input type="text" id="criarNome" placeholder="Ex: João da Transbyshop">
-                </div>
-                <div class="form-group">
-                    <label>E-mail de acesso *</label>
-                    <input type="email" id="criarEmail" placeholder="joao@empresa.com.br">
-                    <div class="form-hint">O credor usará este e-mail para entrar no portal</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancelar" onclick="fecharModalCriar()">Cancelar</button>
-                <button class="btn-salvar" id="btnCriar" onclick="criarUsuario()">
-                    <i class="fas fa-plus"></i> Criar Acesso
-                </button>
-            </div>
-        </div>
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi gold">
+        <div class="kpi-ico"><i class="fas fa-building"></i></div>
+        <span class="kpi-lbl">Total de credores</span>
+        <span class="kpi-val" id="kTotal">—</span>
+        <span class="kpi-sub">na carteira</span>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-ico"><i class="fas fa-circle-check"></i></div>
+        <span class="kpi-lbl">Com acesso ativo</span>
+        <span class="kpi-val" id="kAtivos">—</span>
+        <span class="kpi-sub">usuários do portal</span>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-ico"><i class="fas fa-clock-rotate-left"></i></div>
+        <span class="kpi-lbl">Acessos últimos 7d</span>
+        <span class="kpi-val" id="kRecentes">—</span>
+        <span class="kpi-sub">credores engajados</span>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-ico"><i class="fas fa-user-slash"></i></div>
+        <span class="kpi-lbl">Sem acesso criado</span>
+        <span class="kpi-val" id="kSemAcesso">—</span>
+        <span class="kpi-sub">credores descobertos</span>
+      </div>
     </div>
 
-    <!-- MODAL RESULTADO (senha gerada) -->
-    <div class="modal-overlay" id="modalResultado">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-key"></i> Acesso Criado!</h3>
-                <button class="modal-close" onclick="fecharModalResultado()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:14px;color:var(--text-secondary);margin-bottom:4px">
-                    O acesso foi criado com sucesso. Envie as credenciais abaixo para o credor:
-                </p>
+    <!-- GRID PRINCIPAL -->
+    <div class="grid-main">
 
-                <div class="senha-card">
-                    <div class="senha-card-title"><i class="fas fa-lock"></i> Credenciais de Acesso</div>
-                    <div class="senha-row">
-                        <span class="senha-key">URL do Portal</span>
-                        <div style="display:flex;align-items:center;gap:8px">
-                            <span class="senha-val" id="resUrl">—</span>
-                            <button class="copy-btn" onclick="copiar('resUrl')"><i class="fas fa-copy"></i></button>
-                        </div>
-                    </div>
-                    <div class="senha-row">
-                        <span class="senha-key">E-mail</span>
-                        <div style="display:flex;align-items:center;gap:8px">
-                            <span class="senha-val" id="resEmail">—</span>
-                            <button class="copy-btn" onclick="copiar('resEmail')"><i class="fas fa-copy"></i></button>
-                        </div>
-                    </div>
-                    <div class="senha-row">
-                        <span class="senha-key">Senha temporária</span>
-                        <div style="display:flex;align-items:center;gap:8px">
-                            <span class="senha-val" id="resSenha">—</span>
-                            <button class="copy-btn" onclick="copiar('resSenha')"><i class="fas fa-copy"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="warning-box">
-                    <i class="fas fa-triangle-exclamation"></i>
-                    <span>Anote a senha agora — ela não será exibida novamente. O credor precisará trocar a senha no primeiro acesso.</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-salvar" onclick="copiarTudo()" style="background:var(--success-bg);color:var(--success);border:1px solid rgba(62,207,142,.2)">
-                    <i class="fas fa-copy"></i> Copiar tudo
-                </button>
-                <button class="btn-salvar" onclick="fecharModalResultado()">
-                    <i class="fas fa-check"></i> Entendido
-                </button>
-            </div>
+      <!-- LISTA DE CREDORES -->
+      <div class="credores-block">
+        <div class="block-hd">
+          <div>
+            <div class="block-eyebrow">Engajamento</div>
+            <div class="block-title">Credores e Acessos</div>
+          </div>
+          <div class="block-search">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" placeholder="Buscar credor..." id="buscaInput" oninput="filtrarLista()">
+          </div>
         </div>
+        <div id="listaCredores">
+          <div class="loading-row"><div class="spin"></div> Carregando...</div>
+        </div>
+      </div>
+
+      <!-- PAINEL DIREITO -->
+      <div class="rpanel">
+
+        <!-- Detalhe do credor selecionado -->
+        <div class="card" id="cardDetalhe" style="display:none">
+          <div class="det-hd" id="detHd"></div>
+          <div class="card-body">
+            <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Usuários</div>
+            <div id="detUsuarios">
+              <div class="loading-row"><div class="spin"></div></div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-g" style="font-size:11px;padding:6px 12px" onclick="abrirModalCriarParaCredorSelecionado()">
+                <i class="fas fa-user-plus"></i> Criar acesso
+              </button>
+              <a href="/portal.html" target="_blank" class="btn btn-o" style="font-size:11px;padding:6px 12px">
+                <i class="fas fa-external-link-alt"></i> Ver portal
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertas de engajamento -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-ttl"><i class="fas fa-triangle-exclamation"></i> Atenção</div>
+          </div>
+          <div class="card-body" id="alertasBody">
+            <div class="loading-row"><div class="spin"></div></div>
+          </div>
+        </div>
+
+        <!-- Atividade recente -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-ttl"><i class="fas fa-clock-rotate-left"></i> Último acesso</div>
+            <button class="card-lnk" onclick="carregarDados()">Atualizar</button>
+          </div>
+          <div class="card-body" id="atividadeBody">
+            <div class="loading-row"><div class="spin"></div></div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <!-- MODAL RESETAR SENHA -->
-    <div class="modal-overlay" id="modalReset">
-        <div class="modal" style="max-width:440px">
-            <div class="modal-header">
-                <h3><i class="fas fa-rotate"></i> Resetar Senha</h3>
-                <button class="modal-close" onclick="fecharModalReset()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:14px;color:var(--text-secondary)">Uma nova senha temporária será gerada para <strong id="resetNome">—</strong>.</p>
-                <input type="hidden" id="resetId">
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancelar" onclick="fecharModalReset()">Cancelar</button>
-                <button class="btn-salvar" onclick="confirmarReset()"><i class="fas fa-rotate"></i> Gerar Nova Senha</button>
-            </div>
-        </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL: CRIAR ACESSO ═══ -->
+<div class="overlay" id="ovCriar">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-ttl"><i class="fas fa-user-plus"></i> Novo Acesso ao Portal</div>
+      <button class="modal-close" onclick="fecharModal('ovCriar')"><i class="fas fa-times"></i></button>
     </div>
+    <div class="modal-body">
+      <div class="fg">
+        <label>Credor *</label>
+        <select id="criarCredorId">
+          <option value="">Selecione o credor...</option>
+        </select>
+        <span class="hint">O usuário terá acesso apenas à carteira deste credor</span>
+      </div>
+      <div class="fg">
+        <label>Nome do usuário *</label>
+        <input type="text" id="criarNome" placeholder="Ex: João da Transbyshop">
+      </div>
+      <div class="fg">
+        <label>E-mail de acesso *</label>
+        <input type="email" id="criarEmail" placeholder="joao@empresa.com.br">
+        <span class="hint">O credor usará este e-mail para entrar no portal</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="fecharModal('ovCriar')">Cancelar</button>
+      <button class="btn btn-g" id="btnCriar" onclick="criarUsuario()"><i class="fas fa-plus"></i> Criar acesso</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        const API = window.location.origin;
-        let usuariosData = [];
-        let credoresData = [];
+<!-- ═══ MODAL: CREDENCIAIS ═══ -->
+<div class="overlay" id="ovCred">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-ttl"><i class="fas fa-key"></i> Acesso Criado</div>
+      <button class="modal-close" onclick="fecharModal('ovCred')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:4px">Envie as credenciais abaixo para o credor:</div>
+      <div class="cred-card">
+        <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="fas fa-lock" style="color:var(--gold)"></i> Credenciais</div>
+        <div class="cred-row">
+          <span class="cred-key">URL</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="cred-val" id="resUrl">—</span>
+            <button class="copy-btn" onclick="copiarEl('resUrl',this)"><i class="fas fa-copy"></i></button>
+          </div>
+        </div>
+        <div class="cred-row">
+          <span class="cred-key">E-mail</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="cred-val" id="resEmail">—</span>
+            <button class="copy-btn" onclick="copiarEl('resEmail',this)"><i class="fas fa-copy"></i></button>
+          </div>
+        </div>
+        <div class="cred-row">
+          <span class="cred-key">Senha temporária</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="cred-val" id="resSenha">—</span>
+            <button class="copy-btn" onclick="copiarEl('resSenha',this)"><i class="fas fa-copy"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="aviso"><i class="fas fa-triangle-exclamation"></i> Anote a senha agora — ela não será exibida novamente. O credor precisará trocá-la no primeiro acesso.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="copiarTudo()" style="border-color:rgba(52,201,138,.2);color:var(--green)"><i class="fas fa-copy"></i> Copiar tudo</button>
+      <button class="btn btn-g" onclick="fecharModal('ovCred')"><i class="fas fa-check"></i> Entendido</button>
+    </div>
+  </div>
+</div>
 
-        function H() { return {'Authorization':'Bearer '+localStorage.getItem('token'),'Content-Type':'application/json'}; }
+<!-- ═══ MODAL: RESETAR SENHA ═══ -->
+<div class="overlay" id="ovReset">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-ttl"><i class="fas fa-rotate"></i> Resetar Senha</div>
+      <button class="modal-close" onclick="fecharModal('ovReset')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12.5px;color:var(--text)">Uma nova senha temporária será gerada para <strong id="resetNome" style="color:var(--white)">—</strong>.</div>
+      <input type="hidden" id="resetId">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="fecharModal('ovReset')">Cancelar</button>
+      <button class="btn btn-g" onclick="confirmarReset()"><i class="fas fa-rotate"></i> Gerar nova senha</button>
+    </div>
+  </div>
+</div>
 
-        async function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/login.html'; return false; }
-            try {
-                const r = await fetch(API+'/api/auth/me', {headers:H()});
-                const d = await r.json();
-                if (!d.success && !d.user) { window.location.href = '/login.html'; return false; }
-                const u = d.user||d;
-                document.getElementById('userName').textContent = u.nome||'Usuário';
-                document.getElementById('userRole').textContent = u.perfil||'admin';
-                document.getElementById('userAvatar').textContent = (u.nome||'A').charAt(0).toUpperCase();
-                return true;
-            } catch(e) { return true; }
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-check" id="toastIco"></i>
+  <span id="toastTxt"></span>
+</div>
+
+<script>
+const API = window.location.origin;
+const H = () => ({ 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' });
+const fmtDH = d => d ? new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
+const fmtD  = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+
+let todosCredores = []; // lista de credores cadastrados
+let usuariosPorCredor = {}; // mapa credor_id → [usuarios]
+let credorSelecionado = null;
+let _busca = '';
+
+// ── TOAST ──────────────────────────────────────────────────────
+let _tt;
+function toast(msg, tipo='ok') {
+  const el=document.getElementById('toast');
+  document.getElementById('toastIco').className=tipo==='ok'?'fas fa-check':'fas fa-triangle-exclamation';
+  el.className='toast '+tipo; document.getElementById('toastTxt').textContent=msg;
+  el.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),3000);
+}
+function logout() { localStorage.removeItem('token'); window.location.href='login.html'; }
+
+// ── AUTH ───────────────────────────────────────────────────────
+async function checkAuth() {
+  if (!localStorage.getItem('token')) { window.location.href='login.html'; return false; }
+  try {
+    const r=await fetch(API+'/api/usuarios/me',{headers:H()});
+    const d=await r.json();
+    if (!d.success) { window.location.href='login.html'; return false; }
+    const u=d.data||d;
+    document.getElementById('uNome').textContent=u.nome||'Usuário';
+    document.getElementById('uRole').textContent=u.perfil||'admin';
+    document.getElementById('uAv').textContent=(u.nome||'A')[0].toUpperCase();
+    return true;
+  } catch(e){return true;}
+}
+
+// ── DADOS ──────────────────────────────────────────────────────
+async function carregarDados() {
+  try {
+    const [rCred, rUsr] = await Promise.all([
+      fetch(API+'/api/credores',                    {headers:H()}),
+      fetch(API+'/api/portal/admin/usuarios',       {headers:H()}),
+    ]);
+    const [dCred, dUsr] = await Promise.all([rCred.json(), rUsr.json()]);
+
+    todosCredores = dCred.data || dCred || [];
+    const usuarios  = dUsr.data || [];
+
+    // Indexar usuários por credor
+    usuariosPorCredor = {};
+    usuarios.forEach(u => {
+      if (!usuariosPorCredor[u.credor_id]) usuariosPorCredor[u.credor_id] = [];
+      usuariosPorCredor[u.credor_id].push(u);
+    });
+
+    calcularKPIs(todosCredores, usuarios);
+    renderLista();
+    renderAlertas(todosCredores, usuarios);
+    renderAtividade(usuarios);
+  } catch(e) {
+    console.error('[PORTAL]', e);
+    document.getElementById('listaCredores').innerHTML = '<div class="empty"><i class="fas fa-triangle-exclamation"></i>Erro ao carregar dados</div>';
+  }
+}
+
+// ── KPIs ───────────────────────────────────────────────────────
+function calcularKPIs(credores, usuarios) {
+  const total       = credores.length;
+  const comAcesso   = [...new Set(usuarios.filter(u=>u.ativo).map(u=>u.credor_id))].length;
+  const semAcesso   = total - credores.filter(c => usuariosPorCredor[c.id]?.length).length;
+  const set7d       = new Date(); set7d.setDate(set7d.getDate()-7);
+  const recentes    = [...new Set(
+    usuarios.filter(u=>u.ultimo_login && new Date(u.ultimo_login)>set7d).map(u=>u.credor_id)
+  )].length;
+
+  document.getElementById('kTotal').textContent    = total;
+  document.getElementById('kAtivos').textContent   = comAcesso;
+  document.getElementById('kRecentes').textContent = recentes;
+  document.getElementById('kSemAcesso').textContent= semAcesso;
+  document.getElementById('hAtivos').textContent   = comAcesso;
+  document.getElementById('hSemAcesso').textContent= semAcesso;
+}
+
+// ── LISTA DE CREDORES ──────────────────────────────────────────
+function renderLista() {
+  const busca = _busca.toLowerCase();
+  const lista = todosCredores.filter(c =>
+    !busca || (c.nome||'').toLowerCase().includes(busca)
+  );
+
+  if (!lista.length) {
+    document.getElementById('listaCredores').innerHTML =
+      '<div class="empty"><i class="fas fa-building"></i>Nenhum credor encontrado</div>';
+    return;
+  }
+
+  // Ordenar: com acesso primeiro, depois sem
+  lista.sort((a,b)=>{
+    const uA = usuariosPorCredor[a.id]||[];
+    const uB = usuariosPorCredor[b.id]||[];
+    if (uA.length && !uB.length) return -1;
+    if (!uA.length && uB.length) return 1;
+    // Dentro do mesmo grupo: ordenar por último login
+    const lastA = Math.max(0,...uA.map(u=>u.ultimo_login?new Date(u.ultimo_login).getTime():0));
+    const lastB = Math.max(0,...uB.map(u=>u.ultimo_login?new Date(u.ultimo_login).getTime():0));
+    return lastB - lastA;
+  });
+
+  const hoje = new Date();
+  const lim7 = new Date(); lim7.setDate(lim7.getDate()-7);
+  const lim30= new Date(); lim30.setDate(lim30.getDate()-30);
+
+  document.getElementById('listaCredores').innerHTML = lista.map(c => {
+    const users   = usuariosPorCredor[c.id] || [];
+    const ativos  = users.filter(u=>u.ativo);
+    const semAcesso = !users.length;
+    const aguardando = users.some(u=>u.primeiro_acesso);
+
+    // Status geral do credor
+    let tagHtml, statusCls;
+    if (semAcesso) {
+      tagHtml = '<span class="cr-tag sem-acesso"><i class="fas fa-minus"></i> Sem acesso</span>';
+      statusCls = 'sem';
+    } else if (aguardando) {
+      tagHtml = '<span class="cr-tag aguardando"><i class="fas fa-clock"></i> Aguardando 1º login</span>';
+      statusCls = 'aguardando';
+    } else if (ativos.length) {
+      tagHtml = `<span class="cr-tag ativo"><i class="fas fa-circle"></i> ${ativos.length} usuário${ativos.length>1?'s':''} ativo${ativos.length>1?'s':''}</span>`;
+      statusCls = 'ativo';
+    } else {
+      tagHtml = '<span class="cr-tag inativo"><i class="fas fa-circle"></i> Inativo</span>';
+      statusCls = 'inativo';
+    }
+
+    // Último acesso
+    const ultLogins = users.filter(u=>u.ultimo_login).map(u=>new Date(u.ultimo_login));
+    const ultLogin  = ultLogins.length ? new Date(Math.max(...ultLogins)) : null;
+    let acessoHtml = '';
+    if (ultLogin) {
+      const diasAtras = Math.floor((hoje - ultLogin) / 864e5);
+      const cor = diasAtras <= 7 ? 'var(--green)' : diasAtras <= 30 ? 'var(--orange)' : 'var(--red)';
+      acessoHtml = `<span style="font-size:10px;color:${cor}">${diasAtras===0?'Hoje':diasAtras===1?'Ontem':diasAtras+'d atrás'}</span>`;
+    }
+
+    const selected = credorSelecionado?.id === c.id ? 'selected' : '';
+    return `<div class="cr-item ${selected}" onclick="selecionarCredor('${c.id}')">
+      <div class="cr-av ${semAcesso?'sem':''}">${(c.nome||'C')[0].toUpperCase()}</div>
+      <div class="cr-info">
+        <div class="cr-nome">${c.nome||'—'}</div>
+        <div class="cr-meta">${tagHtml}${acessoHtml}</div>
+      </div>
+      <div class="cr-right">
+        ${semAcesso
+          ? `<button class="btn btn-g" style="font-size:10px;padding:4px 10px" onclick="event.stopPropagation();abrirModalCriarPara('${c.id}','${(c.nome||'').replace(/'/g,"\\'")}')"><i class="fas fa-plus"></i> Criar</button>`
+          : `<button class="ico-btn" title="Resetar senha" onclick="event.stopPropagation();abrirResetPrimeiroUsuario('${c.id}')"><i class="fas fa-rotate"></i></button>`
         }
+      </div>
+    </div>`;
+  }).join('');
+}
 
-        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+function filtrarLista() {
+  _busca = document.getElementById('buscaInput').value.trim();
+  renderLista();
+}
 
-        function fmtDataHora(d) {
-            if (!d) return '<span style="color:var(--text-muted)">Nunca</span>';
-            return new Date(d).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-        }
+// ── DETALHE DO CREDOR ──────────────────────────────────────────
+function selecionarCredor(credorId) {
+  credorSelecionado = todosCredores.find(c => c.id === credorId);
+  if (!credorSelecionado) return;
 
-        function fmtData(d) {
-            if (!d) return '-';
-            return new Date(d).toLocaleDateString('pt-BR');
-        }
+  // Remarcar ativo na lista
+  document.querySelectorAll('.cr-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.cr-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes(credorId)) el.classList.add('selected');
+  });
 
-        async function carregarUsuarios() {
-            try {
-                const r = await fetch(API+'/api/portal/admin/usuarios', {headers:H()});
-                const d = await r.json();
-                usuariosData = d.data || [];
+  const card = document.getElementById('cardDetalhe');
+  card.style.display = '';
 
-                // Stats
-                const ativos = usuariosData.filter(u => u.ativo).length;
-                const primeiro = usuariosData.filter(u => u.primeiro_acesso).length;
-                document.getElementById('statTotal').textContent = usuariosData.length;
-                document.getElementById('statAtivos').textContent = ativos;
-                document.getElementById('statPrimeiro').textContent = primeiro;
+  const users = usuariosPorCredor[credorId] || [];
+  const ativos = users.filter(u=>u.ativo);
 
-                if (!usuariosData.length) {
-                    document.getElementById('tabelaUsuarios').innerHTML = `
-                        <tr><td colspan="6">
-                            <div class="empty-state">
-                                <i class="fas fa-id-card"></i>
-                                <p style="font-size:15px;font-weight:500;margin-bottom:8px">Nenhum acesso criado</p>
-                                <p>Clique em "Novo Acesso" para liberar o portal para um credor</p>
-                            </div>
-                        </td></tr>`;
-                    return;
-                }
+  // Header do detalhe
+  let statusTag = '';
+  if (!users.length) statusTag = '<span class="det-tag sem">Sem acesso</span>';
+  else if (users.some(u=>u.primeiro_acesso)) statusTag = '<span class="det-tag aguardando"><i class="fas fa-clock"></i> Aguardando 1º login</span>';
+  else if (ativos.length) statusTag = `<span class="det-tag ativo"><i class="fas fa-circle"></i> Ativo</span>`;
+  else statusTag = '<span class="det-tag inativo">Inativo</span>';
 
-                document.getElementById('tabelaUsuarios').innerHTML = usuariosData.map(u => `
-                    <tr>
-                        <td>
-                            <div class="credor-info">
-                                <div class="credor-av">${(u.credor_nome||'C').charAt(0)}</div>
-                                <div>
-                                    <div class="credor-nome">${u.nome}</div>
-                                    <div class="credor-email">${u.credor_nome}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="color:var(--text-secondary)">${u.email}</td>
-                        <td>
-                            ${u.ativo
-                                ? (u.primeiro_acesso
-                                    ? '<span class="badge badge-primeiro"><i class="fas fa-clock"></i> Aguardando</span>'
-                                    : '<span class="badge badge-ativo"><i class="fas fa-circle"></i> Ativo</span>')
-                                : '<span class="badge badge-inativo"><i class="fas fa-circle"></i> Inativo</span>'
-                            }
-                        </td>
-                        <td style="font-size:13px;color:var(--text-secondary)">${fmtDataHora(u.ultimo_login)}</td>
-                        <td style="font-size:13px;color:var(--text-muted)">${fmtData(u.created_at)}</td>
-                        <td>
-                            <div class="actions-cell">
-                                <button class="btn-info-sm" onclick="abrirModalReset('${u.id}','${u.nome.replace(/'/g,"\\'")}')">
-                                    <i class="fas fa-rotate"></i> Resetar senha
-                                </button>
-                                <button class="btn-danger-sm" onclick="toggleAtivo('${u.id}', ${u.ativo})">
-                                    <i class="fas fa-${u.ativo ? 'ban' : 'check'}"></i> ${u.ativo ? 'Desativar' : 'Ativar'}
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                document.getElementById('tabelaUsuarios').innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar usuários</p></div></td></tr>`;
-            }
-        }
+  document.getElementById('detHd').innerHTML = `
+    <div class="det-nome">${credorSelecionado.nome}</div>
+    <div style="font-size:10px;color:var(--t2);margin-bottom:8px">${credorSelecionado.cnpj||credorSelecionado.documento||''}</div>
+    <div class="det-stat">${statusTag}<span class="det-tag sem">${users.length} usuário${users.length!==1?'s':''}</span></div>`;
 
-        async function carregarCredores() {
-            try {
-                const r = await fetch(API+'/api/cadastros/credores', {headers:H()});
-                const d = await r.json();
-                credoresData = d.data||d||[];
-                const sel = document.getElementById('criarCredorId');
-                sel.innerHTML = '<option value="">Selecione o credor...</option>';
-                credoresData.forEach(c => {
-                    const o = document.createElement('option');
-                    o.value = c.id;
-                    o.textContent = c.nome;
-                    sel.appendChild(o);
-                });
-            } catch(e) {}
-        }
+  // Lista de usuários
+  if (!users.length) {
+    document.getElementById('detUsuarios').innerHTML =
+      '<div class="empty" style="padding:16px 0"><i class="fas fa-user-slash"></i>Sem usuários criados</div>';
+  } else {
+    document.getElementById('detUsuarios').innerHTML = users.map(u => {
+      const ult = u.ultimo_login ? fmtDH(u.ultimo_login) : '<span style="color:var(--t3)">Nunca acessou</span>';
+      return `<div class="usr-item">
+        <div class="usr-av">${(u.nome||'U')[0].toUpperCase()}</div>
+        <div class="usr-info">
+          <div class="usr-nome">${u.nome}</div>
+          <div class="usr-email">${u.email} · ${ult}</div>
+        </div>
+        <div class="usr-acoes">
+          <button class="ico-btn warn" title="Resetar senha" onclick="abrirReset('${u.id}','${(u.nome||'').replace(/'/g,"\\'")}')"><i class="fas fa-rotate"></i></button>
+          <button class="ico-btn danger" title="${u.ativo?'Desativar':'Ativar'}" onclick="toggleAtivo('${u.id}',${u.ativo})"><i class="fas fa-${u.ativo?'ban':'check'}"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
 
-        // ── Criar usuário ────────────────────────────────────────────
-        function abrirModalCriar() {
-            document.getElementById('criarNome').value = '';
-            document.getElementById('criarEmail').value = '';
-            carregarCredores();
-            document.getElementById('modalCriar').classList.add('active');
-        }
+// ── ALERTAS ────────────────────────────────────────────────────
+function renderAlertas(credores, usuarios) {
+  const hoje = new Date();
+  const lim30 = new Date(); lim30.setDate(lim30.getDate()-30);
+  const lim7  = new Date(); lim7.setDate(lim7.getDate()-7);
 
-        function fecharModalCriar() { document.getElementById('modalCriar').classList.remove('active'); }
+  const semAcesso = credores.filter(c => !usuariosPorCredor[c.id]?.length);
+  const semLogin30 = credores.filter(c => {
+    const us = usuariosPorCredor[c.id]||[];
+    if (!us.length) return false;
+    const ult = Math.max(...us.map(u=>u.ultimo_login?new Date(u.ultimo_login).getTime():0));
+    return ult > 0 && ult < lim30.getTime();
+  });
+  const aguardando = credores.filter(c =>
+    (usuariosPorCredor[c.id]||[]).some(u=>u.primeiro_acesso)
+  );
 
-        async function criarUsuario() {
-            const credor_id = document.getElementById('criarCredorId').value;
-            const nome = document.getElementById('criarNome').value.trim();
-            const email = document.getElementById('criarEmail').value.trim();
-            const btn = document.getElementById('btnCriar');
+  const alertas = [
+    semAcesso.length ? { cls:'crit', ico:'fa-user-slash', ttl:'Credores sem acesso', sub:'Nunca tiveram acesso ao portal criado', n:semAcesso.length, acao:'Criar acessos' } : null,
+    semLogin30.length ? { cls:'warn', ico:'fa-clock-rotate-left', ttl:'Sem login há +30 dias', sub:'Credores com acesso mas sem entrar recentemente', n:semLogin30.length, acao:'Ver credores' } : null,
+    aguardando.length ? { cls:'gold', ico:'fa-clock', ttl:'Aguardando 1º acesso', sub:'Criaram acesso mas nunca fizeram login', n:aguardando.length, acao:'Reenviar convite' } : null,
+  ].filter(Boolean);
 
-            if (!credor_id || !nome || !email) { alert('Preencha todos os campos'); return; }
+  const el = document.getElementById('alertasBody');
+  if (!alertas.length) {
+    el.innerHTML = '<div class="empty"><i class="fas fa-circle-check"></i>Tudo em ordem</div>';
+    return;
+  }
+  el.innerHTML = alertas.map(a => `
+    <div class="alerta" onclick="filtrarPorAlerta('${a.cls}')">
+      <div class="alerta-ico ${a.cls}"><i class="fas ${a.ico}"></i></div>
+      <div class="alerta-info">
+        <div class="alerta-ttl">${a.ttl}</div>
+        <div class="alerta-sub">${a.sub}</div>
+      </div>
+      <span class="alerta-n ${a.cls}">${a.n}</span>
+    </div>`).join('');
+}
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+function filtrarPorAlerta(tipo) {
+  // Ao clicar num alerta, filtra a lista pelo tipo correspondente
+  // (implementação futura — por ora só dá feedback visual)
+  toast('Filtrando lista...', 'ok');
+}
 
-            try {
-                const r = await fetch(API+'/api/portal/admin/criar-usuario', {
-                    method: 'POST', headers: H(),
-                    body: JSON.stringify({credor_id, nome, email})
-                });
-                const d = await r.json();
+// ── ATIVIDADE RECENTE ──────────────────────────────────────────
+function renderAtividade(usuarios) {
+  const recentes = usuarios
+    .filter(u => u.ultimo_login)
+    .sort((a,b) => new Date(b.ultimo_login) - new Date(a.ultimo_login))
+    .slice(0, 5);
 
-                if (!r.ok) { alert('❌ ' + (d.error||'Erro ao criar')); return; }
+  const el = document.getElementById('atividadeBody');
+  if (!recentes.length) {
+    el.innerHTML = '<div class="empty"><i class="fas fa-clock-rotate-left"></i>Sem logins registrados</div>';
+    return;
+  }
+  el.innerHTML = recentes.map(u => {
+    const dias = Math.floor((new Date()-new Date(u.ultimo_login))/864e5);
+    const cor = dias===0?'var(--green)':dias<=7?'var(--orange)':'var(--t2)';
+    return `<div class="usr-item" style="cursor:default">
+      <div class="usr-av">${(u.nome||'U')[0].toUpperCase()}</div>
+      <div class="usr-info">
+        <div class="usr-nome">${u.nome}</div>
+        <div class="usr-email">${u.credor_nome||'—'}</div>
+      </div>
+      <span style="font-size:10px;color:${cor};flex-shrink:0">${dias===0?'Hoje':dias===1?'Ontem':dias+'d atrás'}</span>
+    </div>`;
+  }).join('');
+}
 
-                fecharModalCriar();
+// ── CRIAR USUÁRIO ──────────────────────────────────────────────
+function popularSelectCredores(preSelect = null) {
+  const sel = document.getElementById('criarCredorId');
+  sel.innerHTML = '<option value="">Selecione o credor...</option>';
+  todosCredores.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.nome;
+    if (preSelect && c.id === preSelect) o.selected = true;
+    sel.appendChild(o);
+  });
+}
 
-                // Mostrar credenciais
-                document.getElementById('resUrl').textContent = window.location.origin + '/portal.html';
-                document.getElementById('resEmail').textContent = d.credenciais.email;
-                document.getElementById('resSenha').textContent = d.credenciais.senha_temporaria;
-                document.getElementById('modalResultado').classList.add('active');
+function abrirModalCriar() {
+  document.getElementById('criarNome').value = '';
+  document.getElementById('criarEmail').value = '';
+  popularSelectCredores();
+  document.getElementById('ovCriar').classList.add('on');
+  setTimeout(()=>document.getElementById('criarNome').focus(),80);
+}
 
-                await carregarUsuarios();
-            } catch(e) {
-                alert('❌ Erro de conexão');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-plus"></i> Criar Acesso';
-            }
-        }
+function abrirModalCriarPara(credorId, credorNome) {
+  abrirModalCriar();
+  popularSelectCredores(credorId);
+}
 
-        function fecharModalResultado() { document.getElementById('modalResultado').classList.remove('active'); }
+function abrirModalCriarParaCredorSelecionado() {
+  if (credorSelecionado) abrirModalCriarPara(credorSelecionado.id, credorSelecionado.nome);
+  else abrirModalCriar();
+}
 
-        // ── Resetar senha ────────────────────────────────────────────
-        function abrirModalReset(id, nome) {
-            document.getElementById('resetId').value = id;
-            document.getElementById('resetNome').textContent = nome;
-            document.getElementById('modalReset').classList.add('active');
-        }
+async function criarUsuario() {
+  const credor_id = document.getElementById('criarCredorId').value;
+  const nome      = document.getElementById('criarNome').value.trim();
+  const email     = document.getElementById('criarEmail').value.trim();
+  const btn       = document.getElementById('btnCriar');
+  if (!credor_id || !nome || !email) { toast('Preencha todos os campos', 'err'); return; }
+  btn.disabled = true; btn.innerHTML = '<div class="spin"></div>';
+  try {
+    const r = await fetch(API+'/api/portal/admin/criar-usuario', {
+      method:'POST', headers:H(), body:JSON.stringify({credor_id,nome,email})
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error||'Erro ao criar', 'err'); return; }
+    fecharModal('ovCriar');
+    document.getElementById('resUrl').textContent    = window.location.origin+'/portal.html';
+    document.getElementById('resEmail').textContent  = d.credenciais?.email || email;
+    document.getElementById('resSenha').textContent  = d.credenciais?.senha_temporaria || '—';
+    document.getElementById('ovCred').classList.add('on');
+    toast('Acesso criado!');
+    await carregarDados();
+  } catch(e){ toast('Erro de conexão', 'err'); }
+  finally { btn.disabled=false; btn.innerHTML='<i class="fas fa-plus"></i> Criar acesso'; }
+}
 
-        function fecharModalReset() { document.getElementById('modalReset').classList.remove('active'); }
+// ── RESETAR SENHA ──────────────────────────────────────────────
+function abrirReset(id, nome) {
+  document.getElementById('resetId').value = id;
+  document.getElementById('resetNome').textContent = nome;
+  document.getElementById('ovReset').classList.add('on');
+}
 
-        async function confirmarReset() {
-            const id = document.getElementById('resetId').value;
-            try {
-                const r = await fetch(API+'/api/portal/admin/resetar-senha/'+id, {method:'POST', headers:H()});
-                const d = await r.json();
-                if (!r.ok) { alert('❌ Erro ao resetar'); return; }
+function abrirResetPrimeiroUsuario(credorId) {
+  const users = usuariosPorCredor[credorId] || [];
+  if (!users.length) return;
+  const u = users[0];
+  abrirReset(u.id, u.nome);
+}
 
-                fecharModalReset();
+async function confirmarReset() {
+  const id = document.getElementById('resetId').value;
+  try {
+    const r = await fetch(API+'/api/portal/admin/resetar-senha/'+id, {method:'POST', headers:H()});
+    const d = await r.json();
+    if (!r.ok) { toast('Erro ao resetar', 'err'); return; }
+    fecharModal('ovReset');
+    // Localizar e-mail do usuário
+    let email = '—';
+    for (const us of Object.values(usuariosPorCredor).flat()) {
+      if (us.id === id) { email = us.email; break; }
+    }
+    document.getElementById('resUrl').textContent   = window.location.origin+'/portal.html';
+    document.getElementById('resEmail').textContent = email;
+    document.getElementById('resSenha').textContent = d.nova_senha || '—';
+    document.getElementById('ovCred').classList.add('on');
+    toast('Nova senha gerada!');
+    await carregarDados();
+  } catch(e){ toast('Erro de conexão', 'err'); }
+}
 
-                // Mostrar nova senha
-                const u = usuariosData.find(u => u.id === id);
-                document.getElementById('resUrl').textContent = window.location.origin + '/portal.html';
-                document.getElementById('resEmail').textContent = u?.email || '—';
-                document.getElementById('resSenha').textContent = d.nova_senha;
-                document.getElementById('modalResultado').classList.add('active');
+// ── TOGGLE ATIVO ───────────────────────────────────────────────
+async function toggleAtivo(id, ativoAtual) {
+  if (!confirm(`${ativoAtual?'Desativar':'Ativar'} este acesso?`)) return;
+  try {
+    const r = await fetch(API+'/api/portal/admin/toggle/'+id, {method:'POST', headers:H()});
+    if (!r.ok) { toast('Erro ao atualizar', 'err'); return; }
+    toast(ativoAtual?'Acesso desativado':'Acesso ativado');
+    await carregarDados();
+    if (credorSelecionado) selecionarCredor(credorSelecionado.id);
+  } catch(e){ toast('Erro de conexão', 'err'); }
+}
 
-                await carregarUsuarios();
-            } catch(e) {
-                alert('❌ Erro de conexão');
-            }
-        }
+// ── UTILITÁRIOS ────────────────────────────────────────────────
+function fecharModal(id) { document.getElementById(id).classList.remove('on'); }
 
-        // ── Ativar/Desativar ─────────────────────────────────────────
-        async function toggleAtivo(id, ativoAtual) {
-            const acao = ativoAtual ? 'desativar' : 'ativar';
-            if (!confirm(`Deseja ${acao} este acesso?`)) return;
-            try {
-                const r = await fetch(API+'/api/portal/admin/toggle/'+id, {method:'POST', headers:H()});
-                if (!r.ok) {
-                    // Fallback: atualizar direto
-                    alert('Funcionalidade disponível após atualizar o portal.js');
-                    return;
-                }
-                await carregarUsuarios();
-            } catch(e) {
-                alert('❌ Erro ao atualizar');
-            }
-        }
+function copiarEl(elId, btn) {
+  navigator.clipboard.writeText(document.getElementById(elId).textContent).then(()=>{
+    btn.innerHTML='<i class="fas fa-check"></i>';
+    setTimeout(()=>btn.innerHTML='<i class="fas fa-copy"></i>', 1500);
+  });
+}
 
-        // ── Utilitários ──────────────────────────────────────────────
-        function copiar(elementId) {
-            const texto = document.getElementById(elementId).textContent;
-            navigator.clipboard.writeText(texto).then(() => {
-                const btn = event.target.closest('button');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 1500);
-            });
-        }
+function copiarTudo() {
+  const url   = document.getElementById('resUrl').textContent;
+  const email = document.getElementById('resEmail').textContent;
+  const senha = document.getElementById('resSenha').textContent;
+  navigator.clipboard.writeText(
+    `🔐 Acesso ao Portal ACERTIVE\n\nURL: ${url}\nE-mail: ${email}\nSenha: ${senha}\n\n⚠️ Troque a senha no primeiro acesso.`
+  ).then(()=>toast('Copiado!'));
+}
 
-        function copiarTudo() {
-            const url = document.getElementById('resUrl').textContent;
-            const email = document.getElementById('resEmail').textContent;
-            const senha = document.getElementById('resSenha').textContent;
-            const texto = `🔐 Acesso ao Portal ACERTIVE\n\nURL: ${url}\nE-mail: ${email}\nSenha: ${senha}\n\n⚠️ Troque a senha no primeiro acesso.`;
-            navigator.clipboard.writeText(texto).then(() => alert('✅ Copiado!'));
-        }
+// Fechar overlay ao clicar fora
+document.addEventListener('click', e => {
+  ['ovCriar','ovCred','ovReset'].forEach(id => {
+    if (e.target.id === id) fecharModal(id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') ['ovCriar','ovCred','ovReset'].forEach(id=>fecharModal(id));
+});
 
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-        }
-
-        // Init
-        document.addEventListener('DOMContentLoaded', async () => {
-            const ok = await checkAuth();
-            if (ok) await carregarUsuarios();
-
-            // Fechar modais ao clicar fora
-            ['modalCriar','modalResultado','modalReset'].forEach(id => {
-                document.getElementById(id).addEventListener('click', e => {
-                    if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active');
-                });
-            });
-        });
-    </script>
+// ── INIT ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await checkAuth();
+  if (ok) carregarDados();
+});
+</script>
 </body>
 </html>
