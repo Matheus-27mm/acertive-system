@@ -408,9 +408,19 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
     <div class="modal-body">
       <div class="fg">
         <label>Credor *</label>
-        <select id="criarCredorId">
-          <option value="">Selecione o credor...</option>
-        </select>
+        <div class="ac-wrap" style="position:relative">
+          <input type="hidden" id="criarCredorId">
+          <input type="text" id="criarCredorBusca"
+            placeholder="Digite o nome do credor..."
+            autocomplete="off"
+            oninput="buscarCredorModal()"
+            onfocus="buscarCredorModal()">
+          <div id="criarCredorDrop" class="ac-drop" style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s2);border:1px solid var(--brh);border-radius:var(--rs);max-height:180px;overflow-y:auto;z-index:20;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>
+        </div>
+        <div id="criarCredorSel" style="display:none;margin-top:5px;padding:7px 10px;background:var(--g05);border:1px solid var(--br-gold);border-radius:var(--rs);font-size:12px;display:none;align-items:center;justify-content:space-between">
+          <span><strong id="criarCredorNome" style="color:var(--gold)"></strong></span>
+          <button onclick="limparCredorModal()" style="color:var(--red);font-size:13px;background:none;border:none;cursor:pointer">×</button>
+        </div>
         <span class="hint">O usuário terá acesso apenas à carteira deste credor</span>
       </div>
       <div class="fg">
@@ -535,14 +545,20 @@ async function checkAuth() {
 // ── DADOS ──────────────────────────────────────────────────────
 async function carregarDados() {
   try {
-    const [rCred, rUsr] = await Promise.all([
-      fetch(API+'/api/credores',                    {headers:H()}),
-      fetch(API+'/api/portal/admin/usuarios',       {headers:H()}),
-    ]);
-    const [dCred, dUsr] = await Promise.all([rCred.json(), rUsr.json()]);
-
+    // Carregar credores (rota confirmada)
+    const rCred = await fetch(API+'/api/credores', {headers:H()});
+    const dCred = await rCred.json();
     todosCredores = dCred.data || dCred || [];
-    const usuarios  = dUsr.data || [];
+
+    // Tentar carregar usuários do portal (rota pode não existir ainda)
+    let usuarios = [];
+    try {
+      const rUsr = await fetch(API+'/api/portal/admin/usuarios', {headers:H()});
+      if (rUsr.ok) {
+        const dUsr = await rUsr.json();
+        usuarios = dUsr.data || [];
+      }
+    } catch(e) { /* rota ainda não existe — mostrar credores sem status de acesso */ }
 
     // Indexar usuários por credor
     usuariosPorCredor = {};
@@ -557,7 +573,7 @@ async function carregarDados() {
     renderAtividade(usuarios);
   } catch(e) {
     console.error('[PORTAL]', e);
-    document.getElementById('listaCredores').innerHTML = '<div class="empty"><i class="fas fa-triangle-exclamation"></i>Erro ao carregar dados</div>';
+    document.getElementById('listaCredores').innerHTML = '<div class="empty"><i class="fas fa-triangle-exclamation"></i>Erro ao carregar credores</div>';
   }
 }
 
@@ -785,28 +801,58 @@ function renderAtividade(usuarios) {
 }
 
 // ── CRIAR USUÁRIO ──────────────────────────────────────────────
-function popularSelectCredores(preSelect = null) {
-  const sel = document.getElementById('criarCredorId');
-  sel.innerHTML = '<option value="">Selecione o credor...</option>';
-  todosCredores.forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.id; o.textContent = c.nome;
-    if (preSelect && c.id === preSelect) o.selected = true;
-    sel.appendChild(o);
-  });
+// Autocomplete de credor no modal
+let _acCredorTimer;
+function buscarCredorModal() {
+  clearTimeout(_acCredorTimer);
+  _acCredorTimer = setTimeout(() => {
+    const termo = (document.getElementById('criarCredorBusca').value||'').toLowerCase().trim();
+    const drop  = document.getElementById('criarCredorDrop');
+    const lista = termo
+      ? todosCredores.filter(c => (c.nome||'').toLowerCase().includes(termo))
+      : todosCredores.slice(0, 12);
+    if (!lista.length) {
+      drop.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:var(--t3)">Nenhum credor encontrado</div>';
+    } else {
+      drop.innerHTML = lista.map(c =>
+        `<div onclick="selecionarCredorModal('${c.id}','${(c.nome||'').replace(/'/g,"\'")}') "
+          style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--br);transition:background .12s;font-size:12.5px;color:var(--white)"
+          onmouseover="this.style.background='var(--g03)'" onmouseout="this.style.background=''">
+          ${c.nome}
+        </div>`
+      ).join('');
+    }
+    drop.style.display = 'block';
+  }, 150);
+}
+
+function selecionarCredorModal(id, nome) {
+  document.getElementById('criarCredorId').value    = id;
+  document.getElementById('criarCredorNome').textContent = nome;
+  document.getElementById('criarCredorBusca').value = '';
+  document.getElementById('criarCredorDrop').style.display = 'none';
+  const sel = document.getElementById('criarCredorSel');
+  sel.style.display = 'flex';
+}
+
+function limparCredorModal() {
+  document.getElementById('criarCredorId').value    = '';
+  document.getElementById('criarCredorBusca').value = '';
+  document.getElementById('criarCredorSel').style.display = 'none';
 }
 
 function abrirModalCriar() {
-  document.getElementById('criarNome').value = '';
+  document.getElementById('criarNome').value  = '';
   document.getElementById('criarEmail').value = '';
-  popularSelectCredores();
+  limparCredorModal();
+  document.getElementById('criarCredorDrop').style.display = 'none';
   document.getElementById('ovCriar').classList.add('on');
-  setTimeout(()=>document.getElementById('criarNome').focus(),80);
+  setTimeout(()=>document.getElementById('criarCredorBusca').focus(),80);
 }
 
 function abrirModalCriarPara(credorId, credorNome) {
   abrirModalCriar();
-  popularSelectCredores(credorId);
+  setTimeout(()=>selecionarCredorModal(credorId, credorNome), 90);
 }
 
 function abrirModalCriarParaCredorSelecionado() {
@@ -819,14 +865,20 @@ async function criarUsuario() {
   const nome      = document.getElementById('criarNome').value.trim();
   const email     = document.getElementById('criarEmail').value.trim();
   const btn       = document.getElementById('btnCriar');
-  if (!credor_id || !nome || !email) { toast('Preencha todos os campos', 'err'); return; }
+  if (!credor_id) { toast('Selecione um credor', 'err'); document.getElementById('criarCredorBusca').focus(); return; }
+  if (!nome)      { toast('Informe o nome do usuário', 'err'); return; }
+  if (!email)     { toast('Informe o e-mail', 'err'); return; }
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div>';
   try {
     const r = await fetch(API+'/api/portal/admin/criar-usuario', {
       method:'POST', headers:H(), body:JSON.stringify({credor_id,nome,email})
     });
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      toast(err.error||'Rota não disponível ainda. Verifique o backend.', 'err');
+      return;
+    }
     const d = await r.json();
-    if (!r.ok) { toast(d.error||'Erro ao criar', 'err'); return; }
     fecharModal('ovCriar');
     document.getElementById('resUrl').textContent    = window.location.origin+'/portal.html';
     document.getElementById('resEmail').textContent  = d.credenciais?.email || email;
@@ -909,6 +961,11 @@ document.addEventListener('click', e => {
   ['ovCriar','ovCred','ovReset'].forEach(id => {
     if (e.target.id === id) fecharModal(id);
   });
+  // Fechar dropdown do credor ao clicar fora
+  if (!e.target.closest('.ac-wrap')) {
+    const drop = document.getElementById('criarCredorDrop');
+    if (drop) drop.style.display = 'none';
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') ['ovCriar','ovCred','ovReset'].forEach(id=>fecharModal(id));
