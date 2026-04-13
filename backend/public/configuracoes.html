@@ -1,644 +1,612 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações - ACERTIVE</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-primary: #050709;--bg-secondary: #0a0d12;--bg-card: #0e1219;
-            --bg-elevated: #151c28;--gold-primary: #c9a84c;--gold-light: #dfc070;--gold-dark: #8b7434;
-            --gold-glow: rgba(201, 168, 76, 0.12);--gold-subtle: rgba(201, 168, 76, 0.06);
-            --success: #3ecf8e;--success-bg: rgba(62, 207, 142, 0.08);
-            --warning: #e0943e;--warning-bg: rgba(224, 148, 62, 0.08);
-            --danger: #e05c5c;--danger-bg: rgba(224, 92, 92, 0.08);
-            --whatsapp: #25d366;
-            --text-primary: #e8e6e1;--text-secondary: #7a7670;--text-muted: #4a4640;
-            --border-subtle: rgba(201, 168, 76, 0.07);--border-default: rgba(201, 168, 76, 0.14);
-            --border-strong: rgba(201, 168, 76, 0.2);
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);--shadow-gold: 0 8px 24px rgba(201,168,76,0.15);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; background-image: radial-gradient(ellipse at 0% 0%, rgba(201,168,76,0.025) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(201,168,76,0.02) 0%, transparent 50%); }
-        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; z-index: 100; }
-        .sidebar-header { padding: 28px 24px; border-bottom: 1px solid var(--border-subtle); }
-        .sidebar-logo { display: flex; align-items: center; gap: 14px; }
-        .sidebar-logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--bg-primary); box-shadow: var(--shadow-gold); }
-        .sidebar-logo-text { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; }
-        .sidebar-logo-text span { color: var(--gold-primary); }
-        .sidebar-nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
-        .nav-section { margin-bottom: 28px; }
-        .nav-section-title { font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 14px; margin-bottom: 12px; opacity: 0.8; }
-        .nav-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; color: var(--text-secondary); text-decoration: none; border-radius: 10px; margin-bottom: 4px; transition: all 0.25s; font-size: 14px; font-weight: 500; position: relative; border: 1px solid transparent; }
-        .nav-item:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
-        .nav-item.active { background: linear-gradient(135deg, var(--gold-subtle), transparent); color: var(--gold-light); border-color: var(--border-default); }
-        .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 24px; background: var(--gold-primary); border-radius: 0 4px 4px 0; }
-        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
-        .nav-item .badge { margin-left: auto; background: var(--danger); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
-        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-subtle); }
-        .user-info { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; }
-        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--bg-primary); }
-        .user-details { flex: 1; }
-        .user-name { font-size: 14px; font-weight: 600; }
-        .user-role { font-size: 12px; color: var(--text-muted); }
-        .user-logout { color: var(--text-muted); padding: 8px; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
-        .user-logout:hover { background: var(--danger-bg); color: var(--danger); }
-        .main-content { margin-left: 280px; min-height: 100vh; padding: 36px 40px; }
-        .page-header { margin-bottom: 32px; }
-        .page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; letter-spacing: -0.5px; }
-        .config-tabs { display: flex; gap: 10px; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 20px; flex-wrap: wrap; }
-        .config-tab { display: flex; align-items: center; gap: 10px; padding: 14px 22px; background: transparent; border: 1px solid transparent; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.3s; }
-        .config-tab:hover { background: var(--gold-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
-        .config-tab.active { background: linear-gradient(135deg, var(--gold-subtle), transparent); border-color: var(--gold-primary); color: var(--gold-light); }
-        .config-tab.whatsapp.active { border-color: var(--whatsapp); }
-        .config-panel { display: none; }
-        .config-panel.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .config-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 28px; margin-bottom: 24px; transition: all 0.3s; }
-        .config-card:hover { border-color: var(--border-default); }
-        .config-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
-        .config-card h3 i { color: var(--gold-primary); font-size: 20px; }
-        .config-card p.description { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-        .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 0 3px var(--gold-glow); }
-        .form-group input::placeholder { color: var(--text-muted); }
-        .form-group .help-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Outfit', sans-serif; }
-        .btn-primary { background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); color: var(--bg-primary); box-shadow: var(--shadow-gold); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(201,168,76,0.35); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .btn-secondary { background: var(--bg-secondary); border: 1px solid var(--border-default); color: var(--text-secondary); }
-        .btn-secondary:hover { background: var(--gold-subtle); color: var(--gold-primary); }
-        .btn-whatsapp { background: var(--whatsapp); color: white; text-decoration: none; }
-        .btn-whatsapp:hover { background: #1da851; transform: translateY(-2px); }
-        .token-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
-        .token-status.configurado { background: var(--success-bg); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
-        .token-status.nao-configurado { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(224,148,62,0.3); }
-        .usuarios-table { width: 100%; border-collapse: collapse; }
-        .usuarios-table th { text-align: left; padding: 16px 20px; font-size: 10px; font-weight: 700; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-secondary); }
-        .usuarios-table td { padding: 18px 20px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
-        .usuarios-table tr:hover { background: var(--gold-subtle); }
-        .usuarios-table tr:last-child td { border-bottom: none; }
-        .user-cell { display: flex; align-items: center; gap: 14px; }
-        .user-cell-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold-subtle), var(--bg-elevated)); border: 1px solid var(--border-default); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-primary); }
-        .user-cell-name { font-weight: 600; margin-bottom: 2px; }
-        .user-cell-email { font-size: 12px; color: var(--text-muted); }
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .status-ativo { background: var(--success-bg); color: #34d399; border: 1px solid rgba(62,207,142,0.3); }
-        .status-inativo { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(224,92,92,0.3); }
-        .perfil-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-default); }
-        .table-action-btn { width: 38px; height: 38px; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--gold-subtle); color: var(--gold-primary); border: 1px solid var(--border-subtle); transition: all 0.3s; }
-        .table-action-btn:hover { transform: scale(1.1); }
-        .suri-status-box { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
-        .suri-status-left { display: flex; align-items: center; gap: 16px; }
-        .suri-status-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
-        .suri-status-icon.connected { background: var(--success-bg); color: var(--success); }
-        .suri-status-icon.disconnected { background: var(--danger-bg); color: var(--danger); }
-        .suri-status-text h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-        .suri-status-text p { font-size: 13px; color: var(--text-muted); }
-        .suri-status-badge { padding: 10px 20px; border-radius: 25px; font-size: 12px; font-weight: 700; }
-        .suri-status-badge.connected { background: var(--success-bg); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
-        .suri-status-badge.disconnected { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(224,92,92,0.3); }
-        .suri-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        .suri-stat-item { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; text-align: center; }
-        .suri-stat-value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--gold-primary); margin-bottom: 4px; }
-        .suri-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
-        .webhook-box { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; }
-        .webhook-box input { flex: 1; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; color: var(--text-primary); font-size: 13px; font-family: 'JetBrains Mono', monospace; }
-        .webhook-box button { padding: 12px 18px; background: var(--gold-subtle); border: 1px solid var(--border-default); border-radius: 8px; color: var(--gold-primary); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-        .webhook-box button:hover { background: var(--gold-primary); color: var(--bg-primary); }
-        .toast { position: fixed; bottom: 28px; right: 28px; background: var(--bg-card); border: 1px solid var(--gold-primary); border-radius: 14px; padding: 18px 24px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-gold); transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55); z-index: 1000; }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast i { color: var(--success); font-size: 22px; }
-        .toast.error i { color: var(--danger); }
-        .toast span { font-weight: 600; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-overlay.active { display: flex; }
-        .modal { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 18px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; border-bottom: 1px solid var(--border-subtle); }
-        .modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; display: flex; align-items: center; gap: 12px; }
-        .modal-header h3 i { color: var(--gold-primary); }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all 0.2s; }
-        .modal-close:hover { background: var(--danger-bg); color: var(--danger); }
-        .modal-body { padding: 28px; }
-        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; padding: 24px 20px; } .config-tabs { flex-direction: column; } .suri-stats-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
-        .mobile-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); border: none; color: var(--bg-primary); font-size: 20px; cursor: pointer; box-shadow: var(--shadow-gold); align-items: center; justify-content: center; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 99; }
-        .sidebar-overlay.active { display: block; }
-        @media (max-width: 768px) { .mobile-toggle { display: flex; } .sidebar { transition: transform 0.3s ease; } .sidebar.open { transform: translateX(0) !important; } .main-content { padding-top: 76px !important; } }
-    
-/* Ambient background */
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.025) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.015) 0%, transparent 60%);
-    animation: ambientPulse 8s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurações — ACERTIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;--s4:#1e1e1e;
+  --gold:#c9a84c;--gd:#7a5e20;--gxl:#dab85c;
+  --g05:rgba(201,168,76,.05);--g08:rgba(201,168,76,.08);--g12:rgba(201,168,76,.12);--g20:rgba(201,168,76,.20);
+  --green:#34c98a;--red:#e55555;--orange:#d97c2e;--blue:#5b8fe8;--wpp:#25d366;
+  --white:#f0ede8;--text:#b8b4ae;--t2:#706c66;--t3:#3a3630;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
+  --br-gold:rgba(201,168,76,.12);--brh-gold:rgba(201,168,76,.22);
+  --sw:244px;--r:10px;--rs:7px;
 }
-body > * { position: relative; z-index: 1; }
-@keyframes ambientPulse {
-    0%   { opacity: 0.6; transform: scale(1) rotate(0deg); }
-    50%  { opacity: 1;   transform: scale(1.05) rotate(1deg); }
-    100% { opacity: 0.7; transform: scale(0.98) rotate(-1deg); }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+input,select,textarea{font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
+.sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200;transition:transform .3s ease}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
+.sb-logo{height:28px;max-width:120px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--t2);border:1px solid var(--br);padding:2px 8px;border-radius:20px}
+.sb-nav{flex:1;overflow-y:auto;padding:14px 10px}
+.sb-grp{margin-bottom:20px}
+.sb-gl{font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);padding:0 10px;margin-bottom:6px}
+.nl{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);color:var(--t2);font-size:12.5px;transition:all .2s;margin-bottom:1px;position:relative;border:1px solid transparent}
+.nl:hover{background:rgba(255,255,255,.03);color:var(--white)}
+.nl.active{background:var(--g05);color:var(--white);border-color:var(--br-gold)}
+.nl.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:14px;border-radius:0 2px 2px 0;background:var(--gold)}
+.nl i{width:14px;text-align:center;font-size:11px;flex-shrink:0;opacity:.6}
+.nl.active i{opacity:1}
+.sb-foot{padding:12px;border-top:1px solid var(--br)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--br);transition:border-color .2s}
+.sb-user:hover{border-color:var(--brh)}
+.sb-av{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gd));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#000}
+.sb-un{font-size:12px;font-weight:500;color:var(--white)}
+.sb-ur{font-size:10px;color:var(--t2)}
+.sb-out{margin-left:auto;color:var(--t3);font-size:12px;padding:5px;border-radius:5px;transition:all .18s}
+.sb-out:hover{background:rgba(229,85,85,.08);color:var(--red)}
+.layout{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
+.header{height:60px;display:flex;align-items:center;padding:0 28px;background:rgba(0,0,0,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100;gap:14px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white)}
+.hdr-sub{font-size:11px;color:var(--t2)}
+.main{flex:1;display:flex;flex-direction:row;min-height:calc(100vh - 60px)}
+.tabs-sidebar{width:196px;flex-shrink:0;border-right:1px solid var(--br);padding:14px 10px;display:flex;flex-direction:column;gap:2px;background:var(--s1)}
+.tab-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);color:var(--t2);font-size:12.5px;transition:all .18s;border:1px solid transparent;cursor:pointer;width:100%;text-align:left;position:relative}
+.tab-btn:hover{background:rgba(255,255,255,.03);color:var(--white)}
+.tab-btn.active{background:var(--g05);color:var(--white);border-color:var(--br-gold)}
+.tab-btn.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:14px;border-radius:0 2px 2px 0;background:var(--gold)}
+.tab-btn i{width:14px;text-align:center;font-size:11px;opacity:.6;flex-shrink:0}
+.tab-btn.active i{opacity:1}
+.tab-btn.wpp.active{border-color:rgba(37,211,102,.2);background:rgba(37,211,102,.04)}
+.tab-btn.wpp.active::before{background:var(--wpp)}
+.tab-btn.wpp.active i{color:var(--wpp)}
+.tabs-lbl{font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);padding:10px 12px 5px;margin-top:4px}
+.tab-content{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:18px}
+.pane{display:none;flex-direction:column;gap:18px;animation:fi .2s ease}
+.pane.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--br)}
+.card-ttl{font-family:'Syne',sans-serif;font-size:11.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px}
+.card-ttl i{font-size:10px;color:var(--t2)}
+.card-desc{font-size:10px;color:var(--t2);margin-top:2px}
+.card-body{padding:18px 20px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
+.fg input,.fg select,.fg textarea{padding:8px 10px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--brh)}
+.fg select option{background:var(--s3)}
+.fg input::placeholder{color:var(--t3)}
+.fg .help{font-size:10px;color:var(--t2);margin-top:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .18s;white-space:nowrap}
+.btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000}
+.btn-g:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-o{background:transparent;border:1px solid var(--br);color:var(--t2)}
+.btn-o:hover{border-color:var(--brh);color:var(--white)}
+.btn-red{background:rgba(229,85,85,.08);border:1px solid rgba(229,85,85,.2);color:var(--red)}
+.btn-red:hover{background:rgba(229,85,85,.14)}
+.btn-wpp{background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:var(--wpp)}
+.btn-wpp:hover{background:rgba(37,211,102,.15)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;filter:none!important}
+.btn-sm{padding:5px 10px;font-size:11px}
+.usr-toolbar{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid var(--br);flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);padding:7px 11px;flex:1;min-width:160px;transition:border-color .15s}
+.search-box:focus-within{border-color:var(--brh)}
+.search-box i{font-size:10px;color:var(--t2);flex-shrink:0}
+.search-box input{background:transparent;border:none;outline:none;color:var(--white);font-size:12.5px;width:100%}
+.search-box input::placeholder{color:var(--t3)}
+.f-sel{padding:7px 10px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);color:var(--text);font-size:12px;outline:none}
+.f-sel option{background:var(--s2)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 16px;font-size:9px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--br);background:var(--s2)}
+td{padding:11px 16px;border-bottom:1px solid var(--br);font-size:12.5px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.012)}
+.u-cell{display:flex;align-items:center;gap:9px}
+.u-av{width:30px;height:30px;border-radius:6px;background:var(--g05);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0}
+.u-name{font-size:12.5px;font-weight:500;color:var(--white)}
+.u-email{font-size:10px;color:var(--t2);margin-top:1px}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.tag-admin{background:var(--g08);color:var(--gold);border:1px solid var(--g12)}
+.tag-op{background:rgba(91,143,232,.08);color:var(--blue);border:1px solid rgba(91,143,232,.15)}
+.tag-on{background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)}
+.tag-off{background:rgba(229,85,85,.08);color:var(--red);border:1px solid rgba(229,85,85,.2)}
+.toggle{position:relative;width:30px;height:17px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;inset:0;background:var(--s4);border-radius:17px;cursor:pointer;transition:background .2s;border:1px solid var(--br)}
+.tog-sl::before{content:'';position:absolute;width:11px;height:11px;left:2px;bottom:2px;background:var(--t2);border-radius:50%;transition:all .2s}
+.toggle input:checked+.tog-sl{background:var(--green);border-color:var(--green)}
+.toggle input:checked+.tog-sl::before{transform:translateX(13px);background:#fff}
+.act-btn{width:26px;height:26px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;border:1px solid var(--br);color:var(--t2)}
+.act-btn:hover{border-color:var(--brh);color:var(--white)}
+.act-btn.del:hover{background:rgba(229,85,85,.08);border-color:rgba(229,85,85,.2);color:var(--red)}
+.logo-upload{display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs)}
+.logo-prev{width:52px;height:52px;border-radius:9px;background:var(--s3);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--t2);overflow:hidden;flex-shrink:0}
+.logo-prev img{width:100%;height:100%;object-fit:contain}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--br)}
+.cfg-row:last-child{border-bottom:none}
+.cfg-lbl{font-size:12.5px;font-weight:500;color:var(--white);margin-bottom:2px}
+.cfg-desc{font-size:10px;color:var(--t2);line-height:1.5}
+.cfg-ctrl{flex-shrink:0;margin-left:18px}
+.cfg-input{width:76px;padding:6px 8px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12px;font-family:'DM Mono',monospace;outline:none;text-align:center;transition:border-color .15s}
+.cfg-input:focus{border-color:var(--brh)}
+.suri-status{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--s2);border-radius:var(--rs);border:1px solid var(--br)}
+.suri-ico{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.suri-ico.on{background:rgba(37,211,102,.1);color:var(--wpp);border:1px solid rgba(37,211,102,.2)}
+.suri-ico.off{background:rgba(229,85,85,.08);color:var(--red);border:1px solid rgba(229,85,85,.2)}
+.suri-txt strong{font-size:13px;font-weight:600;color:var(--white);display:block;margin-bottom:1px}
+.suri-txt span{font-size:11px;color:var(--t2)}
+.suri-badge{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0}
+.suri-badge.on{background:rgba(37,211,102,.08);color:var(--wpp);border:1px solid rgba(37,211,102,.2)}
+.suri-badge.off{background:rgba(229,85,85,.08);color:var(--red);border:1px solid rgba(229,85,85,.2)}
+.suri-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.suri-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.suri-stat{text-align:center;padding:12px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs)}
+.suri-stat-n{font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:var(--white);display:block;margin-bottom:2px}
+.suri-stat-l{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.4px}
+.webhook-box{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs)}
+.webhook-box input{flex:1;background:transparent;border:none;outline:none;color:var(--white);font-family:'DM Mono',monospace;font-size:11px}
+.token-st{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;font-size:9px;font-weight:700;margin-bottom:5px}
+.token-st.ok{background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)}
+.token-st.no{background:rgba(217,124,46,.08);color:var(--orange);border:1px solid rgba(217,124,46,.2)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid rgba(255,255,255,.08);border-radius:12px;width:100%;max-width:460px;animation:mi .2s cubic-bezier(.16,1,.3,1)}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal-scroll{max-height:90vh;overflow-y:auto}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--s1);position:sticky;top:0;z-index:5}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px}
+.modal-ttl i{font-size:10px;color:var(--gold)}
+.modal-close{width:22px;height:22px;border-radius:5px;color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .12s}
+.modal-close:hover{background:rgba(229,85,85,.08);color:var(--red)}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:13px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.toast{position:fixed;bottom:14px;right:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.68,-.55,.265,1.55);z-index:9999}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(52,201,138,.2)}.toast.err{border-color:rgba(229,85,85,.2)}
+.toast.ok i{color:var(--green)}.toast.err i{color:var(--red)}
+.toast span{font-size:12px;font-weight:500;color:var(--white)}
+.mob-btn{display:none;position:fixed;top:14px;left:14px;z-index:300;width:38px;height:38px;border-radius:var(--rs);background:linear-gradient(135deg,var(--gold),var(--gd));color:#000;font-size:14px;align-items:center;justify-content:center}
+.sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
+.sb-ov.on{display:block}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:900px){
+  .mob-btn{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .layout{margin-left:0}
+  .tabs-sidebar{display:none}
+  .tab-content{padding:12px 14px}
+  .frow,.frow-3{grid-template-columns:1fr}
+  .suri-grid{grid-template-columns:1fr 1fr}
 }
-
-        </style>
+</style>
 </head>
 <body>
-    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <img src="acertivelogo.png" alt="ACERTIVE" style="width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(201,168,76,0.3));mix-blend-mode:screen;flex-shrink:0">
-                <div class="sidebar-logo-text">ACERT<span>IVE</span></div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <div class="nav-section-title">Principal</div>
-                <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="fila.html" class="nav-item"><i class="fas fa-headset"></i> Fila de Trabalho <span class="badge" id="filaBadge">0</span></a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Gestão</div>
-                <a href="devedores.html" class="nav-item"><i class="fas fa-users"></i> Devedores</a>
-                <a href="acordos.html" class="nav-item"><i class="fas fa-handshake"></i> Acordos</a>
-                <a href="cobrancas.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Cadastros</div>
-                <a href="credores.html" class="nav-item"><i class="fas fa-building"></i> Credores</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Integrações</div>
-                <a href="suri.html" class="nav-item"><i class="fab fa-whatsapp"></i> Suri WhatsApp</a>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Sistema</div>
-                <a href="disparos.html" class="nav-item"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
-                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i> Relatórios</a>
-                <a href="importacao.html" class="nav-item"><i class="fas fa-file-import"></i> Importação</a>
-                <a href="configuracoes.html" class="nav-item active"><i class="fas fa-cog"></i> Configurações</a>
-            </div>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-details"><div class="user-name" id="userName">Usuário</div><div class="user-role" id="userRole">Operador</div></div>
-                <div class="user-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
-            </div>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <header class="page-header"><h1>Configurações</h1></header>
-        <div class="config-tabs">
-            <button class="config-tab active" onclick="showTab('usuarios')"><i class="fas fa-users"></i> Usuários</button>
-            <button class="config-tab" onclick="showTab('empresa')"><i class="fas fa-building"></i> Empresa</button>
-            <button class="config-tab" onclick="showTab('cobranca')"><i class="fas fa-percent"></i> Cobrança</button>
-            <button class="config-tab whatsapp" onclick="showTab('suri')"><i class="fab fa-whatsapp"></i> Suri WhatsApp</button>
-        </div>
-
-        <!-- Usuários -->
-        <div id="panel-usuarios" class="config-panel active">
-            <div class="config-card">
-                <h3><i class="fas fa-users"></i> Usuários do Sistema</h3>
-                <p class="description">Gerencie os usuários que têm acesso ao sistema de cobrança.</p>
-                <div style="overflow-x: auto;">
-                    <table class="usuarios-table">
-                        <thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody id="usuariosBody"><tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr></tbody>
-                    </table>
-                </div>
-                <div style="margin-top: 24px; display: flex; gap: 12px;">
-                    <button class="btn btn-primary" onclick="novoUsuario()"><i class="fas fa-plus"></i> Novo Usuário</button>
-                    <button class="btn btn-secondary" onclick="abrirAlterarSenha()"><i class="fas fa-key"></i> Alterar Minha Senha</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Empresa -->
-        <div id="panel-empresa" class="config-panel">
-            <div class="config-card">
-                <h3><i class="fas fa-building"></i> Dados da Empresa</h3>
-                <p class="description">Configure as informações da sua empresa de cobrança.</p>
-                <div class="form-row">
-                    <div class="form-group"><label>Nome da Empresa</label><input type="text" id="empresaNome" placeholder="ACERTIVE Cobrança"></div>
-                    <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" placeholder="00.000.000/0000-00"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Telefone</label><input type="text" id="empresaTel" placeholder="(92) 9999-9999"></div>
-                    <div class="form-group"><label>E-mail</label><input type="email" id="empresaEmail" placeholder="contato@empresa.com"></div>
-                </div>
-                <div class="form-group"><label>Endereço</label><input type="text" id="empresaEndereco" placeholder="Rua, número, bairro - Cidade/UF"></div>
-                <button class="btn btn-primary" onclick="salvarEmpresa()"><i class="fas fa-save"></i> Salvar Alterações</button>
-            </div>
-        </div>
-
-        <!-- Cobrança -->
-        <div id="panel-cobranca" class="config-panel">
-            <div class="config-card">
-                <h3><i class="fas fa-percent"></i> Parâmetros de Cobrança</h3>
-                <p class="description">Configure os valores padrão para cálculos de juros, multa e honorários.</p>
-                <div class="form-row">
-                    <div class="form-group"><label>Multa por Atraso (%)</label><input type="number" id="multaAtraso" value="2" min="0" max="10" step="0.1"></div>
-                    <div class="form-group"><label>Juros ao Mês (%)</label><input type="number" id="jurosMes" value="9" min="0" max="30" step="0.1"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Honorários (%)</label><input type="number" id="honorarios" value="10" min="0" max="30" step="0.5"></div>
-                    <div class="form-group"><label>Desconto Máximo (%)</label><input type="number" id="descontoMax" value="50" min="0" max="100"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Parcelas Máximas</label><input type="number" id="parcelasMax" value="12" min="1" max="48"></div>
-                    <div class="form-group"><label>Valor Mínimo Parcela</label><input type="text" id="valorMinParcela" value="50" placeholder="R$ 50,00"></div>
-                </div>
-                <button class="btn btn-primary" onclick="salvarCobranca()"><i class="fas fa-save"></i> Salvar Parâmetros</button>
-            </div>
-        </div>
-
-        <!-- Suri -->
-        <div id="panel-suri" class="config-panel">
-            <div class="suri-status-box">
-                <div class="suri-status-left">
-                    <div class="suri-status-icon" id="suriStatusIcon"><i class="fab fa-whatsapp"></i></div>
-                    <div class="suri-status-text"><h4>Suri by Chatbot Maker</h4><p id="suriStatusDesc">Verificando conexão...</p></div>
-                </div>
-                <span class="suri-status-badge" id="suriStatusBadge">Verificando...</span>
-            </div>
-            <div class="suri-stats-grid">
-                <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatHoje">-</div><div class="suri-stat-label">Mensagens Hoje</div></div>
-                <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatSemana">-</div><div class="suri-stat-label">Últimos 7 dias</div></div>
-                <div class="suri-stat-item"><div class="suri-stat-value" id="suriStatTotal">-</div><div class="suri-stat-label">Total Enviadas</div></div>
-                <div class="suri-stat-item"><div class="suri-stat-value">WhatsApp</div><div class="suri-stat-label">Canal Ativo</div></div>
-            </div>
-            <div class="config-card">
-                <h3><i class="fas fa-key"></i> Credenciais da API</h3>
-                <p class="description">As credenciais são salvas de forma segura no servidor — o token nunca é exposto no navegador.</p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Identificador</label>
-                        <input type="text" id="suriIdentificador" placeholder="cb126955962">
-                        <div class="help-text">ID único do seu chatbot</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Token de Acesso</label>
-                        <div id="suriTokenStatus" style="display:none;" class="token-status nao-configurado"></div>
-                        <input type="password" id="suriToken" placeholder="Cole o token aqui para configurar">
-                        <div class="help-text" id="suriTokenHelp">Token para autenticação na API</div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Endpoint da API</label>
-                    <input type="text" id="suriEndpoint" placeholder="https://cbm-wap-babysuri-cb126955962.azurewebsites.net">
-                    <div class="help-text">URL base para chamadas da API</div>
-                </div>
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-primary" onclick="salvarCredenciaisSuri(this)"><i class="fas fa-save"></i> Salvar Credenciais</button>
-                    <button class="btn btn-secondary" onclick="testarConexaoSuri()"><i class="fas fa-vial"></i> Testar Conexão</button>
-                </div>
-            </div>
-            <div class="config-card">
-                <h3><i class="fas fa-link"></i> Configurar Webhook</h3>
-                <p class="description">Configure o webhook na Suri para receber notificações de mensagens.</p>
-                <div class="webhook-box">
-                    <input type="text" id="webhookUrl" value="https://acertivecobranca.com.br/api/suri/webhook" readonly>
-                    <button onclick="copiarWebhook()"><i class="fas fa-copy"></i> Copiar</button>
-                </div>
-                <div style="margin-top: 16px;">
-                    <p class="description" style="margin-bottom: 12px;">Marque as seguintes opções no painel da Suri:</p>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> new-contact</span>
-                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> message-received</span>
-                        <span style="background:var(--success-bg);color:var(--success);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;"><i class="fas fa-check"></i> finish-attendance</span>
-                    </div>
-                </div>
-            </div>
-            <div class="config-card">
-                <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
-                <p class="description">Acesse as funcionalidades principais da integração Suri.</p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <a href="suri.html" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> Abrir Painel Suri</a>
-                    <button class="btn btn-secondary" onclick="toast('Função de teste em desenvolvimento')"><i class="fas fa-paper-plane"></i> Enviar Teste</button>
-                    <button class="btn btn-secondary" onclick="toast('Visualização de logs em desenvolvimento')"><i class="fas fa-list"></i> Ver Logs</button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal Usuário -->
-    <div class="modal-overlay" id="modalUsuario">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-user"></i> <span id="modalUsuarioTitle">Novo Usuário</span></h3>
-                <button class="modal-close" onclick="fecharModalUsuario()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="salvarUsuario(event)">
-                    <input type="hidden" id="modalUsuarioId">
-                    <div class="form-group"><label>Nome</label><input type="text" id="modalNome" required placeholder="Nome completo"></div>
-                    <div class="form-group"><label>E-mail</label><input type="email" id="modalEmail" required placeholder="email@exemplo.com"></div>
-                    <div class="form-group" id="senhaGroup"><label>Senha</label><input type="password" id="modalSenha" placeholder="Mínimo 6 caracteres" minlength="6"></div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Perfil</label><select id="modalPerfil"><option value="admin">Administrador</option><option value="operador">Operador</option></select></div>
-                        <div class="form-group" id="statusGroup" style="display:none;"><label>Status</label><select id="modalAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
-                    </div>
-                    <div style="display:flex;gap:12px;margin-top:24px;">
-                        <button type="button" class="btn btn-secondary" onclick="fecharModalUsuario()">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<button class="mob-btn" onclick="toggleSb()"><i class="fas fa-bars"></i></button>
+<div class="sb-ov" id="sbOv" onclick="toggleSb()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <img src="acertivelogo.png" alt="ACERTIVE" class="sb-logo">
+    <span class="sb-badge">PRO</span>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-grp"><div class="sb-gl">Principal</div>
+      <a href="dashboard.html" class="nl"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="fila.html" class="nl"><i class="fas fa-headset"></i> Fila de Trabalho</a>
     </div>
-
-    <!-- Modal Alterar Senha -->
-    <div class="modal-overlay" id="modalAlterarSenha">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-key"></i> Alterar Minha Senha</h3>
-                <button class="modal-close" onclick="fecharModalSenha()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="salvarNovaSenha(event)">
-                    <div class="form-group"><label>Senha Atual</label><input type="password" id="modalSenhaAtual" required placeholder="Digite sua senha atual"></div>
-                    <div class="form-group"><label>Nova Senha</label><input type="password" id="modalNovaSenha" required placeholder="Mínimo 6 caracteres" minlength="6"></div>
-                    <div class="form-group"><label>Confirmar Nova Senha</label><input type="password" id="modalConfirmarSenha" required placeholder="Repita a nova senha"></div>
-                    <div style="display:flex;gap:12px;margin-top:24px;">
-                        <button type="button" class="btn btn-secondary" onclick="fecharModalSenha()">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Alterar Senha</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    <div class="sb-grp"><div class="sb-gl">Gestão</div>
+      <a href="devedores.html" class="nl"><i class="fas fa-users"></i> Devedores</a>
+      <a href="acordos.html" class="nl"><i class="fas fa-handshake"></i> Acordos</a>
+      <a href="cobrancas.html" class="nl"><i class="fas fa-file-invoice-dollar"></i> Cobranças</a>
     </div>
+    <div class="sb-grp"><div class="sb-gl">Operação</div>
+      <a href="operacao.html" class="nl"><i class="fas fa-chart-line"></i> Painel Operacional</a>
+      <a href="portal-usuarios.html" class="nl"><i class="fas fa-id-card"></i> Portal do Credor</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Cadastros</div>
+      <a href="credores.html" class="nl"><i class="fas fa-building"></i> Credores</a>
+    </div>
+    <div class="sb-grp"><div class="sb-gl">Sistema</div>
+      <a href="disparos.html" class="nl"><i class="fab fa-whatsapp"></i> Disparo em Massa</a>
+      <a href="relatorios.html" class="nl"><i class="fas fa-chart-bar"></i> Relatórios</a>
+      <a href="importacao.html" class="nl"><i class="fas fa-file-import"></i> Importação</a>
+      <a href="configuracoes.html" class="nl active"><i class="fas fa-cog"></i> Configurações</a>
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av" id="uAv">U</div>
+      <div><div class="sb-un" id="uNome">Usuário</div><div class="sb-ur" id="uRole">admin</div></div>
+      <button class="sb-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</aside>
+<div class="layout">
+  <div class="header">
+    <div class="hdr-title">Configurações</div>
+    <div class="hdr-sub" style="margin-left:10px">· Painel de controle do sistema</div>
+  </div>
+  <div class="main">
+    <div class="tabs-sidebar">
+      <div class="tabs-lbl">Sistema</div>
+      <button class="tab-btn active" id="tbUsuarios" onclick="showTab('usuarios')"><i class="fas fa-users"></i> Usuários</button>
+      <button class="tab-btn" id="tbEmpresa" onclick="showTab('empresa')"><i class="fas fa-building"></i> Empresa</button>
+      <button class="tab-btn" id="tbCobranca" onclick="showTab('cobranca')"><i class="fas fa-sliders"></i> Cobrança</button>
+      <div class="tabs-lbl">Integrações</div>
+      <button class="tab-btn wpp" id="tbSuri" onclick="showTab('suri')"><i class="fab fa-whatsapp"></i> Suri WhatsApp</button>
+    </div>
+    <div class="tab-content">
 
-    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText">Sucesso!</span></div>
+      <!-- USUÁRIOS -->
+      <div class="pane active" id="pane-usuarios">
+        <div class="card">
+          <div class="card-hd">
+            <div><div class="card-ttl"><i class="fas fa-users"></i> Usuários do Sistema</div><div class="card-desc">Gerencie acessos e permissões da equipe</div></div>
+            <button class="btn btn-g btn-sm" onclick="abrirModalUsuario()"><i class="fas fa-plus"></i> Novo usuário</button>
+          </div>
+          <div class="usr-toolbar">
+            <div class="search-box">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="buscaUsuario" placeholder="Buscar por nome ou e-mail..." oninput="filtrarUsuarios()">
+            </div>
+            <select class="f-sel" id="filtroStatus" onchange="filtrarUsuarios()">
+              <option value="">Todos os status</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+            <button class="btn btn-o btn-sm" onclick="abrirAlterarSenha()"><i class="fas fa-key"></i> Minha senha</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Ações</th></tr></thead>
+              <tbody id="usuariosBody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--t2)"><div style="display:inline-flex;align-items:center;gap:8px"><div style="width:13px;height:13px;border:2px solid rgba(255,255,255,.07);border-top-color:var(--gold);border-radius:50%;animation:sp .65s linear infinite"></div> Carregando...</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        var API = window.location.origin;
-        function H() { return { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' }; }
-        function toast(msg, tipo) {
-            var t = document.getElementById('toast'); var icon = t.querySelector('i');
-            document.getElementById('toastText').textContent = msg;
-            if (tipo === 'error') { t.classList.add('error'); icon.className = 'fas fa-times-circle'; }
-            else { t.classList.remove('error'); icon.className = 'fas fa-check-circle'; }
-            t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000);
-        }
-        function logout() { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+      <!-- EMPRESA -->
+      <div class="pane" id="pane-empresa">
+        <div class="card">
+          <div class="card-hd"><div><div class="card-ttl"><i class="fas fa-building"></i> Dados da Empresa</div><div class="card-desc">Identidade e informações da sua empresa de cobrança</div></div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="fg"><label>Logotipo</label>
+              <div class="logo-upload">
+                <div class="logo-prev" id="logoPrev"><i class="fas fa-image"></i></div>
+                <div style="flex:1">
+                  <div style="font-size:12px;font-weight:500;color:var(--white);margin-bottom:3px">Imagem da empresa</div>
+                  <div style="font-size:10px;color:var(--t2);margin-bottom:8px">PNG, JPG ou SVG · máx. 2 MB · recomendado 200×60 px</div>
+                  <label style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);font-size:11px;color:var(--text);cursor:pointer">
+                    <i class="fas fa-upload" style="font-size:9px"></i> Escolher arquivo
+                    <input type="file" accept="image/*" style="display:none" onchange="previewLogo(this)">
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label>Nome da Empresa *</label><input type="text" id="empNome" placeholder="ACERTIVE Cobrança"></div>
+              <div class="fg"><label>CNPJ</label><input type="text" id="empCnpj" placeholder="00.000.000/0000-00" maxlength="18" oninput="mascaraCnpj(this)"></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label>Telefone</label><input type="text" id="empTel" placeholder="(92) 9 9999-9999"></div>
+              <div class="fg"><label>E-mail</label><input type="email" id="empEmail" placeholder="contato@empresa.com"></div>
+            </div>
+            <div class="fg"><label>Endereço</label><input type="text" id="empEnd" placeholder="Rua, número, bairro — Cidade / UF"></div>
+            <div class="fg"><label>Site</label><input type="url" id="empSite" placeholder="https://empresa.com.br"></div>
+            <div><button class="btn btn-g" onclick="salvarEmpresa()"><i class="fas fa-check"></i> Salvar empresa</button></div>
+          </div>
+        </div>
+      </div>
 
-        async function checkAuth() {
-            var token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/login.html'; return; }
-            try {
-                var r = await fetch(API + '/api/auth/me', { headers: H() });
-                var d = await r.json();
-                if (!d.success && !d.user) { window.location.href = '/login.html'; return; }
-                var user = d.user || d;
-                document.getElementById('userName').textContent = user.nome || 'Usuário';
-                document.getElementById('userRole').textContent = user.perfil || 'Operador';
-                document.getElementById('userAvatar').textContent = (user.nome || 'U').charAt(0).toUpperCase();
-            } catch (e) {}
-        }
+      <!-- COBRANÇA -->
+      <div class="pane" id="pane-cobranca">
+        <div class="card">
+          <div class="card-hd"><div><div class="card-ttl"><i class="fas fa-percent"></i> Parâmetros Financeiros</div><div class="card-desc">Juros, multa e regras de cálculo padrão</div></div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="frow-3">
+              <div class="fg"><label>Multa por atraso (%)</label><input type="number" id="cfgMulta" value="2" min="0" max="10" step="0.1"><div class="help">Aplicada uma vez no vencimento</div></div>
+              <div class="fg"><label>Juros ao mês (%)</label><input type="number" id="cfgJuros" value="1" min="0" max="30" step="0.01"><div class="help">Sobre o valor corrigido</div></div>
+              <div class="fg"><label>Honorários (%)</label><input type="number" id="cfgHonorarios" value="10" min="0" max="50" step="0.5"><div class="help">Comissão padrão da cobrança</div></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label>Desconto máximo (%)</label><input type="number" id="cfgDescontoMax" value="50" min="0" max="100"></div>
+              <div class="fg"><label>Valor mínimo de parcela (R$)</label><input type="number" id="cfgMinParcela" value="50" min="1" step="5"></div>
+            </div>
+            <div class="fg"><label>Parcelas máximas</label><input type="number" id="cfgParcelasMax" value="12" min="1" max="60" style="max-width:110px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div><div class="card-ttl"><i class="fas fa-headset"></i> Lógica da Fila de Trabalho</div><div class="card-desc">Controle o comportamento da fila sem alterar código</div></div></div>
+          <div class="card-body">
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Dias mínimos de atraso para entrar na fila</div><div class="cfg-desc">Cobranças com menos dias são ignoradas pela priorização</div></div><div class="cfg-ctrl"><input type="number" class="cfg-input" id="cfgMinAtraso" value="1" min="0"></div></div>
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Score mínimo para aparecer na fila</div><div class="cfg-desc">Devedores abaixo deste score são despriorizados (0–100)</div></div><div class="cfg-ctrl"><input type="number" class="cfg-input" id="cfgMinScore" value="10" min="0" max="100"></div></div>
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Dias sem contato para "sem retorno"</div><div class="cfg-desc">Usado nos alertas do painel operacional</div></div><div class="cfg-ctrl"><input type="number" class="cfg-input" id="cfgSemContato" value="30" min="1"></div></div>
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Valor mínimo para ação prioritária (R$)</div><div class="cfg-desc">Devedores acima deste valor ganham prioridade máxima</div></div><div class="cfg-ctrl"><input type="number" class="cfg-input" id="cfgValorPrior" value="1000" min="0" step="100"></div></div>
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Priorização automática por score</div><div class="cfg-desc">Ordena a fila automaticamente pelo score calculado</div></div><div class="cfg-ctrl"><label class="toggle"><input type="checkbox" id="cfgPrioAuto" checked><span class="tog-sl"></span></label></div></div>
+            <div class="cfg-row"><div class="cfg-info"><div class="cfg-lbl">Incluir devedor sem telefone na fila</div><div class="cfg-desc">Se desativado, oculta quem não tem telefone cadastrado</div></div><div class="cfg-ctrl"><label class="toggle"><input type="checkbox" id="cfgSemTel" checked><span class="tog-sl"></span></label></div></div>
+          </div>
+        </div>
+        <div><button class="btn btn-g" onclick="salvarCobranca()"><i class="fas fa-check"></i> Salvar configurações</button></div>
+      </div>
 
-        function showTab(tab) {
-            document.querySelectorAll('.config-tab').forEach(function(t) { t.classList.remove('active'); });
-            document.querySelectorAll('.config-panel').forEach(function(p) { p.classList.remove('active'); });
-            var btn = document.querySelector('[onclick="showTab(\'' + tab + '\')"]');
-            if (btn) btn.classList.add('active');
-            var panel = document.getElementById('panel-' + tab);
-            if (panel) panel.classList.add('active');
-            if (tab === 'suri') { carregarCredenciaisSuri(); verificarStatusSuri(); }
-            if (tab === 'cobranca') carregarCobranca();
-        }
+      <!-- SURI -->
+      <div class="pane" id="pane-suri">
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fab fa-whatsapp" style="color:var(--wpp)"></i> Status da Integração</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+            <div class="suri-status">
+              <div class="suri-ico off" id="suriIco"><i class="fab fa-whatsapp"></i></div>
+              <div class="suri-txt"><strong id="suriNome">Suri by Chatbot Maker</strong><span id="suriDesc">Verificando conexão...</span></div>
+              <div class="suri-badge off" id="suriBadge">Verificando</div>
+            </div>
+            <div class="suri-grid">
+              <div class="suri-stat"><span class="suri-stat-n" id="ssHoje">—</span><span class="suri-stat-l">Mensagens hoje</span></div>
+              <div class="suri-stat"><span class="suri-stat-n" id="ssSemana">—</span><span class="suri-stat-l">Últimos 7 dias</span></div>
+              <div class="suri-stat"><span class="suri-stat-n" id="ssTotal">—</span><span class="suri-stat-l">Total enviadas</span></div>
+            </div>
+            <div style="display:flex;gap:7px">
+              <button class="btn btn-wpp btn-sm" onclick="testarConexao()"><i class="fas fa-vial"></i> Testar conexão</button>
+              <a href="suri.html" class="btn btn-o btn-sm"><i class="fab fa-whatsapp"></i> Abrir painel Suri</a>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div><div class="card-ttl"><i class="fas fa-key"></i> Credenciais da API</div><div class="card-desc">Token salvo com segurança no servidor — nunca exposto no navegador</div></div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:13px">
+            <div class="frow">
+              <div class="fg"><label>Identificador</label><input type="text" id="suriId" placeholder="cb126955962"><div class="help">ID único do seu chatbot na plataforma</div></div>
+              <div class="fg"><label>Token de acesso</label><div id="tokenSt" style="display:none"></div><input type="password" id="suriToken" placeholder="Cole o token aqui"><div class="help" id="tokenHelp">Token para autenticação na API Suri</div></div>
+            </div>
+            <div class="fg"><label>Endpoint da API</label><input type="text" id="suriEndpoint" placeholder="https://cbm-wap-babysuri-cb126955962.azurewebsites.net"><div class="help">URL base sem barra ao final</div></div>
+            <div><button class="btn btn-g" onclick="salvarSuri(this)"><i class="fas fa-check"></i> Salvar credenciais</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-link"></i> Webhook</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+            <div class="fg"><label>URL do webhook</label>
+              <div class="webhook-box"><input type="text" id="webhookUrl" value="https://acertivecobranca.com.br/api/suri/webhook" readonly><button class="btn btn-o btn-sm" onclick="copiarWebhook()"><i class="fas fa-copy"></i> Copiar</button></div>
+              <div class="help">Configure esta URL no painel da Suri como endpoint de webhook</div>
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px">Eventos a habilitar</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)"><i class="fas fa-check"></i> new-contact</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)"><i class="fas fa-check"></i> message-received</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)"><i class="fas fa-check"></i> finish-attendance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // ═══ COBRANÇA ═══
-        async function carregarCobranca() {
-            try {
-                var r = await fetch(API + '/api/configuracoes', { headers: H() });
-                var d = await r.json();
-                var c = d.data || {};
-                if (c.multa_atraso != null) document.getElementById('multaAtraso').value = parseFloat(c.multa_atraso);
-                if (c.juros_atraso != null) document.getElementById('jurosMes').value = parseFloat(c.juros_atraso);
-                if (c.percentual_comissao_padrao != null) document.getElementById('honorarios').value = parseFloat(c.percentual_comissao_padrao);
-                if (c.nome_empresa) document.getElementById('empresaNome').value = c.nome_empresa;
-            } catch (e) {}
-        }
+    </div>
+  </div>
+</div>
+<!-- MODAIS -->
+<div class="overlay" id="ovUsuario">
+  <div class="modal"><div class="modal-scroll">
+  <div class="modal-head"><div class="modal-ttl"><i class="fas fa-user"></i><span id="mUsrTtl">Novo Usuário</span></div><button class="modal-close" onclick="fecharModal('ovUsuario')"><i class="fas fa-times"></i></button></div>
+  <form id="fmUsuario" onsubmit="salvarUsuario(event)">
+  <div class="modal-body">
+    <input type="hidden" id="usrId">
+    <div class="fg"><label>Nome completo *</label><input type="text" id="usrNome" required placeholder="Nome do usuário"></div>
+    <div class="fg"><label>E-mail *</label><input type="email" id="usrEmail" required placeholder="email@empresa.com"></div>
+    <div class="fg" id="senhaGrp"><label id="senhaLbl">Senha *</label><input type="password" id="usrSenha" placeholder="Mínimo 6 caracteres" minlength="6"></div>
+    <div class="frow">
+      <div class="fg"><label>Perfil *</label><select id="usrPerfil"><option value="admin">Administrador</option><option value="operador">Operador</option></select></div>
+      <div class="fg" id="statusGrp" style="display:none"><label>Status</label><select id="usrAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
+    </div>
+  </div>
+  <div class="modal-foot"><button type="button" class="btn btn-o" onclick="fecharModal('ovUsuario')">Cancelar</button><button type="submit" class="btn btn-g"><i class="fas fa-check"></i> Salvar</button></div>
+  </form>
+  </div></div>
+</div>
+<div class="overlay" id="ovSenha">
+  <div class="modal"><div class="modal-scroll">
+  <div class="modal-head"><div class="modal-ttl"><i class="fas fa-key"></i> Alterar Minha Senha</div><button class="modal-close" onclick="fecharModal('ovSenha')"><i class="fas fa-times"></i></button></div>
+  <form id="fmSenha" onsubmit="salvarSenha(event)">
+  <div class="modal-body">
+    <div class="fg"><label>Senha atual</label><input type="password" id="senhaAtual" required placeholder="Digite sua senha atual"></div>
+    <div class="fg"><label>Nova senha</label><input type="password" id="novaSenha" required placeholder="Mínimo 6 caracteres" minlength="6"></div>
+    <div class="fg"><label>Confirmar nova senha</label><input type="password" id="confirmarSenha" required placeholder="Repita a nova senha"></div>
+  </div>
+  <div class="modal-foot"><button type="button" class="btn btn-o" onclick="fecharModal('ovSenha')">Cancelar</button><button type="submit" class="btn btn-g"><i class="fas fa-check"></i> Alterar senha</button></div>
+  </form>
+  </div></div>
+</div>
+<div class="toast" id="toast"><i class="fas fa-check" id="toastIco"></i><span id="toastTxt"></span></div>
 
-        async function salvarCobranca() {
-            var btn = document.querySelector('#panel-cobranca .btn-primary');
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-            try {
-                var body = { multa_atraso: parseFloat(document.getElementById('multaAtraso').value) || 2, juros_atraso: parseFloat(document.getElementById('jurosMes').value) || 9, percentual_comissao_padrao: parseFloat(document.getElementById('honorarios').value) || 10 };
-                var r = await fetch(API + '/api/configuracoes', { method: 'PUT', headers: H(), body: JSON.stringify(body) });
-                var d = await r.json();
-                if (d.success) toast('✅ Parâmetros salvos! Juros: ' + body.juros_atraso + '% | Multa: ' + body.multa_atraso + '%');
-                else toast(d.error || 'Erro ao salvar', 'error');
-            } catch (e) { toast('Erro: ' + e.message, 'error'); }
-            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Parâmetros'; }
-        }
+<script>
+const API=window.location.origin;
+const H=()=>({'Authorization':'Bearer '+localStorage.getItem('token'),'Content-Type':'application/json'});
+let todosUsuarios=[];
 
-        // ═══ SURI - seguro: token salvo no banco, nunca exibido ═══
-        async function carregarCredenciaisSuri() {
-            try {
-                var r = await fetch(API + '/api/configuracoes', { headers: H() });
-                var d = await r.json();
-                var c = d.data || {};
-                if (c.suri_identificador) document.getElementById('suriIdentificador').value = c.suri_identificador;
-                if (c.suri_endpoint) document.getElementById('suriEndpoint').value = c.suri_endpoint;
-                // Token: nunca retornado pelo servidor — só exibe status
-                var statusEl = document.getElementById('suriTokenStatus');
-                statusEl.style.display = 'inline-flex';
-                if (c.suri_token_configurado) {
-                    statusEl.className = 'token-status configurado';
-                    statusEl.innerHTML = '<i class="fas fa-lock"></i> Token configurado — deixe em branco para manter';
-                    document.getElementById('suriToken').placeholder = '••••••••••••••••••••••••••••';
-                    document.getElementById('suriTokenHelp').textContent = 'Preencha apenas se quiser trocar o token atual';
-                } else {
-                    statusEl.className = 'token-status nao-configurado';
-                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Token ainda não configurado';
-                    document.getElementById('suriToken').placeholder = 'Cole o token aqui';
-                }
-            } catch (e) {}
-        }
+let _tt;
+function toast(msg,tipo='ok'){const el=document.getElementById('toast');document.getElementById('toastIco').className='fas '+(tipo==='ok'?'fa-check':'fa-triangle-exclamation');el.className='toast '+tipo;document.getElementById('toastTxt').textContent=msg;el.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),3500);}
+function logout(){localStorage.removeItem('token');window.location.href='login.html';}
+function toggleSb(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sbOv').classList.toggle('on');}
 
-        async function salvarCredenciaisSuri(btn) {
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-            try {
-                var body = {
-                    suri_identificador: document.getElementById('suriIdentificador').value.trim(),
-                    suri_endpoint: document.getElementById('suriEndpoint').value.trim()
-                };
-                var novoToken = document.getElementById('suriToken').value.trim();
-                if (novoToken) body.suri_token = novoToken; // só envia se usuário digitou algo
-                var r = await fetch(API + '/api/configuracoes', { method: 'PUT', headers: H(), body: JSON.stringify(body) });
-                var d = await r.json();
-                if (d.success) {
-                    toast('✅ Credenciais salvas com segurança!');
-                    document.getElementById('suriToken').value = '';
-                    await carregarCredenciaisSuri();
-                    verificarStatusSuri();
-                } else { toast(d.error || 'Erro ao salvar', 'error'); }
-            } catch (e) { toast('Erro: ' + e.message, 'error'); }
-            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Credenciais'; }
-        }
+async function checkAuth(){
+  if(!localStorage.getItem('token')){window.location.href='login.html';return;}
+  try{const r=await fetch(API+'/api/usuarios/me',{headers:H()});const d=await r.json();if(!d.success){window.location.href='login.html';return;}const u=d.data||d;document.getElementById('uNome').textContent=u.nome||'Usuário';document.getElementById('uRole').textContent=u.perfil||'admin';document.getElementById('uAv').textContent=(u.nome||'U')[0].toUpperCase();}catch(e){}
+}
 
-        async function verificarStatusSuri() {
-            try {
-                var r = await fetch(API + '/api/suri/status', { headers: H() });
-                var d = await r.json();
-                var icon = document.getElementById('suriStatusIcon');
-                var desc = document.getElementById('suriStatusDesc');
-                var badge = document.getElementById('suriStatusBadge');
-                if (d.success && d.data && d.data.conectado) {
-                    icon.className = 'suri-status-icon connected';
-                    desc.textContent = 'Conexão estabelecida com sucesso';
-                    badge.textContent = 'Conectado'; badge.className = 'suri-status-badge connected';
-                    if (d.data.stats) document.getElementById('suriStatHoje').textContent = d.data.stats.msg_hoje || 0;
-                } else {
-                    icon.className = 'suri-status-icon disconnected';
-                    desc.textContent = 'Não foi possível conectar à API';
-                    badge.textContent = 'Desconectado'; badge.className = 'suri-status-badge disconnected';
-                }
-            } catch (e) { document.getElementById('suriStatusBadge').textContent = 'Erro'; document.getElementById('suriStatusBadge').className = 'suri-status-badge disconnected'; }
-        }
+function showTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  const id='tb'+tab.charAt(0).toUpperCase()+tab.slice(1);
+  document.getElementById(id)?.classList.add('active');
+  document.getElementById('pane-'+tab)?.classList.add('active');
+  if(tab==='suri'){carregarSuri();verificarStatus();}
+  if(tab==='cobranca')carregarCobranca();
+  if(tab==='empresa')carregarEmpresa();
+}
 
-        async function testarConexaoSuri() {
-            toast('Testando conexão...');
-            await verificarStatusSuri();
-            var b = document.getElementById('suriStatusBadge');
-            if (b.textContent === 'Conectado') toast('Conexão OK!');
-            else toast('Erro na conexão.', 'error');
-        }
+function fecharModal(id){document.getElementById(id).classList.remove('on');}
+document.addEventListener('click',e=>{['ovUsuario','ovSenha'].forEach(id=>{if(e.target.id===id)fecharModal(id);});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){fecharModal('ovUsuario');fecharModal('ovSenha');}});
 
-        function copiarWebhook() { document.getElementById('webhookUrl').select(); document.execCommand('copy'); toast('URL do webhook copiada!'); }
+async function carregarUsuarios(){
+  try{const r=await fetch(API+'/api/usuarios',{headers:H()});const d=await r.json();todosUsuarios=d.data||d||[];renderUsuarios(todosUsuarios);}
+  catch(e){document.getElementById('usuariosBody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--red)">Erro ao carregar usuários</td></tr>';}
+}
 
-        // ═══ USUÁRIOS ═══
-        async function carregarUsuarios() {
-            try {
-                var r = await fetch(API + '/api/usuarios', { headers: H() });
-                var d = await r.json();
-                var usuarios = d.data || d || [];
-                if (!usuarios.length) { document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">Nenhum usuário cadastrado</td></tr>'; return; }
-                var html = '';
-                usuarios.forEach(function(u) {
-                    html += '<tr><td><div class="user-cell"><div class="user-cell-avatar">' + (u.nome||'U').charAt(0).toUpperCase() + '</div><div><div class="user-cell-name">' + (u.nome||'-') + '</div><div class="user-cell-email">' + (u.email||'-') + '</div></div></div></td>';
-                    html += '<td><span class="perfil-badge">' + (u.perfil||'Operador') + '</span></td>';
-                    html += '<td><span class="status-badge status-' + (u.ativo!==false?'ativo':'inativo') + '">' + (u.ativo!==false?'Ativo':'Inativo') + '</span></td>';
-                    html += '<td><div style="display:flex;gap:8px;"><button class="table-action-btn" onclick="editarUsuario(\'' + u.id + '\')"><i class="fas fa-edit"></i></button><button class="table-action-btn" style="color:var(--danger);" onclick="excluirUsuario(\'' + u.id + '\',\'' + (u.nome||'').replace(/'/g,"\\'") + '\')"><i class="fas fa-trash"></i></button></div></td></tr>';
-                });
-                document.getElementById('usuariosBody').innerHTML = html;
-            } catch (e) { document.getElementById('usuariosBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--danger);">Erro ao carregar usuários</td></tr>'; }
-        }
+function renderUsuarios(lista){
+  if(!lista.length){document.getElementById('usuariosBody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--t2)">Nenhum usuário encontrado</td></tr>';return;}
+  document.getElementById('usuariosBody').innerHTML=lista.map(u=>{
+    const ativo=u.ativo!==false;
+    const ua=u.ultimo_acesso?new Date(u.ultimo_acesso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    return`<tr>
+      <td><div class="u-cell"><div class="u-av">${(u.nome||'U')[0].toUpperCase()}</div><div><div class="u-name">${u.nome||'—'}</div><div class="u-email">${u.email||'—'}</div></div></div></td>
+      <td><span class="tag ${u.perfil==='admin'?'tag-admin':'tag-op'}">${u.perfil==='admin'?'Admin':'Operador'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:7px"><label class="toggle"><input type="checkbox" ${ativo?'checked':''} onchange="toggleUsuario('${u.id}',this.checked)"><span class="tog-sl"></span></label><span class="tag ${ativo?'tag-on':'tag-off'}">${ativo?'Ativo':'Inativo'}</span></div></td>
+      <td style="font-size:10px;color:var(--t2);font-family:'DM Mono',monospace">${ua}</td>
+      <td><div style="display:flex;gap:5px"><button class="act-btn" onclick="editarUsuario('${u.id}')" title="Editar"><i class="fas fa-pen"></i></button><button class="act-btn del" onclick="excluirUsuario('${u.id}','${(u.nome||'').replace(/'/g,"\\'")}')" title="Excluir"><i class="fas fa-trash"></i></button></div></td>
+    </tr>`;
+  }).join('');
+}
 
-        function novoUsuario() {
-            document.getElementById('modalUsuarioTitle').textContent = 'Novo Usuário';
-            document.getElementById('modalUsuarioId').value = '';
-            document.getElementById('modalNome').value = '';
-            document.getElementById('modalEmail').value = '';
-            document.getElementById('modalSenha').value = '';
-            document.getElementById('modalPerfil').value = 'operador';
-            document.getElementById('senhaGroup').style.display = 'block';
-            document.getElementById('senhaGroup').querySelector('label').textContent = 'SENHA';
-            document.getElementById('modalSenha').required = true;
-            document.getElementById('statusGroup').style.display = 'none';
-            document.getElementById('modalUsuario').classList.add('active');
-        }
+function filtrarUsuarios(){
+  const b=document.getElementById('buscaUsuario').value.toLowerCase();
+  const s=document.getElementById('filtroStatus').value;
+  renderUsuarios(todosUsuarios.filter(u=>{
+    const mn=!b||(u.nome||'').toLowerCase().includes(b)||(u.email||'').toLowerCase().includes(b);
+    const ativo=u.ativo!==false;
+    const ms=!s||(s==='ativo'&&ativo)||(s==='inativo'&&!ativo);
+    return mn&&ms;
+  }));
+}
 
-        async function editarUsuario(id) {
-            try {
-                var r = await fetch(API + '/api/usuarios/' + id, { headers: H() });
-                var d = await r.json(); var u = d.data || d;
-                document.getElementById('modalUsuarioTitle').textContent = 'Editar Usuário';
-                document.getElementById('modalUsuarioId').value = u.id;
-                document.getElementById('modalNome').value = u.nome || '';
-                document.getElementById('modalEmail').value = u.email || '';
-                document.getElementById('modalSenha').value = '';
-                document.getElementById('modalSenha').required = false;
-                document.getElementById('modalPerfil').value = u.perfil || 'operador';
-                document.getElementById('senhaGroup').style.display = 'block';
-                document.getElementById('senhaGroup').querySelector('label').textContent = 'NOVA SENHA (deixe vazio para manter)';
-                document.getElementById('statusGroup').style.display = 'block';
-                document.getElementById('modalAtivo').value = u.ativo !== false ? 'true' : 'false';
-                document.getElementById('modalUsuario').classList.add('active');
-            } catch (e) { toast('Erro ao carregar usuário', 'error'); }
-        }
+async function toggleUsuario(id,ativo){
+  try{const r=await fetch(API+'/api/usuarios/'+id,{method:'PUT',headers:H(),body:JSON.stringify({ativo})});const d=await r.json();if(d.success){toast(ativo?'Usuário ativado':'Usuário desativado');carregarUsuarios();}else toast(d.error||'Erro','err');}
+  catch(e){toast('Erro','err');}
+}
 
-        function fecharModalUsuario() { document.getElementById('modalUsuario').classList.remove('active'); }
+async function excluirUsuario(id,nome){
+  if(!confirm('Excluir o usuário "'+nome+'"? Esta ação não pode ser desfeita.'))return;
+  try{const r=await fetch(API+'/api/usuarios/'+id,{method:'DELETE',headers:H()});const d=await r.json();if(d.success){toast('Usuário excluído');carregarUsuarios();}else toast(d.error||'Erro','err');}
+  catch(e){toast('Erro','err');}
+}
 
-        async function excluirUsuario(id, nome) {
-            if (!confirm('Desativar o usuário "' + nome + '"?')) return;
-            try {
-                var r = await fetch(API + '/api/usuarios/' + id, { method: 'DELETE', headers: H() });
-                var d = await r.json();
-                if (d.success) { toast('Usuário desativado!'); carregarUsuarios(); }
-                else toast(d.error || 'Erro ao desativar', 'error');
-            } catch (e) { toast('Erro', 'error'); }
-        }
+function abrirModalUsuario(){
+  document.getElementById('mUsrTtl').textContent='Novo Usuário';
+  document.getElementById('usrId').value='';document.getElementById('usrNome').value='';document.getElementById('usrEmail').value='';document.getElementById('usrSenha').value='';
+  document.getElementById('usrSenha').required=true;document.getElementById('senhaLbl').textContent='Senha *';
+  document.getElementById('usrPerfil').value='operador';document.getElementById('statusGrp').style.display='none';
+  document.getElementById('ovUsuario').classList.add('on');setTimeout(()=>document.getElementById('usrNome').focus(),80);
+}
 
-        async function salvarUsuario(e) {
-            e.preventDefault();
-            var id = document.getElementById('modalUsuarioId').value;
-            var body = { nome: document.getElementById('modalNome').value, email: document.getElementById('modalEmail').value, perfil: document.getElementById('modalPerfil').value };
-            var senha = document.getElementById('modalSenha').value;
-            if (senha) body.senha = senha;
-            if (id) body.ativo = document.getElementById('modalAtivo').value === 'true';
-            if (!id && !senha) { toast('Senha obrigatória', 'error'); return; }
-            try {
-                var r = await fetch(id ? API + '/api/usuarios/' + id : API + '/api/usuarios', { method: id ? 'PUT' : 'POST', headers: H(), body: JSON.stringify(body) });
-                var d = await r.json();
-                if (d.success) { toast(id ? 'Usuário atualizado!' : 'Usuário criado!'); fecharModalUsuario(); carregarUsuarios(); }
-                else toast(d.error || 'Erro ao salvar', 'error');
-            } catch (e) { toast('Erro', 'error'); }
-        }
+async function editarUsuario(id){
+  try{const r=await fetch(API+'/api/usuarios/'+id,{headers:H()});const d=await r.json();const u=d.data||d;
+    document.getElementById('mUsrTtl').textContent='Editar Usuário';document.getElementById('usrId').value=u.id;document.getElementById('usrNome').value=u.nome||'';document.getElementById('usrEmail').value=u.email||'';document.getElementById('usrSenha').value='';
+    document.getElementById('usrSenha').required=false;document.getElementById('senhaLbl').textContent='Nova senha (deixe vazio para manter)';
+    document.getElementById('usrPerfil').value=u.perfil||'operador';document.getElementById('statusGrp').style.display='block';document.getElementById('usrAtivo').value=u.ativo!==false?'true':'false';
+    document.getElementById('ovUsuario').classList.add('on');
+  }catch(e){toast('Erro ao carregar usuário','err');}
+}
 
-        function abrirAlterarSenha() { document.getElementById('modalSenhaAtual').value = ''; document.getElementById('modalNovaSenha').value = ''; document.getElementById('modalConfirmarSenha').value = ''; document.getElementById('modalAlterarSenha').classList.add('active'); }
-        function fecharModalSenha() { document.getElementById('modalAlterarSenha').classList.remove('active'); }
+async function salvarUsuario(e){
+  e.preventDefault();const id=document.getElementById('usrId').value;const senha=document.getElementById('usrSenha').value;
+  if(!id&&!senha){toast('Senha obrigatória para novo usuário','err');return;}
+  const body={nome:document.getElementById('usrNome').value,email:document.getElementById('usrEmail').value,perfil:document.getElementById('usrPerfil').value};
+  if(senha)body.senha=senha;if(id)body.ativo=document.getElementById('usrAtivo').value==='true';
+  try{const r=await fetch(id?API+'/api/usuarios/'+id:API+'/api/usuarios',{method:id?'PUT':'POST',headers:H(),body:JSON.stringify(body)});const d=await r.json();
+    if(d.success){toast(id?'Usuário atualizado!':'Usuário criado!');fecharModal('ovUsuario');carregarUsuarios();}else toast(d.error||'Erro','err');
+  }catch(e){toast('Erro','err');}
+}
 
-        async function salvarNovaSenha(e) {
-            e.preventDefault();
-            var nova = document.getElementById('modalNovaSenha').value;
-            if (nova !== document.getElementById('modalConfirmarSenha').value) { toast('Senhas não coincidem', 'error'); return; }
-            try {
-                var r = await fetch(API + '/api/usuarios/me/senha', { method: 'PUT', headers: H(), body: JSON.stringify({ senha_atual: document.getElementById('modalSenhaAtual').value, nova_senha: nova }) });
-                var d = await r.json();
-                if (d.success) { toast('Senha alterada!'); fecharModalSenha(); }
-                else toast(d.error || 'Erro', 'error');
-            } catch (e) { toast('Erro', 'error'); }
-        }
+function abrirAlterarSenha(){document.getElementById('senhaAtual').value='';document.getElementById('novaSenha').value='';document.getElementById('confirmarSenha').value='';document.getElementById('ovSenha').classList.add('on');setTimeout(()=>document.getElementById('senhaAtual').focus(),80);}
 
-        function salvarEmpresa() { toast('Configurações da empresa salvas!'); }
+async function salvarSenha(e){
+  e.preventDefault();const nova=document.getElementById('novaSenha').value;
+  if(nova!==document.getElementById('confirmarSenha').value){toast('As senhas não coincidem','err');return;}
+  try{const r=await fetch(API+'/api/usuarios/me/senha',{method:'PUT',headers:H(),body:JSON.stringify({senha_atual:document.getElementById('senhaAtual').value,nova_senha:nova})});const d=await r.json();
+    if(d.success){toast('Senha alterada com sucesso!');fecharModal('ovSenha');}else toast(d.error||'Erro','err');
+  }catch(e){toast('Erro','err');}
+}
 
-        function checkUrlTab() { var tab = new URLSearchParams(window.location.search).get('tab'); if (tab) showTab(tab); }
+async function carregarEmpresa(){
+  try{const r=await fetch(API+'/api/configuracoes',{headers:H()});const d=await r.json();const c=d.data||{};
+    if(c.nome_empresa)document.getElementById('empNome').value=c.nome_empresa;if(c.cnpj)document.getElementById('empCnpj').value=c.cnpj;
+    if(c.telefone)document.getElementById('empTel').value=c.telefone;if(c.email)document.getElementById('empEmail').value=c.email;
+    if(c.endereco)document.getElementById('empEnd').value=c.endereco;if(c.site)document.getElementById('empSite').value=c.site;
+  }catch(e){}
+}
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            await checkAuth();
-            await carregarUsuarios();
-            await carregarCobranca();
-            checkUrlTab();
-            verificarStatusSuri();
-        });
+async function salvarEmpresa(){
+  const body={nome_empresa:document.getElementById('empNome').value,cnpj:document.getElementById('empCnpj').value,telefone:document.getElementById('empTel').value,email:document.getElementById('empEmail').value,endereco:document.getElementById('empEnd').value,site:document.getElementById('empSite').value};
+  try{const r=await fetch(API+'/api/configuracoes',{method:'PUT',headers:H(),body:JSON.stringify(body)});const d=await r.json();if(d.success)toast('Dados da empresa salvos!');else toast(d.error||'Erro','err');}catch(e){toast('Erro','err');}
+}
 
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('active');
-            document.querySelector('.mobile-toggle i').className = document.querySelector('.sidebar').classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
-        }
-    </script>
+function previewLogo(input){const f=input.files[0];if(!f)return;const p=document.getElementById('logoPrev');const reader=new FileReader();reader.onload=e=>{p.innerHTML='<img src="'+e.target.result+'" alt="logo">'};reader.readAsDataURL(f);}
+function mascaraCnpj(el){let v=el.value.replace(/\D/g,'').slice(0,14);if(v.length>12)v=v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5');else if(v.length>8)v=v.replace(/(\d{2})(\d{3})(\d{3})(\d+)/,'$1.$2.$3/$4');else if(v.length>5)v=v.replace(/(\d{2})(\d{3})(\d+)/,'$1.$2.$3');else if(v.length>2)v=v.replace(/(\d{2})(\d+)/,'$1.$2');el.value=v;}
+
+async function carregarCobranca(){
+  try{const r=await fetch(API+'/api/configuracoes',{headers:H()});const d=await r.json();const c=d.data||{};
+    if(c.multa_atraso!=null)document.getElementById('cfgMulta').value=parseFloat(c.multa_atraso);
+    if(c.juros_atraso!=null)document.getElementById('cfgJuros').value=parseFloat(c.juros_atraso);
+    if(c.percentual_comissao_padrao!=null)document.getElementById('cfgHonorarios').value=parseFloat(c.percentual_comissao_padrao);
+    if(c.desconto_max!=null)document.getElementById('cfgDescontoMax').value=parseFloat(c.desconto_max);
+    if(c.parcelas_max!=null)document.getElementById('cfgParcelasMax').value=parseInt(c.parcelas_max);
+    if(c.min_atraso_fila!=null)document.getElementById('cfgMinAtraso').value=parseInt(c.min_atraso_fila);
+    if(c.score_minimo!=null)document.getElementById('cfgMinScore').value=parseInt(c.score_minimo);
+    if(c.dias_sem_contato!=null)document.getElementById('cfgSemContato').value=parseInt(c.dias_sem_contato);
+    if(c.valor_prioritario!=null)document.getElementById('cfgValorPrior').value=parseFloat(c.valor_prioritario);
+  }catch(e){}
+}
+
+async function salvarCobranca(){
+  const body={multa_atraso:parseFloat(document.getElementById('cfgMulta').value)||2,juros_atraso:parseFloat(document.getElementById('cfgJuros').value)||1,percentual_comissao_padrao:parseFloat(document.getElementById('cfgHonorarios').value)||10,desconto_max:parseFloat(document.getElementById('cfgDescontoMax').value)||50,parcelas_max:parseInt(document.getElementById('cfgParcelasMax').value)||12,min_atraso_fila:parseInt(document.getElementById('cfgMinAtraso').value)||1,score_minimo:parseInt(document.getElementById('cfgMinScore').value)||10,dias_sem_contato:parseInt(document.getElementById('cfgSemContato').value)||30,valor_prioritario:parseFloat(document.getElementById('cfgValorPrior').value)||1000,prio_auto:document.getElementById('cfgPrioAuto').checked,incluir_sem_tel:document.getElementById('cfgSemTel').checked};
+  try{const r=await fetch(API+'/api/configuracoes',{method:'PUT',headers:H(),body:JSON.stringify(body)});const d=await r.json();if(d.success)toast('Configurações salvas!');else toast(d.error||'Erro','err');}catch(e){toast('Erro','err');}
+}
+
+async function carregarSuri(){
+  try{const r=await fetch(API+'/api/configuracoes',{headers:H()});const d=await r.json();const c=d.data||{};
+    if(c.suri_identificador)document.getElementById('suriId').value=c.suri_identificador;
+    if(c.suri_endpoint)document.getElementById('suriEndpoint').value=c.suri_endpoint;
+    const stEl=document.getElementById('tokenSt');stEl.style.display='block';
+    if(c.suri_token_configurado){stEl.className='token-st ok';stEl.innerHTML='<i class="fas fa-lock"></i> Token configurado — deixe vazio para manter';document.getElementById('suriToken').placeholder='••••••••••••••••••';document.getElementById('tokenHelp').textContent='Preencha apenas para trocar o token atual';}
+    else{stEl.className='token-st no';stEl.innerHTML='<i class="fas fa-triangle-exclamation"></i> Token não configurado';}
+  }catch(e){}
+}
+
+async function verificarStatus(){
+  try{const r=await fetch(API+'/api/suri/status',{headers:H()});const d=await r.json();const on=d.success&&d.data?.conectado;
+    const ico=document.getElementById('suriIco');const desc=document.getElementById('suriDesc');const badge=document.getElementById('suriBadge');
+    ico.className='suri-ico '+(on?'on':'off');desc.textContent=on?'Conexão estabelecida com sucesso':'Não foi possível conectar à API';badge.textContent=on?'Conectado':'Desconectado';badge.className='suri-badge '+(on?'on':'off');
+    if(d.data?.stats){document.getElementById('ssHoje').textContent=d.data.stats.msg_hoje||0;document.getElementById('ssSemana').textContent=d.data.stats.msg_semana||'—';document.getElementById('ssTotal').textContent=d.data.stats.msg_total||'—';}
+  }catch(e){document.getElementById('suriBadge').textContent='Erro';document.getElementById('suriBadge').className='suri-badge off';}
+}
+
+async function salvarSuri(btn){
+  btn.disabled=true;btn.innerHTML='<div style="width:12px;height:12px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:sp .65s linear infinite;display:inline-block"></div>';
+  const body={suri_identificador:document.getElementById('suriId').value.trim(),suri_endpoint:document.getElementById('suriEndpoint').value.trim()};
+  const token=document.getElementById('suriToken').value.trim();if(token)body.suri_token=token;
+  try{const r=await fetch(API+'/api/configuracoes',{method:'PUT',headers:H(),body:JSON.stringify(body)});const d=await r.json();
+    if(d.success){toast('Credenciais salvas com segurança!');document.getElementById('suriToken').value='';await carregarSuri();verificarStatus();}else toast(d.error||'Erro','err');
+  }catch(e){toast('Erro','err');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-check"></i> Salvar credenciais';}
+}
+
+async function testarConexao(){
+  toast('Testando conexão...');await verificarStatus();
+  const b=document.getElementById('suriBadge');if(b.textContent==='Conectado')toast('Conexão estabelecida com sucesso!');else toast('Falha. Verifique as credenciais.','err');
+}
+
+function copiarWebhook(){const el=document.getElementById('webhookUrl');el.select();document.execCommand('copy');toast('URL copiada!');}
+
+function checkUrlTab(){const tab=new URLSearchParams(window.location.search).get('tab');if(tab)showTab(tab);}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  await checkAuth();await carregarUsuarios();await carregarCobranca();checkUrlTab();verificarStatus();
+});
+</script>
 </body>
 </html>
