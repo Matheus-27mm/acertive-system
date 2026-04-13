@@ -488,7 +488,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
         <div style="padding:12px 20px 8px;border-top:1px solid var(--br)">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t2)">Retornos pendentes hoje</span>
-            <a href="#" onclick="carregarRetornos()" class="card-lnk"><i class="fas fa-sync" style="font-size:9px"></i></a>
+            
           </div>
           <div id="retornosList">
             <div class="loading-row"><div class="spin"></div></div>
@@ -551,7 +551,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
       <div class="card">
         <div class="card-hd">
           <div class="card-ttl"><i class="fas fa-clock-rotate-left"></i> Recentes</div>
-          <a href="#" onclick="carregarHistorico()" class="card-lnk">Atualizar</a>
+          
         </div>
         <div class="card-body" id="historicoBody">
           <div class="loading-row"><div class="spin"></div></div>
@@ -707,10 +707,7 @@ async function carregarTudo() {
     carregarKPIs(),
     carregarAlertas(),
     carregarRanking(),
-    carregarGrafico(),
     carregarFunil(),
-    carregarHistorico(),
-    carregarRetornos(),
   ]);
 }
 
@@ -793,6 +790,16 @@ async function carregarAlertas() {
     document.getElementById('aSemContato').textContent=a.sem_contato_30d??'—';
     document.getElementById('aAltoValor').textContent=a.alto_valor_sem_acao??'—';
     document.getElementById('aAcordosRisco').textContent=a.acordos_parcelas_vencidas??'—';
+    const elTotal=document.getElementById('aAltoValorTotal');
+    if(elTotal&&a.valor_alto_valor_sem_acao) elTotal.textContent=fmtM(a.valor_alto_valor_sem_acao)+' parados';
+    const nRet=(a.retornos_hoje||0)+(a.retornos_atrasados||0);
+    if (nRet>0) {
+      document.getElementById('aRetornos').textContent=nRet;
+      const sub=document.getElementById('retornosSub');
+      if(sub) sub.textContent=`${a.retornos_atrasados||0} atrasado${(a.retornos_atrasados||0)!==1?'s':''} · ${a.retornos_hoje||0} para hoje`;
+      const elA=document.getElementById('alertaRetornos');
+      if(elA) elA.style.display='flex';
+    }
   } catch(e){ console.error('[ALERTAS]',e); }
 }
 
@@ -818,35 +825,6 @@ async function carregarRanking() {
   } catch(e){ el.innerHTML='<div class="empty-card"><i class="fas fa-trophy"></i>Sem dados</div>'; }
 }
 
-// ── GRÁFICO ────────────────────────────────────────────────────
-async function carregarGrafico() {
-  const el=document.getElementById('chartBars');
-  try {
-    const r=await fetch(API+`/api/operacao/evolucao?periodo=${periodo}`,{headers:H()});
-    const d=await r.json();
-    const dados=d.data||[];
-    document.getElementById('grafPer').textContent=`Últimos ${periodo}d`;
-    if (!dados.length) { el.innerHTML='<div class="empty-card">Sem dados</div>'; return; }
-    const maxV=Math.max(...dados.map(x=>x.total||0),1);
-    const H_MAX=90;
-    el.innerHTML=dados.map(x=>{
-      const tot=x.total||0, ac=x.acordos||0, at=Math.max(0,(x.atenderam||0)-ac), na=x.nao_atenderam||0;
-      const hTot=Math.round((tot/maxV)*H_MAX);
-      const hAc=tot>0?Math.round((ac/tot)*hTot):0;
-      const hAt=tot>0?Math.round((at/tot)*hTot):0;
-      const hNa=Math.max(0,hTot-hAc-hAt);
-      const lbl=new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-      return `<div class="bar-col">
-        <div class="bar-stack" style="height:${hTot||2}px" title="${lbl}: ${tot} contatos, ${ac} acordos">
-          <div class="bs-nao" style="height:${hNa}px"></div>
-          <div class="bs-atend" style="height:${hAt}px"></div>
-          <div class="bs-acordo" style="height:${hAc}px"></div>
-        </div>
-        <div class="bar-lbl">${lbl}</div>
-      </div>`;
-    }).join('');
-  } catch(e){ el.innerHTML='<div class="empty-card">Sem dados</div>'; }
-}
 
 // ── FUNIL ──────────────────────────────────────────────────────
 async function carregarFunil() {
@@ -877,52 +855,6 @@ async function carregarFunil() {
   } catch(e){ el.innerHTML='<div class="empty-card">Sem dados</div>'; }
 }
 
-// ── HISTÓRICO RECENTE ──────────────────────────────────────────
-async function carregarHistorico() {
-  const el=document.getElementById('historicoBody');
-  try {
-    const r=await fetch(API+'/api/operacao/historico?limit=8',{headers:H()});
-    const d=await r.json();
-    const hist=d.data||[];
-    if (!hist.length) { el.innerHTML='<div class="empty-card"><i class="fas fa-clock-rotate-left"></i>Sem registros</div>'; return; }
-    const icoMap={atendeu:{c:'suc',i:'fa-check'},nao_atendeu:{c:'dan',i:'fa-times'},gerou_acordo:{c:'suc',i:'fa-handshake'},retorno_agendado:{c:'wrn',i:'fa-calendar'},recusou:{c:'neu',i:'fa-ban'},numero_errado:{c:'wrn',i:'fa-phone-slash'}};
-    const lbls={atendeu:'Atendeu',nao_atendeu:'Não atendeu',gerou_acordo:'Gerou acordo',retorno_agendado:'Retorno',recusou:'Recusou',numero_errado:'Nº errado'};
-    el.innerHTML=hist.map(h=>{
-      const m=icoMap[h.resultado]||{c:'neu',i:'fa-minus'};
-      return `<div class="hist-item">
-        <div class="hist-ico ${m.c}"><i class="fas ${m.i}"></i></div>
-        <div class="hist-info">
-          <div class="hist-res"><span class="rb ${h.resultado}">${lbls[h.resultado]||h.resultado}</span></div>
-          <div class="hist-sub">${h.cliente_nome||'—'}</div>
-        </div>
-        <div class="hist-dt">${fmtDH(h.created_at)}</div>
-      </div>`;
-    }).join('');
-  } catch(e){ el.innerHTML='<div class="empty-card">Sem dados</div>'; }
-}
-
-// ── RETORNOS PENDENTES ─────────────────────────────────────────
-async function carregarRetornos() {
-  const el=document.getElementById('retornosList');
-  try {
-    const r=await fetch(API+'/api/operacao/fila-retorno',{headers:H()});
-    const d=await r.json();
-    const lista=(d.data||[]).filter(x=>x.situacao==='atrasado'||x.situacao==='hoje').slice(0,4);
-    if (!lista.length) {
-      el.innerHTML='<div class="empty-card" style="padding:12px">Nenhum retorno pendente hoje</div>';
-      return;
-    }
-    el.innerHTML=lista.map(x=>`
-      <div class="ret-item" onclick="abrirModalComCliente('${x.cliente_id}','${(x.cliente_nome||'').replace(/'/g,"\\'")}','${x.cliente_cpf||''}')">
-        <div class="ret-dot ${x.situacao}"></div>
-        <div class="ret-info">
-          <div class="ret-nome">${x.cliente_nome||'—'}</div>
-          <div class="ret-sub">${fmtD(x.data_retorno)} · ${x.canal||'—'}</div>
-        </div>
-        <span class="ret-tag ${x.situacao}">${x.situacao==='atrasado'?'Atrasado':'Hoje'}</span>
-      </div>`).join('');
-  } catch(e){ el.innerHTML='<div class="empty-card" style="padding:12px">Sem dados</div>'; }
-}
 
 // ── MODAL ──────────────────────────────────────────────────────
 function abrirModal() {
