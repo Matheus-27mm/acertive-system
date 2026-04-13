@@ -3,7 +3,7 @@
  * ACERTIVE - Sistema de Cobrança
  * server.js - Servidor Principal
  * ========================================
- * v2.5.0 - Cron Jobs + Relatórios + Templates
+ * v2.5.1 - Portal do Credor registrado
  */
 
 require('dotenv').config();
@@ -43,9 +43,9 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
-const limiterGeral = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false, message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' } });
-const limiterLogin = rateLimit({ windowMs: 15*60*1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' } });
-const limiterImport = rateLimit({ windowMs: 60*60*1000, max: 5, message: { error: 'Limite de importações atingido.' } });
+const limiterGeral  = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false, message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' } });
+const limiterLogin  = rateLimit({ windowMs: 15*60*1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' } });
+const limiterImport = rateLimit({ windowMs: 60*60*1000, max: 5,   message: { error: 'Limite de importações atingido.' } });
 
 app.use('/api/', limiterGeral);
 app.use('/api/auth/login', limiterLogin);
@@ -175,8 +175,6 @@ const operacaoRoutes = require('./routes/operacao')(pool, auth, registrarLog);
 app.use('/api/operacao', operacaoRoutes);
 console.log('[OPERACAO] Painel Operacional ✓');
 
-// ── NOVOS MÓDULOS ──────────────────────────────────────────────
-
 const relatoriosRoutes = require('./routes/relatorios')(pool, auth);
 app.use('/api/relatorios', relatoriosRoutes);
 console.log('[RELATORIOS] PDF + Excel ✓');
@@ -185,18 +183,24 @@ const templatesRoutes = require('./routes/templates-disparo')(pool, auth);
 app.use('/api/templates', templatesRoutes);
 console.log('[TEMPLATES] Disparo variável ✓');
 
-// Cron Jobs — inicia após DB conectar
+// ── PORTAL DO CREDOR ───────────────────────────────────────────
+// Registra todas as rotas /api/portal/* definidas em routes/portal.js
+// Inclui: login, me, dashboard, carteira, acordos, export, admin/*
+const portalRoutes = require('./routes/portal')(pool, registrarLog);
+app.use('/api/portal', portalRoutes);
+console.log('[PORTAL] Portal do Credor ✓');
+
+// ── CRON JOBS ──────────────────────────────────────────────────
 pool.query('SELECT 1').then(() => {
     const cronJobs = require('./cron-jobs')(pool);
     console.log('[CRON] Jobs agendados ✓');
 
-    // Rota admin para disparar manualmente
     app.post('/api/admin/cron/:job', authAdmin, async (req, res) => {
         try {
             const jobs = {
                 'parcelas-vencendo': cronJobs.notificarParcelasVencendo,
                 'parcelas-vencidas': cronJobs.notificarParcelasVencidas,
-                'cobrancas-amanha': cronJobs.notificarCobrancasAmanha
+                'cobrancas-amanha':  cronJobs.notificarCobrancasAmanha
             };
             const fn = jobs[req.params.job];
             if (!fn) return res.status(404).json({ error: 'Job não encontrado' });
@@ -211,26 +215,26 @@ pool.query('SELECT 1').then(() => {
 // ═══════════════════════════════════════════════════════════════
 // ROTAS LEGADO
 // ═══════════════════════════════════════════════════════════════
-app.use('/api/credores', (req, res, next) => { req.url = '/credores' + req.url; cadastrosRoutes(req, res, next); });
-app.use('/api/clientes', (req, res, next) => { req.url = '/clientes' + req.url; cadastrosRoutes(req, res, next); });
-app.use('/api/empresas', (req, res, next) => { req.url = '/empresas' + req.url; cadastrosRoutes(req, res, next); });
-app.use('/api/parcelas', (req, res, next) => { req.url = '/parcelas' + req.url; acordosRoutes(req, res, next); });
+app.use('/api/credores',    (req, res, next) => { req.url = '/credores'    + req.url; cadastrosRoutes(req, res, next); });
+app.use('/api/clientes',    (req, res, next) => { req.url = '/clientes'    + req.url; cadastrosRoutes(req, res, next); });
+app.use('/api/empresas',    (req, res, next) => { req.url = '/empresas'    + req.url; cadastrosRoutes(req, res, next); });
+app.use('/api/parcelas',    (req, res, next) => { req.url = '/parcelas'    + req.url; acordosRoutes(req, res, next); });
 app.post('/api/importacao/clientes', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/clientes'; cobrancasRoutes(req, res, next); });
 app.post('/api/importacao/cobrancas', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/cobrancas'; cobrancasRoutes(req, res, next); });
-app.post('/api/importacao/massa', auth, upload.single('file'), (req, res, next) => { req.url = '/importar/massa'; cobrancasRoutes(req, res, next); });
-app.use('/api/dashboard', (req, res, next) => { req.url = '/dashboard' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/configuracoes', (req, res, next) => { req.url = '/configuracoes' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/asaas', (req, res, next) => { req.url = '/asaas' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/sync', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/sync-asaas', (req, res, next) => { req.url = '/sync' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/whatsapp', (req, res, next) => { req.url = '/whatsapp' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/email', (req, res, next) => { req.url = '/email' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/pdf', (req, res, next) => { req.url = '/pdf' + req.url; integracoesRoutes(req, res, next); });
-app.use('/api/regua', (req, res, next) => { req.url = '/regua' + req.url; acionamentosRoutes(req, res, next); });
-app.use('/api/agendamentos', (req, res, next) => { req.url = '/agendamentos' + req.url; acionamentosRoutes(req, res, next); });
-app.use('/api/historico', (req, res, next) => { req.url = '/historico' + req.url; acionamentosRoutes(req, res, next); });
-app.use('/api/comissoes', (req, res, next) => { req.url = '/comissoes' + req.url; financeiroRoutes(req, res, next); });
-app.use('/api/repasses', (req, res, next) => { req.url = '/repasses' + req.url; financeiroRoutes(req, res, next); });
+app.post('/api/importacao/massa',    auth, upload.single('file'), (req, res, next) => { req.url = '/importar/massa';     cobrancasRoutes(req, res, next); });
+app.use('/api/dashboard',      (req, res, next) => { req.url = '/dashboard'      + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/configuracoes',  (req, res, next) => { req.url = '/configuracoes'  + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/asaas',          (req, res, next) => { req.url = '/asaas'          + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/sync',           (req, res, next) => { req.url = '/sync'           + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/sync-asaas',     (req, res, next) => { req.url = '/sync'           + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/whatsapp',       (req, res, next) => { req.url = '/whatsapp'       + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/email',          (req, res, next) => { req.url = '/email'          + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/pdf',            (req, res, next) => { req.url = '/pdf'            + req.url; integracoesRoutes(req, res, next); });
+app.use('/api/regua',          (req, res, next) => { req.url = '/regua'          + req.url; acionamentosRoutes(req, res, next); });
+app.use('/api/agendamentos',   (req, res, next) => { req.url = '/agendamentos'   + req.url; acionamentosRoutes(req, res, next); });
+app.use('/api/historico',      (req, res, next) => { req.url = '/historico'      + req.url; acionamentosRoutes(req, res, next); });
+app.use('/api/comissoes',      (req, res, next) => { req.url = '/comissoes'      + req.url; financeiroRoutes(req, res, next); });
+app.use('/api/repasses',       (req, res, next) => { req.url = '/repasses'       + req.url; financeiroRoutes(req, res, next); });
 
 // ═══════════════════════════════════════════════════════════════
 // ROTA /api/auth/me
@@ -246,7 +250,7 @@ app.get('/api/health', async (req, res) => {
     try {
         await pool.query('SELECT 1');
         const isProd = process.env.NODE_ENV === 'production';
-        res.json({ status: 'ok', timestamp: new Date().toISOString(), database: 'connected', version: '2.5.0', ...(isProd ? {} : { asaas: asaasService ? 'configured' : 'not_configured' }) });
+        res.json({ status: 'ok', timestamp: new Date().toISOString(), database: 'connected', version: '2.5.1', ...(isProd ? {} : { asaas: asaasService ? 'configured' : 'not_configured' }) });
     } catch (e) {
         res.status(500).json({ status: 'error', database: 'disconnected' });
     }
@@ -269,7 +273,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log('');
     console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║            ACERTIVE - Sistema de Cobrança v2.5                ║');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.5.1              ║');
     console.log('╠═══════════════════════════════════════════════════════════════╣');
     console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
     console.log('║                                                               ║');
@@ -279,11 +283,13 @@ app.listen(PORT, () => {
     console.log('║     auth, usuarios, cadastros, cobrancas, acordos             ║');
     console.log('║     acionamentos, financeiro, integracoes, suri               ║');
     console.log('║     operacao, relatorios, templates, cron-jobs                ║');
+    console.log('║     portal ← NOVO                                             ║');
     console.log('║                                                               ║');
-    console.log('║  🆕 Novos:                                                    ║');
-    console.log('║     📊 Relatórios PDF + Excel exportáveis                     ║');
-    console.log('║     📝 Templates com variáveis {{nome}} {{valor}}             ║');
-    console.log('║     ⏰ Cron: notificações automáticas 8h/8h30/9h              ║');
+    console.log('║  🆕 Portal do Credor:                                         ║');
+    console.log('║     🔐 Login próprio com JWT tipo=credor                      ║');
+    console.log('║     📊 Dashboard, Carteira, Acordos                           ║');
+    console.log('║     📁 Export Excel + PDF                                     ║');
+    console.log('║     👥 Admin: criar/listar/toggle/resetar usuários            ║');
     console.log('╚═══════════════════════════════════════════════════════════════╝');
     console.log('');
 });
