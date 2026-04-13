@@ -22,14 +22,14 @@
   --sw:244px;--r:10px;--rs:7px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
 
-/* ── SIDEBAR ── */
+/* SIDEBAR */
 .sidebar{position:fixed;left:0;top:0;width:var(--sw);height:100vh;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;z-index:200;transition:transform .3s ease}
 .sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:10px}
 .sb-logo{height:28px;max-width:120px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.25));mix-blend-mode:screen}
@@ -53,180 +53,192 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
 .sb-out{margin-left:auto;color:var(--t3);font-size:12px;padding:5px;border-radius:5px;transition:all .18s}
 .sb-out:hover{background:rgba(229,85,85,.08);color:var(--red)}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 .layout{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
-
-/* ── HEADER ── */
-.header{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(0,0,0,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.header{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(0,0,0,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:12px}
 .hdr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white)}
 .hdr-sub{font-size:11px;color:var(--t2)}
+.hdr-div{width:1px;height:18px;background:var(--br)}
+.hdr-steps{display:flex;gap:0}
+.hstep{display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;font-weight:500;color:var(--t3);border-right:1px solid var(--br);transition:all .2s}
+.hstep:first-child{border-left:1px solid var(--br)}
+.hstep-n{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:var(--s3);color:var(--t3);flex-shrink:0}
+.hstep.active{color:var(--white);background:rgba(255,255,255,.02)}
+.hstep.active .hstep-n{background:var(--gold);color:#000}
+.hstep.done{color:var(--green)}
+.hstep.done .hstep-n{background:rgba(52,201,138,.14);color:var(--green)}
 
-/* ── MAIN ── */
-.main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:16px;max-width:900px}
+/* SPLIT */
+.split{flex:1;display:grid;grid-template-columns:420px 1fr;min-height:0}
 
-/* ── STEPS ── */
-.steps{display:flex;gap:0;border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
-.step{flex:1;display:flex;align-items:center;gap:8px;padding:11px 16px;font-size:12px;font-weight:500;color:var(--t2);background:var(--s1);border-right:1px solid var(--br);transition:all .2s;position:relative}
-.step:last-child{border-right:none}
-.step-n{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--s3);color:var(--t2);flex-shrink:0;border:1px solid var(--br)}
-.step.active{color:var(--white);background:var(--s2)}
-.step.active .step-n{background:var(--gold);color:#000;border-color:var(--gold)}
-.step.done{color:var(--green)}
-.step.done .step-n{background:rgba(52,201,138,.12);color:var(--green);border-color:rgba(52,201,138,.3)}
-
-/* ── PANELS ── */
-.panel{display:none;flex-direction:column;gap:14px;animation:fi .2s ease}
-.panel.active{display:flex}
-@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── CARD ── */
-.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
-.card-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--br)}
-.card-ttl{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px}
-.card-ttl i{font-size:10px;color:var(--t2)}
-.card-ttl i.wpp{color:var(--wpp)}
-.card-body{padding:18px}
-
-/* ── CAMPOS ── */
+/* ESQUERDA */
+.left-panel{border-right:1px solid var(--br);overflow-y:auto;display:flex;flex-direction:column}
+.step-pane{display:none;flex-direction:column;flex:1;animation:fi .2s ease}
+.step-pane.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.pane-hd{padding:16px 20px 12px;border-bottom:1px solid var(--br);flex-shrink:0}
+.pane-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px}
+.pane-ttl i{font-size:11px;color:var(--t2)}
+.pane-sub{font-size:11px;color:var(--t2);margin-top:3px}
+.pane-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto}
+.pane-foot{padding:12px 20px;border-top:1px solid var(--br);flex-shrink:0;display:flex;gap:8px;justify-content:space-between;align-items:center}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
-.fg select,.fg input{padding:9px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
-.fg select:focus,.fg input:focus{border-color:var(--brh)}
+.fg select,.fg input,.fg textarea{padding:9px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
+.fg select:focus,.fg input:focus,.fg textarea:focus{border-color:var(--brh)}
 .fg select option{background:var(--s3)}
-.fgrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
-
-/* ── RESUMO DE IMPACTO ── */
-.impacto{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.imp-item{padding:12px 14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs)}
-.imp-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:var(--white);display:block;margin-bottom:2px;line-height:1}
-.imp-val.green{color:var(--green)}
-.imp-val.red{color:var(--red)}
-.imp-lbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
-.imp-pct{font-size:10px;color:var(--t2);margin-top:2px}
-.imp-pct strong{color:var(--green)}
-
-/* ── LISTA DE DESTINATÁRIOS ── */
-.dest-list{display:flex;flex-direction:column;gap:0;max-height:360px;overflow-y:auto}
-.dest-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--br);transition:background .12s;cursor:pointer}
-.dest-item:last-child{border-bottom:none}
-.dest-item:hover{background:rgba(255,255,255,.015)}
-.dest-item.off{opacity:.4}
-.dest-chk{width:14px;height:14px;accent-color:var(--gold);flex-shrink:0;cursor:pointer}
-.dest-av{width:28px;height:28px;border-radius:6px;background:var(--g05);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0}
-.dest-info{flex:1;min-width:0}
-.dest-nome{font-size:12.5px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dest-meta{font-size:10px;color:var(--t2);display:flex;gap:8px;margin-top:1px}
-.dest-tel{font-family:'DM Mono',monospace;font-size:11px;color:var(--t2);flex-shrink:0}
-.dest-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);flex-shrink:0}
-
-.sel-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--br);background:var(--s2)}
-.sel-bar label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);cursor:pointer}
-.sel-count{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--gold)}
-
-/* ── TEMPLATES ── */
-.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.tpl{padding:12px 14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);cursor:pointer;transition:all .15s}
+.fg textarea{resize:none;height:100px;line-height:1.6}
+.fg textarea:focus{border-color:rgba(37,211,102,.3)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.msg-vars{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.mvar{padding:3px 9px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.18);border-radius:20px;font-size:10px;font-weight:600;color:var(--wpp);cursor:pointer;transition:all .13s}
+.mvar:hover{background:rgba(37,211,102,.14)}
+.tpl-list{display:flex;flex-direction:column;gap:5px}
+.tpl{padding:9px 12px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);cursor:pointer;transition:all .15s}
 .tpl:hover{border-color:var(--brh)}
 .tpl.on{border-color:rgba(37,211,102,.35);background:rgba(37,211,102,.04)}
-.tpl-head{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--white);margin-bottom:5px}
-.tpl-head i{color:var(--wpp);font-size:11px}
-.tpl-prev{font-size:11px;color:var(--t2);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tpl-name{font-size:12px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.tpl-name i{font-size:10px;color:var(--wpp)}
+.tpl-prev{font-size:10px;color:var(--t2);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.dest-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--br);flex-shrink:0}
+.dest-head label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2);cursor:pointer}
+.dest-head-r{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold)}
+.dest-list{overflow-y:auto;display:flex;flex-direction:column;max-height:calc(100vh - 280px)}
+.dest-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br);transition:background .1s;cursor:pointer}
+.dest-item:hover{background:rgba(255,255,255,.015)}
+.dest-item:last-child{border-bottom:none}
+.dest-av{width:26px;height:26px;border-radius:5px;background:var(--g05);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0}
+.dest-info{flex:1;min-width:0}
+.dest-nome{font-size:12px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dest-sub{font-size:10px;color:var(--t2);display:flex;gap:6px;margin-top:1px}
+.dest-tel{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2);flex-shrink:0}
+.dchk{width:13px;height:13px;accent-color:var(--gold);flex-shrink:0;cursor:pointer}
+.test-row{display:flex;gap:6px}
+.test-row input{flex:1;padding:8px 10px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+.test-row input:focus{border-color:rgba(37,211,102,.3)}
 
-/* Editor mensagem */
-.msg-editor{width:100%;min-height:110px;padding:11px 13px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;font-family:'DM Sans',sans-serif;resize:vertical;line-height:1.6;outline:none;transition:border-color .15s}
-.msg-editor:focus{border-color:rgba(37,211,102,.3)}
-.msg-vars{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.msg-var{padding:4px 10px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:20px;font-size:10px;font-weight:600;color:var(--wpp);cursor:pointer;transition:all .15s}
-.msg-var:hover{background:rgba(37,211,102,.14)}
-
-/* Preview WhatsApp */
-.wpp-preview{background:#0b141a;border-radius:var(--r);padding:16px;margin-top:14px}
-.wpp-bubble{background:#005c4b;border-radius:10px 10px 0 10px;padding:10px 14px;font-size:12.5px;line-height:1.6;color:#e9edef;word-break:break-word;display:inline-block;max-width:100%}
-.wpp-time{text-align:right;font-size:10px;color:rgba(233,237,239,.4);margin-top:4px}
-.wpp-lbl{font-size:9px;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-
-/* Testar mensagem */
-.test-row{display:flex;gap:8px;margin-top:10px;align-items:flex-end}
-.test-input{flex:1;padding:9px 11px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
-.test-input:focus{border-color:rgba(37,211,102,.3)}
-
-/* ── AVISO ── */
-.aviso{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--rs);border:1px solid rgba(217,124,46,.2);background:rgba(217,124,46,.05);font-size:12px;color:var(--orange)}
+/* DIREITA */
+.right-panel{display:flex;flex-direction:column;overflow-y:auto;background:var(--s2);position:sticky;top:56px;height:calc(100vh - 56px)}
+.right-inner{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
+.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.res-item{padding:12px 14px;background:var(--s1);border:1px solid var(--br);border-radius:var(--rs);transition:border-color .2s}
+.res-item.hl{border-color:var(--br-gold)}
+.res-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--white);display:block;margin-bottom:2px;line-height:1;transition:all .3s}
+.res-val.green{color:var(--green)}.res-val.red{color:var(--red)}.res-val.gold{color:var(--gold)}
+.res-lbl{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.res-pct{font-size:10px;margin-top:3px}
+.res-pct strong{color:var(--green)}
+.alcance-wrap{display:flex;flex-direction:column;gap:5px;padding:12px 14px;background:var(--s1);border:1px solid var(--br);border-radius:var(--rs)}
+.alcance-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.alcance-lbl{font-size:10px;color:var(--t2)}
+.alcance-pct{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--green)}
+.alcance-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.alcance-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--wpp-d),var(--wpp));transition:width .5s cubic-bezier(.16,1,.3,1)}
+.wpp-phone{background:#1a1a1a;border-radius:14px;border:1px solid rgba(255,255,255,.06);overflow:hidden}
+.wpp-bar{background:#1f2c34;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.wpp-av{width:28px;height:28px;border-radius:50%;background:var(--g08);border:1px solid var(--br-gold);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold)}
+.wpp-contact{flex:1}
+.wpp-cname{font-size:12px;font-weight:600;color:#e9edef}
+.wpp-status{font-size:10px;color:#8696a0}
+.wpp-body{background:#0b141a;padding:14px 12px;min-height:90px}
+.wpp-bubble{background:#005c4b;border-radius:8px 8px 0 8px;padding:9px 12px;font-size:12px;line-height:1.6;color:#e9edef;word-break:break-word;display:inline-block;max-width:100%;transition:all .3s}
+.wpp-time{text-align:right;font-size:10px;color:rgba(233,237,239,.35);margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.wpp-time i{font-size:10px;color:var(--blue)}
+.wpp-placeholder{color:rgba(233,237,239,.25);font-size:12px;font-style:italic}
+.impacto-bloco{display:flex;flex-direction:column;gap:8px}
+.imp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s1);border:1px solid var(--br);border-radius:var(--rs)}
+.imp-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.imp-ico.green{background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.2)}
+.imp-ico.red{background:rgba(229,85,85,.08);color:var(--red);border:1px solid rgba(229,85,85,.2)}
+.imp-ico.warn{background:rgba(217,124,46,.08);color:var(--orange);border:1px solid rgba(217,124,46,.2)}
+.imp-txt{flex:1;font-size:12px;color:var(--text)}
+.imp-txt strong{color:var(--white)}
+.imp-n{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;flex-shrink:0}
+.imp-n.green{color:var(--green)}.imp-n.red{color:var(--red)}.imp-n.warn{color:var(--orange)}
+.aviso{display:flex;gap:8px;padding:11px 13px;border-radius:var(--rs);border:1px solid rgba(217,124,46,.2);background:rgba(217,124,46,.05);font-size:12px;color:var(--orange);line-height:1.5}
 .aviso i{flex-shrink:0;margin-top:1px}
 .aviso strong{color:var(--white)}
+.right-foot{padding:14px 20px;border-top:1px solid var(--br);flex-shrink:0;background:var(--s2)}
+.btn-enviar{width:100%;padding:13px;background:var(--wpp);color:#000;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.btn-enviar:hover{background:var(--wpp-d);transform:translateY(-1px)}
+.btn-enviar:disabled{opacity:.35;cursor:not-allowed;transform:none}
 
-/* ── CONFIRMAÇÃO ── */
-.confirm-resumo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
-.conf-item{padding:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);text-align:center}
-.conf-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--white);display:block;margin-bottom:3px}
-.conf-val.green{color:var(--green)}.conf-val.red{color:var(--red)}.conf-val.gold{color:var(--gold)}
-.conf-lbl{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
-
-/* ── PROGRESSO ── */
-.prog-track{height:6px;background:rgba(37,211,102,.1);border-radius:3px;overflow:hidden;margin:12px 0}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--wpp),var(--wpp-d));border-radius:3px;transition:width .3s;width:0}
-.prog-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
-.prog-stat{text-align:center;padding:10px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs)}
-.prog-n{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;display:block}
-.prog-n.env{color:var(--green)}.prog-n.err{color:var(--red)}.prog-n.rest{color:var(--orange)}
-.prog-l{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
-
-/* Log */
-.log-box{background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);padding:12px;max-height:200px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:11px;margin-top:10px}
-.log-line{padding:3px 0;border-bottom:1px solid var(--br);display:flex;gap:8px}
-.log-line:last-child{border-bottom:none}
-.log-time{color:var(--t3);flex-shrink:0}
-.log-line.ok .log-msg{color:var(--green)}
-.log-line.err .log-msg{color:var(--red)}
-
-/* Resultado final */
-.result-box{text-align:center;padding:40px 20px}
-.result-icon{font-size:48px;margin-bottom:14px;display:block}
-
-/* ── BOTÕES ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .2s;white-space:nowrap}
+/* BOTOES */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .18s;white-space:nowrap}
 .btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000}
-.btn-g:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-g:hover{filter:brightness(1.08)}
 .btn-o{background:transparent;border:1px solid var(--br);color:var(--t2)}
 .btn-o:hover{border-color:var(--brh);color:var(--white)}
 .btn-wpp{background:var(--wpp);color:#000;font-weight:700}
-.btn-wpp:hover{background:var(--wpp-d);transform:translateY(-1px)}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;filter:none!important}
+.btn-wpp:hover{background:var(--wpp-d)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
 
-.nav-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--br);margin-top:4px}
+/* PROGRESS */
+.prog-view{display:none;flex-direction:column;gap:14px;padding:20px;flex:1;overflow-y:auto}
+.prog-view.active{display:flex}
+.prog-track{height:6px;background:rgba(37,211,102,.1);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--wpp),var(--wpp-d));border-radius:3px;width:0;transition:width .3s}
+.prog-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.prog-stat{text-align:center;padding:12px;background:var(--s1);border:1px solid var(--br);border-radius:var(--rs)}
+.prog-n{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;display:block;margin-bottom:2px}
+.prog-n.env{color:var(--green)}.prog-n.err{color:var(--red)}.prog-n.rest{color:var(--orange)}
+.prog-l{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.4px}
+.log-box{background:var(--s1);border:1px solid var(--br);border-radius:var(--rs);padding:10px;max-height:220px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:11px}
+.log-line{padding:2px 0;border-bottom:1px solid var(--br);display:flex;gap:7px}
+.log-line:last-child{border-bottom:none}
+.log-t{color:var(--t3);flex-shrink:0}
+.log-line.ok .log-m{color:var(--green)}
+.log-line.err .log-m{color:var(--red)}
+.result-view{display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 20px;text-align:center;flex:1}
+.result-view.active{display:flex}
+.result-icon{font-size:48px}
+.result-ttl{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white)}
+.result-sub{font-size:13px;color:var(--t2)}
 
-/* ── TOAST ── */
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid var(--brh-gold);border-radius:14px;width:100%;max-width:420px;animation:mi .2s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.6}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--br)}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px}
+.modal-ttl i{color:var(--wpp)}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.confirm-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cn{text-align:center;padding:12px 8px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs)}
+.cn-n{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;display:block;margin-bottom:2px}
+.cn-l{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.4px}
+
+/* TOAST */
 .toast{position:fixed;bottom:14px;right:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.68,-.55,.265,1.55);z-index:9999}
 .toast.on{transform:translateY(0);opacity:1}
 .toast.ok{border-color:rgba(52,201,138,.2)}.toast.err{border-color:rgba(229,85,85,.2)}
 .toast.ok i{color:var(--green)}.toast.err i{color:var(--red)}
 .toast span{font-size:12px;font-weight:500;color:var(--white)}
 
-/* ── MOBILE ── */
-.mob-btn{display:none;position:fixed;top:14px;left:14px;z-index:300;width:38px;height:38px;border-radius:var(--rs);background:linear-gradient(135deg,var(--gold),var(--gd));color:#000;font-size:14px;align-items:center;justify-content:center}
+/* MOBILE */
+.mob-btn{display:none;position:fixed;top:12px;left:12px;z-index:300;width:36px;height:36px;border-radius:var(--rs);background:linear-gradient(135deg,var(--gold),var(--gd));color:#000;font-size:13px;align-items:center;justify-content:center}
 .sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
 .sb-ov.on{display:block}
-@media(max-width:900px){
+@media(max-width:1024px){.split{grid-template-columns:360px 1fr}}
+@media(max-width:768px){
   .mob-btn{display:flex}
   .sidebar{transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0)}
   .layout{margin-left:0}
-  .main{padding:14px 16px;max-width:100%}
-  .fgrid{grid-template-columns:1fr 1fr}
-  .impacto{grid-template-columns:1fr 1fr 1fr}
-  .template-grid{grid-template-columns:1fr}
-  .confirm-resumo{grid-template-columns:1fr 1fr 1fr}
-  .prog-stats{grid-template-columns:1fr 1fr 1fr}
-  .steps{display:none}
+  .split{grid-template-columns:1fr;grid-template-rows:auto auto}
+  .right-panel{position:relative;top:0;height:auto;max-height:none}
+  .hdr-steps{display:none}
+  .frow{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-
 <button class="mob-btn" onclick="toggleSb()"><i class="fas fa-bars"></i></button>
 <div class="sb-ov" id="sbOv" onclick="toggleSb()"></div>
-
-<!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-top">
     <img src="acertivelogo.png" alt="ACERTIVE" class="sb-logo">
@@ -264,594 +276,253 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
     </div>
   </div>
 </aside>
-
-<!-- ═══ LAYOUT ═══ -->
 <div class="layout">
-
   <div class="header">
-    <div>
-      <div class="hdr-title">Disparo em Massa</div>
-      <div class="hdr-sub">WhatsApp via Suri · envio em lote</div>
+    <div class="hdr-l">
+      <div><div class="hdr-title">Disparo em Massa</div><div class="hdr-sub">WhatsApp via Suri</div></div>
+      <div class="hdr-div"></div>
+      <div class="hdr-steps">
+        <div class="hstep active" id="hstep1"><div class="hstep-n">1</div> Filtrar</div>
+        <div class="hstep" id="hstep2"><div class="hstep-n">2</div> Selecionar</div>
+        <div class="hstep" id="hstep3"><div class="hstep-n">3</div> Mensagem</div>
+      </div>
     </div>
   </div>
-
-  <main class="main">
-
-    <!-- STEPS -->
-    <div class="steps">
-      <div class="step active" id="step1"><div class="step-n">1</div> Filtrar</div>
-      <div class="step" id="step2"><div class="step-n">2</div> Selecionar</div>
-      <div class="step" id="step3"><div class="step-n">3</div> Mensagem</div>
-      <div class="step" id="step4"><div class="step-n">4</div> Enviar</div>
-    </div>
-
-    <!-- ══════════ STEP 1: FILTRAR ══════════ -->
-    <div class="panel active" id="panel1">
-      <div class="card">
-        <div class="card-hd"><div class="card-ttl"><i class="fas fa-filter"></i> Filtros</div></div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-          <div class="fgrid">
-            <div class="fg">
-              <label>Credor</label>
-              <select id="fCredr"><option value="">Todos os credores</option></select>
-            </div>
-            <div class="fg">
-              <label>Atraso mínimo</label>
-              <select id="fAtraso">
-                <option value="0">Qualquer</option>
-                <option value="1">1+ dias</option>
-                <option value="15">15+ dias</option>
-                <option value="30" selected>30+ dias</option>
-                <option value="60">60+ dias</option>
-                <option value="90">90+ dias</option>
-                <option value="180">180+ dias</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>Valor mínimo (R$)</label>
-              <input type="number" id="fValor" value="0" min="0" step="50" placeholder="0">
-            </div>
-            <div class="fg">
-              <label>Status de contato</label>
-              <select id="fContato">
-                <option value="">Todos</option>
-                <option value="nunca">Nunca contatado</option>
-                <option value="ja">Já contatado</option>
-                <option value="sem_resp">Sem resposta</option>
+  <div class="split">
+    <!-- ESQUERDA -->
+    <div class="left-panel">
+      <!-- PANE 1: FILTROS -->
+      <div class="step-pane active" id="pane1">
+        <div class="pane-hd">
+          <div class="pane-ttl"><i class="fas fa-filter"></i> Filtros</div>
+          <div class="pane-sub">Defina quem será impactado pelo disparo</div>
+        </div>
+        <div class="pane-body">
+          <div class="frow">
+            <div class="fg"><label>Credor</label><select id="fCredr" onchange="atualizar()"><option value="">Todos</option></select></div>
+            <div class="fg"><label>Atraso mínimo</label>
+              <select id="fAtraso" onchange="atualizar()">
+                <option value="0">Qualquer</option><option value="1">1+ dias</option>
+                <option value="15">15+ dias</option><option value="30" selected>30+ dias</option>
+                <option value="60">60+ dias</option><option value="90">90+ dias</option><option value="180">180+ dias</option>
               </select>
             </div>
           </div>
-
-          <!-- Impacto dos filtros -->
-          <div class="impacto">
-            <div class="imp-item">
-              <span class="imp-val" id="iTotal">—</span>
-              <span class="imp-lbl">Devedores no filtro</span>
-            </div>
-            <div class="imp-item">
-              <span class="imp-val green" id="iComTel">—</span>
-              <span class="imp-lbl">Com telefone</span>
-              <div class="imp-pct">alcance: <strong id="iPct">—</strong></div>
-            </div>
-            <div class="imp-item">
-              <span class="imp-val red" id="iSemTel">—</span>
-              <span class="imp-lbl">Sem telefone</span>
-              <div class="imp-pct" style="color:var(--t2)">serão ignorados</div>
+          <div class="frow">
+            <div class="fg"><label>Valor mínimo (R$)</label><input type="number" id="fValor" value="0" min="0" step="50" oninput="atualizar()"></div>
+            <div class="fg"><label>Status de contato</label>
+              <select id="fContato" onchange="atualizar()">
+                <option value="">Todos</option><option value="nunca">Nunca contatado</option><option value="ja">Já contatado</option>
+              </select>
             </div>
           </div>
-
-          <div class="nav-row">
-            <div></div>
-            <button class="btn btn-g" onclick="aplicarFiltros()">Aplicar e Selecionar <i class="fas fa-arrow-right"></i></button>
-          </div>
+        </div>
+        <div class="pane-foot">
+          <span style="font-size:11px;color:var(--t2)" id="filtroInfo">Aguardando dados...</span>
+          <button class="btn btn-g" id="btnAplicar" onclick="aplicar()" disabled>Selecionar <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
-    </div>
-
-    <!-- ══════════ STEP 2: SELECIONAR ══════════ -->
-    <div class="panel" id="panel2">
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-ttl"><i class="fas fa-user-check"></i> Destinatários</div>
-          <span class="sel-count" id="selCount">0 selecionados</span>
+      <!-- PANE 2: SELECIONAR -->
+      <div class="step-pane" id="pane2">
+        <div class="pane-hd">
+          <div class="pane-ttl"><i class="fas fa-user-check"></i> Destinatários</div>
+          <div class="pane-sub">Somente devedores com telefone cadastrado</div>
         </div>
-        <div class="sel-bar">
-          <label>
-            <input type="checkbox" class="dest-chk" id="chkAll" onchange="toggleAll()">
-            Selecionar todos
-          </label>
-          <span style="font-size:11px;color:var(--t2)">Somente devedores com telefone</span>
+        <div class="dest-head">
+          <label><input type="checkbox" class="dchk" id="chkAll" onchange="toggleAll()"> Selecionar todos</label>
+          <span class="dest-head-r" id="selCount">0 selecionados</span>
         </div>
         <div class="dest-list" id="destList"></div>
-        <div class="card-body">
-          <div class="nav-row">
-            <button class="btn btn-o" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> Voltar</button>
-            <button class="btn btn-g" id="btnToMsg" onclick="goStep(3)" disabled>Escolher mensagem <i class="fas fa-arrow-right"></i></button>
-          </div>
+        <div class="pane-foot">
+          <button class="btn btn-o" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> Voltar</button>
+          <button class="btn btn-g" id="btnToMsg" onclick="goStep(3)" disabled>Mensagem <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
-    </div>
-
-    <!-- ══════════ STEP 3: MENSAGEM ══════════ -->
-    <div class="panel" id="panel3">
-      <div class="card">
-        <div class="card-hd"><div class="card-ttl"><i class="fab fa-whatsapp wpp"></i> Mensagem</div></div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-
-          <!-- Templates -->
+      <!-- PANE 3: MENSAGEM -->
+      <div class="step-pane" id="pane3">
+        <div class="pane-hd">
+          <div class="pane-ttl"><i class="fab fa-whatsapp" style="color:var(--wpp)"></i> Mensagem</div>
+          <div class="pane-sub">Personalize com variáveis dinâmicas</div>
+        </div>
+        <div class="pane-body">
           <div>
-            <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Template</div>
-            <div class="template-grid">
-              <div class="tpl" onclick="setTpl(this,'lembrete')">
-                <div class="tpl-head"><i class="fas fa-clipboard-list"></i> Lembrete de pagamento</div>
-                <div class="tpl-prev">Olá {nome}! Passando para lembrar que você possui cobranças em aberto no valor de {valor}.</div>
-              </div>
-              <div class="tpl" onclick="setTpl(this,'urgente')">
-                <div class="tpl-head"><i class="fas fa-triangle-exclamation"></i> Aviso urgente</div>
-                <div class="tpl-prev">⚠️ Prezado(a) {nome}, identificamos pendências em seu nome no valor de {valor}.</div>
-              </div>
-              <div class="tpl" onclick="setTpl(this,'negociacao')">
-                <div class="tpl-head"><i class="fas fa-handshake"></i> Proposta de negociação</div>
-                <div class="tpl-prev">Olá {nome}! 🤝 Temos uma proposta especial. Valor: {valor}. Condições facilitadas de pagamento.</div>
-              </div>
-              <div class="tpl" onclick="setTpl(this,'acordo')">
-                <div class="tpl-head"><i class="fas fa-check-circle"></i> Convite para acordo</div>
-                <div class="tpl-prev">Olá {nome}! ✅ Que tal resolver sua pendência hoje? Valor: {valor}. À vista com desconto ou parcelado.</div>
-              </div>
+            <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px">Templates rápidos</div>
+            <div class="tpl-list">
+              <div class="tpl" onclick="setTpl(this,'lembrete')"><div class="tpl-name"><i class="fas fa-clipboard-list"></i> Lembrete</div><div class="tpl-prev">Olá {nome}! Você possui cobrança em aberto no valor de {valor}.</div></div>
+              <div class="tpl" onclick="setTpl(this,'urgente')"><div class="tpl-name"><i class="fas fa-triangle-exclamation"></i> Urgente</div><div class="tpl-prev">⚠️ {nome}, pendência de {valor} em seu nome. Regularize evitando medidas adicionais.</div></div>
+              <div class="tpl" onclick="setTpl(this,'negociacao')"><div class="tpl-name"><i class="fas fa-handshake"></i> Negociação</div><div class="tpl-prev">Olá {nome}! 🤝 Proposta especial para regularizar {valor}. Condições facilitadas!</div></div>
+              <div class="tpl" onclick="setTpl(this,'acordo')"><div class="tpl-name"><i class="fas fa-check-circle"></i> Acordo</div><div class="tpl-prev">Olá {nome}! ✅ Resolva sua pendência de {valor} hoje. À vista com desconto!</div></div>
             </div>
           </div>
-
-          <!-- Editor -->
           <div class="fg">
-            <label>Mensagem personalizada</label>
-            <textarea class="msg-editor" id="msgEditor" placeholder="Selecione um template ou escreva sua mensagem..."></textarea>
+            <label>Mensagem</label>
+            <textarea id="msgEditor" oninput="atualizarPreview()" placeholder="Selecione um template ou escreva..."></textarea>
             <div class="msg-vars">
-              <span class="msg-var" onclick="insVar('{nome}')"><i class="fas fa-user"></i> {nome}</span>
-              <span class="msg-var" onclick="insVar('{valor}')"><i class="fas fa-dollar-sign"></i> {valor}</span>
-              <span class="msg-var" onclick="insVar('{dias_atraso}')"><i class="fas fa-clock"></i> {dias_atraso}</span>
-              <span class="msg-var" onclick="insVar('{cpf}')"><i class="fas fa-id-card"></i> {cpf}</span>
-              <span class="msg-var" onclick="insVar('{credor}')"><i class="fas fa-building"></i> {credor}</span>
+              <span class="mvar" onclick="insVar('{nome}')">nome</span>
+              <span class="mvar" onclick="insVar('{valor}')">valor</span>
+              <span class="mvar" onclick="insVar('{dias_atraso}')">dias_atraso</span>
+              <span class="mvar" onclick="insVar('{cpf}')">cpf</span>
+              <span class="mvar" onclick="insVar('{credor}')">credor</span>
             </div>
           </div>
-
-          <!-- Testar mensagem -->
           <div>
-            <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Testar mensagem</div>
+            <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Testar antes de enviar</div>
             <div class="test-row">
-              <input type="text" class="test-input" id="testTel" placeholder="Número para teste: (92) 99999-9999">
-              <button class="btn btn-o" onclick="testarMensagem()" style="flex-shrink:0"><i class="fab fa-whatsapp" style="color:var(--wpp)"></i> Enviar teste</button>
+              <input type="text" id="testTel" placeholder="(92) 99999-9999">
+              <button class="btn btn-o" onclick="testarMensagem()" style="color:var(--wpp);border-color:rgba(37,211,102,.2)"><i class="fab fa-whatsapp"></i> Testar</button>
             </div>
           </div>
-
-          <!-- Preview -->
-          <div class="wpp-preview">
-            <div class="wpp-lbl">Preview · exemplo com dados fictícios</div>
-            <div class="wpp-bubble" id="msgPreview">Selecione um template ou escreva sua mensagem...</div>
-            <div class="wpp-time" id="msgTime"></div>
-          </div>
-
-          <div class="nav-row">
-            <button class="btn btn-o" onclick="goStep(2)"><i class="fas fa-arrow-left"></i> Voltar</button>
-            <button class="btn btn-wpp" id="btnToSend" onclick="goStep(4)" disabled><i class="fab fa-whatsapp"></i> Revisar e enviar</button>
-          </div>
+        </div>
+        <div class="pane-foot">
+          <button class="btn btn-o" onclick="goStep(2)"><i class="fas fa-arrow-left"></i> Voltar</button>
+          <button class="btn btn-wpp" id="btnPreConfirm" onclick="abrirConfirm()" disabled><i class="fab fa-whatsapp"></i> Enviar</button>
+        </div>
+      </div>
+      <!-- PROGRESS -->
+      <div class="prog-view" id="progView">
+        <div class="pane-hd" style="padding:16px 0 12px;border-bottom:1px solid var(--br);flex-shrink:0">
+          <div class="pane-ttl"><i class="fas fa-satellite-dish"></i> Enviando...</div>
+          <div class="pane-sub" id="progStatus">Aguarde</div>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="progBar"></div></div>
+        <div class="prog-stats">
+          <div class="prog-stat"><span class="prog-n env" id="pEnv">0</span><span class="prog-l">Enviados</span></div>
+          <div class="prog-stat"><span class="prog-n err" id="pErr">0</span><span class="prog-l">Erros</span></div>
+          <div class="prog-stat"><span class="prog-n rest" id="pRest">0</span><span class="prog-l">Restantes</span></div>
+        </div>
+        <div class="log-box" id="logBox"></div>
+      </div>
+      <!-- RESULT -->
+      <div class="result-view" id="resultView">
+        <div class="result-icon" id="resIcon">✅</div>
+        <div class="result-ttl" id="resTtl">Disparo concluído!</div>
+        <div class="result-sub" id="resSub">—</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-g" onclick="novoDisparo()"><i class="fas fa-plus"></i> Novo disparo</button>
+          <a href="fila.html" class="btn btn-o"><i class="fas fa-headset"></i> Fila</a>
         </div>
       </div>
     </div>
-
-    <!-- ══════════ STEP 4: ENVIAR ══════════ -->
-    <div class="panel" id="panel4">
-
-      <!-- Confirmação -->
-      <div id="viewConfirm">
-        <div class="card">
-          <div class="card-hd"><div class="card-ttl"><i class="fas fa-paper-plane"></i> Confirmar envio</div></div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-
-            <div class="confirm-resumo">
-              <div class="conf-item">
-                <span class="conf-val gold" id="cTotal">—</span>
-                <span class="conf-lbl">Mensagens</span>
-              </div>
-              <div class="conf-item">
-                <span class="conf-val green" id="cComTel">—</span>
-                <span class="conf-lbl">Vão receber</span>
-              </div>
-              <div class="conf-item">
-                <span class="conf-val red" id="cSemTel">—</span>
-                <span class="conf-lbl">Ignorados (sem tel)</span>
-              </div>
+    <!-- DIREITA: PREVIEW TEMPO REAL -->
+    <div class="right-panel">
+      <div class="right-inner">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Impacto dos filtros</div>
+          <div class="resumo-grid">
+            <div class="res-item"><span class="res-val" id="rTotal">—</span><span class="res-lbl">Devedores no filtro</span></div>
+            <div class="res-item hl"><span class="res-val green" id="rComTel">—</span><span class="res-lbl">Com telefone</span><div class="res-pct">alcance: <strong id="rPct">—</strong></div></div>
+            <div class="res-item"><span class="res-val red" id="rSemTel">—</span><span class="res-lbl">Sem telefone</span><div class="res-pct" style="color:var(--t3)">serão ignorados</div></div>
+            <div class="res-item"><span class="res-val gold" id="rSelecionados">—</span><span class="res-lbl">Selecionados</span><div class="res-pct" style="color:var(--t3)">para envio</div></div>
+          </div>
+        </div>
+        <div class="alcance-wrap">
+          <div class="alcance-row"><span class="alcance-lbl">Alcance da operação</span><span class="alcance-pct" id="alcPct">0%</span></div>
+          <div class="alcance-bar"><div class="alcance-fill" id="alcFill" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Preview da mensagem</div>
+          <div class="wpp-phone">
+            <div class="wpp-bar">
+              <div class="wpp-av"><i class="fas fa-user"></i></div>
+              <div class="wpp-contact"><div class="wpp-cname">João Silva</div><div class="wpp-status">online</div></div>
             </div>
-
-            <!-- Aviso de segurança -->
-            <div class="aviso">
-              <i class="fas fa-triangle-exclamation"></i>
-              <span>Você está prestes a enviar <strong id="avisoN">—</strong> mensagens via WhatsApp. Esta ação não pode ser desfeita. Confira a mensagem antes de confirmar.</span>
-            </div>
-
-            <!-- Preview da mensagem -->
-            <div class="wpp-preview">
-              <div class="wpp-lbl">Mensagem que será enviada</div>
-              <div class="wpp-bubble" id="confirmPreview">—</div>
-            </div>
-
-            <div class="nav-row">
-              <button class="btn btn-o" onclick="goStep(3)"><i class="fas fa-arrow-left"></i> Voltar</button>
-              <button class="btn btn-wpp" id="btnDisparo" onclick="iniciarDisparo()"><i class="fab fa-whatsapp"></i> Confirmar e enviar agora</button>
+            <div class="wpp-body">
+              <div id="wppBubble" class="wpp-placeholder">Selecione um template ou escreva a mensagem...</div>
+              <div class="wpp-time" id="wppTime" style="display:none"><span id="wppTimeVal"></span><i class="fas fa-check-double"></i></div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Progresso -->
-      <div id="viewProgress" style="display:none">
-        <div class="card">
-          <div class="card-hd">
-            <div class="card-ttl"><i class="fas fa-satellite-dish"></i> Enviando mensagens...</div>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold)" id="progPct">0%</span>
-          </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:0">
-            <div class="prog-track"><div class="prog-fill" id="progBar"></div></div>
-            <div class="prog-stats">
-              <div class="prog-stat"><span class="prog-n env" id="pEnv">0</span><span class="prog-l">Enviados</span></div>
-              <div class="prog-stat"><span class="prog-n err" id="pErr">0</span><span class="prog-l">Erros</span></div>
-              <div class="prog-stat"><span class="prog-n rest" id="pRest">0</span><span class="prog-l">Restantes</span></div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">O que acontece ao enviar</div>
+          <div class="impacto-bloco">
+            <div class="imp-row">
+              <div class="imp-ico green"><i class="fas fa-paper-plane"></i></div>
+              <span class="imp-txt"><strong id="iEnvio">0</strong> mensagens serão enviadas</span>
+              <span class="imp-n green" id="iEnvioN">0</span>
             </div>
-            <div class="log-box" id="logBox"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Resultado -->
-      <div id="viewResult" style="display:none">
-        <div class="card">
-          <div class="card-body">
-            <div class="result-box">
-              <span class="result-icon" id="resIcon">✅</span>
-              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:6px" id="resTtl">Disparo concluído</div>
-              <div style="font-size:13px;color:var(--t2);margin-bottom:20px" id="resSub">—</div>
-              <div style="display:flex;gap:8px;justify-content:center">
-                <button class="btn btn-g" onclick="novoDisparo()"><i class="fas fa-plus"></i> Novo disparo</button>
-                <a href="fila.html" class="btn btn-o"><i class="fas fa-headset"></i> Ir para fila</a>
-              </div>
+            <div class="imp-row">
+              <div class="imp-ico red"><i class="fas fa-phone-slash"></i></div>
+              <span class="imp-txt"><strong id="iIgn">0</strong> contatos sem telefone serão ignorados</span>
+              <span class="imp-n red" id="iIgnN">0</span>
+            </div>
+            <div class="imp-row" id="iAvisoRow" style="display:none">
+              <div class="imp-ico warn"><i class="fas fa-triangle-exclamation"></i></div>
+              <span class="imp-txt" id="iAvisoTxt" style="color:var(--orange)">—</span>
             </div>
           </div>
         </div>
+        <div class="aviso" id="avisoEnvio" style="display:none">
+          <i class="fas fa-triangle-exclamation"></i>
+          <span>Você está prestes a enviar <strong id="avisoN">—</strong>. Confira o preview antes de confirmar.</span>
+        </div>
       </div>
-
+      <div class="right-foot">
+        <button class="btn-enviar" id="btnEnviar" onclick="abrirConfirm()" disabled>
+          <i class="fab fa-whatsapp"></i><span id="btnEnviarTxt">Enviar mensagens</span>
+        </button>
+      </div>
     </div>
-
-  </main>
+  </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <i class="fas fa-check" id="toastIco"></i>
-  <span id="toastTxt"></span>
+<!-- MODAL CONFIRMAÇÃO -->
+<div class="overlay" id="ovConfirm">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-ttl"><i class="fab fa-whatsapp"></i> Confirmar disparo</div></div>
+    <div class="modal-body">
+      <div class="confirm-nums">
+        <div class="cn"><span class="cn-n gold" id="cTotal">—</span><span class="cn-l">Mensagens</span></div>
+        <div class="cn"><span class="cn-n green" id="cRecebem">—</span><span class="cn-l">Recebem</span></div>
+        <div class="cn"><span class="cn-n red" id="cIgn">—</span><span class="cn-l">Ignorados</span></div>
+      </div>
+      <div class="aviso"><i class="fas fa-triangle-exclamation"></i><span>Esta ação enviará <strong id="confirmN">—</strong> mensagens via WhatsApp. Não pode ser desfeita.</span></div>
+      <div style="background:#0b141a;border-radius:var(--rs);padding:12px">
+        <div style="background:#005c4b;border-radius:7px 7px 0 7px;padding:9px 12px;font-size:12px;color:#e9edef;line-height:1.6" id="modalPreview">—</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="fecharConfirm()">Cancelar</button>
+      <button class="btn btn-wpp" onclick="confirmarDisparo()"><i class="fab fa-whatsapp"></i> Confirmar e enviar</button>
+    </div>
+  </div>
 </div>
+
+<div class="toast" id="toast"><i class="fas fa-check" id="toastIco"></i><span id="toastTxt"></span></div>
 
 <script>
-const API = window.location.origin;
-const H = () => ({ 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' });
-const fmtM = v => (parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const fmtTel = p => { if(!p) return '—'; const n=String(p).replace(/\D/g,''); if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; return p; };
-
-let devedores = [], filtrados = [], comTel = [], selecionados = new Set();
-let tplAtual = '', msgFinal = '';
-let emAndamento = false;
-
-// ── TOAST ──────────────────────────────────────────────────────
+const API=window.location.origin;
+const H=()=>({'Authorization':'Bearer '+localStorage.getItem('token'),'Content-Type':'application/json'});
+const fmtM=v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtTel=p=>{if(!p)return'—';const n=String(p).replace(/\D/g,'');if(n.length===11)return`(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;if(n.length===10)return`(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;return p;};
+let devs=[],filtrados=[],comTel=[],selecionados=new Set(),stepAtual=1,tplAtual='',emAndamento=false;
 let _tt;
-function toast(msg, tipo='ok') {
-  const el=document.getElementById('toast');
-  document.getElementById('toastIco').className=tipo==='ok'?'fas fa-check':'fas fa-triangle-exclamation';
-  el.className='toast '+tipo; document.getElementById('toastTxt').textContent=msg;
-  el.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),3000);
-}
-function logout() { localStorage.removeItem('token'); window.location.href='login.html'; }
-function toggleSb() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sbOv').classList.toggle('on');
-}
-
-// ── AUTH ───────────────────────────────────────────────────────
-async function checkAuth() {
-  if (!localStorage.getItem('token')) { window.location.href='login.html'; return; }
-  try {
-    const r=await fetch(API+'/api/usuarios/me',{headers:H()});
-    const d=await r.json();
-    if (!d.success) { window.location.href='login.html'; return; }
-    const u=d.data||d;
-    document.getElementById('uNome').textContent=u.nome||'Usuário';
-    document.getElementById('uRole').textContent=u.perfil||'admin';
-    document.getElementById('uAv').textContent=(u.nome||'U')[0].toUpperCase();
-  } catch(e){}
-}
-
-// ── STEPS ──────────────────────────────────────────────────────
-function goStep(n) {
-  for (let i=1;i<=4;i++) {
-    document.getElementById('panel'+i).classList.toggle('active', i===n);
-    const s=document.getElementById('step'+i);
-    s.classList.remove('active','done');
-    if (i<n) s.classList.add('done');
-    if (i===n) s.classList.add('active');
-  }
-  if (n===3) atualizarPreview();
-  if (n===4) prepararConfirm();
-}
-
-// ── CARREGAR DADOS ─────────────────────────────────────────────
-async function carregarDados() {
-  try {
-    const [rDev, rCred] = await Promise.all([
-      fetch(API+'/api/acionamentos/fila/devedores?limit=10000',{headers:H()}),
-      fetch(API+'/api/credores',{headers:H()})
-    ]);
-    const [dDev, dCred] = await Promise.all([rDev.json(), rCred.json()]);
-    devedores = dDev.data || [];
-    const creds = dCred.data || dCred || [];
-    const sel = document.getElementById('fCredr');
-    creds.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-    atualizarImpacto();
-  } catch(e){ toast('Erro ao carregar dados','err'); }
-}
-
-// ── IMPACTO DOS FILTROS ────────────────────────────────────────
-function atualizarImpacto() {
-  const credId   = document.getElementById('fCredr').value;
-  const atrasoMin= parseInt(document.getElementById('fAtraso').value)||0;
-  const valorMin = parseFloat(document.getElementById('fValor').value)||0;
-  const contato  = document.getElementById('fContato').value;
-  const credSel  = document.getElementById('fCredr');
-  const credNome = credSel.options[credSel.selectedIndex]?.text||'';
-
-  filtrados = devedores.filter(d => {
-    if (credId) {
-      const mId   = String(d.credor_id||'')=== credId;
-      const mNome = (d.credor_nome||'').toLowerCase() === credNome.toLowerCase();
-      if (!mId && !mNome) return false;
-    }
-    if ((parseInt(d.maior_atraso)||0) < atrasoMin) return false;
-    if ((parseFloat(d.valor_total)||0) < valorMin)  return false;
-    if (contato === 'nunca' && d.tentativas > 0)    return false;
-    if (contato === 'ja'    && d.tentativas === 0)   return false;
-    return true;
-  });
-
-  comTel = filtrados.filter(d => d.telefone || d.celular);
-  const semTel = filtrados.length - comTel.length;
-  const pct = filtrados.length > 0 ? Math.round((comTel.length/filtrados.length)*100) : 0;
-
-  document.getElementById('iTotal').textContent   = filtrados.length;
-  document.getElementById('iComTel').textContent  = comTel.length;
-  document.getElementById('iSemTel').textContent  = semTel;
-  document.getElementById('iPct').textContent     = pct+'%';
-}
-
-['fCredr','fAtraso','fValor','fContato'].forEach(id => {
-  document.getElementById(id)?.addEventListener('change', atualizarImpacto);
-  document.getElementById(id)?.addEventListener('input',  atualizarImpacto);
-});
-
-// ── APLICAR FILTROS → STEP 2 ───────────────────────────────────
-function aplicarFiltros() {
-  atualizarImpacto();
-  if (!comTel.length) { toast('Nenhum devedor com telefone para os filtros selecionados','err'); return; }
-  renderDestinatarios();
-  goStep(2);
-}
-
-// ── DESTINATÁRIOS ──────────────────────────────────────────────
-function renderDestinatarios() {
-  selecionados.clear();
-  const list = document.getElementById('destList');
-  list.innerHTML = comTel.map((d,i) => {
-    const nome   = d.nome || d.cliente_nome || '—';
-    const tel    = d.telefone || d.celular || '';
-    const valor  = parseFloat(d.valor_total)||0;
-    const atraso = parseInt(d.maior_atraso)||0;
-    const letra  = nome[0].toUpperCase();
-    selecionados.add(i);
-    return `
-    <div class="dest-item" onclick="toggleDest(${i})">
-      <input type="checkbox" class="dest-chk dchk" data-i="${i}" checked onclick="event.stopPropagation();toggleDest(${i})">
-      <div class="dest-av">${letra}</div>
-      <div class="dest-info">
-        <div class="dest-nome">${nome}</div>
-        <div class="dest-meta">
-          <span>${d.credor_nome||'—'}</span>
-          <span>${atraso}d atraso</span>
-        </div>
-      </div>
-      <div class="dest-tel">${fmtTel(tel)}</div>
-      <div class="dest-val">${fmtM(valor)}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('chkAll').checked = true;
-  updateSelCount();
-}
-
-function toggleDest(i) {
-  const cb = document.querySelector(`.dchk[data-i="${i}"]`);
-  if (selecionados.has(i)) { selecionados.delete(i); cb.checked=false; }
-  else { selecionados.add(i); cb.checked=true; }
-  updateSelCount();
-}
-
-function toggleAll() {
-  const chk = document.getElementById('chkAll').checked;
-  document.querySelectorAll('.dchk').forEach(cb => {
-    const i = parseInt(cb.dataset.i);
-    cb.checked=chk;
-    if (chk) selecionados.add(i); else selecionados.delete(i);
-  });
-  updateSelCount();
-}
-
-function updateSelCount() {
-  const n = selecionados.size;
-  document.getElementById('selCount').textContent = `${n} selecionado${n!==1?'s':''}`;
-  document.getElementById('btnToMsg').disabled = n===0;
-}
-
-// ── TEMPLATES ─────────────────────────────────────────────────
-const TPLS = {
-  lembrete:   'Olá {nome}! 👋 Passando para lembrar que você possui cobranças em aberto no valor de *{valor}*. Entre em contato para regularizar sua situação.',
-  urgente:    '⚠️ AVISO IMPORTANTE ⚠️\n\nPrezado(a) {nome}, identificamos pendências em seu nome no valor de *{valor}*.\n\nPara evitar medidas adicionais, regularize sua situação o mais breve possível.',
-  negociacao: 'Olá {nome}! 🤝\n\nTemos uma proposta especial para você regularizar sua situação!\nValor: *{valor}*\n\nOferecemos condições facilitadas de pagamento. Entre em contato!',
-  acordo:     'Olá {nome}! ✅\n\nQue tal resolver sua pendência hoje?\nValor: *{valor}*\n\nDisponível pagamento à vista com desconto ou parcelamento. Fale conosco!'
-};
-
-function setTpl(el, tipo) {
-  document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  tplAtual = tipo;
-  document.getElementById('msgEditor').value = TPLS[tipo];
-  atualizarPreview();
-  document.getElementById('btnToSend').disabled = false;
-}
-
-function insVar(v) {
-  const ed = document.getElementById('msgEditor');
-  const pos = ed.selectionStart;
-  ed.value = ed.value.slice(0,pos) + v + ed.value.slice(pos);
-  ed.focus(); ed.setSelectionRange(pos+v.length, pos+v.length);
-  atualizarPreview();
-  document.getElementById('btnToSend').disabled = !ed.value.trim();
-}
-
-document.getElementById('msgEditor')?.addEventListener('input', () => {
-  atualizarPreview();
-  document.getElementById('btnToSend').disabled = !document.getElementById('msgEditor').value.trim();
-});
-
-function atualizarPreview() {
-  let msg = document.getElementById('msgEditor').value || 'Selecione um template...';
-  msg = msg
-    .replace(/\{nome\}/g,       'João Silva')
-    .replace(/\{valor\}/g,      'R$ 2.500,00')
-    .replace(/\{dias_atraso\}/g,'45 dias')
-    .replace(/\{cpf\}/g,        '***.***.***.00')
-    .replace(/\{credor\}/g,     'Odonto Vitta');
-  const html = msg.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');
-  document.getElementById('msgPreview').innerHTML = html;
-  const now=new Date();
-  document.getElementById('msgTime').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-}
-
-// ── TESTAR MENSAGEM ────────────────────────────────────────────
-async function testarMensagem() {
-  const tel = document.getElementById('testTel').value.trim().replace(/\D/g,'');
-  const msg = document.getElementById('msgEditor').value.trim();
-  if (!tel) { toast('Informe um número para teste','err'); return; }
-  if (!msg) { toast('Escreva a mensagem antes de testar','err'); return; }
-  try {
-    const r = await fetch(API+'/api/suri/enviar-direto', {
-      method:'POST', headers:H(),
-      body: JSON.stringify({ telefone: tel, mensagem: msg.replace(/\{nome\}/g,'Teste').replace(/\{valor\}/g,'R$ 0,00').replace(/\{dias_atraso\}/g,'0').replace(/\{cpf\}/g,'---').replace(/\{credor\}/g,'Teste') })
-    });
-    const d = await r.json();
-    if (d.success||r.ok) toast('Mensagem de teste enviada!');
-    else toast(d.error||'Erro ao enviar teste','err');
-  } catch(e){ toast('Erro ao enviar teste','err'); }
-}
-
-// ── CONFIRMAR ─────────────────────────────────────────────────
-function prepararConfirm() {
-  msgFinal = document.getElementById('msgEditor').value;
-  const n  = selecionados.size;
-  const st = comTel.length - n;
-  document.getElementById('cTotal').textContent   = n;
-  document.getElementById('cComTel').textContent  = n;
-  document.getElementById('cSemTel').textContent  = (filtrados.length - comTel.length);
-  document.getElementById('avisoN').textContent   = n + ' mensagem' + (n!==1?'s':'');
-  // preview
-  let prev = msgFinal
-    .replace(/\{nome\}/g,'João Silva')
-    .replace(/\{valor\}/g,'R$ 2.500,00')
-    .replace(/\{dias_atraso\}/g,'45 dias')
-    .replace(/\{cpf\}/g,'***.***.***.00')
-    .replace(/\{credor\}/g,'Odonto Vitta');
-  document.getElementById('confirmPreview').innerHTML = prev.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');
-}
-
-// ── DISPARO ───────────────────────────────────────────────────
-async function iniciarDisparo() {
-  if (emAndamento) return;
-  emAndamento = true;
-
-  document.getElementById('viewConfirm').style.display  = 'none';
-  document.getElementById('viewProgress').style.display = '';
-  document.getElementById('viewResult').style.display   = 'none';
-  document.getElementById('btnDisparo').disabled = true;
-
-  const destinos = Array.from(selecionados).map(i=>comTel[i]).filter(Boolean);
-  const total = destinos.length;
-  let env=0, err=0;
-  document.getElementById('pRest').textContent = total;
-  document.getElementById('logBox').innerHTML  = '';
-
-  for (let i=0; i<destinos.length; i++) {
-    const d = destinos[i];
-    const nome = d.nome || d.cliente_nome || 'Cliente';
-    try {
-      const r = await fetch(API+'/api/suri/enviar-cobranca', {
-        method:'POST', headers:H(),
-        body: JSON.stringify({
-          cliente_id: d.cliente_id || d.id,
-          tipo_mensagem: tplAtual || 'lembrete',
-          mensagem_custom: msgFinal
-        })
-      });
-      const dd = await r.json();
-      if (dd.success) { env++; addLog(nome,'ok','Enviado'); }
-      else { err++; addLog(nome,'err', dd.error||'Falhou'); }
-    } catch(e){ err++; addLog(nome,'err','Erro de rede'); }
-
-    const pct = Math.round(((i+1)/total)*100);
-    document.getElementById('progBar').style.width = pct+'%';
-    document.getElementById('progPct').textContent = pct+'%';
-    document.getElementById('pEnv').textContent    = env;
-    document.getElementById('pErr').textContent    = err;
-    document.getElementById('pRest').textContent   = total-i-1;
-
-    if (i < destinos.length-1) await new Promise(r=>setTimeout(r,1200));
-  }
-
-  emAndamento = false;
-  document.getElementById('viewResult').style.display = '';
-  document.getElementById('resIcon').textContent = err===0 ? '✅' : '⚠️';
-  document.getElementById('resTtl').textContent  = err===0 ? 'Disparo concluído!' : 'Concluído com erros';
-  document.getElementById('resSub').textContent  = `${env} mensagens enviadas · ${err} erros`;
-  toast(`Disparo concluído! ${env} enviadas.`);
-}
-
-function addLog(nome, tipo, msg) {
-  const box = document.getElementById('logBox');
-  const now = new Date();
-  const t   = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-  box.innerHTML += `<div class="log-line ${tipo}"><span class="log-time">${t}</span><span class="log-msg">${tipo==='ok'?'✓':'✗'} ${nome} — ${msg}</span></div>`;
-  box.scrollTop = box.scrollHeight;
-}
-
-// ── NOVO DISPARO ───────────────────────────────────────────────
-function novoDisparo() {
-  selecionados.clear(); tplAtual=''; msgFinal='';
-  document.getElementById('msgEditor').value='';
-  document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('on'));
-  document.getElementById('viewConfirm').style.display  = '';
-  document.getElementById('viewProgress').style.display = 'none';
-  document.getElementById('viewResult').style.display   = 'none';
-  document.getElementById('btnDisparo').disabled = false;
-  goStep(1);
-}
-
-// ── INIT ───────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  await checkAuth();
-  await carregarDados();
-  atualizarPreview();
-});
+function toast(msg,tipo='ok'){const el=document.getElementById('toast');document.getElementById('toastIco').className=tipo==='ok'?'fas fa-check':'fas fa-triangle-exclamation';el.className='toast '+tipo;document.getElementById('toastTxt').textContent=msg;el.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),3000);}
+function logout(){localStorage.removeItem('token');window.location.href='login.html';}
+function toggleSb(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sbOv').classList.toggle('on');}
+async function checkAuth(){if(!localStorage.getItem('token')){window.location.href='login.html';return;}try{const r=await fetch(API+'/api/usuarios/me',{headers:H()});const d=await r.json();if(!d.success){window.location.href='login.html';return;}const u=d.data||d;document.getElementById('uNome').textContent=u.nome||'Usuário';document.getElementById('uRole').textContent=u.perfil||'admin';document.getElementById('uAv').textContent=(u.nome||'U')[0].toUpperCase();}catch(e){}}
+function goStep(n){stepAtual=n;for(let i=1;i<=3;i++){const p=document.getElementById('pane'+i);if(p)p.classList.toggle('active',i===n);const h=document.getElementById('hstep'+i);if(h){h.classList.remove('active','done');if(i<n)h.classList.add('done');if(i===n)h.classList.add('active');}}if(n===3)atualizarPreview();}
+async function carregarDados(){try{const[rD,rC]=await Promise.all([fetch(API+'/api/acionamentos/fila/devedores?limit=10000',{headers:H()}),fetch(API+'/api/credores',{headers:H()})]);const[dD,dC]=await Promise.all([rD.json(),rC.json()]);devs=dD.data||[];const creds=dC.data||dC||[];const sel=document.getElementById('fCredr');creds.forEach(c=>sel.innerHTML+=`<option value="${c.id}">${c.nome}</option>`);atualizar();}catch(e){toast('Erro ao carregar dados','err');}}
+function atualizar(){const credId=document.getElementById('fCredr').value;const credSel=document.getElementById('fCredr');const credNome=credSel.options[credSel.selectedIndex]?.text||'';const atrMin=parseInt(document.getElementById('fAtraso').value)||0;const valMin=parseFloat(document.getElementById('fValor').value)||0;const contato=document.getElementById('fContato').value;filtrados=devs.filter(d=>{if(credId){const mId=String(d.credor_id||'')===credId;const mNm=(d.credor_nome||'').toLowerCase()===credNome.toLowerCase();if(!mId&&!mNm)return false;}if((parseInt(d.maior_atraso)||0)<atrMin)return false;if((parseFloat(d.valor_total)||0)<valMin)return false;if(contato==='nunca'&&(d.tentativas||0)>0)return false;if(contato==='ja'&&(d.tentativas||0)===0)return false;return true;});comTel=filtrados.filter(d=>d.telefone||d.celular);const semTel=filtrados.length-comTel.length;const pct=filtrados.length>0?Math.round((comTel.length/filtrados.length)*100):0;anim('rTotal',filtrados.length);anim('rComTel',comTel.length);anim('rSemTel',semTel);const selN=stepAtual>=2?selecionados.size:comTel.length;anim('rSelecionados',selN);document.getElementById('rPct').textContent=pct+'%';document.getElementById('alcPct').textContent=pct+'%';document.getElementById('alcFill').style.width=pct+'%';const envN=stepAtual>=2?selecionados.size:comTel.length;document.getElementById('iEnvio').textContent=envN;document.getElementById('iEnvioN').textContent=envN;document.getElementById('iIgn').textContent=semTel;document.getElementById('iIgnN').textContent=semTel;const ar=document.getElementById('iAvisoRow');if(semTel>0){document.getElementById('iAvisoTxt').textContent=`${semTel} contato${semTel!==1?'s':''} sem telefone serão ignorados`;ar.style.display='flex';}else{ar.style.display='none';}document.getElementById('btnAplicar').disabled=comTel.length===0;document.getElementById('filtroInfo').textContent=filtrados.length>0?`${filtrados.length} devedor${filtrados.length!==1?'es':''} · ${comTel.length} com telefone`:'Nenhum devedor para estes filtros';atualizarBtnEnviar();}
+function anim(id,val){const el=document.getElementById(id);if(!el)return;el.style.transform='scale(1.06)';el.textContent=val;setTimeout(()=>el.style.transform='scale(1)',200);}
+function atualizarBtnEnviar(){const msg=document.getElementById('msgEditor').value.trim();const n=stepAtual>=2?selecionados.size:comTel.length;const ok=msg.length>0&&n>0;document.getElementById('btnEnviar').disabled=!ok;document.getElementById('btnPreConfirm').disabled=!ok;document.getElementById('btnEnviarTxt').textContent=n>0?`Enviar para ${n} contato${n!==1?'s':''}`:'Enviar mensagens';document.getElementById('avisoEnvio').style.display=ok?'flex':'none';document.getElementById('avisoN').textContent=`${n} mensagem${n!==1?'s':''}`;}
+function aplicar(){atualizar();if(!comTel.length){toast('Nenhum devedor com telefone','err');return;}renderDestinatarios();goStep(2);}
+function renderDestinatarios(){selecionados.clear();const list=document.getElementById('destList');list.innerHTML=comTel.map((d,i)=>{const nome=d.nome||d.cliente_nome||'—';const tel=d.telefone||d.celular||'';const atraso=parseInt(d.maior_atraso)||0;selecionados.add(i);return`<div class="dest-item" onclick="toggleDest(${i})"><input type="checkbox" class="dchk dck" data-i="${i}" checked onclick="event.stopPropagation();toggleDest(${i})"><div class="dest-av">${nome[0].toUpperCase()}</div><div class="dest-info"><div class="dest-nome">${nome}</div><div class="dest-sub"><span>${d.credor_nome||'—'}</span><span>${atraso}d atraso</span></div></div><div class="dest-tel">${fmtTel(tel)}</div></div>`;}).join('');document.getElementById('chkAll').checked=true;updSel();}
+function toggleDest(i){const cb=document.querySelector(`.dck[data-i="${i}"]`);if(selecionados.has(i)){selecionados.delete(i);if(cb)cb.checked=false;}else{selecionados.add(i);if(cb)cb.checked=true;}updSel();}
+function toggleAll(){const chk=document.getElementById('chkAll').checked;document.querySelectorAll('.dck').forEach(cb=>{const i=parseInt(cb.dataset.i);cb.checked=chk;if(chk)selecionados.add(i);else selecionados.delete(i);});updSel();}
+function updSel(){const n=selecionados.size;document.getElementById('selCount').textContent=`${n} selecionado${n!==1?'s':''}`;document.getElementById('btnToMsg').disabled=n===0;anim('rSelecionados',n);document.getElementById('iEnvio').textContent=n;document.getElementById('iEnvioN').textContent=n;atualizarBtnEnviar();}
+const TPLS={lembrete:'Olá {nome}! 👋\n\nPassando para lembrar que você possui cobrança em aberto no valor de *{valor}*.\n\nEntre em contato para regularizar sua situação.',urgente:'⚠️ AVISO IMPORTANTE ⚠️\n\nPrezado(a) {nome}, identificamos pendências em seu nome no valor de *{valor}* com {dias_atraso} de atraso.\n\nRegularize sua situação o mais breve possível.',negociacao:'Olá {nome}! 🤝\n\nTemos uma proposta especial!\nValor: *{valor}*\n\nCondições facilitadas de pagamento. Entre em contato!',acordo:'Olá {nome}! ✅\n\nQue tal resolver sua pendência de *{valor}* hoje?\n\nPagamento à vista com desconto ou parcelado. Fale conosco!'};
+function setTpl(el,tipo){document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('on'));el.classList.add('on');tplAtual=tipo;document.getElementById('msgEditor').value=TPLS[tipo];atualizarPreview();atualizarBtnEnviar();}
+function insVar(v){const ed=document.getElementById('msgEditor');const pos=ed.selectionStart;ed.value=ed.value.slice(0,pos)+v+ed.value.slice(pos);ed.focus();ed.setSelectionRange(pos+v.length,pos+v.length);atualizarPreview();atualizarBtnEnviar();}
+function atualizarPreview(){let msg=document.getElementById('msgEditor').value;const bubble=document.getElementById('wppBubble');const timeEl=document.getElementById('wppTime');if(!msg.trim()){bubble.className='wpp-placeholder';bubble.textContent='Selecione um template ou escreva a mensagem...';timeEl.style.display='none';return;}const htm=msg.replace(/\{nome\}/g,'João Silva').replace(/\{valor\}/g,'R$ 2.500,00').replace(/\{dias_atraso\}/g,'45 dias').replace(/\{cpf\}/g,'***.***.***.00').replace(/\{credor\}/g,'Odonto Vitta').replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');bubble.className='wpp-bubble';bubble.innerHTML=htm;timeEl.style.display='flex';const now=new Date();document.getElementById('wppTimeVal').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;atualizarBtnEnviar();}
+async function testarMensagem(){const tel=document.getElementById('testTel').value.trim().replace(/\D/g,'');const msg=document.getElementById('msgEditor').value.trim();if(!tel){toast('Informe um número para teste','err');return;}if(!msg){toast('Escreva a mensagem antes de testar','err');return;}const msgSub=msg.replace(/\{nome\}/g,'Teste').replace(/\{valor\}/g,'R$ 0,00').replace(/\{dias_atraso\}/g,'0 dias').replace(/\{cpf\}/g,'---').replace(/\{credor\}/g,'Teste');try{const r=await fetch(API+'/api/suri/enviar-direto',{method:'POST',headers:H(),body:JSON.stringify({telefone:tel,mensagem:msgSub})});const d=await r.json();if(d.success||r.ok)toast('Teste enviado!');else toast(d.error||'Erro ao enviar teste','err');}catch(e){toast('Erro ao enviar teste','err');}}
+function abrirConfirm(){const msg=document.getElementById('msgEditor').value.trim();if(!msg){toast('Escreva a mensagem antes de enviar','err');return;}const n=stepAtual>=2?selecionados.size:comTel.length;if(!n){toast('Nenhum destinatário selecionado','err');return;}const sem=filtrados.length-comTel.length;document.getElementById('cTotal').textContent=n;document.getElementById('cRecebem').textContent=n;document.getElementById('cIgn').textContent=sem;document.getElementById('confirmN').textContent=`${n} mensagem${n!==1?'s':''}`;let prev=msg.replace(/\{nome\}/g,'João Silva').replace(/\{valor\}/g,'R$ 2.500,00').replace(/\{dias_atraso\}/g,'45 dias').replace(/\{cpf\}/g,'***.***.***.00').replace(/\{credor\}/g,'Odonto Vitta').replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');document.getElementById('modalPreview').innerHTML=prev;document.getElementById('ovConfirm').classList.add('on');}
+function fecharConfirm(){document.getElementById('ovConfirm').classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target.id==='ovConfirm')fecharConfirm();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fecharConfirm();});
+async function confirmarDisparo(){fecharConfirm();if(emAndamento)return;emAndamento=true;for(let i=1;i<=3;i++){const p=document.getElementById('pane'+i);if(p)p.classList.remove('active');}document.getElementById('progView').classList.add('active');const destinos=(stepAtual>=2?Array.from(selecionados).map(i=>comTel[i]):comTel).filter(Boolean);const total=destinos.length;let env=0,err=0;const msgFinal=document.getElementById('msgEditor').value;document.getElementById('pRest').textContent=total;document.getElementById('logBox').innerHTML='';for(let i=0;i<destinos.length;i++){const d=destinos[i];const nome=d.nome||d.cliente_nome||'Cliente';try{const r=await fetch(API+'/api/suri/enviar-cobranca',{method:'POST',headers:H(),body:JSON.stringify({cliente_id:d.cliente_id||d.id,tipo_mensagem:tplAtual||'lembrete',mensagem_custom:msgFinal})});const dd=await r.json();if(dd.success){env++;addLog(nome,'ok','Enviado');}else{err++;addLog(nome,'err',dd.error||'Falhou');}}catch(e){err++;addLog(nome,'err','Erro de rede');}const pct=Math.round(((i+1)/total)*100);document.getElementById('progBar').style.width=pct+'%';document.getElementById('progStatus').textContent=`${pct}% · ${env} enviados`;document.getElementById('pEnv').textContent=env;document.getElementById('pErr').textContent=err;document.getElementById('pRest').textContent=total-i-1;if(i<destinos.length-1)await new Promise(r=>setTimeout(r,1200));}emAndamento=false;document.getElementById('progView').classList.remove('active');document.getElementById('resultView').classList.add('active');document.getElementById('resIcon').textContent=err===0?'✅':'⚠️';document.getElementById('resTtl').textContent=err===0?'Disparo concluído!':'Concluído com erros';document.getElementById('resSub').textContent=`${env} mensagens enviadas · ${err} erros`;toast(`Concluído! ${env} enviadas.`);}
+function addLog(nome,tipo,msg){const box=document.getElementById('logBox');const now=new Date();const t=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;box.innerHTML+=`<div class="log-line ${tipo}"><span class="log-t">${t}</span><span class="log-m">${tipo==='ok'?'✓':'✗'} ${nome} — ${msg}</span></div>`;box.scrollTop=box.scrollHeight;}
+function novoDisparo(){selecionados.clear();tplAtual='';emAndamento=false;document.getElementById('msgEditor').value='';document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('on'));document.getElementById('resultView').classList.remove('active');goStep(1);atualizar();atualizarPreview();}
+document.addEventListener('DOMContentLoaded',async()=>{await checkAuth();await carregarDados();atualizarPreview();});
 </script>
 </body>
 </html>
