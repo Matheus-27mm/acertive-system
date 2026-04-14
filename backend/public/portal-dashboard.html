@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Meu Portal — ACERTIVE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* ── RESET + TOKENS ── */
+/* v2 — portal-cliente-dashboard.html */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#060608;
   --s1:#0d0d10;--s2:#13131a;--s3:#1a1a24;
   --gold:#c9a84c;--gd:#7a5e20;--gxl:#e8c96a;
-  --red:#e84040;--red-s:rgba(232,64,64,.12);--red-br:rgba(232,64,64,.25);
+  --red:#e84040;--red-s:rgba(232,64,64,.1);--red-br:rgba(232,64,64,.22);
   --green:#2ecc71;--green-s:rgba(46,204,113,.1);--green-br:rgba(46,204,113,.2);
   --orange:#f39c12;
   --white:#f5f0ea;--text:#9a968e;--t2:#5a5650;--t3:#2e2c28;
@@ -24,13 +26,10 @@
 html{scroll-behavior:smooth}
 body{
   font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  /* grade sutil de fundo */
+  background:var(--bg);color:var(--text);min-height:100vh;
   background-image:
-    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);
   background-size:40px 40px;
 }
 a{text-decoration:none;color:inherit}
@@ -38,446 +37,309 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px}
 
-/* ── ANIMAÇÕES ── */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-@keyframes pulse-red{
-  0%,100%{box-shadow:0 0 0 0 rgba(232,64,64,.4)}
-  50%{box-shadow:0 0 0 12px rgba(232,64,64,0)}
-}
-@keyframes pulse-green{
-  0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.35)}
-  50%{box-shadow:0 0 0 10px rgba(46,204,113,0)}
-}
-@keyframes countUp{
-  from{opacity:0;transform:scale(.9)}
-  to{opacity:1;transform:scale(1)}
-}
-@keyframes shimmer{
-  0%{background-position:-200% center}
-  100%{background-position:200% center}
-}
+/* ── animações ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(232,64,64,.45)}50%{box-shadow:0 0 0 14px rgba(232,64,64,0)}}
+@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.4)}50%{box-shadow:0 0 0 10px rgba(46,204,113,0)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
 @keyframes sp{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
 
-/* delay cascade */
-.d1{animation-delay:.05s}
-.d2{animation-delay:.12s}
-.d3{animation-delay:.22s}
-.d4{animation-delay:.34s}
-.d5{animation-delay:.48s}
-.d6{animation-delay:.64s}
-
-/* ── TOPO MINIMAL ── */
+/* ── topbar ── */
 .topbar{
-  padding:16px 20px;
+  padding:14px 20px;
   display:flex;align-items:center;justify-content:space-between;
   border-bottom:1px solid var(--br);
-  background:rgba(6,6,8,.92);
+  background:rgba(6,6,8,.94);
   backdrop-filter:blur(20px);
   position:sticky;top:0;z-index:100;
 }
 .tb-logo{display:flex;align-items:center;gap:8px}
-.tb-logo img{height:24px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.4));mix-blend-mode:screen}
-.tb-mark{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--white);letter-spacing:2px}
-.tb-mark span{color:var(--gold)}
+.tb-logo img{height:22px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.4));mix-blend-mode:screen}
+.tb-nome{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--white);letter-spacing:2px}
+.tb-nome span{color:var(--gold)}
 .tb-right{display:flex;align-items:center;gap:10px}
-.tb-nome{font-size:11px;color:var(--t2)}
-.tb-nome strong{color:var(--text);font-weight:500}
+.tb-ola{font-size:11px;color:var(--t2)}
+.tb-ola strong{color:var(--text);font-weight:500}
 .btn-sair{
-  padding:5px 10px;border-radius:5px;
+  padding:5px 11px;border-radius:6px;
   font-size:10px;font-weight:600;letter-spacing:.3px;
-  border:1px solid var(--br);color:var(--t2);
-  transition:all .15s
+  border:1px solid var(--br);color:var(--t2);transition:all .15s;
 }
 .btn-sair:hover{border-color:rgba(232,64,64,.3);color:var(--red)}
 
-/* ── MAIN ── */
+/* ── main ── */
 .main{
-  max-width:520px;
-  margin:0 auto;
-  padding:32px 20px 60px;
-  display:flex;flex-direction:column;
-  gap:0;
+  max-width:500px;margin:0 auto;
+  padding:28px 18px 70px;
+  display:flex;flex-direction:column;gap:14px;
 }
 
-/* ── SEÇÃO GENÉRICA ── */
-.sec{
-  opacity:0;
-  animation:fadeUp .5s ease forwards;
-}
+/* ── seção com fade ── */
+.s{opacity:0;animation:fadeUp .5s ease forwards}
+.s.d1{animation-delay:.04s}
+.s.d2{animation-delay:.12s}
+.s.d3{animation-delay:.22s}
+.s.d4{animation-delay:.33s}
+.s.d5{animation-delay:.46s}
+.s.d6{animation-delay:.60s}
 
-/* ── BLOCO 1: ALERTA PRINCIPAL ── */
-.alerta-hero{
+/* ── BLOCO 1: alerta hero ── */
+.hero{
   background:var(--red-s);
   border:1px solid var(--red-br);
-  border-radius:16px;
-  padding:28px 24px 24px;
+  border-radius:18px;
+  padding:28px 22px 24px;
   text-align:center;
-  position:relative;
-  overflow:hidden;
-  margin-bottom:20px;
+  position:relative;overflow:hidden;
 }
-.alerta-hero::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--red),transparent);
+.hero::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red) 40%,var(--red) 60%,transparent);
+  opacity:.7;
 }
-.alerta-dot{
-  width:12px;height:12px;border-radius:50%;
-  background:var(--red);
-  display:inline-block;
-  margin-bottom:14px;
-  animation:pulse-red 2s ease-in-out infinite;
+.hero-dot{
+  width:11px;height:11px;border-radius:50%;
+  background:var(--red);display:inline-block;
+  margin-bottom:13px;
+  animation:pulseRed 2s ease-in-out infinite;
 }
-.alerta-titulo{
+.hero-titulo{
   font-family:'Syne',sans-serif;
-  font-size:20px;font-weight:800;
-  color:var(--white);
-  margin-bottom:8px;
+  font-size:21px;font-weight:800;color:var(--white);
+  margin-bottom:8px;line-height:1.2;
 }
-.alerta-desc{
+.hero-desc{
   font-size:13px;line-height:1.65;
-  color:rgba(232,64,64,.85);
-  margin-bottom:20px;
+  color:rgba(245,240,234,.55);
+  margin-bottom:22px;
 }
-.alerta-desc strong{color:var(--red)}
+.hero-desc strong{color:rgba(232,64,64,.9)}
 
-/* Botão CTA principal */
-.btn-cta-principal{
+/* CTA principal */
+.btn-main{
   display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;padding:17px;
-  background:linear-gradient(135deg,#e84040 0%,#b02020 100%);
-  border-radius:12px;
-  font-size:16px;font-weight:700;
-  color:#fff;letter-spacing:.3px;
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,#e84040 0%,#a82020 100%);
+  border-radius:12px;font-size:15px;font-weight:700;
+  color:#fff;letter-spacing:.2px;
   transition:all .22s;
   position:relative;overflow:hidden;
 }
-.btn-cta-principal::after{
-  content:'';
-  position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.08) 50%,transparent 100%);
-  background-size:200% 100%;
+.btn-main::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);
+  background-size:200%;
   animation:shimmer 2.5s ease-in-out infinite;
 }
-.btn-cta-principal:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 40px rgba(232,64,64,.4);
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(232,64,64,.4)}
+.btn-main:active{transform:translateY(0)}
+.micro{
+  font-size:10px;color:rgba(255,255,255,.35);
+  margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;
 }
-.btn-cta-principal:active{transform:translateY(0)}
-.microcopy{
-  font-size:10px;color:rgba(255,255,255,.4);
-  margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px
-}
-.microcopy i{font-size:9px}
+.micro i{font-size:9px}
 
-/* ── BLOCO 2: VALOR ── */
-.valor-bloco{
-  text-align:center;
-  padding:28px 20px;
-  margin-bottom:20px;
-  border-radius:16px;
-  background:var(--s1);
-  border:1px solid var(--br);
-  position:relative;
-  overflow:hidden;
+/* ── BLOCO 2: valor ── */
+.valor-wrap{
+  text-align:center;padding:26px 20px 22px;
+  background:var(--s1);border:1px solid var(--br);
+  border-radius:18px;position:relative;overflow:hidden;
 }
-.valor-bloco::before{
-  content:'';
-  position:absolute;
-  bottom:-60px;left:50%;transform:translateX(-50%);
-  width:200px;height:200px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);
+.valor-wrap::after{
+  content:'';position:absolute;
+  bottom:-50px;left:50%;transform:translateX(-50%);
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.055) 0%,transparent 70%);
   pointer-events:none;
 }
-.valor-label{
-  font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--t2);margin-bottom:10px
+.vlbl{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:9px}
+.vnum{
+  font-family:'Syne',sans-serif;font-size:42px;font-weight:800;
+  color:var(--white);line-height:1;margin-bottom:5px;
 }
-.valor-numero{
-  font-family:'Syne',sans-serif;
-  font-size:44px;font-weight:800;
-  color:var(--white);
-  line-height:1;margin-bottom:6px;
-  animation:countUp .6s .3s ease both;
+.vsub{font-size:11px;color:var(--t2);margin-bottom:16px}
+.perda{
+  display:inline-flex;align-items:flex-start;gap:7px;
+  padding:8px 13px;border-radius:7px;
+  background:rgba(243,156,18,.07);border:1px solid rgba(243,156,18,.16);
+  font-size:11px;color:var(--orange);text-align:left;line-height:1.55;
 }
-.valor-sub{font-size:11px;color:var(--t2);margin-bottom:18px}
-.gatilho-perda{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 14px;
-  border-radius:6px;
-  background:rgba(243,156,18,.08);
-  border:1px solid rgba(243,156,18,.18);
-  font-size:11px;color:var(--orange);line-height:1.5;
-  text-align:left;
-}
-.gatilho-perda i{font-size:10px;flex-shrink:0;margin-top:1px}
+.perda i{font-size:10px;flex-shrink:0;margin-top:2px}
 
-/* ── BLOCO 3: DÍVIDAS ── */
-.dividas-bloco{
-  margin-bottom:20px;
-  border-radius:16px;
-  background:var(--s1);
-  border:1px solid var(--br);
-  overflow:hidden;
+/* ── BLOCO 3: dívidas ── */
+.dividas-card{
+  background:var(--s1);border:1px solid var(--br);
+  border-radius:18px;overflow:hidden;
 }
-.dividas-titulo{
-  padding:14px 18px;
-  font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
-  color:var(--t2);
+.div-titulo{
+  padding:12px 18px;font-size:9px;font-weight:600;
+  letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);
   border-bottom:1px solid var(--br);
 }
-.divida-row{
+.div-row{
   display:flex;align-items:center;justify-content:space-between;
-  padding:14px 18px;
-  border-bottom:1px solid var(--br);
-  gap:12px;
+  padding:14px 18px;border-bottom:1px solid var(--br);gap:10px;
 }
-.divida-row:last-child{border-bottom:none}
+.div-row:last-child{border-bottom:none}
 .div-nome{font-size:13px;font-weight:500;color:var(--white)}
-.div-status{
-  font-size:9px;font-weight:700;letter-spacing:.4px;
-  padding:3px 8px;border-radius:4px;
+.div-data{font-size:10px;color:var(--t2);margin-top:2px}
+.div-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.div-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--orange);font-weight:500}
+.div-tag{
+  font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;
   background:var(--red-s);color:var(--red);border:1px solid var(--red-br);
-  white-space:nowrap;flex-shrink:0;
-}
-.div-valor{
-  font-family:'DM Mono',monospace;
-  font-size:13px;font-weight:500;
-  color:var(--orange);
-  white-space:nowrap;flex-shrink:0;
+  white-space:nowrap;
 }
 
-/* ── BLOCO 4: AÇÕES ── */
-.acoes-bloco{
-  margin-bottom:20px;
-}
+/* ── BLOCO 4: ações ── */
 .acoes-titulo{
-  font-family:'Syne',sans-serif;
-  font-size:17px;font-weight:800;
-  color:var(--white);
-  text-align:center;
-  margin-bottom:14px;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  color:var(--white);text-align:center;margin-bottom:12px;
 }
 .btn-wpp{
   display:flex;align-items:center;gap:12px;
-  width:100%;padding:18px 20px;
-  background:linear-gradient(135deg,#1da851 0%,#128c3a 100%);
-  border-radius:12px;
-  margin-bottom:10px;
-  transition:all .2s;
-  position:relative;overflow:hidden;
+  width:100%;padding:17px 18px;
+  background:linear-gradient(135deg,#1da851 0%,#117a34 100%);
+  border-radius:13px;margin-bottom:10px;
+  transition:all .2s;position:relative;overflow:hidden;
 }
 .btn-wpp::after{
   content:'';position:absolute;inset:0;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
-  background-size:200%;
-  animation:shimmer 3s ease infinite;
+  background-size:200%;animation:shimmer 3s ease infinite;
 }
-.btn-wpp:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(29,168,81,.35)}
-.btn-wpp-ico{
+.btn-wpp:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(29,168,81,.35)}
+.wpp-ico{
   width:40px;height:40px;border-radius:10px;
-  background:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.13);
   display:flex;align-items:center;justify-content:center;
   font-size:18px;color:#fff;flex-shrink:0;
+  animation:pulseGreen 2.2s ease-in-out infinite;
 }
-.btn-wpp-ico.pulse{animation:pulse-green 2.2s ease-in-out infinite}
-.btn-txt{flex:1;text-align:left}
-.btn-txt-main{font-size:14px;font-weight:700;color:#fff;display:block;margin-bottom:2px}
-.btn-txt-sub{font-size:10px;color:rgba(255,255,255,.6);display:block}
-.btn-arrow{color:rgba(255,255,255,.4);font-size:12px;flex-shrink:0}
+.btxt{flex:1;text-align:left}
+.btxt-main{font-size:14px;font-weight:700;color:#fff;display:block;margin-bottom:2px}
+.btxt-sub{font-size:10px;color:rgba(255,255,255,.55);display:block}
+.barrow{color:rgba(255,255,255,.35);font-size:11px;flex-shrink:0}
 
-.btn-proposta{
+.btn-prop{
   display:flex;align-items:center;gap:12px;
-  width:100%;padding:16px 20px;
+  width:100%;padding:15px 18px;
   background:var(--s2);
-  border:1px solid rgba(201,168,76,.18);
-  border-radius:12px;
-  transition:all .2s;
+  border:1px solid rgba(201,168,76,.16);
+  border-radius:13px;transition:all .2s;
 }
-.btn-proposta:hover{
-  background:var(--s3);
-  border-color:rgba(201,168,76,.35);
-  transform:translateY(-1px);
-}
-.btn-proposta-ico{
+.btn-prop:hover{background:var(--s3);border-color:rgba(201,168,76,.32);transform:translateY(-1px)}
+.prop-ico{
   width:38px;height:38px;border-radius:9px;
-  background:rgba(201,168,76,.08);
-  border:1px solid rgba(201,168,76,.15);
+  background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.14);
   display:flex;align-items:center;justify-content:center;
   font-size:15px;color:var(--gold);flex-shrink:0;
 }
-.btn-txt-main.gold{color:var(--white)}
-.btn-txt-sub.gold{color:var(--t2)}
 
-/* ── BLOCO 5 + 6 + 7 ── */
-.alivio-bloco{
-  text-align:center;
-  padding:24px 20px;
-  background:var(--s1);
-  border:1px solid var(--br);
-  border-radius:16px;
-  margin-bottom:20px;
+/* ── BLOCO 5: alívio ── */
+.alivio{
+  background:var(--s1);border:1px solid var(--br);
+  border-radius:16px;padding:20px 18px;text-align:center;
 }
-.alivio-titulo{
-  font-size:13px;font-weight:500;
-  color:var(--text);
-  margin-bottom:16px;
-  line-height:1.6;
-}
+.alivio-txt{font-size:12px;color:var(--text);line-height:1.65;margin-bottom:14px}
 .checks{display:flex;flex-direction:column;gap:8px}
-.check-item{
-  display:flex;align-items:center;gap:8px;
-  font-size:12px;color:var(--text);
-}
-.check-item i{
-  width:18px;height:18px;border-radius:50%;
-  background:var(--green-s);
-  border:1px solid var(--green-br);
+.chk{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text)}
+.chk-ico{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  background:var(--green-s);border:1px solid var(--green-br);
   display:flex;align-items:center;justify-content:center;
   font-size:9px;color:var(--green);
-  flex-shrink:0;
 }
 
-.urgencia-bloco{
-  text-align:center;
-  padding:14px 20px;
-  border-radius:12px;
-  background:rgba(243,156,18,.06);
-  border:1px solid rgba(243,156,18,.12);
-  margin-bottom:20px;
-  font-size:12px;color:var(--orange);
+/* ── BLOCO 6: urgência ── */
+.urgencia{
   display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:10px;
+  background:rgba(243,156,18,.06);border:1px solid rgba(243,156,18,.11);
+  font-size:12px;color:var(--orange);
 }
-.urgencia-bloco i{font-size:11px}
+.urgencia i{font-size:11px}
 
-/* ── MODAL PROPOSTA ── */
+/* ── situação ok ── */
+.ok-wrap{
+  text-align:center;padding:48px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  animation:fadeUp .5s ease forwards;
+}
+.ok-ico{font-size:52px;color:var(--green)}
+.ok-ttl{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--white)}
+.ok-sub{font-size:13px;color:var(--t2);line-height:1.65;max-width:300px}
+
+/* ── loading ── */
+.load-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:55vh;gap:14px;animation:fadeUp .3s ease forwards;
+}
+.spin{width:32px;height:32px;border:3px solid rgba(201,168,76,.1);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite}
+.load-txt{font-size:12px;color:var(--t2)}
+
+/* ── overlay / modal proposta ── */
 .overlay{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.88);
+  position:fixed;inset:0;background:rgba(0,0,0,.88);
   backdrop-filter:blur(8px);
   display:none;align-items:flex-end;justify-content:center;
-  z-index:1000;padding:0 0 0;
+  z-index:1000;
 }
 .overlay.on{display:flex}
 .modal{
-  background:var(--s2);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px 20px 0 0;
-  width:100%;max-width:520px;
-  padding:24px 20px 32px;
+  background:var(--s2);border:1px solid rgba(255,255,255,.07);
+  border-radius:22px 22px 0 0;
+  width:100%;max-width:500px;
+  padding:22px 20px 36px;
   animation:slideUp .3s cubic-bezier(.16,1,.3,1);
 }
-@keyframes slideUp{
-  from{transform:translateY(100%);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-.modal-handle{
-  width:40px;height:4px;border-radius:4px;
-  background:var(--br);margin:0 auto 20px;
-}
-.modal-ttl{
-  font-family:'Syne',sans-serif;
-  font-size:17px;font-weight:800;color:var(--white);
-  margin-bottom:4px;text-align:center;
-}
-.modal-sub{font-size:12px;color:var(--t2);text-align:center;margin-bottom:20px}
+.mhandle{width:38px;height:4px;border-radius:4px;background:var(--br);margin:0 auto 18px}
+.mttl{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--white);text-align:center;margin-bottom:4px}
+.msub{font-size:12px;color:var(--t2);text-align:center;margin-bottom:18px}
 
-.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
 .fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
 .fg input,.fg select,.fg textarea{
-  padding:11px 13px;
-  background:var(--s3);
-  border:1px solid var(--br);
-  border-radius:9px;
-  color:var(--white);
-  font-size:13px;
-  outline:none;
-  transition:border-color .15s;
-  width:100%;
-  font-family:'DM Sans',sans-serif;
+  padding:10px 12px;background:var(--s3);border:1px solid var(--br);
+  border-radius:9px;color:var(--white);font-size:13px;outline:none;
+  transition:border-color .15s;width:100%;font-family:'DM Sans',sans-serif;
 }
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(201,168,76,.35)}
 .fg select option{background:var(--s3)}
-.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+.fg textarea{resize:vertical;min-height:65px;line-height:1.5}
 
-.preview-parcela{
-  text-align:center;
-  padding:12px;
-  background:var(--s1);
-  border:1px solid rgba(201,168,76,.15);
-  border-radius:8px;
-  font-family:'DM Mono',monospace;
-  font-size:13px;color:var(--gold);
-  margin-bottom:14px;
-  display:none;
+.prev-parc{
+  text-align:center;padding:10px;
+  background:var(--s1);border:1px solid rgba(201,168,76,.15);
+  border-radius:8px;font-family:'DM Mono',monospace;
+  font-size:13px;color:var(--gold);margin-bottom:12px;display:none;
 }
-.preview-parcela.on{display:block}
+.prev-parc.on{display:block}
 
-.alerta-inline{
-  display:none;padding:9px 12px;border-radius:8px;
-  font-size:11px;margin-bottom:12px;
-  align-items:center;gap:7px;
-}
-.alerta-inline.err.on{display:flex;background:var(--red-s);border:1px solid var(--red-br);color:var(--red)}
-.alerta-inline.ok.on{display:flex;background:var(--green-s);border:1px solid var(--green-br);color:var(--green)}
-.alerta-inline i{font-size:10px;flex-shrink:0}
+.al{display:none;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;font-size:11px;margin-bottom:10px}
+.al.err.on{display:flex;background:var(--red-s);border:1px solid var(--red-br);color:var(--red)}
+.al.ok.on{display:flex;background:var(--green-s);border:1px solid var(--green-br);color:var(--green)}
+.al i{font-size:10px;flex-shrink:0}
 
-.btn-enviar-proposta{
-  width:100%;padding:14px;
+.btn-prop-send{
+  width:100%;padding:13px;
   background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);
-  border-radius:10px;
-  font-size:14px;font-weight:700;
-  color:#000;
-  transition:all .2s;
+  border-radius:10px;font-size:14px;font-weight:700;color:#000;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;
 }
-.btn-enviar-proposta:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.btn-enviar-proposta:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
-.btn-cancelar{
-  width:100%;padding:12px;
-  font-size:12px;color:var(--t2);
-  margin-top:8px;
-  transition:color .15s;
+.btn-prop-send:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-prop-send:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.btn-cancel{
+  width:100%;padding:11px;font-size:12px;color:var(--t2);
+  margin-top:6px;transition:color .15s;
 }
-.btn-cancelar:hover{color:var(--text)}
-
-/* situação ok (sem dívidas) */
-.situacao-ok{
-  text-align:center;padding:40px 20px;
-  animation:fadeUp .5s ease forwards;
-}
-.ok-ico{
-  font-size:48px;color:var(--green);
-  margin-bottom:16px;display:block;
-}
-.ok-ttl{
-  font-family:'Syne',sans-serif;
-  font-size:20px;font-weight:800;color:var(--white);
-  margin-bottom:8px;
-}
-.ok-sub{font-size:13px;color:var(--t2);line-height:1.6}
-
-/* loading */
-.loading-wrap{
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;min-height:50vh;gap:12px;
-  animation:fadeUp .3s ease forwards;
-}
-.spin{
-  width:32px;height:32px;
-  border:3px solid rgba(201,168,76,.12);
-  border-top-color:var(--gold);
-  border-radius:50%;
-  animation:sp .7s linear infinite;
-}
-.loading-txt{font-size:12px;color:var(--t2)}
+.btn-cancel:hover{color:var(--text)}
 
 /* toast */
 .toast{
-  position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);
+  position:fixed;bottom:16px;left:50%;
+  transform:translateX(-50%) translateY(60px);
   background:var(--s2);border:1px solid var(--br);
   border-radius:10px;padding:10px 18px;
   display:flex;align-items:center;gap:8px;
@@ -486,309 +348,279 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
   font-size:12px;font-weight:500;color:var(--white);
 }
 .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
-.toast.ok{border-color:rgba(46,204,113,.25)}
-.toast.ok i{color:var(--green)}
-.toast.err{border-color:rgba(232,64,64,.25)}
-.toast.err i{color:var(--red)}
+.toast.ok{border-color:rgba(46,204,113,.25)}.toast.ok i{color:var(--green)}
+.toast.err{border-color:rgba(232,64,64,.25)}.toast.err i{color:var(--red)}
 
 @media(max-width:480px){
-  .valor-numero{font-size:36px}
-  .main{padding:20px 14px 60px}
+  .vnum{font-size:36px}
+  .main{padding:18px 12px 60px}
 }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="tb-logo">
     <img src="/acertivelogo.png" alt="ACERTIVE">
-    <div class="tb-mark">ACERT<span>IVE</span></div>
+    <div class="tb-nome">ACERT<span>IVE</span></div>
   </div>
   <div class="tb-right">
-    <div class="tb-nome">Olá, <strong id="nomeTop">—</strong></div>
+    <div class="tb-ola">Olá, <strong id="nomeTop">—</strong></div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
 </div>
 
-<!-- MAIN -->
-<main class="main" id="mainContent">
-  <div class="loading-wrap">
+<main class="main" id="mainWrap">
+  <div class="load-wrap">
     <div class="spin"></div>
-    <div class="loading-txt">Carregando suas informações...</div>
+    <div class="load-txt">Carregando suas informações...</div>
   </div>
 </main>
 
 <!-- MODAL PROPOSTA -->
-<div class="overlay" id="ovProposta" onclick="fecharProposta(event)">
+<div class="overlay" id="ovProp" onclick="if(event.target===this)fecharModal()">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-ttl">Enviar proposta de acordo</div>
-    <div class="modal-sub">Defina o valor que cabe no seu bolso. Analisamos em até 1 dia útil.</div>
+    <div class="mhandle"></div>
+    <div class="mttl">Proposta de acordo</div>
+    <div class="msub">Defina o que cabe no seu bolso. Respondemos em até 1 dia útil.</div>
 
     <div class="fg">
       <label>Quanto você consegue pagar? (R$)</label>
-      <input type="number" id="propValor" placeholder="Ex: 500,00" min="1" step="0.01" oninput="atualizarPreview()">
+      <input type="number" id="pVal" placeholder="Ex: 500,00" min="1" step="0.01" oninput="updPrev()">
     </div>
     <div class="fg">
       <label>Como prefere pagar?</label>
-      <select id="propForma" onchange="atualizarPreview()">
+      <select id="pForma" onchange="updPrev()">
         <option value="avista">À vista</option>
         <option value="parcelado">Parcelado</option>
       </select>
     </div>
-    <div class="fg" id="grpParcelas" style="display:none">
+    <div class="fg" id="gParcelas" style="display:none">
       <label>Em quantas vezes?</label>
-      <select id="propParcelas" onchange="atualizarPreview()">
-        <option value="2">2×</option>
-        <option value="3">3×</option>
-        <option value="4">4×</option>
-        <option value="6">6×</option>
+      <select id="pParc" onchange="updPrev()">
+        <option value="2">2×</option><option value="3">3×</option>
+        <option value="4">4×</option><option value="6">6×</option>
         <option value="12">12×</option>
       </select>
     </div>
-    <div class="preview-parcela" id="previewParcela"></div>
+    <div class="prev-parc" id="prevParc"></div>
     <div class="fg">
       <label>Observação (opcional)</label>
-      <textarea id="propObs" placeholder="Conte sua situação ou qualquer detalhe relevante..."></textarea>
+      <textarea id="pObs" placeholder="Conte sua situação..."></textarea>
     </div>
 
-    <div class="alerta-inline err" id="propErr"><i class="fas fa-triangle-exclamation"></i><span id="propErrTxt"></span></div>
-    <div class="alerta-inline ok" id="propOk"><i class="fas fa-check-circle"></i><span>Proposta enviada! Nossa equipe entrará em contato em breve.</span></div>
+    <div class="al err" id="pErr"><i class="fas fa-triangle-exclamation"></i><span id="pErrTxt"></span></div>
+    <div class="al ok" id="pOk"><i class="fas fa-check-circle"></i><span>Proposta enviada! Entraremos em contato.</span></div>
 
-    <button class="btn-enviar-proposta" id="btnProposta" onclick="enviarProposta()">
+    <button class="btn-prop-send" id="btnEnviar" onclick="enviarProposta()">
       <i class="fas fa-paper-plane"></i> Enviar proposta
     </button>
-    <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+    <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"><i class="fas fa-check" id="toastIco"></i><span id="toastTxt"></span></div>
+<div class="toast" id="toast"><i class="fas fa-check" id="tiIco"></i><span id="tiTxt"></span></div>
 
 <script>
 const API = window.location.origin;
-const Hc  = () => ({'Authorization':'Bearer '+localStorage.getItem('cliente_token'),'Content-Type':'application/json'});
-const fmtM = v => (parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const Hc  = ()=>({'Authorization':'Bearer '+localStorage.getItem('cliente_token'),'Content-Type':'application/json'});
+const fmtM = v=>(parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
-let dadosGlobais = null;
+let _dados = null;
 
-/* ── AUTH ── */
-if(!localStorage.getItem('cliente_token')){
-  window.location.href='/portal-cliente.html';
-}
-function sair(){
-  localStorage.removeItem('cliente_token');
-  localStorage.removeItem('cliente_nome');
-  window.location.href='/portal-cliente.html';
-}
+if(!localStorage.getItem('cliente_token')) window.location.href='/portal-cliente.html';
 
-/* ── TOAST ── */
+function sair(){localStorage.removeItem('cliente_token');localStorage.removeItem('cliente_nome');window.location.href='/portal-cliente.html';}
+
 let _tt;
 function toast(msg,tipo='ok'){
   const el=document.getElementById('toast');
-  document.getElementById('toastIco').className='fas '+(tipo==='ok'?'fa-check':'fa-triangle-exclamation');
-  el.className='toast '+tipo;
-  document.getElementById('toastTxt').textContent=msg;
-  el.classList.add('on');
-  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),3200);
+  document.getElementById('tiIco').className='fas '+(tipo==='ok'?'fa-check':'fa-triangle-exclamation');
+  el.className='toast '+tipo;document.getElementById('tiTxt').textContent=msg;
+  el.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),3200);
 }
 
-/* ── CARREGAR DADOS ── */
 async function carregar(){
   try{
-    const r = await fetch(API+'/api/portal-cliente/minhas-dividas',{headers:Hc()});
+    const r=await fetch(API+'/api/portal-cliente/minhas-dividas',{headers:Hc()});
     if(r.status===401){sair();return;}
-    const d = await r.json();
+    const d=await r.json();
     if(!d.success){renderErro();return;}
-    dadosGlobais = d;
-    renderDashboard(d);
-  }catch(e){
-    renderErro();
-  }
+    _dados=d;renderDash(d);
+  }catch(e){renderErro();}
 }
 
-/* ── RENDER PRINCIPAL ── */
-function renderDashboard(d){
-  const nome  = d.cliente.nome||'Cliente';
-  const primo = nome.split(' ')[0];
+function fmtData(s){
+  if(!s||s==='null'||s==='undefined') return null;
+  try{
+    const d=new Date(s+'T12:00:00');
+    if(isNaN(d.getTime())) return null;
+    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  }catch(e){return null;}
+}
+
+function renderDash(d){
+  const nome   = d.cliente?.nome||'Cliente';
+  const primo  = nome.split(' ')[0];
   document.getElementById('nomeTop').textContent=primo;
 
   const dividas = (d.dividas||[]).filter(x=>x.status!=='pago');
-  const total   = d.resumo?.valor_total_atualizado||0;
-  const atraso  = d.resumo?.maior_atraso||0;
+  const total   = parseFloat(d.resumo?.valor_total_atualizado)||0;
+  const atraso  = parseInt(d.resumo?.maior_atraso)||0;
   const qtd     = dividas.length;
 
-  if(qtd===0){
-    renderSituacaoOk(primo);
-    return;
-  }
-
-  const el = document.getElementById('mainContent');
+  if(qtd===0){renderOk(primo);return;}
 
   const descAtraso = atraso>0
     ? `Sua dívida está em atraso há <strong>${atraso} dia${atraso!==1?'s':''}</strong>. O valor continua aumentando diariamente.`
-    : `Você possui <strong>${qtd} cobrança${qtd!==1?'s':''}</strong> em aberto. Regularize antes que os encargos aumentem.`;
+    : `Você possui <strong>${qtd} cobrança${qtd!==1?'s':''}</strong> em aberto. Regularize antes que os encargos cresçam.`;
 
-  const credoresHtml = dividas.slice(0,5).map(div=>{
-    const venc = div.data_vencimento
-      ? new Date(div.data_vencimento+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})
-      : '—';
-    const labelStatus = (div.dias_atraso||0)>0 ? `${div.dias_atraso}d atraso` : 'Pendente';
-    return`<div class="divida-row">
+  const rowsHtml = dividas.slice(0,5).map(div=>{
+    const dt = fmtData(div.data_vencimento);
+    const dias = parseInt(div.dias_atraso)||0;
+    const tag  = dias>0 ? `${dias}d atraso` : 'Pendente';
+    return`<div class="div-row">
       <div>
         <div class="div-nome">${div.credor_nome||div.descricao||'Cobrança'}</div>
-        <div style="font-size:10px;color:var(--t2);margin-top:1px">Venc. ${venc}</div>
+        ${dt?`<div class="div-data">Venc. ${dt}</div>`:''}
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="div-valor">${fmtM(div.valor_atualizado||div.valor)}</span>
-        <span class="div-status">${labelStatus}</span>
+      <div class="div-right">
+        <span class="div-val">${fmtM(div.valor_atualizado||div.valor)}</span>
+        <span class="div-tag">${tag}</span>
       </div>
     </div>`;
   }).join('');
 
-  el.innerHTML = `
-    <!-- BLOCO 1: ALERTA -->
-    <div class="sec alerta-hero d1">
-      <div class="alerta-dot"></div>
-      <div class="alerta-titulo">⚠️ Pendência em aberto</div>
-      <div class="alerta-desc">${descAtraso}</div>
-      <button class="btn-cta-principal" onclick="document.getElementById('acoesBloco').scrollIntoView({behavior:'smooth'})">
+  const wppTxt = encodeURIComponent(`Olá! Quero negociar minha dívida de ${fmtM(total)}.`);
+
+  document.getElementById('mainWrap').innerHTML=`
+    <div class="s d1 hero">
+      <div class="hero-dot"></div>
+      <div class="hero-titulo">⚠️ Pendência em aberto</div>
+      <div class="hero-desc">${descAtraso}</div>
+      <button class="btn-main" onclick="document.getElementById('bloco-acoes').scrollIntoView({behavior:'smooth'})">
         <i class="fas fa-bolt"></i> Resolver agora
       </button>
-      <div class="microcopy"><i class="fas fa-clock"></i> Leva menos de 2 minutos</div>
+      <div class="micro"><i class="fas fa-clock"></i> Leva menos de 2 minutos</div>
     </div>
 
-    <!-- BLOCO 2: VALOR -->
-    <div class="sec valor-bloco d2">
-      <div class="valor-label">Valor total atualizado</div>
-      <div class="valor-numero" id="valorNumero">${fmtM(total)}</div>
-      <div class="valor-sub">Calculado com juros e multa por atraso</div>
-      <div class="gatilho-perda">
+    <div class="s d2 valor-wrap">
+      <div class="vlbl">Valor total atualizado</div>
+      <div class="vnum">${fmtM(total)}</div>
+      <div class="vsub">Calculado com juros e multa por atraso</div>
+      <div class="perda">
         <i class="fas fa-triangle-exclamation"></i>
         Se não regularizado, podem ocorrer novas cobranças e restrições ao seu CPF.
       </div>
     </div>
 
-    <!-- BLOCO 3: DÍVIDAS -->
-    <div class="sec dividas-bloco d3">
-      <div class="dividas-titulo">Suas cobranças em aberto</div>
-      ${credoresHtml}
+    <div class="s d3 dividas-card">
+      <div class="div-titulo">Cobranças em aberto</div>
+      ${rowsHtml}
     </div>
 
-    <!-- BLOCO 4: AÇÕES -->
-    <div class="sec acoes-bloco d4" id="acoesBloco">
+    <div class="s d4" id="bloco-acoes">
       <div class="acoes-titulo">Como deseja resolver?</div>
-
-      <a href="https://wa.me/5592981040145?text=Olá!%20Quero%20negociar%20minha%20dívida%20de%20${encodeURIComponent(fmtM(total))}" target="_blank" class="btn-wpp">
-        <div class="btn-wpp-ico pulse"><i class="fab fa-whatsapp"></i></div>
-        <div class="btn-txt">
-          <span class="btn-txt-main">Negociar pelo WhatsApp</span>
-          <span class="btn-txt-sub">Fale com um atendente agora</span>
+      <a href="https://wa.me/5592981040145?text=${wppTxt}" target="_blank" class="btn-wpp">
+        <div class="wpp-ico"><i class="fab fa-whatsapp"></i></div>
+        <div class="btxt">
+          <span class="btxt-main">Negociar pelo WhatsApp</span>
+          <span class="btxt-sub">Fale com um atendente agora</span>
         </div>
-        <i class="fas fa-chevron-right btn-arrow"></i>
+        <i class="fas fa-chevron-right barrow"></i>
       </a>
-
-      <button class="btn-proposta" onclick="abrirProposta()">
-        <div class="btn-proposta-ico"><i class="fas fa-file-signature"></i></div>
-        <div class="btn-txt">
-          <span class="btn-txt-main gold">Enviar proposta de acordo</span>
-          <span class="btn-txt-sub gold">Defina um valor que cabe no seu bolso</span>
+      <button class="btn-prop" onclick="abrirModal()">
+        <div class="prop-ico"><i class="fas fa-file-signature"></i></div>
+        <div class="btxt">
+          <span class="btxt-main" style="color:var(--white)">Enviar proposta de acordo</span>
+          <span class="btxt-sub" style="color:var(--t2)">Defina um valor que cabe no seu bolso</span>
         </div>
         <i class="fas fa-chevron-right" style="color:var(--t2);font-size:11px;flex-shrink:0"></i>
       </button>
     </div>
 
-    <!-- BLOCO 5+6: ALÍVIO + REDUÇÃO DE FRICÇÃO -->
-    <div class="sec alivio-bloco d5">
-      <div class="alivio-titulo">
+    <div class="s d5 alivio">
+      <div class="alivio-txt">
         Você pode negociar valores e condições.<br>Nossa equipe está pronta para te ajudar.
       </div>
       <div class="checks">
-        <div class="check-item"><i class="fas fa-check"></i> Sem burocracia</div>
-        <div class="check-item"><i class="fas fa-check"></i> Sem ligação obrigatória</div>
-        <div class="check-item"><i class="fas fa-check"></i> Atendimento rápido e humano</div>
+        <div class="chk"><div class="chk-ico"><i class="fas fa-check"></i></div>Sem burocracia</div>
+        <div class="chk"><div class="chk-ico"><i class="fas fa-check"></i></div>Sem ligação obrigatória</div>
+        <div class="chk"><div class="chk-ico"><i class="fas fa-check"></i></div>Atendimento rápido e humano</div>
       </div>
     </div>
 
-    <!-- BLOCO 7: URGÊNCIA SUAVE -->
-    <div class="sec urgencia-bloco d6">
+    <div class="s d6 urgencia">
       <i class="fas fa-clock"></i>
       Quanto antes resolver, menores os encargos sobre sua dívida.
     </div>
   `;
 }
 
-function renderSituacaoOk(nome){
-  document.getElementById('mainContent').innerHTML=`
-    <div class="situacao-ok">
+function renderOk(nome){
+  document.getElementById('mainWrap').innerHTML=`
+    <div class="ok-wrap">
       <i class="fas fa-check-circle ok-ico"></i>
       <div class="ok-ttl">Tudo em ordem, ${nome}!</div>
-      <div class="ok-sub">Não encontramos nenhuma dívida em aberto no seu CPF.<br>Se tiver dúvidas, entre em contato pelo WhatsApp.</div>
-      <a href="https://wa.me/5592981040145" target="_blank" style="display:inline-flex;align-items:center;gap:7px;margin-top:20px;padding:11px 20px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.2);border-radius:9px;font-size:12px;font-weight:600;color:var(--green)">
+      <div class="ok-sub">Não encontramos dívidas em aberto no seu CPF.<br>Se tiver dúvidas, fale conosco.</div>
+      <a href="https://wa.me/5592981040145" target="_blank"
+         style="display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:11px 20px;background:var(--green-s);border:1px solid var(--green-br);border-radius:9px;font-size:12px;font-weight:600;color:var(--green)">
         <i class="fab fa-whatsapp"></i> Falar com a equipe
       </a>
     </div>`;
 }
 
 function renderErro(){
-  document.getElementById('mainContent').innerHTML=`
-    <div class="situacao-ok">
+  document.getElementById('mainWrap').innerHTML=`
+    <div class="ok-wrap">
       <div class="ok-ttl" style="color:var(--red)">Erro ao carregar</div>
       <div class="ok-sub">Não conseguimos buscar suas informações.<br>Tente novamente ou entre em contato.</div>
-      <button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;border-radius:8px;background:var(--s2);border:1px solid var(--br);color:var(--text);font-size:12px;cursor:pointer">
+      <button onclick="location.reload()" style="margin-top:12px;padding:10px 20px;border-radius:8px;background:var(--s2);border:1px solid var(--br);color:var(--text);font-size:12px;cursor:pointer">
         <i class="fas fa-rotate-right"></i> Tentar novamente
       </button>
     </div>`;
 }
 
-/* ── MODAL PROPOSTA ── */
-function abrirProposta(){
-  document.getElementById('ovProposta').classList.add('on');
+/* MODAL */
+function abrirModal(){
+  document.getElementById('ovProp').classList.add('on');
   document.body.style.overflow='hidden';
-  setTimeout(()=>document.getElementById('propValor').focus(),200);
+  setTimeout(()=>document.getElementById('pVal').focus(),200);
 }
 function fecharModal(){
-  document.getElementById('ovProposta').classList.remove('on');
+  document.getElementById('ovProp').classList.remove('on');
   document.body.style.overflow='';
 }
-function fecharProposta(e){
-  if(e.target===document.getElementById('ovProposta')) fecharModal();
-}
 
-function atualizarPreview(){
-  const val    = parseFloat(document.getElementById('propValor').value)||0;
-  const forma  = document.getElementById('propForma').value;
-  const parc   = parseInt(document.getElementById('propParcelas').value)||1;
-  const grp    = document.getElementById('grpParcelas');
-  const prev   = document.getElementById('previewParcela');
-
-  grp.style.display = forma==='parcelado'?'flex':'none';
-
-  if(val>0 && forma==='parcelado' && parc>1){
-    prev.className='preview-parcela on';
+function updPrev(){
+  const val  = parseFloat(document.getElementById('pVal').value)||0;
+  const forma= document.getElementById('pForma').value;
+  const parc = parseInt(document.getElementById('pParc').value)||1;
+  document.getElementById('gParcelas').style.display=forma==='parcelado'?'flex':'none';
+  const prev=document.getElementById('prevParc');
+  if(val>0&&forma==='parcelado'&&parc>1){
+    prev.className='prev-parc on';
     prev.textContent=`${parc}× de ${fmtM(val/parc)}`;
   } else {
-    prev.className='preview-parcela';
+    prev.className='prev-parc';
   }
 }
 
 async function enviarProposta(){
-  const val  = parseFloat(document.getElementById('propValor').value)||0;
-  const forma= document.getElementById('propForma').value;
-  const parc = parseInt(document.getElementById('propParcelas').value)||1;
-  const obs  = document.getElementById('propObs').value.trim();
+  const val  = parseFloat(document.getElementById('pVal').value)||0;
+  const forma= document.getElementById('pForma').value;
+  const parc = parseInt(document.getElementById('pParc').value)||1;
+  const obs  = document.getElementById('pObs').value.trim();
 
-  document.getElementById('propErr').className='alerta-inline err';
-  document.getElementById('propOk').className='alerta-inline ok';
+  document.getElementById('pErr').className='al err';
+  document.getElementById('pOk').className='al ok';
 
   if(val<=0){
-    document.getElementById('propErrTxt').textContent='Informe um valor válido.';
-    document.getElementById('propErr').className='alerta-inline err on';
-    return;
+    document.getElementById('pErrTxt').textContent='Informe um valor válido.';
+    document.getElementById('pErr').className='al err on';return;
   }
 
-  const btn=document.getElementById('btnProposta');
+  const btn=document.getElementById('btnEnviar');
   btn.disabled=true;
   btn.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:sp .65s linear infinite;display:inline-block"></div>';
 
@@ -799,25 +631,24 @@ async function enviarProposta(){
     });
     const d=await r.json();
     if(d.success){
-      document.getElementById('propOk').className='alerta-inline ok on';
-      document.getElementById('propValor').value='';
-      document.getElementById('propObs').value='';
-      document.getElementById('previewParcela').className='preview-parcela';
-      setTimeout(()=>{fecharModal();toast('Proposta enviada! Entraremos em contato em breve.');},1600);
+      document.getElementById('pOk').className='al ok on';
+      document.getElementById('pVal').value='';
+      document.getElementById('pObs').value='';
+      document.getElementById('prevParc').className='prev-parc';
+      setTimeout(()=>{fecharModal();toast('Proposta enviada! Entraremos em contato.');},1500);
     } else {
-      document.getElementById('propErrTxt').textContent=d.error||'Erro ao enviar proposta.';
-      document.getElementById('propErr').className='alerta-inline err on';
+      document.getElementById('pErrTxt').textContent=d.error||'Erro ao enviar.';
+      document.getElementById('pErr').className='al err on';
     }
   }catch(e){
-    document.getElementById('propErrTxt').textContent='Erro de conexão.';
-    document.getElementById('propErr').className='alerta-inline err on';
+    document.getElementById('pErrTxt').textContent='Erro de conexão.';
+    document.getElementById('pErr').className='al err on';
   }
   btn.disabled=false;
   btn.innerHTML='<i class="fas fa-paper-plane"></i> Enviar proposta';
 }
 
-/* ── INIT ── */
-document.addEventListener('DOMContentLoaded',()=>{carregar();});
+document.addEventListener('DOMContentLoaded',()=>carregar());
 </script>
 </body>
 </html>
