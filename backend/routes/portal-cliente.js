@@ -21,7 +21,7 @@
  *
  *  CREATE TABLE IF NOT EXISTS propostas_acordo (
  *    id              SERIAL PRIMARY KEY,
- *    cliente_id      INTEGER REFERENCES clientes(id),
+ *    cliente_id      UUID REFERENCES clientes(id),   -- UUID igual ao id da tabela clientes
  *    valor_proposto  NUMERIC(12,2),
  *    forma_pagamento TEXT DEFAULT 'avista',
  *    num_parcelas    INTEGER DEFAULT 1,
