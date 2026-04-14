@@ -3,7 +3,7 @@
  * ACERTIVE - Sistema de Cobrança
  * server.js - Servidor Principal
  * ========================================
- * v2.5.1 - Portal do Credor registrado
+ * v2.5.2 - Portal do Cliente adicionado
  */
 
 require('dotenv').config();
@@ -184,11 +184,19 @@ app.use('/api/templates', templatesRoutes);
 console.log('[TEMPLATES] Disparo variável ✓');
 
 // ── PORTAL DO CREDOR ───────────────────────────────────────────
-// Registra todas as rotas /api/portal/* definidas em routes/portal.js
-// Inclui: login, me, dashboard, carteira, acordos, export, admin/*
 const portalRoutes = require('./routes/portal')(pool, registrarLog);
 app.use('/api/portal', portalRoutes);
 console.log('[PORTAL] Portal do Credor ✓');
+
+// ── PORTAL DO CLIENTE (DEVEDOR) ────────────────────────────────  ← ADICIONADO AQUI (linha ~180)
+// Rotas públicas de auth + rotas autenticadas do devedor
+// POST /api/portal-cliente/cadastro
+// POST /api/portal-cliente/login
+// GET  /api/portal-cliente/minhas-dividas
+// POST /api/portal-cliente/proposta-acordo
+const portalClienteRoutes = require('./routes/portal-cliente')(pool);
+app.use('/api/portal-cliente', portalClienteRoutes);
+console.log('[PORTAL-CLIENTE] Portal do Cliente (devedor) ✓');
 
 // ── CRON JOBS ──────────────────────────────────────────────────
 pool.query('SELECT 1').then(() => {
@@ -250,7 +258,7 @@ app.get('/api/health', async (req, res) => {
     try {
         await pool.query('SELECT 1');
         const isProd = process.env.NODE_ENV === 'production';
-        res.json({ status: 'ok', timestamp: new Date().toISOString(), database: 'connected', version: '2.5.1', ...(isProd ? {} : { asaas: asaasService ? 'configured' : 'not_configured' }) });
+        res.json({ status: 'ok', timestamp: new Date().toISOString(), database: 'connected', version: '2.5.2', ...(isProd ? {} : { asaas: asaasService ? 'configured' : 'not_configured' }) });
     } catch (e) {
         res.status(500).json({ status: 'error', database: 'disconnected' });
     }
@@ -273,7 +281,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log('');
     console.log('╔═══════════════════════════════════════════════════════════════╗');
-    console.log('║            ACERTIVE - Sistema de Cobrança v2.5.1              ║');
+    console.log('║            ACERTIVE - Sistema de Cobrança v2.5.2              ║');
     console.log('╠═══════════════════════════════════════════════════════════════╣');
     console.log(`║  🚀 Servidor: http://localhost:${PORT}                          ║`);
     console.log('║                                                               ║');
@@ -283,13 +291,19 @@ app.listen(PORT, () => {
     console.log('║     auth, usuarios, cadastros, cobrancas, acordos             ║');
     console.log('║     acionamentos, financeiro, integracoes, suri               ║');
     console.log('║     operacao, relatorios, templates, cron-jobs                ║');
-    console.log('║     portal ← NOVO                                             ║');
+    console.log('║     portal (credor) + portal-cliente ← NOVO                  ║');
     console.log('║                                                               ║');
     console.log('║  🆕 Portal do Credor:                                         ║');
     console.log('║     🔐 Login próprio com JWT tipo=credor                      ║');
     console.log('║     📊 Dashboard, Carteira, Acordos                           ║');
     console.log('║     📁 Export Excel + PDF                                     ║');
     console.log('║     👥 Admin: criar/listar/toggle/resetar usuários            ║');
+    console.log('║                                                               ║');
+    console.log('║  🆕 Portal do Cliente (devedor):                              ║');
+    console.log('║     🔐 Login com CPF + senha própria                          ║');
+    console.log('║     📋 Ver dívidas com valores atualizados                    ║');
+    console.log('║     🤝 Propor acordo / parcelamento                           ║');
+    console.log('║     📜 Histórico de acionamentos                              ║');
     console.log('╚═══════════════════════════════════════════════════════════════╝');
     console.log('');
 });
