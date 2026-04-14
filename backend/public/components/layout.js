@@ -341,16 +341,26 @@
   /* ── BADGE DA FILA ───────────────────────────────────────── */
   async function loadFilaBadge() {
     if (!getToken()) return;
-    try {
-      const r = await fetch(API + '/api/acionamentos/fila/devedores?limit=1', { headers: H() });
-      const d = await r.json();
-      const total = d.total || d.count || 0;
-      const badgeEl = document.getElementById('sb-fila-badge');
-      if (badgeEl && total > 0) {
-        badgeEl.textContent = total > 99 ? '99+' : total;
-        badgeEl.style.display = '';
-      }
-    } catch (e) { /* silencioso */ }
+    // Rotas possíveis dependendo da versão do backend
+    const rotas = [
+      '/api/acionamentos/fila/devedores?limit=1',
+      '/api/acionamentos?limit=1',
+      '/api/cobrancas/estatisticas',
+    ];
+    for (const rota of rotas) {
+      try {
+        const r = await fetch(API + rota, { headers: H() });
+        if (!r.ok) continue; // tenta a próxima se 404
+        const d = await r.json();
+        const total = d.total || d.count || d.data?.total || 0;
+        const badgeEl = document.getElementById('sb-fila-badge');
+        if (badgeEl && total > 0) {
+          badgeEl.textContent = total > 99 ? '99+' : total;
+          badgeEl.style.display = '';
+        }
+        return; // achou — para aqui
+      } catch (e) { /* tenta próxima */ }
+    }
   }
 
   /* ── STATUS DA SURI (ponto verde) ───────────────────────── */
