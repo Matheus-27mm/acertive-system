@@ -339,28 +339,23 @@
   }
 
   /* ── BADGE DA FILA ───────────────────────────────────────── */
+  // Para evitar erros 404 no console, o badge da fila só é carregado
+  // se a página definir window.ACERTIVE_FILA_ROUTE com a rota correta.
+  // Ex: <script>window.ACERTIVE_FILA_ROUTE = '/api/operacao/fila';</script>
   async function loadFilaBadge() {
-    if (!getToken()) return;
-    // Rotas possíveis dependendo da versão do backend
-    const rotas = [
-      '/api/acionamentos/fila/devedores?limit=1',
-      '/api/acionamentos?limit=1',
-      '/api/cobrancas/estatisticas',
-    ];
-    for (const rota of rotas) {
-      try {
-        const r = await fetch(API + rota, { headers: H() });
-        if (!r.ok) continue; // tenta a próxima se 404
-        const d = await r.json();
-        const total = d.total || d.count || d.data?.total || 0;
-        const badgeEl = document.getElementById('sb-fila-badge');
-        if (badgeEl && total > 0) {
-          badgeEl.textContent = total > 99 ? '99+' : total;
-          badgeEl.style.display = '';
-        }
-        return; // achou — para aqui
-      } catch (e) { /* tenta próxima */ }
-    }
+    const rota = window.ACERTIVE_FILA_ROUTE;
+    if (!rota || !getToken()) return;
+    try {
+      const r = await fetch(API + rota, { headers: H() });
+      if (!r.ok) return;
+      const d = await r.json();
+      const total = d.total || d.count || d.data?.total || 0;
+      const badgeEl = document.getElementById('sb-fila-badge');
+      if (badgeEl && total > 0) {
+        badgeEl.textContent = total > 99 ? '99+' : total;
+        badgeEl.style.display = '';
+      }
+    } catch (e) { /* silencioso */ }
   }
 
   /* ── STATUS DA SURI (ponto verde) ───────────────────────── */
@@ -368,6 +363,7 @@
     if (!getToken()) return;
     try {
       const r = await fetch(API + '/api/suri/status', { headers: H() });
+      if (!r.ok) return; // sem erro no console se rota não existir
       const d = await r.json();
       const dot = document.getElementById('sb-suri-dot');
       if (dot && d.success && d.data?.conectado) {

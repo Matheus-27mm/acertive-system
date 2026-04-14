@@ -1,14 +1,9 @@
 /**
  * ========================================
  * ACERTIVE - Integração SURI (Chatbot Maker)
- * routes/suri.js - v3.2 FINAL
+ * routes/suri.js - v3.3
  * ========================================
- * 
- * MUDANÇAS v3.2:
- * - Juros/multa lidos da tabela `configuracoes` (tela de configurações)
- * - Chatbot simplificado: sem menu de pagamento
- * - Bot mostra cobranças + valor atualizado e transfere pro atendente
- * - Removido: PIX automático, desconto, parcelamento automático
+ * v3.3: Adicionada rota GET /historico
  */
 
 var express = require('express');
@@ -99,18 +94,14 @@ module.exports = function(pool, auth, registrarLog) {
     function calcularValorAtualizado(valorOriginal, diasAtraso, credorConfig) {
         var multa_pct = parseFloat(credorConfig.multa_atraso) || 2;
         var juros_pct = parseFloat(credorConfig.juros_atraso) || 9;
-
         var valorMulta = 0;
         var valorJuros = 0;
-
         if (diasAtraso > 0) {
             valorMulta = valorOriginal * (multa_pct / 100);
             var mesesAtraso = diasAtraso / 30;
             valorJuros = valorOriginal * (juros_pct / 100) * mesesAtraso;
         }
-
         var valorAtualizado = valorOriginal + valorMulta + valorJuros;
-
         return {
             original: valorOriginal,
             multa: Math.round(valorMulta * 100) / 100,
@@ -123,7 +114,6 @@ module.exports = function(pool, auth, registrarLog) {
         };
     }
 
-    // ✅ Busca juros/multa da tabela configuracoes (tela de configurações do sistema)
     async function buscarConfigGlobal() {
         try {
             var result = await pool.query('SELECT * FROM configuracoes WHERE id = 1');
@@ -142,11 +132,8 @@ module.exports = function(pool, auth, registrarLog) {
 
     async function buscarConfigCredor(credorId) {
         try {
-            // Sempre busca a config global primeiro (tela de configurações)
             var configGlobal = await buscarConfigGlobal();
-
             if (!credorId) return getConfigCredorPadrao(configGlobal);
-
             var result = await pool.query(
                 "SELECT multa_atraso, juros_atraso, permite_desconto, desconto_maximo, " +
                 "permite_parcelamento, parcelas_maximo, juros_parcelamento, nome " +
@@ -156,7 +143,6 @@ module.exports = function(pool, auth, registrarLog) {
                 var c = result.rows[0];
                 return {
                     nome: c.nome || 'Credor',
-                    // Se o credor tiver config própria usa, senão usa a global
                     multa_atraso: parseFloat(c.multa_atraso) || configGlobal.multa_atraso,
                     juros_atraso: parseFloat(c.juros_atraso) || configGlobal.juros_atraso,
                     permite_desconto: false,
@@ -236,43 +222,6 @@ module.exports = function(pool, auth, registrarLog) {
                 return { success: true, cobrancaId: data.id, valor: data.value, vencimento: data.dueDate, linkPagamento: data.invoiceUrl, pixCopiaECola: pixData.payload || null, externalReference: cobranca.externalReference };
             }
             return { success: false, error: data.errors ? data.errors[0].description : 'Erro desconhecido' };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
-
-    async function criarParcelamentoAsaas(clienteAsaas, valorTotal, numParcelas, descricao) {
-        try {
-            var valorParcela = Math.round((valorTotal / numParcelas) * 100) / 100;
-            var parcelas = [];
-            var hoje = new Date();
-            for (var i = 0; i < numParcelas; i++) {
-                var vencimento = new Date(hoje);
-                vencimento.setMonth(vencimento.getMonth() + i);
-                if (i === 0) vencimento.setDate(vencimento.getDate() + 2);
-                var externalRef = 'acertive_parc_' + Date.now() + '_' + (i + 1);
-                var cobranca = {
-                    customer: clienteAsaas.id, billingType: 'PIX', value: valorParcela,
-                    dueDate: vencimento.toISOString().split('T')[0],
-                    description: (descricao || 'Acordo ACERTIVE') + ' - Parcela ' + (i + 1) + '/' + numParcelas,
-                    externalReference: externalRef
-                };
-                var resp = await fetch(ASAAS_CONFIG.baseUrl + '/payments', { method: 'POST', headers: getAsaasHeaders(), body: JSON.stringify(cobranca) });
-                var data = await resp.json();
-                if (data.id) {
-                    var parcelaInfo = { numero: i + 1, cobrancaId: data.id, valor: data.value, vencimento: data.dueDate, linkPagamento: data.invoiceUrl, externalReference: externalRef };
-                    if (i === 0) {
-                        var pixResp = await fetch(ASAAS_CONFIG.baseUrl + '/payments/' + data.id + '/pixQrCode', { method: 'GET', headers: getAsaasHeaders() });
-                        var pixData = await pixResp.json();
-                        parcelaInfo.pixCopiaECola = pixData.payload || null;
-                    }
-                    parcelas.push(parcelaInfo);
-                }
-                await new Promise(function(r) { setTimeout(r, 500); });
-            }
-            return parcelas.length === numParcelas
-                ? { success: true, parcelas: parcelas }
-                : { success: false, error: 'Algumas parcelas falharam', parcelas: parcelas };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -362,7 +311,6 @@ module.exports = function(pool, auth, registrarLog) {
             html += '<p style="margin:0;font-size:28px;font-weight:bold;color:#1a1a2e;">' + valorStr + '</p>';
             html += '<p style="margin:5px 0 0;font-size:13px;color:#666;">Referente a: ' + (credorNome || 'Credor') + '</p></div>';
             html += '<div style="text-align:center;margin:30px 0;">';
-            html += '<p style="font-size:14px;color:#666;">Entre em contato para negociar:</p>';
             html += '<a href="https://wa.me/5592981040145" style="display:inline-block;background:#25d366;color:white;padding:14px 30px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;">💬 Negociar pelo WhatsApp</a></div>';
             html += '</div><div style="background:#1a1a2e;padding:20px;text-align:center;">';
             html += '<p style="color:#9ca3af;margin:0;font-size:12px;">ACERTIVE - Assessoria e Cobrança</p></div></div></body></html>';
@@ -376,7 +324,7 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // MENSAGEM INICIAL — SEM desconto/parcelamento
+    // MENSAGEM INICIAL
     // ═══════════════════════════════════════════════════════════════
 
     function gerarMensagemInicial(cliente, valorAtualizado, credorNome) {
@@ -435,47 +383,35 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CHATBOT: PROCESSAR RESPOSTA DO DEVEDOR
+    // CHATBOT
     // ═══════════════════════════════════════════════════════════════
 
     async function processarChatbot(telefone, texto, cliente, contactId) {
         var telefoneKey = limparTelefone(telefone);
         var sessao = sessoes[telefoneKey];
-
         if (!sessao || sessao.etapa === 'atendente') {
             return await iniciarSessao(telefoneKey, telefone, cliente, contactId);
         }
-
         sessao.timestamp = Date.now();
         if (contactId) sessao.contactId = contactId;
-
         return await encaminharAtendente(telefoneKey, telefone, sessao);
     }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CHATBOT: INICIAR SESSÃO — mostra cobranças + valor e encaminha
-    // ═══════════════════════════════════════════════════════════════
 
     async function iniciarSessao(telefoneKey, telefone, cliente, contactId) {
         var cobrancas = await buscarCobrancasCliente(cliente.id);
         var valorOriginal = parseFloat(cliente.valor_total) || 0;
         var maiorAtraso = parseInt(cliente.maior_atraso) || 0;
         var primeiroNome = (cliente.nome || 'Cliente').split(' ')[0];
-
         var credorId = cliente.principal_credor_id || (cobrancas.length > 0 ? cobrancas[0].credor_id : null);
         var configCredor = await buscarConfigCredor(credorId);
         var calculo = calcularValorAtualizado(valorOriginal, maiorAtraso, configCredor);
         var valorAtualizado = calculo.atualizado;
 
         sessoes[telefoneKey] = {
-            cliente_id: cliente.id,
-            etapa: 'atendente',
-            valor_original: valorOriginal,
-            valor_total: valorAtualizado,
-            calculo: calculo,
-            nome: primeiroNome,
-            contactId: contactId || null,
-            timestamp: Date.now()
+            cliente_id: cliente.id, etapa: 'atendente',
+            valor_original: valorOriginal, valor_total: valorAtualizado,
+            calculo: calculo, nome: primeiroNome,
+            contactId: contactId || null, timestamp: Date.now()
         };
 
         var msg = '📋 *ACERTIVE - Assessoria e Cobrança*\n\n';
@@ -519,21 +455,18 @@ module.exports = function(pool, auth, registrarLog) {
         msg += 'Um atendente da ACERTIVE entrará em contato em breve para negociar sua dívida.\n\n';
         msg += '🕐 _Horário: Segunda a Quinta, 8h às 17h30._\n\n';
         msg += '_Fora desse horário, retornaremos assim que possível. Obrigado!_ 🙏';
-
         await enviarMensagemTexto(telefone, msg, cId);
-
         try {
             await pool.query(
                 "INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'aguardando_atendente', 'Cliente respondeu e aguarda atendente', NOW())",
                 [sessao.cliente_id]
             );
         } catch (e) {}
-
         return 'atendente_notificado';
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // WEBHOOK: RECEBER EVENTOS DA SURI
+    // WEBHOOK
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/webhook', async function(req, res) {
@@ -571,19 +504,14 @@ module.exports = function(pool, auth, registrarLog) {
             var payload = evento.payload || evento.data || evento;
             var user = payload.user || {};
             var message = payload.Message || payload.message || {};
-
             var telefone = user.Phone || user.phone || payload.Phone || payload.phone;
             var texto = typeof message === 'string' ? message : (message.text || message.body || message.Text || message.content || '');
             var contactId = user.Id || user.id || payload.contactId;
-
             if (!telefone || !texto) return;
             if (message.fromMe || message.direction === 'sent' || message.isFromMe) return;
-
             var cliente = await buscarClientePorTelefone(telefone);
             if (!cliente || parseFloat(cliente.valor_total) <= 0) return;
-
             try { await pool.query("INSERT INTO acionamentos (cliente_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, 'whatsapp', 'suri', 'resposta_recebida', $2, NOW())", [cliente.id, 'WhatsApp: ' + texto.substring(0, 500)]); } catch (e) {}
-
             await processarChatbot(telefone, texto, cliente, contactId);
         } catch (error) {
             console.error('[SURI BOT] ❌ Erro:', error);
@@ -591,7 +519,7 @@ module.exports = function(pool, auth, registrarLog) {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // API: ENVIAR COBRANÇA INICIAL (WhatsApp + Email)
+    // API: ENVIAR COBRANÇA INICIAL
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/enviar-cobranca-inicial', auth, async function(req, res) {
@@ -599,26 +527,21 @@ module.exports = function(pool, auth, registrarLog) {
             var cliente_id = req.body.cliente_id;
             var canais = req.body.canais || ['whatsapp'];
             if (!cliente_id) return res.status(400).json({ success: false, error: 'Cliente obrigatório' });
-
             var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
             if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
             var cliente = clienteResult.rows[0];
-
             var cobResult = await pool.query(
                 "SELECT cob.*, cr.nome as credor_nome, cob.credor_id, (CURRENT_DATE - cob.data_vencimento) as dias_atraso " +
                 "FROM cobrancas cob LEFT JOIN credores cr ON cr.id = cob.credor_id " +
                 "WHERE cob.cliente_id = $1 AND cob.status IN ('pendente', 'vencido') ORDER BY cob.valor DESC", [cliente_id]
             );
             if (cobResult.rowCount === 0) return res.status(400).json({ success: false, error: 'Sem cobranças pendentes' });
-
             var cobrancas = cobResult.rows;
             var valorOriginal = cobrancas.reduce(function(s, c) { return s + parseFloat(c.valor); }, 0);
             var maiorAtraso = Math.max.apply(null, cobrancas.map(function(c) { return parseInt(c.dias_atraso) || 0; }));
             var config = await buscarConfigCredor(cobrancas[0].credor_id);
             var calculo = calcularValorAtualizado(valorOriginal, maiorAtraso, config);
-
             var resultados = {};
-
             if (canais.indexOf('whatsapp') !== -1) {
                 var telefone = formatarTelefone(cliente.telefone || cliente.celular);
                 if (telefone) {
@@ -631,7 +554,6 @@ module.exports = function(pool, auth, registrarLog) {
                     }
                 } else resultados.whatsapp = { success: false, error: 'Sem telefone' };
             }
-
             if (canais.indexOf('email') !== -1) {
                 var emailR = await enviarEmailCobranca(cliente, valorOriginal, calculo.atualizado, cobrancas[0].credor_nome);
                 resultados.email = emailR;
@@ -639,7 +561,6 @@ module.exports = function(pool, auth, registrarLog) {
                     await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1, $2, 'email', 'sistema', 'enviado', $3, NOW())", [cliente_id, req.user.id, 'Email cobrança - ' + formatarMoeda(calculo.atualizado)]);
                 }
             }
-
             await pool.query("UPDATE clientes SET data_ultimo_contato = NOW(), updated_at = NOW() WHERE id = $1", [cliente_id]);
             res.json({ success: true, calculo: calculo, resultados: resultados });
         } catch (error) {
@@ -648,7 +569,6 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // API legado - enviar-cobranca (template Suri)
     router.post('/enviar-cobranca', auth, async function(req, res) {
         try {
             var cliente_id = req.body.cliente_id;
@@ -692,7 +612,7 @@ module.exports = function(pool, auth, registrarLog) {
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // WEBHOOK ASAAS - PAGAMENTO
+    // WEBHOOK ASAAS
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/asaas-webhook', async function(req, res) {
@@ -730,7 +650,7 @@ module.exports = function(pool, auth, registrarLog) {
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // API: CRIAR ACORDO COM PIX (pelo atendente no sistema)
+    // API: CRIAR ACORDO COM PIX
     // ═══════════════════════════════════════════════════════════════
 
     router.post('/criar-acordo-pix', auth, async function(req, res) {
@@ -741,16 +661,12 @@ module.exports = function(pool, auth, registrarLog) {
             var desconto_pct = parseFloat(req.body.desconto_pct) || 0;
             var valor_original = parseFloat(req.body.valor_original) || valor_final;
             var enviar_whatsapp = req.body.enviar_whatsapp !== false;
-
             if (!cliente_id || !valor_final) return res.status(400).json({ success: false, error: 'Cliente e valor obrigatórios' });
-
             var clienteResult = await pool.query('SELECT * FROM clientes WHERE id = $1', [cliente_id]);
             if (clienteResult.rowCount === 0) return res.status(404).json({ success: false, error: 'Não encontrado' });
             var cliente = clienteResult.rows[0];
-
             var clienteAsaas = await buscarOuCriarClienteAsaas(cliente);
             if (!clienteAsaas) return res.status(500).json({ success: false, error: 'Erro Asaas' });
-
             var acordoRes = await pool.query(
                 "INSERT INTO acordos (cliente_id, operador_id, valor_original, valor_atualizado, desconto_percentual, desconto_valor, valor_acordo, valor_final, numero_parcelas, num_parcelas, valor_parcela, forma_pagamento, status, created_at) VALUES ($1, $2, $3, $3, $4, $5, $6, $6, $7, $7, $8, 'pix', 'ativo', NOW()) RETURNING id",
                 [cliente_id, req.user.id, valor_original, desconto_pct, valor_original * desconto_pct / 100, valor_final, num_parcelas, Math.round((valor_final / num_parcelas) * 100) / 100]
@@ -759,7 +675,6 @@ module.exports = function(pool, auth, registrarLog) {
             var valor_parcela = Math.round((valor_final / num_parcelas) * 100) / 100;
             var parcelas = [];
             var hoje = new Date();
-
             for (var i = 0; i < num_parcelas; i++) {
                 var venc = new Date(hoje);
                 venc.setMonth(venc.getMonth() + i);
@@ -782,7 +697,6 @@ module.exports = function(pool, auth, registrarLog) {
                 }
                 await new Promise(function(r) { setTimeout(r, 500); });
             }
-
             if (enviar_whatsapp && parcelas.length > 0) {
                 var tel = formatarTelefone(cliente.telefone || cliente.celular);
                 if (tel) {
@@ -798,7 +712,6 @@ module.exports = function(pool, auth, registrarLog) {
                     await enviarMensagemTexto(tel, msgA, null);
                 }
             }
-
             await pool.query("UPDATE clientes SET status_cobranca = 'acordo', updated_at = NOW() WHERE id = $1", [cliente_id]);
             await pool.query("INSERT INTO acionamentos (cliente_id, operador_id, tipo, canal, resultado, descricao, created_at) VALUES ($1,$2,'acordo','sistema','acordo_criado',$3,NOW())", [cliente_id, req.user.id, 'Acordo: ' + num_parcelas + 'x R$' + valor_parcela.toFixed(2)]);
             res.json({ success: true, acordo_id: acordoId, parcelas: parcelas });
@@ -808,7 +721,6 @@ module.exports = function(pool, auth, registrarLog) {
         }
     });
 
-    // API: Calcular acordo (preview)
     router.post('/calcular-acordo', auth, async function(req, res) {
         try {
             var cliente_id = req.body.cliente_id;
@@ -827,7 +739,6 @@ module.exports = function(pool, auth, registrarLog) {
         } catch (error) { res.status(500).json({ success: false, error: error.message }); }
     });
 
-    // API: Disparo em massa
     router.post('/disparo-massa', auth, async function(req, res) {
         try {
             var canais = req.body.canais || ['whatsapp'];
@@ -835,7 +746,6 @@ module.exports = function(pool, auth, registrarLog) {
             var filtro_atraso_max = req.body.filtro_atraso_max || 9999;
             var credor_id = req.body.credor_id || null;
             var limite = req.body.limite || 50;
-
             var query = "SELECT c.id, c.nome, c.telefone, c.celular, c.email, c.cpf_cnpj, " +
                 "SUM(cob.valor) as valor_total, MAX(CURRENT_DATE - cob.data_vencimento) as maior_atraso, " +
                 "(SELECT cr.nome FROM credores cr WHERE cr.id = MIN(cob.credor_id)) as credor_nome, MIN(cob.credor_id) as credor_id " +
@@ -845,11 +755,9 @@ module.exports = function(pool, auth, registrarLog) {
             var params = [filtro_atraso_min, filtro_atraso_max, limite];
             if (credor_id) { query += "AND cob.credor_id = $4 "; params.push(credor_id); }
             query += "GROUP BY c.id HAVING MAX(CURRENT_DATE - cob.data_vencimento) BETWEEN $1 AND $2 ORDER BY MAX(CURRENT_DATE - cob.data_vencimento) DESC LIMIT $3";
-
             var result = await pool.query(query, params);
             var enviados = { whatsapp: 0, email: 0 };
             var erros = [];
-
             for (var i = 0; i < result.rows.length; i++) {
                 var cl = result.rows[i];
                 try {
@@ -873,7 +781,6 @@ module.exports = function(pool, auth, registrarLog) {
         } catch (error) { res.status(500).json({ success: false, error: error.message }); }
     });
 
-    // API: Lembretes de parcela
     router.post('/enviar-lembretes', auth, async function(req, res) {
         try {
             var result = await pool.query(
@@ -901,7 +808,6 @@ module.exports = function(pool, auth, registrarLog) {
         } catch (error) { res.status(500).json({ success: false, error: error.message }); }
     });
 
-    // API: PIX de parcela
     router.get('/parcela-pix/:parcela_id', auth, async function(req, res) {
         try {
             var r = await pool.query("SELECT * FROM parcelas_acordo WHERE id = $1", [req.params.parcela_id]);
@@ -913,15 +819,105 @@ module.exports = function(pool, auth, registrarLog) {
         } catch (error) { res.status(500).json({ success: false, error: error.message }); }
     });
 
+    // ═══════════════════════════════════════════════════════════════
+    // API: HISTÓRICO DE MENSAGENS — v3.3 (NOVO)
+    // Busca da tabela acionamentos (canal = 'suri')
+    // ═══════════════════════════════════════════════════════════════
+
+    router.get('/historico', auth, async function(req, res) {
+        try {
+            var limit  = Math.min(parseInt(req.query.limit)  || 20, 100);
+            var offset = parseInt(req.query.offset) || 0;
+
+            var result = await pool.query(
+                "SELECT " +
+                "  a.id, " +
+                "  a.created_at, " +
+                "  a.resultado   AS status, " +
+                "  a.descricao, " +
+                "  a.canal, " +
+                "  a.tipo, " +
+                "  c.nome        AS cliente_nome, " +
+                "  c.cpf_cnpj, " +
+                "  c.telefone, " +
+                "  u.nome        AS operador_nome, " +
+                "  CASE " +
+                "    WHEN a.descricao ILIKE '%lembrete%'                          THEN 'lembrete' " +
+                "    WHEN a.descricao ILIKE '%urgente%'                           THEN 'urgente' " +
+                "    WHEN a.descricao ILIKE '%negociacao%' OR " +
+                "         a.descricao ILIKE '%negociação%'                        THEN 'negociacao' " +
+                "    WHEN a.descricao ILIKE '%acordo%'                            THEN 'acordo' " +
+                "    WHEN a.descricao ILIKE '%disparo%'                           THEN 'disparo_massa' " +
+                "    WHEN a.descricao ILIKE '%bot%' OR " +
+                "         a.descricao ILIKE '%resumo%'                            THEN 'bot' " +
+                "    ELSE 'cobranca' " +
+                "  END AS tipo_mensagem, " +
+                "  CASE " +
+                "    WHEN a.resultado IN ('enviado','bot_resumo_enviado', " +
+                "                        'resposta_recebida','atendente_notificado') " +
+                "         THEN true " +
+                "    ELSE false " +
+                "  END AS enviado " +
+                "FROM  acionamentos a " +
+                "LEFT  JOIN clientes  c ON c.id = a.cliente_id " +
+                "LEFT  JOIN usuarios  u ON u.id = a.operador_id " +
+                "WHERE a.canal = 'suri' " +
+                "   OR a.resultado IN ('bot_resumo_enviado','resposta_recebida', " +
+                "                     'atendente_notificado','novo_contato') " +
+                "ORDER BY a.created_at DESC " +
+                "LIMIT $1 OFFSET $2",
+                [limit, offset]
+            );
+
+            var countResult = await pool.query(
+                "SELECT COUNT(*)::int AS total " +
+                "FROM   acionamentos a " +
+                "WHERE  a.canal = 'suri' " +
+                "   OR  a.resultado IN ('bot_resumo_enviado','resposta_recebida', " +
+                "                      'atendente_notificado','novo_contato')"
+            );
+
+            res.json({
+                success: true,
+                data:    result.rows,
+                total:   countResult.rows[0].total,
+                limit:   limit,
+                offset:  offset
+            });
+
+        } catch (error) {
+            console.error('[SURI] Erro ao buscar histórico:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
+
     // Status e debug
-    router.get('/webhook-logs', auth, function(req, res) { res.json({ success: true, sessoes_ativas: Object.keys(sessoes).length, sessoes: sessoes }); });
+    router.get('/webhook-logs', auth, function(req, res) {
+        res.json({ success: true, sessoes_ativas: Object.keys(sessoes).length, sessoes: sessoes });
+    });
+
     router.get('/status', auth, async function(req, res) {
         try {
-            var s = await pool.query("SELECT COUNT(*) FILTER (WHERE tipo='whatsapp' AND canal='suri' AND DATE(created_at)=CURRENT_DATE) as msg_hoje, COUNT(*) FILTER (WHERE resultado LIKE 'acordo%') as acordos FROM acionamentos");
+            var s = await pool.query(
+                "SELECT COUNT(*) FILTER (WHERE tipo='whatsapp' AND canal='suri' AND DATE(created_at)=CURRENT_DATE) as msg_hoje, " +
+                "COUNT(*) FILTER (WHERE resultado LIKE 'acordo%') as acordos FROM acionamentos"
+            );
             var configGlobal = await buscarConfigGlobal();
-            res.json({ success: true, data: { conectado: true, chatbot_ativo: true, sessoes: Object.keys(sessoes).length, stats: s.rows[0], email_ok: !!emailTransporter, juros_configurado: configGlobal.juros_atraso + '%', multa_configurada: configGlobal.multa_atraso + '%' } });
+            res.json({
+                success: true,
+                data: {
+                    conectado: true,
+                    chatbot_ativo: true,
+                    sessoes: Object.keys(sessoes).length,
+                    stats: s.rows[0],
+                    email_ok: !!emailTransporter,
+                    juros_configurado: configGlobal.juros_atraso + '%',
+                    multa_configurada: configGlobal.multa_atraso + '%'
+                }
+            });
         } catch (e) { res.json({ success: false }); }
     });
+
     router.post('/teste-texto', auth, async function(req, res) {
         if (!req.body.telefone) return res.status(400).json({ success: false, error: 'Telefone obrigatório' });
         var r = await enviarMensagemTexto(formatarTelefone(req.body.telefone), req.body.texto || 'Teste ACERTIVE', null);
