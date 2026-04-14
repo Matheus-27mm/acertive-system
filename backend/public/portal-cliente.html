@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Cliente — ACERTIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;
+  --gold:#c9a84c;--gd:#7a5e20;--gxl:#dab85c;
+  --g05:rgba(201,168,76,.05);--g12:rgba(201,168,76,.12);--g20:rgba(201,168,76,.20);
+  --green:#34c98a;--red:#e55555;--orange:#d97c2e;--blue:#5b8fe8;
+  --white:#f0ede8;--text:#b8b4ae;--t2:#706c66;--t3:#3a3630;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
+  --br-gold:rgba(201,168,76,.12);--brh-gold:rgba(201,168,76,.22);
+  --r:10px;--rs:7px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
+
+/* fundo */
+.bg-orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.bg-orb.a{width:560px;height:560px;background:radial-gradient(circle,rgba(201,168,76,.05) 0%,transparent 70%);top:-120px;left:-120px}
+.bg-orb.b{width:440px;height:440px;background:radial-gradient(circle,rgba(201,168,76,.04) 0%,transparent 70%);bottom:-80px;right:-80px}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:48px 48px;z-index:0;pointer-events:none}
+
+.wrap{position:relative;z-index:1;width:100%;max-width:440px;padding:20px}
+
+/* logo */
+.logo-area{text-align:center;margin-bottom:32px}
+.logo-img{height:42px;object-fit:contain;filter:drop-shadow(0 2px 16px rgba(201,168,76,.35));mix-blend-mode:screen;margin:0 auto 12px;display:block}
+.logo-nome{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--white);letter-spacing:2px}
+.logo-nome span{color:var(--gold)}
+.logo-sub{font-size:9px;color:var(--t2);letter-spacing:2.5px;text-transform:uppercase;margin-top:4px}
+
+/* card */
+.card{background:var(--s1);border:1px solid var(--brh-gold);border-radius:14px;padding:32px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.6}
+
+/* tabs login/cadastro */
+.tabs{display:flex;gap:4px;background:var(--s2);border-radius:var(--rs);padding:3px;margin-bottom:24px}
+.tab-btn{flex:1;padding:8px;border-radius:5px;font-size:12px;font-weight:600;color:var(--t2);transition:all .18s;text-align:center}
+.tab-btn.active{background:var(--s3);color:var(--white);border:1px solid var(--br-gold)}
+.pane{display:none}.pane.active{display:flex;flex-direction:column;gap:14px}
+
+/* campos */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
+.input-wrap{position:relative}
+.input-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--t2);pointer-events:none}
+.input-wrap input{width:100%;padding:10px 11px 10px 32px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:13px;outline:none;transition:border-color .15s;font-family:'DM Sans',sans-serif}
+.input-wrap input:focus{border-color:var(--brh)}
+.input-wrap input.mono{font-family:'DM Mono',monospace}
+.input-wrap .toggle-pw{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--t2);cursor:pointer;padding:3px;transition:color .15s}
+.input-wrap .toggle-pw:hover{color:var(--white)}
+.pw-strength{height:3px;border-radius:3px;margin-top:4px;transition:all .3s;background:var(--s3)}
+.pw-bar{height:100%;border-radius:3px;width:0;transition:all .3s}
+
+/* btn */
+.btn-g{width:100%;padding:11px;background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000;border-radius:var(--rs);font-size:13px;font-weight:700;transition:all .2s;margin-top:4px}
+.btn-g:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-g:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+
+/* erro/sucesso */
+.alert{display:none;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--rs);font-size:12px;margin-top:-4px}
+.alert.on{display:flex}
+.alert.err{background:rgba(229,85,85,.07);border:1px solid rgba(229,85,85,.2);color:var(--red)}
+.alert.ok{background:rgba(52,201,138,.07);border:1px solid rgba(52,201,138,.2);color:var(--green)}
+.alert i{font-size:11px;flex-shrink:0}
+
+/* divisor */
+.divider{display:flex;align-items:center;gap:10px;margin:4px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--br)}
+.divider span{font-size:10px;color:var(--t3)}
+
+/* rodapé */
+.footer-txt{text-align:center;font-size:10px;color:var(--t2);margin-top:20px;line-height:1.6}
+.footer-txt a{color:var(--gold);transition:opacity .15s}
+.footer-txt a:hover{opacity:.7}
+
+/* spin */
+.spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:sp .65s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:480px){.wrap{padding:14px}.card{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div class="bg-orb a"></div>
+<div class="bg-orb b"></div>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+  <div class="logo-area">
+    <img src="/acertivelogo.png" alt="ACERTIVE" class="logo-img">
+    <div class="logo-nome">ACERT<span>IVE</span></div>
+    <div class="logo-sub">Portal do Cliente</div>
+  </div>
+
+  <div class="card">
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Entrar</div>
+      <div class="tab-btn" id="tabCad" onclick="switchTab('cadastro')">Criar conta</div>
+    </div>
+
+    <!-- ── LOGIN ── -->
+    <div class="pane active" id="paneLogin">
+      <div class="fg">
+        <label>CPF</label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card"></i>
+          <input type="text" id="loginCpf" class="mono" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="loginSenha" placeholder="Sua senha">
+          <span class="toggle-pw" onclick="togglePw('loginSenha',this)"><i class="fas fa-eye"></i></span>
+        </div>
+      </div>
+      <div class="alert err" id="loginErr"><i class="fas fa-triangle-exclamation"></i><span id="loginErrTxt">CPF ou senha incorretos.</span></div>
+      <button class="btn-g" id="btnLogin" onclick="fazerLogin()">
+        <i class="fas fa-sign-in-alt"></i> Entrar no portal
+      </button>
+      <div class="divider"><span>ou</span></div>
+      <div style="text-align:center;font-size:11px;color:var(--t2)">
+        Não tem conta? <span style="color:var(--gold);cursor:pointer;font-weight:600" onclick="switchTab('cadastro')">Crie agora</span>
+      </div>
+    </div>
+
+    <!-- ── CADASTRO ── -->
+    <div class="pane" id="paneCad">
+      <div class="fg">
+        <label>CPF</label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card"></i>
+          <input type="text" id="cadCpf" class="mono" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Data de nascimento</label>
+        <div class="input-wrap">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="cadNasc">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="cadSenha" placeholder="Mín. 6 caracteres" oninput="medirForca(this)">
+          <span class="toggle-pw" onclick="togglePw('cadSenha',this)"><i class="fas fa-eye"></i></span>
+        </div>
+        <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
+      </div>
+      <div class="fg">
+        <label>Confirmar senha</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="cadSenha2" placeholder="Repita a senha">
+          <span class="toggle-pw" onclick="togglePw('cadSenha2',this)"><i class="fas fa-eye"></i></span>
+        </div>
+      </div>
+      <div class="alert err" id="cadErr"><i class="fas fa-triangle-exclamation"></i><span id="cadErrTxt">Erro.</span></div>
+      <div class="alert ok" id="cadOk"><i class="fas fa-check-circle"></i><span>Conta criada! Redirecionando...</span></div>
+      <button class="btn-g" id="btnCad" onclick="fazerCadastro()">
+        <i class="fas fa-user-plus"></i> Criar minha conta
+      </button>
+      <div style="font-size:10px;color:var(--t3);text-align:center;line-height:1.6;margin-top:2px">
+        Seu CPF e data de nascimento devem corresponder ao cadastro do sistema.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-txt">
+    Dificuldades? Fale conosco via <a href="https://wa.me/5592981040145" target="_blank">WhatsApp</a><br>
+    <span style="color:var(--t3)">ACERTIVE Assessoria e Cobrança</span>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+/* redireciona se já logado */
+if(localStorage.getItem('cliente_token')){
+  window.location.href='/portal-cliente-dashboard.html';
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab'+(t==='login'?'Login':'Cad')).classList.add('active');
+  document.getElementById('pane'+(t==='login'?'Login':'Cad')).classList.add('active');
+}
+
+function mascaraCpf(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d+)/,'$1.$2.$3-$4');
+  else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d+)/,'$1.$2.$3');
+  else if(v.length>3) v=v.replace(/(\d{3})(\d+)/,'$1.$2');
+  el.value=v;
+}
+
+function togglePw(id, el){
+  const inp=document.getElementById(id);
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  el.querySelector('i').className=show?'fas fa-eye-slash':'fas fa-eye';
+}
+
+function medirForca(el){
+  const v=el.value;
+  const bar=document.getElementById('pwBar');
+  let score=0;
+  if(v.length>=6) score++;
+  if(v.length>=10) score++;
+  if(/[A-Z]/.test(v)) score++;
+  if(/[0-9]/.test(v)) score++;
+  if(/[^A-Za-z0-9]/.test(v)) score++;
+  const w=[0,20,40,60,80,100][score];
+  const c=['','#e55555','#d97c2e','#c9a84c','#5b8fe8','#34c98a'][score];
+  bar.style.width=w+'%';
+  bar.style.background=c;
+}
+
+function setBtn(id,loading,txt){
+  const b=document.getElementById(id);
+  b.disabled=loading;
+  b.innerHTML=loading?'<div class="spin"></div>':txt;
+}
+
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  el.querySelector('span').textContent=msg;
+  el.className='alert err on';
+}
+function hideErr(id){ document.getElementById(id).className='alert err'; }
+
+async function fazerLogin(){
+  const cpf=document.getElementById('loginCpf').value.replace(/\D/g,'');
+  const senha=document.getElementById('loginSenha').value;
+  if(cpf.length!==11){showErr('loginErr','CPF inválido.');return;}
+  if(!senha){showErr('loginErr','Digite sua senha.');return;}
+  hideErr('loginErr');
+  setBtn('btnLogin',true,'');
+  try{
+    const r=await fetch(API+'/api/portal-cliente/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cpf,senha})
+    });
+    const d=await r.json();
+    if(d.success){
+      localStorage.setItem('cliente_token',d.token);
+      localStorage.setItem('cliente_nome',d.cliente.nome);
+      window.location.href='/portal-cliente-dashboard.html';
+    } else {
+      showErr('loginErr',d.error||'CPF ou senha incorretos.');
+    }
+  }catch(e){
+    showErr('loginErr','Erro de conexão. Tente novamente.');
+  }
+  setBtn('btnLogin',false,'<i class="fas fa-sign-in-alt"></i> Entrar no portal');
+}
+
+async function fazerCadastro(){
+  const cpf=document.getElementById('cadCpf').value.replace(/\D/g,'');
+  const nasc=document.getElementById('cadNasc').value;
+  const senha=document.getElementById('cadSenha').value;
+  const senha2=document.getElementById('cadSenha2').value;
+  hideErr('cadErr');
+  document.getElementById('cadOk').className='alert ok';
+  if(cpf.length!==11){showErr('cadErr','CPF inválido.');return;}
+  if(!nasc){showErr('cadErr','Informe sua data de nascimento.');return;}
+  if(senha.length<6){showErr('cadErr','Senha deve ter ao menos 6 caracteres.');return;}
+  if(senha!==senha2){showErr('cadErr','As senhas não coincidem.');return;}
+  setBtn('btnCad',true,'');
+  try{
+    const r=await fetch(API+'/api/portal-cliente/cadastro',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cpf,data_nascimento:nasc,senha})
+    });
+    const d=await r.json();
+    if(d.success){
+      document.getElementById('cadOk').className='alert ok on';
+      setTimeout(()=>{
+        localStorage.setItem('cliente_token',d.token);
+        localStorage.setItem('cliente_nome',d.cliente.nome);
+        window.location.href='/portal-cliente-dashboard.html';
+      },1400);
+    } else {
+      showErr('cadErr',d.error||'Não foi possível criar a conta.');
+    }
+  }catch(e){
+    showErr('cadErr','Erro de conexão. Tente novamente.');
+  }
+  setBtn('btnCad',false,'<i class="fas fa-user-plus"></i> Criar minha conta');
+}
+
+/* enter para submeter */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  if(document.getElementById('paneLogin').classList.contains('active')) fazerLogin();
+  else fazerCadastro();
+});
+</script>
+</body>
+</html>

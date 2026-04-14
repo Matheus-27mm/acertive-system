@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Portal — ACERTIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;--s4:#1e1e1e;
+  --gold:#c9a84c;--gd:#7a5e20;--gxl:#dab85c;
+  --g05:rgba(201,168,76,.05);--g08:rgba(201,168,76,.08);--g12:rgba(201,168,76,.12);--g20:rgba(201,168,76,.20);
+  --green:#34c98a;--red:#e55555;--orange:#d97c2e;--blue:#5b8fe8;
+  --wpp:#25d366;
+  --white:#f0ede8;--text:#b8b4ae;--t2:#706c66;--t3:#3a3630;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
+  --br-gold:rgba(201,168,76,.12);--brh-gold:rgba(201,168,76,.22);
+  --r:10px;--rs:7px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--g20);border-radius:3px}
+
+/* ── HEADER ── */
+.header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(0,0,0,.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-logo img{height:26px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,.3));mix-blend-mode:screen}
+.hdr-nome{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);letter-spacing:1.5px}
+.hdr-nome span{color:var(--gold)}
+.hdr-user{display:flex;align-items:center;gap:10px}
+.hdr-av{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--gold),var(--gd));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#000;flex-shrink:0}
+.hdr-saudacao{font-size:11px;color:var(--t2)}
+.hdr-saudacao strong{color:var(--white);font-weight:500}
+.btn-sair{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:var(--rs);border:1px solid var(--br);color:var(--t2);font-size:11px;transition:all .15s}
+.btn-sair:hover{border-color:rgba(229,85,85,.3);color:var(--red);background:rgba(229,85,85,.05)}
+
+/* ── MAIN ── */
+.main{max-width:860px;margin:0 auto;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+
+/* ── BANNER DE STATUS ── */
+.status-banner{padding:16px 20px;border-radius:var(--r);display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.status-banner.ok{background:rgba(52,201,138,.06);border:1px solid rgba(52,201,138,.15)}
+.status-banner.warn{background:rgba(217,124,46,.06);border:1px solid rgba(217,124,46,.2)}
+.status-banner.crit{background:rgba(229,85,85,.06);border:1px solid rgba(229,85,85,.2)}
+.sb-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sb-ico.ok{background:rgba(52,201,138,.1);color:var(--green)}
+.sb-ico.warn{background:rgba(217,124,46,.1);color:var(--orange)}
+.sb-ico.crit{background:rgba(229,85,85,.1);color:var(--red)}
+.sb-txt strong{font-size:13px;font-weight:600;color:var(--white);display:block;margin-bottom:2px}
+.sb-txt span{font-size:11px}
+.sb-txt.ok span{color:var(--green)}
+.sb-txt.warn span{color:var(--orange)}
+.sb-txt.crit span{color:var(--red)}
+.sb-btn{margin-left:auto;flex-shrink:0;padding:7px 14px;border-radius:var(--rs);font-size:11px;font-weight:700;transition:all .18s}
+.sb-btn.wpp{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--wpp)}
+.sb-btn.wpp:hover{background:rgba(37,211,102,.18)}
+
+/* ── CARDS RESUMO ── */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{padding:16px 18px;background:var(--s1);border:1px solid var(--br);border-radius:var(--r)}
+.kpi-lbl{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px}
+.kpi-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--white);line-height:1;margin-bottom:2px}
+.kpi-val.red{color:var(--red)}.kpi-val.gold{color:var(--gold)}.kpi-val.green{color:var(--green)}
+.kpi-sub{font-size:10px;color:var(--t2)}
+
+/* ── CARD GENÉRICO ── */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--br)}
+.card-ttl{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.4px}
+.card-ttl i{font-size:10px;color:var(--t2)}
+.card-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+
+/* ── LISTA DE DÍVIDAS ── */
+.divida-item{padding:13px 14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--rs);display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.divida-item:hover{border-color:var(--brh)}
+.div-ico{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.div-ico.venc{background:rgba(229,85,85,.08);color:var(--red);border:1px solid rgba(229,85,85,.15)}
+.div-ico.pend{background:rgba(217,124,46,.08);color:var(--orange);border:1px solid rgba(217,124,46,.15)}
+.div-ico.pago{background:rgba(52,201,138,.08);color:var(--green);border:1px solid rgba(52,201,138,.15)}
+.div-info{flex:1;min-width:0}
+.div-credor{font-size:12.5px;font-weight:500;color:var(--white);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-desc{font-size:10px;color:var(--t2)}
+.div-right{text-align:right;flex-shrink:0}
+.div-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;display:block;margin-bottom:2px}
+.div-val.red{color:var(--red)}.div-val.ok{color:var(--green)}.div-val.gold{color:var(--gold)}
+.div-tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700}
+.div-tag.venc{background:rgba(229,85,85,.1);color:var(--red);border:1px solid rgba(229,85,85,.2)}
+.div-tag.pend{background:rgba(217,124,46,.1);color:var(--orange);border:1px solid rgba(217,124,46,.2)}
+.div-tag.pago{background:rgba(52,201,138,.1);color:var(--green);border:1px solid rgba(52,201,138,.2)}
+
+/* ── ACORDO ── */
+.acordo-wrap{background:var(--s2);border:1px solid var(--br-gold);border-radius:var(--rs);padding:14px 16px}
+.acordo-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.acordo-ttl{font-size:12px;font-weight:600;color:var(--white)}
+.acordo-sub{font-size:10px;color:var(--t2);margin-top:1px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
+.fg input,.fg select,.fg textarea{padding:8px 10px;background:var(--s3);border:1px solid var(--br);border-radius:var(--rs);color:var(--white);font-size:12.5px;outline:none;transition:border-color .15s;width:100%;font-family:'DM Sans',sans-serif}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--brh)}
+.fg select option{background:var(--s3)}
+.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.valor-preview{padding:11px 13px;background:var(--s1);border:1px solid var(--br-gold);border-radius:var(--rs);display:none}
+.valor-preview.on{display:block}
+.vp-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.vp-lbl{font-size:11px;color:var(--t2)}
+.vp-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--white)}
+.vp-val.gold{color:var(--gold)}.vp-val.green{color:var(--green)}
+
+/* ── PIX INDISPONÍVEL ── */
+.pix-disabled{padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pix-disabled-ico{width:48px;height:48px;border-radius:12px;background:var(--s2);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--t2)}
+.pix-disabled h4{font-family:'Syne',sans-serif;font-size:13px;color:var(--text);font-weight:600}
+.pix-disabled p{font-size:11px;color:var(--t2);line-height:1.5;max-width:280px}
+.badge-soon{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--g05);border:1px solid var(--br-gold);font-size:9px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
+
+/* ── HISTÓRICO ── */
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--br)}
+.hist-item:last-child{border-bottom:none}
+.hist-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.hist-ico.pago{background:rgba(52,201,138,.08);color:var(--green)}
+.hist-ico.acordo{background:var(--g05);color:var(--gold)}
+.hist-ico.contato{background:rgba(91,143,232,.08);color:var(--blue)}
+.hist-ico.prop{background:rgba(217,124,46,.08);color:var(--orange)}
+.hist-txt{flex:1;min-width:0}
+.hist-desc{font-size:12px;color:var(--white);margin-bottom:1px}
+.hist-data{font-size:10px;color:var(--t2);font-family:'DM Mono',monospace}
+.hist-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--green);flex-shrink:0}
+
+/* ── BOTÕES ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .18s;white-space:nowrap}
+.btn-g{background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);color:#000}
+.btn-g:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-o{background:transparent;border:1px solid var(--br);color:var(--t2)}
+.btn-o:hover{border-color:var(--brh);color:var(--white)}
+.btn-green{background:rgba(52,201,138,.1);border:1px solid rgba(52,201,138,.2);color:var(--green)}
+.btn-green:hover{background:rgba(52,201,138,.16)}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;filter:none!important}
+
+/* alerta inline */
+.alerta{display:none;align-items:center;gap:7px;padding:8px 11px;border-radius:var(--rs);font-size:11px}
+.alerta.on{display:flex}
+.alerta.err{background:rgba(229,85,85,.06);border:1px solid rgba(229,85,85,.2);color:var(--red)}
+.alerta.ok{background:rgba(52,201,138,.06);border:1px solid rgba(52,201,138,.2);color:var(--green)}
+.alerta i{font-size:10px;flex-shrink:0}
+
+/* empty / loading */
+.empty{text-align:center;padding:24px;color:var(--t2);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.empty i{font-size:20px;opacity:.2}
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.07);border-top-color:var(--gold);border-radius:50%;animation:sp .65s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* toast */
+.toast{position:fixed;bottom:14px;right:14px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.68,-.55,.265,1.55);z-index:999}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(52,201,138,.2)}.toast.err{border-color:rgba(229,85,85,.2)}
+.toast.ok i{color:var(--green)}.toast.err i{color:var(--red)}
+.toast span{font-size:12px;font-weight:500;color:var(--white)}
+
+/* modal overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid rgba(255,255,255,.08);border-radius:12px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:mi .2s cubic-bezier(.16,1,.3,1)}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--s1);position:sticky;top:0;z-index:5}
+.modal-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);opacity:.5}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:7px}
+.modal-ttl i{font-size:11px;color:var(--gold)}
+.modal-close{width:22px;height:22px;border-radius:5px;color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .12s}
+.modal-close:hover{background:rgba(229,85,85,.08);color:var(--red)}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:13px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .frow{grid-template-columns:1fr}
+  .hdr-saudacao{display:none}
+  .main{padding:14px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hdr-logo">
+    <img src="/acertivelogo.png" alt="ACERTIVE">
+    <div class="hdr-nome">ACERT<span>IVE</span></div>
+  </div>
+  <div class="hdr-user">
+    <div class="hdr-saudacao">Olá, <strong id="nomeCliente">—</strong></div>
+    <div class="hdr-av" id="avCliente">?</div>
+    <button class="btn-sair" onclick="sair()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- BANNER DE STATUS -->
+  <div class="status-banner warn" id="statusBanner">
+    <div class="sb-ico warn" id="statusIco"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="sb-txt warn" id="statusTxt">
+      <strong id="statusTitulo">Carregando...</strong>
+      <span id="statusDescricao">Buscando suas informações</span>
+    </div>
+    <a href="https://wa.me/5592981040145" target="_blank" class="sb-btn wpp">
+      <i class="fab fa-whatsapp"></i> Falar conosco
+    </a>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-lbl">Total em aberto</div>
+      <div class="kpi-val red" id="kTotal">—</div>
+      <div class="kpi-sub" id="kTotalSub">valor atualizado</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Cobranças pendentes</div>
+      <div class="kpi-val gold" id="kQtd">—</div>
+      <div class="kpi-sub" id="kQtdSub">títulos em aberto</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Maior atraso</div>
+      <div class="kpi-val red" id="kAtraso">—</div>
+      <div class="kpi-sub">dias desde o vencimento</div>
+    </div>
+  </div>
+
+  <!-- DÍVIDAS -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl"><i class="fas fa-file-invoice-dollar"></i> Minhas Dívidas</div>
+      <span style="font-size:10px;color:var(--t2)" id="divMeta">—</span>
+    </div>
+    <div class="card-body" id="dividasWrap">
+      <div class="empty"><div class="spin"></div></div>
+    </div>
+  </div>
+
+  <!-- PROPOSTA DE ACORDO -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl"><i class="fas fa-handshake"></i> Propor Acordo</div>
+    </div>
+    <div class="card-body">
+      <div style="font-size:12px;color:var(--t2);line-height:1.6">
+        Escolha uma forma de pagamento e envie sua proposta. Nossa equipe analisará e entrará em contato em até 1 dia útil.
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>Forma de pagamento</label>
+          <select id="acForma" onchange="onFormaChange()">
+            <option value="avista">À vista</option>
+            <option value="parcelado">Parcelado</option>
+          </select>
+        </div>
+        <div class="fg" id="grpParcelas" style="display:none">
+          <label>Número de parcelas</label>
+          <select id="acParcelas" onchange="calcularPreview()">
+            <option value="2">2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+            <option value="6">6x</option>
+            <option value="12">12x</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Valor que você consegue pagar (R$)</label>
+        <input type="number" id="acValor" placeholder="Ex: 500,00" min="1" step="0.01" oninput="calcularPreview()">
+      </div>
+      <div class="fg">
+        <label>Observação (opcional)</label>
+        <textarea id="acObs" placeholder="Conte sua situação ou qualquer detalhe relevante..."></textarea>
+      </div>
+
+      <!-- preview do acordo -->
+      <div class="valor-preview" id="valorPreview">
+        <div class="vp-row"><span class="vp-lbl">Total em aberto</span><span class="vp-val" id="vpTotal">—</span></div>
+        <div class="vp-row" id="vpDescontoRow" style="display:none"><span class="vp-lbl">Desconto proposto</span><span class="vp-val green" id="vpDesconto">—</span></div>
+        <div class="vp-row"><span class="vp-lbl">Valor proposto</span><span class="vp-val gold" id="vpValor">—</span></div>
+        <div class="vp-row" id="vpParcelaRow" style="display:none"><span class="vp-lbl">Valor por parcela</span><span class="vp-val gold" id="vpParcela">—</span></div>
+      </div>
+
+      <div class="alerta err" id="acErr"><i class="fas fa-triangle-exclamation"></i><span id="acErrTxt"></span></div>
+      <div class="alerta ok" id="acOk"><i class="fas fa-check-circle"></i><span id="acOkTxt">Proposta enviada! Entraremos em contato em breve.</span></div>
+
+      <button class="btn btn-g btn-full" id="btnAcordo" onclick="enviarProposta()">
+        <i class="fas fa-paper-plane"></i> Enviar proposta
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGAMENTO PIX — INDISPONÍVEL -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl"><i class="fas fa-qrcode"></i> Pagamento Online</div>
+      <span class="badge-soon"><i class="fas fa-clock"></i> Em breve</span>
+    </div>
+    <div class="pix-disabled">
+      <div class="pix-disabled-ico"><i class="fas fa-qrcode"></i></div>
+      <h4>Pagamento via PIX</h4>
+      <p>Em breve você poderá gerar um PIX para quitar sua dívida diretamente aqui.<br>Por enquanto, entre em contato pelo WhatsApp para pagar.</p>
+      <a href="https://wa.me/5592981040145" target="_blank" class="btn" style="background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--wpp);font-size:12px;padding:8px 16px;border-radius:var(--rs)">
+        <i class="fab fa-whatsapp"></i> Pagar via WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl"><i class="fas fa-clock-rotate-left"></i> Histórico de Atividades</div>
+    </div>
+    <div class="card-body" id="histWrap">
+      <div class="empty"><div class="spin"></div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fas fa-check" id="toastIco"></i><span id="toastTxt"></span></div>
+
+<script>
+const API = window.location.origin;
+const Hc = () => ({'Authorization':'Bearer '+localStorage.getItem('cliente_token'),'Content-Type':'application/json'});
+const fmtM  = v => (parseFloat(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtMk = v => { v=parseFloat(v)||0; if(v>=1e6) return 'R$ '+(v/1e6).toFixed(1)+'M'; if(v>=1e3) return 'R$ '+(v/1e3).toFixed(0)+'k'; return fmtM(v); };
+
+let dadosCliente = null;
+
+/* ── AUTH ── */
+if(!localStorage.getItem('cliente_token')){
+  window.location.href='/portal-cliente.html';
+}
+
+function sair(){
+  localStorage.removeItem('cliente_token');
+  localStorage.removeItem('cliente_nome');
+  window.location.href='/portal-cliente.html';
+}
+
+/* ── TOAST ── */
+let _tt;
+function toast(msg, tipo='ok'){
+  const el=document.getElementById('toast');
+  document.getElementById('toastIco').className='fas '+(tipo==='ok'?'fa-check':'fa-triangle-exclamation');
+  el.className='toast '+tipo; document.getElementById('toastTxt').textContent=msg;
+  el.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),3500);
+}
+
+/* ── CARREGAR DADOS ── */
+async function carregar(){
+  try{
+    const r=await fetch(API+'/api/portal-cliente/minhas-dividas',{headers:Hc()});
+    if(r.status===401){ sair(); return; }
+    const d=await r.json();
+    if(!d.success){ toast('Erro ao carregar dados','err'); return; }
+    dadosCliente=d;
+
+    // Header
+    const nome=d.cliente.nome||'Cliente';
+    document.getElementById('nomeCliente').textContent=nome.split(' ')[0];
+    document.getElementById('avCliente').textContent=nome[0].toUpperCase();
+
+    // KPIs
+    const totalAtualizado=d.resumo.valor_total_atualizado||0;
+    const qtd=d.dividas?.length||0;
+    const atraso=d.resumo.maior_atraso||0;
+    document.getElementById('kTotal').textContent=fmtMk(totalAtualizado);
+    document.getElementById('kTotalSub').textContent='corrigido com juros e multa';
+    document.getElementById('kQtd').textContent=qtd;
+    document.getElementById('kQtdSub').textContent=qtd===1?'título em aberto':'títulos em aberto';
+    document.getElementById('kAtraso').textContent=atraso>0?atraso+'d':'—';
+
+    // Banner
+    const banner=document.getElementById('statusBanner');
+    const ico=document.getElementById('statusIco');
+    const stTxt=document.getElementById('statusTxt');
+    if(qtd===0){
+      banner.className='status-banner ok';
+      ico.className='sb-ico ok'; ico.innerHTML='<i class="fas fa-check-circle"></i>';
+      stTxt.className='sb-txt ok';
+      document.getElementById('statusTitulo').textContent='Situação regular!';
+      document.getElementById('statusDescricao').textContent='Não encontramos dívidas em aberto no seu CPF.';
+    } else if(atraso>60){
+      banner.className='status-banner crit';
+      ico.className='sb-ico crit'; ico.innerHTML='<i class="fas fa-circle-exclamation"></i>';
+      stTxt.className='sb-txt crit';
+      document.getElementById('statusTitulo').textContent='Dívida crítica — regularize agora';
+      document.getElementById('statusDescricao').textContent=`${qtd} cobrança${qtd>1?'s':''} em atraso há mais de 60 dias · Total: ${fmtM(totalAtualizado)}`;
+    } else {
+      banner.className='status-banner warn';
+      ico.className='sb-ico warn'; ico.innerHTML='<i class="fas fa-triangle-exclamation"></i>';
+      stTxt.className='sb-txt warn';
+      document.getElementById('statusTitulo').textContent='Você possui dívidas em aberto';
+      document.getElementById('statusDescricao').textContent=`${qtd} cobrança${qtd>1?'s':''} pendente${qtd>1?'s':''} · Total atualizado: ${fmtM(totalAtualizado)}`;
+    }
+
+    renderDividas(d.dividas||[]);
+    renderHistorico(d.historico||[]);
+    document.getElementById('divMeta').textContent=qtd+' registro'+(qtd!==1?'s':'');
+
+  }catch(e){
+    toast('Erro ao carregar dados','err');
+  }
+}
+
+/* ── RENDER DÍVIDAS ── */
+function renderDividas(lista){
+  const wrap=document.getElementById('dividasWrap');
+  if(!lista.length){
+    wrap.innerHTML='<div class="empty"><i class="fas fa-check-circle" style="color:var(--green);opacity:.6"></i>Nenhuma dívida em aberto encontrada.</div>';
+    return;
+  }
+  wrap.innerHTML=lista.map(d=>{
+    const atraso=parseInt(d.dias_atraso)||0;
+    const status=d.status==='pago'?'pago':atraso>0?'venc':'pend';
+    const labelStatus=d.status==='pago'?'Pago':atraso>0?atraso+'d atraso':'Pendente';
+    const venc=d.data_vencimento?new Date(d.data_vencimento+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
+    const valClass=d.status==='pago'?'ok':atraso>0?'red':'gold';
+    return`<div class="divida-item">
+      <div class="div-ico ${status}"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div class="div-info">
+        <div class="div-credor">${d.credor_nome||d.descricao||'Cobrança'}</div>
+        <div class="div-desc">Venc.: ${venc}${d.descricao?' · '+d.descricao:''}</div>
+      </div>
+      <div class="div-right">
+        <span class="div-val ${valClass}">${fmtM(d.valor_atualizado||d.valor)}</span>
+        <span class="div-tag ${status}">${labelStatus}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── RENDER HISTÓRICO ── */
+function renderHistorico(lista){
+  const wrap=document.getElementById('histWrap');
+  if(!lista.length){
+    wrap.innerHTML='<div class="empty"><i class="fas fa-clock-rotate-left"></i>Nenhuma atividade registrada ainda.</div>';
+    return;
+  }
+  const icones={pagamento:'pago',acordo:'acordo',contato:'contato',proposta:'prop'};
+  const icoFa={pagamento:'fa-check-circle',acordo:'fa-handshake',contato:'fa-phone',proposta:'fa-paper-plane',whatsapp:'fa-comment'};
+  wrap.innerHTML='<div style="display:flex;flex-direction:column">'+lista.slice(0,20).map(h=>{
+    const tipo=h.tipo||'contato';
+    const cls=icones[tipo]||'contato';
+    const ico=icoFa[tipo]||icoFa[h.canal]||'fa-circle-dot';
+    const data=h.created_at?new Date(h.created_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    return`<div class="hist-item">
+      <div class="hist-ico ${cls}"><i class="fas ${ico}"></i></div>
+      <div class="hist-txt">
+        <div class="hist-desc">${h.descricao||h.resultado||'Atividade registrada'}</div>
+        <div class="hist-data">${data}</div>
+      </div>
+      ${h.valor?`<span class="hist-val">${fmtM(h.valor)}</span>`:''}
+    </div>`;
+  }).join('')+'</div>';
+}
+
+/* ── PROPOSTA DE ACORDO ── */
+function onFormaChange(){
+  const f=document.getElementById('acForma').value;
+  document.getElementById('grpParcelas').style.display=f==='parcelado'?'block':'none';
+  calcularPreview();
+}
+
+function calcularPreview(){
+  const valStr=document.getElementById('acValor').value;
+  const val=parseFloat(valStr)||0;
+  if(!val||!dadosCliente){document.getElementById('valorPreview').classList.remove('on');return;}
+
+  const total=dadosCliente.resumo.valor_total_atualizado||0;
+  const forma=document.getElementById('acForma').value;
+  const parcelas=parseInt(document.getElementById('acParcelas').value)||1;
+  const desconto=total>0?Math.max(0,((total-val)/total)*100):0;
+
+  document.getElementById('valorPreview').classList.add('on');
+  document.getElementById('vpTotal').textContent=fmtM(total);
+
+  if(desconto>0.5){
+    document.getElementById('vpDescontoRow').style.display='flex';
+    document.getElementById('vpDesconto').textContent='-'+desconto.toFixed(1)+'%';
+  } else {
+    document.getElementById('vpDescontoRow').style.display='none';
+  }
+
+  document.getElementById('vpValor').textContent=fmtM(val);
+
+  if(forma==='parcelado'&&parcelas>1){
+    document.getElementById('vpParcelaRow').style.display='flex';
+    document.getElementById('vpParcela').textContent=fmtM(val/parcelas)+' × '+parcelas;
+  } else {
+    document.getElementById('vpParcelaRow').style.display='none';
+  }
+}
+
+async function enviarProposta(){
+  const val=parseFloat(document.getElementById('acValor').value)||0;
+  const forma=document.getElementById('acForma').value;
+  const parcelas=parseInt(document.getElementById('acParcelas').value)||1;
+  const obs=document.getElementById('acObs').value.trim();
+
+  document.getElementById('acErr').className='alerta err';
+  document.getElementById('acOk').className='alerta ok';
+
+  if(val<=0){
+    document.getElementById('acErrTxt').textContent='Informe um valor válido.';
+    document.getElementById('acErr').className='alerta err on'; return;
+  }
+
+  const btn=document.getElementById('btnAcordo');
+  btn.disabled=true; btn.innerHTML='<div class="spin" style="border-top-color:#000"></div>';
+
+  try{
+    const r=await fetch(API+'/api/portal-cliente/proposta-acordo',{
+      method:'POST',headers:Hc(),
+      body:JSON.stringify({valor_proposto:val,forma_pagamento:forma,num_parcelas:parcelas,observacao:obs})
+    });
+    const d=await r.json();
+    if(d.success){
+      document.getElementById('acOk').className='alerta ok on';
+      document.getElementById('acObs').value='';
+      document.getElementById('acValor').value='';
+      document.getElementById('valorPreview').classList.remove('on');
+      toast('Proposta enviada com sucesso!');
+    } else {
+      document.getElementById('acErrTxt').textContent=d.error||'Erro ao enviar proposta.';
+      document.getElementById('acErr').className='alerta err on';
+    }
+  }catch(e){
+    document.getElementById('acErrTxt').textContent='Erro de conexão.';
+    document.getElementById('acErr').className='alerta err on';
+  }
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Enviar proposta';
+}
+
+document.addEventListener('DOMContentLoaded',()=>{ carregar(); });
+</script>
+</body>
+</html>
