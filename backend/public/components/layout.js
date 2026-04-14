@@ -171,6 +171,12 @@
         font-family: 'DM Sans', sans-serif;
       }
 
+      /* ── PORTAL DO CLIENTE — link externo ── */
+      .sb-portal-cli i:first-child { color: var(--sb-blue, #5b8fe8) !important; opacity: 1 !important; }
+      .sb-portal-cli:hover { color: var(--sb-white) !important; }
+      .sb-portal-cli.active { background: rgba(91,143,232,.06) !important; border-color: rgba(91,143,232,.2) !important; }
+      .sb-portal-cli.active::before { background: #5b8fe8 !important; }
+
       /* ── SURI — destaque verde ── */
       .sb-suri i { color: var(--sb-wpp) !important; opacity: 1 !important; }
 
