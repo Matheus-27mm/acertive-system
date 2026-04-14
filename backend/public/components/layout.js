@@ -310,14 +310,31 @@
       const r = await fetch(API + '/api/usuarios/me', { headers: H() });
       const d = await r.json();
       if (!d.success) return;
-      const u = d.data || d;
+      const u   = d.data || d;
       const nome = u.nome || 'Usuário';
-      const avEl = document.getElementById('sb-user-av');
-      const nomeEl = document.getElementById('sb-user-nome');
-      const roleEl = document.getElementById('sb-user-role');
-      if (avEl)   avEl.textContent   = nome[0].toUpperCase();
-      if (nomeEl) nomeEl.textContent = nome;
-      if (roleEl) roleEl.textContent = u.perfil || 'admin';
+      const av   = nome[0].toUpperCase();
+      const role = u.perfil || 'admin';
+
+      // ── IDs da sidebar injetada pelo layout.js ──
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      set('sb-user-av',   av);
+      set('sb-user-nome', nome);
+      set('sb-user-role', role);
+
+      // ── IDs legados (páginas ainda não migradas) ──
+      // dashboard / operacao / outras páginas com <aside> próprio
+      set('userName',    nome);   // id antigo mais comum
+      set('userRole',    role);
+      set('userAvatar',  av);     // configuracoes, suri, etc.
+      set('userAv',      av);     // dashboard, fila
+      set('uNome',       nome);   // credores, disparos, importacao, relatorios
+      set('uAv',         av);
+      set('uRole',       role);
+
     } catch (e) { /* silencioso */ }
   }
 
