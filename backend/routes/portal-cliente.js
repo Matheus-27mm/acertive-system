@@ -12,7 +12,7 @@
  *
  * REGISTRAR NO server.js:
  *  const portalClienteRoutes = require('./routes/portal-cliente');
- *  app.use('/api/portal-cliente', portalClienteRoutes(pool, jwt, bcrypt));
+ *  app.use('/api/portal-cliente', portalClienteRoutes(pool, jwt, bcryptjs));
  *
  * MIGRATION SQL (rodar uma vez):
  *  ALTER TABLE clientes
@@ -33,7 +33,7 @@
  */
 
 const express = require('express');
-const bcrypt  = require('bcrypt');
+const bcryptjs  = require('bcryptjsjs');
 const jwt     = require('jsonwebtoken');
 
 const JWT_SECRET  = process.env.JWT_SECRET || 'acertive_secret_key';
@@ -113,7 +113,7 @@ module.exports = function(pool) {
         return res.status(409).json({ success: false, error: 'Já existe uma conta para este CPF. Faça login.' });
 
       /* cria hash da senha */
-      const hash = await bcrypt.hash(senha, SALT_ROUNDS);
+      const hash = await bcryptjsjs.hash(senha, SALT_ROUNDS);
       await pool.query(
         'UPDATE clientes SET portal_senha_hash = $1, portal_ativo = true, updated_at = NOW() WHERE id = $2',
         [hash, cliente.id]
@@ -161,7 +161,7 @@ module.exports = function(pool) {
       if (!cliente.portal_ativo)
         return res.status(403).json({ success: false, error: 'Conta bloqueada. Entre em contato.' });
 
-      const senhaOk = await bcrypt.compare(senha, cliente.portal_senha_hash);
+      const senhaOk = await bcryptjsjs.compare(senha, cliente.portal_senha_hash);
       if (!senhaOk)
         return res.status(401).json({ success: false, error: 'Senha incorreta.' });
 
