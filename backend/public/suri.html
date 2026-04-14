@@ -622,31 +622,67 @@ const TEMPLATES = {
   acordo:'Olá {nome}! ✅\n\nQue tal resolver sua pendência de *{valor}* hoje?\n\nPagamento à vista com desconto ou parcelado. Fale conosco!'
 };
 
-let _busca;
+/* Normaliza string para comparação: minúsculas + sem acentos */
+function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+let _busca, _cacheTotal=[];
+
+/* Pré-carrega todos os devedores uma vez para filtragem local */
+async function preCarregarDevedores(){
+  if(_cacheTotal.length) return;
+  try{
+    const r=await fetch(API+'/api/acionamentos/fila/devedores?limit=10000',{headers:H()});
+    const d=await r.json();
+    _cacheTotal=d.data||[];
+  }catch(e){}
+}
+
 function buscarCliente(q){
   clearTimeout(_busca);
   const el=document.getElementById('searchResults');
   if(!q||q.length<2){el.innerHTML='';return;}
+
   _busca=setTimeout(async()=>{
-    try{
-      const r=await fetch(API+'/api/acionamentos/fila/devedores?busca='+encodeURIComponent(q)+'&limit=6',{headers:H()});
-      const d=await r.json();
-      const lista=d.data||[];
-      if(!lista.length){
-        el.innerHTML='<div style="padding:8px;font-size:11px;color:var(--t2)"><i class="fas fa-search" style="margin-right:5px"></i>Nenhum devedor encontrado</div>';
-        return;
-      }
-      el.innerHTML=lista.map(c=>`
-        <div class="sr-item" onclick="selecionarCliente(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-          <div class="sr-av">${(c.nome||'?')[0].toUpperCase()}</div>
-          <div>
-            <div class="sr-nome">${c.nome||'—'}</div>
-            <div class="sr-sub">${c.cpf_cnpj||'—'} · ${(c.telefone||c.celular)?'<span style="color:var(--green)">Com telefone</span>':'<span style="color:var(--red)">Sem telefone</span>'}</div>
-          </div>
-          <div style="margin-left:auto;font-family:DM Mono,monospace;font-size:11px;color:var(--orange)">${fmtMk(c.valor_total||0)}</div>
-        </div>`).join('');
-    }catch(e){el.innerHTML='<div style="padding:8px;font-size:11px;color:var(--red)">Erro ao buscar</div>';}
-  },280);
+    await preCarregarDevedores();
+
+    const qn=norm(q);
+
+    /* Filtragem local — case-insensitive, sem acento, por nome OU cpf */
+    let filtrados=_cacheTotal.filter(c=>{
+      const nome=norm(c.nome||c.cliente_nome||'');
+      const cpf=norm(c.cpf_cnpj||'').replace(/\D/g,'');
+      const qDigits=qn.replace(/\D/g,'');
+      return nome.includes(qn)||(qDigits.length>=3&&cpf.includes(qDigits));
+    }).slice(0,8);
+
+    /* Fallback: se cache vazio tenta API com os dois parâmetros mais comuns */
+    if(!filtrados.length&&!_cacheTotal.length){
+      try{
+        const enc=encodeURIComponent(q);
+        const r=await fetch(
+          API+'/api/acionamentos/fila/devedores?busca='+enc+'&search='+enc+'&nome='+enc+'&limit=8',
+          {headers:H()}
+        );
+        const d=await r.json();
+        filtrados=(d.data||[]).filter(c=>norm(c.nome||c.cliente_nome||'').includes(qn));
+      }catch(e){}
+    }
+
+    if(!filtrados.length){
+      el.innerHTML='<div style="padding:8px 10px;font-size:11px;color:var(--t2)"><i class="fas fa-magnifying-glass" style="margin-right:5px;opacity:.4"></i>Nenhum devedor encontrado para "<strong style="color:var(--white)">'+q+'</strong>"</div>';
+      return;
+    }
+
+    el.innerHTML=filtrados.map(c=>`
+      <div class="sr-item" onclick="selecionarCliente(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+        <div class="sr-av">${(c.nome||c.cliente_nome||'?')[0].toUpperCase()}</div>
+        <div>
+          <div class="sr-nome">${c.nome||c.cliente_nome||'—'}</div>
+          <div class="sr-sub">${c.cpf_cnpj||'—'} · ${(c.telefone||c.celular)?'<span style="color:var(--green)">Com telefone</span>':'<span style="color:var(--red)">Sem telefone</span>'}</div>
+        </div>
+        <div style="margin-left:auto;font-family:DM Mono,monospace;font-size:11px;color:var(--orange)">${fmtMk(c.valor_total||0)}</div>
+      </div>`).join('');
+  },220);
 }
 
 function selecionarCliente(c){
@@ -826,6 +862,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   verificarStatus();
   carregarHistorico();
   atualizarPreview();
+  preCarregarDevedores(); // cache local para busca instantânea
 });
 </script>
 </body>
