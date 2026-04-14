@@ -4,160 +4,266 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
 <title>Portal do Cliente — ACERTIVE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* v2 — portal-cliente.html */
+/* v3 — portal-cliente.html — vídeo + glassmorphism */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#060608;
-  --s1:#0d0d10;--s2:#13131a;--s3:#1a1a24;
   --gold:#c9a84c;--gd:#7a5e20;--gxl:#e8c96a;
   --red:#e84040;
   --green:#2ecc71;--green-s:rgba(46,204,113,.1);--green-br:rgba(46,204,113,.2);
-  --white:#f5f0ea;--text:#9a968e;--t2:#5a5650;--t3:#2e2c28;
-  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.10);
-  --br-gold:rgba(201,168,76,.12);--brh-gold:rgba(201,168,76,.22);
+  --white:#f5f0ea;--text:rgba(245,240,234,.7);--t2:rgba(245,240,234,.35);--t3:rgba(245,240,234,.15);
+  --br:rgba(255,255,255,.09);--brh:rgba(255,255,255,.18);
+  --br-gold:rgba(201,168,76,.25);
 }
-html{scroll-behavior:smooth}
+html,body{height:100%;margin:0}
 body{
   font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
+  overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  overflow-x:hidden;
-  background-image:
-    linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);
-  background-size:40px 40px;
+  min-height:100vh;
 }
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:none}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px}
 
-/* orbs */
-.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
-.orb.a{width:500px;height:500px;background:radial-gradient(circle,rgba(201,168,76,.045) 0%,transparent 70%);top:-100px;left:-100px}
-.orb.b{width:400px;height:400px;background:radial-gradient(circle,rgba(201,168,76,.03) 0%,transparent 70%);bottom:-80px;right:-80px}
-
-/* wrap */
-.wrap{position:relative;z-index:1;width:100%;max-width:420px;padding:20px}
-
-/* logo */
-.logo-area{text-align:center;margin-bottom:28px}
-.logo-img{height:38px;object-fit:contain;filter:drop-shadow(0 2px 16px rgba(201,168,76,.4));mix-blend-mode:screen;display:block;margin:0 auto 12px}
-.logo-nome{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--white);letter-spacing:2.5px}
-.logo-nome span{color:var(--gold)}
-.logo-sub{font-size:9px;color:var(--t2);letter-spacing:3px;text-transform:uppercase;margin-top:5px}
-
-/* card */
-.card{
-  background:var(--s1);
-  border:1px solid var(--brh-gold);
-  border-radius:16px;
-  padding:28px 28px 24px;
-  position:relative;overflow:hidden;
+/* ── VÍDEO DE FUNDO ── */
+.video-bg{
+  position:fixed;inset:0;z-index:0;
+  overflow:hidden;
 }
+.video-bg video{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  min-width:100%;min-height:100%;
+  width:auto;height:auto;
+  object-fit:cover;
+}
+/* overlay escuro sobre o vídeo */
+.video-overlay{
+  position:fixed;inset:0;z-index:1;
+  background:linear-gradient(
+    135deg,
+    rgba(0,0,0,.78) 0%,
+    rgba(0,0,0,.65) 50%,
+    rgba(0,0,0,.75) 100%
+  );
+}
+/* vinheta nas bordas */
+.video-vinheta{
+  position:fixed;inset:0;z-index:2;
+  background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.6) 100%);
+  pointer-events:none;
+}
+
+/* ── WRAP CENTRAL ── */
+.wrap{
+  position:relative;z-index:10;
+  width:100%;max-width:420px;
+  padding:20px;
+  animation:fadeIn .8s ease forwards;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── LOGO ── */
+.logo-area{text-align:center;margin-bottom:28px}
+.logo-img{
+  height:40px;object-fit:contain;
+  filter:drop-shadow(0 2px 20px rgba(201,168,76,.5));
+  mix-blend-mode:screen;
+  display:block;margin:0 auto 12px;
+}
+.logo-nome{
+  font-family:'Syne',sans-serif;font-size:24px;font-weight:800;
+  color:var(--white);letter-spacing:3px;
+  text-shadow:0 2px 20px rgba(0,0,0,.8);
+}
+.logo-nome span{color:var(--gold)}
+.logo-sub{
+  font-size:9px;color:var(--t2);letter-spacing:3.5px;text-transform:uppercase;margin-top:5px;
+  text-shadow:0 1px 8px rgba(0,0,0,.6);
+}
+
+/* ── CARD GLASS ── */
+.card{
+  background:rgba(8,8,12,.55);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;
+  padding:30px 28px 26px;
+  position:relative;overflow:hidden;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,.5),
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 0 0 1px rgba(201,168,76,.08);
+}
+/* linha dourada no topo */
 .card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gxl) 50%,var(--gold) 70%,transparent 95%);
-  opacity:.6;
+  opacity:.7;
+}
+/* brilho sutil no canto superior esquerdo */
+.card::after{
+  content:'';position:absolute;
+  top:-60px;left:-60px;
+  width:160px;height:160px;
+  background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);
+  pointer-events:none;
 }
 
-/* tabs */
+/* ── TABS ── */
 .tabs{
   display:flex;gap:3px;
-  background:var(--s2);border-radius:9px;padding:3px;
-  margin-bottom:22px;
+  background:rgba(255,255,255,.05);
+  border-radius:10px;padding:3px;
+  margin-bottom:24px;
+  border:1px solid var(--br);
 }
 .tab-btn{
-  flex:1;padding:8px;border-radius:6px;
+  flex:1;padding:8px;border-radius:7px;
   font-size:12px;font-weight:600;color:var(--t2);
-  transition:all .18s;text-align:center;cursor:pointer;
+  transition:all .2s;text-align:center;cursor:pointer;
 }
-.tab-btn.active{background:var(--s3);color:var(--white);border:1px solid var(--br-gold)}
+.tab-btn.active{
+  background:rgba(201,168,76,.15);
+  color:var(--white);
+  border:1px solid var(--br-gold);
+  text-shadow:0 1px 6px rgba(0,0,0,.4);
+}
 
-.pane{display:none;flex-direction:column;gap:13px}
+.pane{display:none;flex-direction:column;gap:14px}
 .pane.active{display:flex}
 
-/* campos */
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg label{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.7px}
+/* ── CAMPOS ── */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{
+  font-size:9px;font-weight:700;color:var(--t2);
+  text-transform:uppercase;letter-spacing:.8px;
+}
 .iw{position:relative}
-.iw i.ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--t2);pointer-events:none}
+.iw .ico{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-size:12px;color:var(--t2);pointer-events:none;
+}
 .iw input{
-  width:100%;padding:10px 11px 10px 32px;
-  background:var(--s3);border:1px solid var(--br);border-radius:8px;
+  width:100%;padding:11px 12px 11px 34px;
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--br);border-radius:9px;
   color:var(--white);font-size:13px;outline:none;
-  transition:border-color .15s;
+  transition:all .18s;
   font-family:'DM Sans',sans-serif;
 }
-.iw input[type=date]{padding-left:32px}
+.iw input::placeholder{color:var(--t3)}
+.iw input:focus{
+  border-color:rgba(201,168,76,.4);
+  background:rgba(255,255,255,.09);
+  box-shadow:0 0 0 3px rgba(201,168,76,.08);
+}
+.iw input[type=date]{padding-left:34px;color-scheme:dark}
 .iw input.mono{font-family:'DM Mono',monospace}
-.iw input:focus{border-color:var(--brh)}
 .iw .eye{
   position:absolute;right:10px;top:50%;transform:translateY(-50%);
   font-size:13px;color:var(--t2);cursor:pointer;
-  padding:5px 6px;border-radius:5px;
-  transition:color .15s;z-index:2;
-  display:flex;align-items:center;justify-content:center;
+  padding:5px 7px;border-radius:6px;
+  transition:all .15s;z-index:2;
+  display:flex;align-items:center;
 }
-.iw .eye:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.iw .eye:hover{color:var(--white);background:rgba(255,255,255,.08)}
 
-/* barra de força */
-.pw-bar-wrap{height:3px;border-radius:3px;background:var(--s3);margin-top:3px}
-.pw-bar{height:100%;border-radius:3px;width:0;transition:all .3s}
+/* barra força senha */
+.pw-bar-wrap{height:2px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:4px}
+.pw-bar{height:100%;border-radius:2px;width:0;transition:all .35s}
 
-/* alerta */
+/* alertas */
 .alerta{
   display:none;align-items:center;gap:7px;
-  padding:9px 12px;border-radius:8px;font-size:12px;
+  padding:9px 13px;border-radius:9px;font-size:12px;
+  backdrop-filter:blur(8px);
 }
 .alerta.on{display:flex}
-.alerta.err{background:rgba(232,64,64,.07);border:1px solid rgba(232,64,64,.2);color:var(--red)}
+.alerta.err{background:rgba(232,64,64,.12);border:1px solid rgba(232,64,64,.25);color:#ff7070}
 .alerta.ok{background:var(--green-s);border:1px solid var(--green-br);color:var(--green)}
 .alerta i{font-size:10px;flex-shrink:0}
 
-/* btns */
+/* ── BTN PRINCIPAL ── */
 .btn-g{
-  width:100%;padding:12px;margin-top:2px;
+  width:100%;padding:13px;margin-top:2px;
   background:linear-gradient(135deg,var(--gold) 0%,var(--gd) 100%);
-  border-radius:9px;font-size:13px;font-weight:700;color:#000;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:10px;font-size:13px;font-weight:700;
+  color:#000;letter-spacing:.2px;
+  transition:all .22s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 20px rgba(201,168,76,.25);
+  position:relative;overflow:hidden;
 }
-.btn-g:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.btn-g:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.btn-g::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  background-size:200%;
+  opacity:0;transition:opacity .2s;
+}
+.btn-g:hover{
+  filter:brightness(1.1);transform:translateY(-1px);
+  box-shadow:0 8px 30px rgba(201,168,76,.35);
+}
+.btn-g:hover::after{opacity:1}
+.btn-g:active{transform:translateY(0)}
+.btn-g:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:none;box-shadow:none}
 
+/* divisor */
 .divider{display:flex;align-items:center;gap:10px;color:var(--t3);font-size:10px}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--br)}
 
+/* link */
 .link-txt{text-align:center;font-size:11px;color:var(--t2)}
-.link-txt span{color:var(--gold);cursor:pointer;font-weight:600}
-.link-txt span:hover{text-decoration:underline}
+.link-txt span{color:var(--gold);cursor:pointer;font-weight:600;transition:opacity .15s}
+.link-txt span:hover{opacity:.75}
 
-.hint-txt{font-size:10px;color:var(--t3);text-align:center;line-height:1.6}
-
-/* footer */
-.footer{text-align:center;font-size:10px;color:var(--t2);margin-top:18px;line-height:1.7}
-.footer a{color:var(--gold)}
+/* hint */
+.hint-txt{font-size:10px;color:var(--t3);text-align:center;line-height:1.7}
 
 /* spin */
 .spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:sp .65s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-@media(max-width:460px){.wrap{padding:14px}.card{padding:22px 18px 20px}}
+/* ── FOOTER ── */
+.footer{
+  text-align:center;font-size:10px;color:var(--t2);
+  margin-top:18px;line-height:1.8;
+  text-shadow:0 1px 6px rgba(0,0,0,.6);
+}
+.footer a{color:var(--gold);transition:opacity .15s}
+.footer a:hover{opacity:.75}
+
+/* mobile */
+@media(max-width:460px){
+  body{overflow-y:auto;overflow-x:hidden;align-items:flex-start;padding:0}
+  .wrap{padding:16px;padding-top:40px}
+  .video-bg video{width:100%;height:100%;object-fit:cover}
+}
 </style>
 </head>
 <body>
-<div class="orb a"></div>
-<div class="orb b"></div>
 
+<!-- VÍDEO DE FUNDO -->
+<div class="video-bg">
+  <video autoplay muted loop playsinline preload="auto">
+    <source src="/network.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="video-overlay"></div>
+<div class="video-vinheta"></div>
+
+<!-- CONTEÚDO -->
 <div class="wrap">
   <div class="logo-area">
     <img src="/acertivelogo.png" alt="ACERTIVE" class="logo-img">
@@ -168,7 +274,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
   <div class="card">
     <div class="tabs">
       <div class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Entrar</div>
-      <div class="tab-btn" id="tabCad" onclick="switchTab('cadastro')">Criar conta</div>
+      <div class="tab-btn" id="tabCad"   onclick="switchTab('cadastro')">Criar conta</div>
     </div>
 
     <!-- LOGIN -->
@@ -177,7 +283,8 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
         <label>CPF</label>
         <div class="iw">
           <i class="fas fa-id-card ico"></i>
-          <input type="text" id="lCpf" class="mono" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)" autocomplete="username">
+          <input type="text" id="lCpf" class="mono" placeholder="000.000.000-00" maxlength="14"
+                 oninput="mascaraCpf(this)" autocomplete="username">
         </div>
       </div>
       <div class="fg">
@@ -188,7 +295,10 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
           <span class="eye" onclick="togglePw('lSenha',this)"><i class="fas fa-eye"></i></span>
         </div>
       </div>
-      <div class="alerta err" id="lErr"><i class="fas fa-triangle-exclamation"></i><span id="lErrTxt">CPF ou senha incorretos.</span></div>
+      <div class="alerta err" id="lErr">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span id="lErrTxt">CPF ou senha incorretos.</span>
+      </div>
       <button class="btn-g" id="btnLogin" onclick="fazerLogin()">
         <i class="fas fa-sign-in-alt"></i> Entrar no portal
       </button>
@@ -216,7 +326,8 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
         <label>Senha</label>
         <div class="iw">
           <i class="fas fa-lock ico"></i>
-          <input type="password" id="cSenha" placeholder="Mín. 6 caracteres" oninput="forca(this)" autocomplete="new-password">
+          <input type="password" id="cSenha" placeholder="Mín. 6 caracteres"
+                 oninput="forca(this)" autocomplete="new-password">
           <span class="eye" onclick="togglePw('cSenha',this)"><i class="fas fa-eye"></i></span>
         </div>
         <div class="pw-bar-wrap"><div class="pw-bar" id="pwBar"></div></div>
@@ -230,7 +341,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
         </div>
       </div>
       <div class="alerta err" id="cErr"><i class="fas fa-triangle-exclamation"></i><span id="cErrTxt"></span></div>
-      <div class="alerta ok" id="cOk"><i class="fas fa-check-circle"></i><span>Conta criada! Entrando...</span></div>
+      <div class="alerta ok"  id="cOk"><i class="fas fa-check-circle"></i><span>Conta criada! Entrando...</span></div>
       <button class="btn-g" id="btnCad" onclick="fazerCadastro()">
         <i class="fas fa-user-plus"></i> Criar minha conta
       </button>
@@ -239,7 +350,8 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
   </div>
 
   <div class="footer">
-    Dificuldades? Fale pelo <a href="https://wa.me/5592981040145" target="_blank">WhatsApp</a><br>
+    Dificuldades? Fale pelo
+    <a href="https://wa.me/5592981040145" target="_blank">WhatsApp</a><br>
     <span style="color:var(--t3)">ACERTIVE Assessoria e Cobrança</span>
   </div>
 </div>
@@ -247,13 +359,16 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:no
 <script>
 const API = window.location.origin;
 
-if(localStorage.getItem('cliente_token')) window.location.href='/portal-cliente-dashboard.html';
+if(localStorage.getItem('cliente_token')){
+  window.location.href='/portal-cliente-dashboard.html';
+}
 
 function switchTab(t){
-  ['Login','Cad'].forEach(x=>{
-    document.getElementById('tab'+x).classList.toggle('active', (t==='login'&&x==='Login')||(t==='cadastro'&&x==='Cad'));
-    document.getElementById('pane'+x).classList.toggle('active', (t==='login'&&x==='Login')||(t==='cadastro'&&x==='Cad'));
-  });
+  const isLogin = t==='login';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabCad').classList.toggle('active', !isLogin);
+  document.getElementById('paneLogin').classList.toggle('active', isLogin);
+  document.getElementById('paneCad').classList.toggle('active', !isLogin);
 }
 
 function mascaraCpf(el){
@@ -278,7 +393,7 @@ function forca(el){
   if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
   const bar=document.getElementById('pwBar');
   bar.style.width=[0,20,40,60,80,100][s]+'%';
-  bar.style.background=['','#e84040','#d97c2e','#c9a84c','#5b8fe8','#2ecc71'][s];
+  bar.style.background=['','#e84040','#f39c12','#c9a84c','#5b8fe8','#2ecc71'][s];
 }
 
 function setBtn(id,load,txt){
@@ -294,7 +409,7 @@ function showErr(id,msg){
 function hideErr(id){document.getElementById(id).className='alerta err'}
 
 async function fazerLogin(){
-  const cpf=document.getElementById('lCpf').value.replace(/\D/g,'');
+  const cpf  =document.getElementById('lCpf').value.replace(/\D/g,'');
   const senha=document.getElementById('lSenha').value;
   if(cpf.length!==11){showErr('lErr','CPF inválido.');return;}
   if(!senha){showErr('lErr','Digite sua senha.');return;}
@@ -302,7 +417,8 @@ async function fazerLogin(){
   setBtn('btnLogin',true,'');
   try{
     const r=await fetch(API+'/api/portal-cliente/login',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({cpf,senha})
     });
     const d=await r.json();
@@ -321,9 +437,9 @@ async function fazerLogin(){
 }
 
 async function fazerCadastro(){
-  const cpf=document.getElementById('cCpf').value.replace(/\D/g,'');
-  const nasc=document.getElementById('cNasc').value;
-  const senha=document.getElementById('cSenha').value;
+  const cpf   =document.getElementById('cCpf').value.replace(/\D/g,'');
+  const nasc  =document.getElementById('cNasc').value;
+  const senha =document.getElementById('cSenha').value;
   const senha2=document.getElementById('cSenha2').value;
   hideErr('cErr');
   document.getElementById('cOk').className='alerta ok';
@@ -334,7 +450,8 @@ async function fazerCadastro(){
   setBtn('btnCad',true,'');
   try{
     const r=await fetch(API+'/api/portal-cliente/cadastro',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({cpf,data_nascimento:nasc,senha})
     });
     const d=await r.json();
@@ -357,7 +474,7 @@ async function fazerCadastro(){
 
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
-  if(document.getElementById('paneLogin').classList.contains('active'))fazerLogin();
+  if(document.getElementById('paneLogin').classList.contains('active')) fazerLogin();
   else fazerCadastro();
 });
 </script>
