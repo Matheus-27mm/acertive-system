@@ -1,39 +1,6 @@
-/**
- * ============================================
- * ACERTIVE — Portal do Cliente (Devedor)
- * routes/portal-cliente.js
- * ============================================
- *
- * ROTAS:
- *  POST /api/portal-cliente/cadastro          — cria conta com CPF + nasc + senha
- *  POST /api/portal-cliente/login             — retorna JWT tipo:'cliente'
- *  GET  /api/portal-cliente/minhas-dividas    — dívidas + histórico (auth)
- *  POST /api/portal-cliente/proposta-acordo   — envia proposta (auth)
- *
- * REGISTRAR NO server.js:
- *  const portalClienteRoutes = require('./routes/portal-cliente');
- *  app.use('/api/portal-cliente', portalClienteRoutes(pool, jwt, bcryptjs));
- *
- * MIGRATION SQL (rodar uma vez):
- *  ALTER TABLE clientes
- *    ADD COLUMN IF NOT EXISTS portal_senha_hash TEXT,
- *    ADD COLUMN IF NOT EXISTS portal_ativo BOOLEAN DEFAULT true;
- *
- *  CREATE TABLE IF NOT EXISTS propostas_acordo (
- *    id              SERIAL PRIMARY KEY,
- *    cliente_id      UUID REFERENCES clientes(id),   -- UUID igual ao id da tabela clientes
- *    valor_proposto  NUMERIC(12,2),
- *    forma_pagamento TEXT DEFAULT 'avista',
- *    num_parcelas    INTEGER DEFAULT 1,
- *    observacao      TEXT,
- *    status          TEXT DEFAULT 'pendente',
- *    created_at      TIMESTAMP DEFAULT NOW(),
- *    updated_at      TIMESTAMP DEFAULT NOW()
- *  );
- */
 
 const express = require('express');
-const bcryptjs  = require('bcryptjsjs');
+const bcryptjs  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 
 const JWT_SECRET  = process.env.JWT_SECRET || 'acertive_secret_key';
@@ -113,7 +80,7 @@ module.exports = function(pool) {
         return res.status(409).json({ success: false, error: 'Já existe uma conta para este CPF. Faça login.' });
 
       /* cria hash da senha */
-      const hash = await bcryptjsjs.hash(senha, SALT_ROUNDS);
+      const hash = await bcryptjs.hash(senha, SALT_ROUNDS);
       await pool.query(
         'UPDATE clientes SET portal_senha_hash = $1, portal_ativo = true, updated_at = NOW() WHERE id = $2',
         [hash, cliente.id]
@@ -161,7 +128,7 @@ module.exports = function(pool) {
       if (!cliente.portal_ativo)
         return res.status(403).json({ success: false, error: 'Conta bloqueada. Entre em contato.' });
 
-      const senhaOk = await bcryptjsjs.compare(senha, cliente.portal_senha_hash);
+      const senhaOk = await bcryptjs.compare(senha, cliente.portal_senha_hash);
       if (!senhaOk)
         return res.status(401).json({ success: false, error: 'Senha incorreta.' });
 
