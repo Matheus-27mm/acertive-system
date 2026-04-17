@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#000;--s1:#0a0a0a;--s2:#111;--s3:#171717;--s4:#1e1e1e;
@@ -762,7 +763,8 @@ async function processarArquivo() {
     await lerArquivoLocal();
     irPara(3);
   } catch(e) {
-    toast('Erro ao processar: '+e.message, 'err');
+    console.error('[IMPORT]', e);
+    toast('Erro ao processar arquivo: '+e.message, 'err');
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'Analisar planilha <i class="fas fa-arrow-right"></i>';
@@ -776,35 +778,79 @@ async function lerArquivoLocal() {
 
     reader.onload = e => {
       try {
-        const text = e.target.result;
-
         if (ext === 'csv') {
-          // CSV — detectar separador
+          // ── CSV: detectar separador e encoding ──
+          const text = e.target.result;
           const rows = text.split('\n').filter(r => r.trim());
           if (!rows.length) { rej(new Error('Arquivo vazio')); return; }
           const sep = rows[0].includes('\t') ? '\t' : rows[0].includes(';') ? ';' : ',';
-          colunas = rows[0].split(sep).map(c => c.trim().replace(/^"|"$/g,''));
+          colunas = rows[0].split(sep).map(c => c.trim().replace(/^"|"$/g,'').trim());
           linhas = rows.slice(1).map(r => {
             const cells = r.split(sep).map(c => c.trim().replace(/^"|"$/g,''));
             return colunas.reduce((o,col,i) => { o[col]=cells[i]||''; return o; }, {});
           }).filter(l => Object.values(l).some(v => v));
+          res();
+
         } else {
-          // XLSX/XLS — usar SheetJS via CDN (carregado lazy)
-          rej(new Error('Para .xlsx use o backend ou converta para .csv'));
-          return;
+          // ── XLSX / XLS: SheetJS ──
+          const data = new Uint8Array(e.target.result);
+          const wb   = XLSX.read(data, {type:'array', cellDates:true, raw:false});
+
+          // Pegar a primeira aba com dados
+          let ws = null;
+          let wsData = [];
+          for (const sheetName of wb.SheetNames) {
+            const sheet = wb.Sheets[sheetName];
+            const rows  = XLSX.utils.sheet_to_json(sheet, {defval:'', raw:false});
+            if (rows.length > wsData.length) { ws = sheet; wsData = rows; }
+          }
+
+          if (!wsData.length) { rej(new Error('Planilha vazia')); return; }
+
+          // Normalizar: se cabeçalho veio como __EMPTY_N, usar primeira linha como header
+          const primeiraChave = Object.keys(wsData[0])[0];
+          if (primeiraChave && primeiraChave.startsWith('__EMPTY')) {
+            // Sem header na primeira linha — usar valores da primeira linha como colunas
+            const headerRow = wsData[0];
+            colunas = Object.values(headerRow).map(v => String(v||'').trim()).filter(Boolean);
+            wsData  = wsData.slice(1);
+          } else {
+            colunas = Object.keys(wsData[0]);
+          }
+
+          linhas = wsData.map(row => {
+            const norm = {};
+            colunas.forEach(col => {
+              let val = row[col];
+              // Datas viram objetos Date — converter para string
+              if (val instanceof Date) {
+                val = val.toISOString().split('T')[0];
+              }
+              norm[col] = val !== undefined && val !== null ? String(val).trim() : '';
+            });
+            return norm;
+          }).filter(l => Object.values(l).some(v => v));
+
+          res();
         }
-        res();
       } catch(err) { rej(err); }
     };
+
     reader.onerror = () => rej(new Error('Erro ao ler arquivo'));
 
     if (ext === 'csv') {
-      reader.readAsText(arquivoRaw, 'UTF-8');
+      // Tentar UTF-8, fallback latin-1
+      const fr2 = new FileReader();
+      fr2.onload = e2 => {
+        if (e2.target.result.includes('\uFFFD')) {
+          reader.readAsText(arquivoRaw, 'latin-1');
+        } else {
+          reader.onload({target:{result:e2.target.result}});
+        }
+      };
+      fr2.readAsText(arquivoRaw, 'UTF-8');
     } else {
-      // Para xlsx: tenta via backend
-      processarViaBackend().then(res).catch(async () => {
-        reader.readAsText(arquivoRaw, 'latin-1');
-      });
+      reader.readAsArrayBuffer(arquivoRaw);
     }
   });
 }
