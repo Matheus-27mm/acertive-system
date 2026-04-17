@@ -552,7 +552,7 @@ const CAMPOS_SISTEMA = [
 const PALAVRAS = {
   nome:       ['nome','cliente','devedor','razao','razão','social','paciente','nomecli'],
   cpf_cnpj:   ['cpf','cnpj','documento','cnpj_cpf','identificacao','identificação'],
-  valor:      ['valor','divida','dívida','saldo','montante','spc','aberto','cobrado'],
+  valor:      ['valor incluso no spc','valorinclusonospc','valornospc','valorspc','incluso no spc','valor','divida','dívida','saldo','montante','aberto','cobrado'],
   data_vencimento:['venc','vencimento','dt.vencto','devida','prazo','validade','vencto'],
   telefone:   ['telefone 1','telefone01','telefone_1','fone1','tel1','tel 1','celular'],
   telefone2:  ['telefone 2','telefone02','telefone_2','fone2','tel2','tel 2'],
@@ -760,18 +760,13 @@ async function processarArquivo() {
   btn.disabled = true;
   btn.innerHTML = '<div class="spin"></div> Analisando...';
   try {
-    const ext = arquivoRaw.name.split('.').pop().toLowerCase();
-    // xlsx/xls: usar backend (já tem XLSX instalado no servidor)
-    if (['xlsx','xls'].includes(ext)) {
-      await processarViaBackend();
-    } else {
-      await lerArquivoLocal();
-    }
+    // Sempre usar leitura local (SheetJS + CSV) — mais confiável para mapeamento
+    await lerArquivoLocal();
     irPara(3);
   } catch(e) {
-    // fallback: tentar leitura local
+    // Fallback: backend
     try {
-      await lerArquivoLocal();
+      await processarViaBackend();
       irPara(3);
     } catch(e2) {
       console.error('[IMPORT]', e2);
