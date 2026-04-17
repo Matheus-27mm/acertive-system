@@ -550,21 +550,39 @@ const CAMPOS_SISTEMA = [
 
 /* Auto-detecção por palavras-chave */
 const PALAVRAS = {
-  nome:       ['nome','cliente','devedor','razao','razão','social','paciente','nomecli'],
-  cpf_cnpj:   ['cpf','cnpj','documento','cnpj_cpf','identificacao','identificação'],
-  valor:      ['valor incluso no spc','valorinclusonospc','valornospc','valorspc','incluso no spc','valor','divida','dívida','saldo','montante','aberto','cobrado'],
-  data_vencimento:['venc','vencimento','dt.vencto','devida','prazo','validade','vencto'],
-  telefone:   ['telefone 1','telefone01','telefone_1','fone1','tel1','tel 1','celular'],
-  telefone2:  ['telefone 2','telefone02','telefone_2','fone2','tel2','tel 2'],
-  email:      ['email','e-mail','mail','correio','e-mail 01'],
-  descricao:  ['descricao','descrição','historico','histórico','texto','observ','hist'],
-  numero_documento:['numero','número','num','nf','nota','contrato','boleto','docto','documento'],
+  nome:       ['nome','nomecli','paciente','cliente','devedor','razaosocial'],
+  cpf_cnpj:   ['cnpj/cpf','cpf/cnpj','cpfcnpj','cnpjcpf','cnpj_cpf','cpf','cnpj'],
+  valor:      ['valor incluso no spc','valorinclusonospc','valorspc','montante','valor','divida','saldo','aberto','cobrado'],
+  data_vencimento:['dt.vencto.','dt.vencto','dtvencto','datavencimento','data vencimento','devida','datadevida','vencimento','vencto'],
+  telefone:   ['telefone 01','telefone01','telefone 1','telefone1','fone1','tel1','celular'],
+  telefone2:  ['telefone 02','telefone02','telefone 2','telefone2','fone2','tel2'],
+  email:      ['e-mail 01','email01','e-mail','email','mail'],
+  descricao:  ['texto','historico','histórico','descricao','descrição','observ'],
+  numero_documento:['docto.contabil','nota fiscal','atribuição','numero','nf','contrato','boleto'],
+};
+
+const MAPA_EXATO = {
+  'Nome':'nome','NOMECLI':'nome','PACIENTE':'nome',
+  'CNPJ/CPF':'cpf_cnpj','CPF':'cpf_cnpj','cnpj_cpf':'cpf_cnpj',
+  'Montante':'valor','VALOR INCLUSO NO SPC':'valor','valor':'valor',
+  'Dt.Vencto.':'data_vencimento','Data Vencimento':'data_vencimento','DATA DEVIDA':'data_vencimento',
+  'Telefone 01':'telefone','TELEFONE 1':'telefone','telefone':'telefone',
+  'Telefone 02':'telefone2','TELEFONE 2':'telefone2','telefone2':'telefone2',
+  'E-mail 01':'email','E-MAIL':'email','email':'email',
+  'Texto':'descricao','Histórico':'descricao',
+  'Nota Fiscal':'numero_documento',
 };
 
 function detectarCampo(coluna) {
+  // 1. Mapa exato (prioridade máxima)
+  if (MAPA_EXATO[coluna]) return MAPA_EXATO[coluna];
+  // 2. Palavras-chave (normalizado)
   const c = coluna.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   for (const [campo, palavras] of Object.entries(PALAVRAS)) {
-    if (palavras.some(p => c.includes(p.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))) return campo;
+    if (palavras.some(p => {
+      const pn = p.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return c === pn || c.includes(pn);
+    })) return campo;
   }
   return '';
 }
