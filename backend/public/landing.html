@@ -85,33 +85,69 @@
     position: relative;
   }
 
-  /* Atmospheric gradient mesh — multiple soft radial gradients */
+  /* Atmospheric gradient mesh — softer now that video sits behind */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 1200px 800px at 50% -200px, rgba(191, 165, 107, 0.06) 0%, transparent 55%),
-      radial-gradient(ellipse 900px 600px at 15% 20%, rgba(191, 165, 107, 0.03) 0%, transparent 60%),
-      radial-gradient(ellipse 900px 600px at 85% 60%, rgba(191, 165, 107, 0.025) 0%, transparent 60%),
-      radial-gradient(ellipse 1100px 700px at 50% 110%, rgba(191, 165, 107, 0.04) 0%, transparent 55%);
+      radial-gradient(ellipse 1200px 800px at 50% -200px, rgba(191, 165, 107, 0.04) 0%, transparent 55%),
+      radial-gradient(ellipse 900px 600px at 15% 20%, rgba(191, 165, 107, 0.02) 0%, transparent 60%),
+      radial-gradient(ellipse 900px 600px at 85% 60%, rgba(191, 165, 107, 0.018) 0%, transparent 60%),
+      radial-gradient(ellipse 1100px 700px at 50% 110%, rgba(191, 165, 107, 0.025) 0%, transparent 55%);
     pointer-events: none;
-    z-index: 0;
+    z-index: 2;
   }
 
-  /* Subtle film grain texture */
+  /* Subtle film grain texture — sits above video and gradients */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-    opacity: 0.025;
+    opacity: 0.03;
     pointer-events: none;
-    z-index: 1;
+    z-index: 3;
     mix-blend-mode: overlay;
   }
 
-  nav, section, footer { position: relative; z-index: 2; }
+  nav, section, footer { position: relative; z-index: 10; }
+
+  /* ────────────────────────────────────────
+     VIDEO BACKGROUND (global atmosphere)
+     Sits at z-index 0, below everything
+     ──────────────────────────────────────── */
+  .video-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .video-bg video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    opacity: 0.28;
+    filter: saturate(0.6) brightness(0.9) hue-rotate(-10deg);
+  }
+
+  .video-bg-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 1400px 900px at 50% 50%, rgba(11, 11, 13, 0) 0%, rgba(11, 11, 13, 0.4) 70%, rgba(11, 11, 13, 0.85) 100%),
+      linear-gradient(180deg, rgba(11, 11, 13, 0.3) 0%, transparent 30%, transparent 70%, rgba(11, 11, 13, 0.6) 100%);
+    pointer-events: none;
+  }
 
   .container {
     max-width: var(--max-width);
@@ -1054,6 +1090,15 @@
     .hero-meta { gap: 24px; }
     .cta-form { grid-template-columns: 1fr; }
     .section { padding: 80px 0; }
+
+    /* Disable video on mobile for performance */
+    .video-bg video { display: none; }
+    .video-bg {
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(191, 165, 107, 0.08), transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(191, 165, 107, 0.05), transparent 50%),
+        var(--bg-primary);
+    }
   }
 
   @media (max-width: 560px) {
@@ -1064,6 +1109,16 @@
 </style>
 </head>
 <body>
+
+<!-- ============================================
+     VIDEO BACKGROUND — Global atmosphere
+     ============================================ -->
+<div class="video-bg">
+  <video autoplay loop muted playsinline>
+    <source src="landing.mp4" type="video/mp4">
+  </video>
+  <div class="video-bg-overlay"></div>
+</div>
 
 <!-- NAVBAR -->
 <nav class="nav">
