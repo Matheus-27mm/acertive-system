@@ -1050,6 +1050,45 @@ function renderPreview() {
   table.innerHTML = html + '</tbody>';
 }
 
+function parsearValorBR(raw) {
+  if (!raw && raw !== 0) return 0;
+  if (typeof raw === 'number') return raw;
+  let s = String(raw).trim();
+  // Remover símbolo de moeda e espaços
+  s = s.replace(/R\$\s*/g,'').trim();
+  // Detectar formato: se tem vírgula e ponto
+  // BR: 1.807.664,00 -> remover pontos, trocar vírgula por ponto
+  // US: 18,076.64  -> remover vírgulas
+  const temPonto  = s.includes('.');
+  const temVirgula = s.includes(',');
+  if (temPonto && temVirgula) {
+    // Qual vem por último? Último é o decimal
+    const ultPonto  = s.lastIndexOf('.');
+    const ultVirgula = s.lastIndexOf(',');
+    if (ultVirgula > ultPonto) {
+      // BR: 1.807.664,00
+      s = s.replace(/\./g,'').replace(',','.');
+    } else {
+      // US: 18,076.64
+      s = s.replace(/,/g,'');
+    }
+  } else if (temVirgula && !temPonto) {
+    // Só vírgula: pode ser decimal BR (18076,64) ou milhar (18,076)
+    const partes = s.split(',');
+    if (partes.length === 2 && partes[1].length <= 2) {
+      // É decimal: 18076,64
+      s = s.replace(',','.');
+    } else {
+      // É milhar: remover vírgulas
+      s = s.replace(/,/g,'');
+    }
+  }
+  // Remover qualquer caractere que não seja número ou ponto
+  s = s.replace(/[^0-9.]/g,'');
+  const v = parseFloat(s);
+  return isNaN(v) ? 0 : v;
+}
+
 function validarCelula(campo, val) {
   if (!val) return {cls:'', err:null};
   if (campo === 'cpf_cnpj') {
@@ -1058,7 +1097,7 @@ function validarCelula(campo, val) {
     return {cls:'cell-ok', err:null};
   }
   if (campo === 'valor') {
-    const v = parseFloat(String(val).replace(/\./g,'').replace(',','.').replace(/[^0-9.]/g,''));
+    const v = parsearValorBR(val);
     if (isNaN(v)||v<=0) return {cls:'cell-err', err:'Inválido'};
     return {cls:'cell-ok', err:null};
   }
@@ -1080,8 +1119,7 @@ function validarDados() {
     Object.entries(m).forEach(([campo, col]) => { reg[campo] = linha[col]||''; });
 
     const cpf   = reg.cpf_cnpj?.replace(/\D/g,'')||'';
-    const valStr = String(reg.valor||'').replace(/\./g,'').replace(',','.').replace(/[^0-9.]/g,'');
-    const valor  = parseFloat(valStr);
+    const valor  = parsearValorBR(reg.valor);
 
     if (!reg.nome?.trim() || (cpf.length!==11&&cpf.length!==14) || isNaN(valor)||valor<=0) {
       erros++; return;
@@ -1168,7 +1206,7 @@ async function executarImportacao() {
 
       if (reg.valor > 0) {
         cli.dividas.push({
-          valor:            parseFloat(reg.valor),
+          valor:            parsearValorBR(reg.valor),
           data_vencimento:  reg.data_vencimento || null,
           descricao:        reg.descricao || ('Importado ' + credorNome),
           numero_documento: reg.numero_documento || null,
