@@ -1218,18 +1218,30 @@ async function executarImportacao() {
     const clientesAgrupados = Array.from(clientesMap.values())
       .filter(c => c.nome && c.dividas.length > 0);
 
-    const body = {
-      clientes:    clientesAgrupados,
-      credor_nome: credorNome
-    };
-    if (credorId) body.credor_id = credorId;
+    // Enviar em lotes de 300 clientes para evitar 413 Content Too Large
+    const LOTE = 300;
+    let totalClientes = 0, totalCob = 0;
 
-    const r = await fetch(API+'/api/importacao/executar', {
-      method: 'POST', headers: H(),
-      body: JSON.stringify(body)
-    });
-    const d = await r.json();
-    if (!d.success) throw new Error(d.error || 'Erro na importação');
+    for (let i = 0; i < clientesAgrupados.length; i += LOTE) {
+      const lote = clientesAgrupados.slice(i, i + LOTE);
+      const pctLote = Math.round(((i + lote.length) / clientesAgrupados.length) * 85);
+      document.getElementById('progFill').style.width = pctLote + '%';
+      document.getElementById('progTxt').textContent =
+        `Enviando lote ${Math.ceil((i+1)/LOTE)} de ${Math.ceil(clientesAgrupados.length/LOTE)}...`;
+
+      const body = { clientes: lote, credor_nome: credorNome };
+      if (credorId) body.credor_id = credorId;
+
+      const r = await fetch(API+'/api/importacao/executar', {
+        method: 'POST', headers: H(),
+        body: JSON.stringify(body)
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.error || 'Erro no lote ' + Math.ceil((i+1)/LOTE));
+
+      totalClientes += (d.resultado?.clientes_criados||0) + (d.resultado?.clientes_atualizados||0);
+      totalCob      += d.resultado?.cobrancas_criadas || lote.length;
+    }
 
     clearInterval(timer);
     document.getElementById('progFill').style.width = '100%';
@@ -1241,10 +1253,8 @@ async function executarImportacao() {
       document.getElementById('progView').classList.remove('on');
       document.getElementById('successView').classList.add('on');
       document.getElementById('confFoot').style.display = 'none';
-      document.getElementById('resClientes').textContent =
-        (d.resultado?.clientes_criados||0) + (d.resultado?.clientes_atualizados||0);
-      document.getElementById('resCob').textContent =
-        d.resultado?.cobrancas_criadas || dadosValidados.length;
+      document.getElementById('resClientes').textContent = totalClientes;
+      document.getElementById('resCob').textContent = totalCob;
       toast('Importação concluída! Template salvo para ' + credorNome);
     }, 400);
 
