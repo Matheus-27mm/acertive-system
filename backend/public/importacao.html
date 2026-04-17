@@ -760,11 +760,23 @@ async function processarArquivo() {
   btn.disabled = true;
   btn.innerHTML = '<div class="spin"></div> Analisando...';
   try {
-    await lerArquivoLocal();
+    const ext = arquivoRaw.name.split('.').pop().toLowerCase();
+    // xlsx/xls: usar backend (já tem XLSX instalado no servidor)
+    if (['xlsx','xls'].includes(ext)) {
+      await processarViaBackend();
+    } else {
+      await lerArquivoLocal();
+    }
     irPara(3);
   } catch(e) {
-    console.error('[IMPORT]', e);
-    toast('Erro ao processar arquivo: '+e.message, 'err');
+    // fallback: tentar leitura local
+    try {
+      await lerArquivoLocal();
+      irPara(3);
+    } catch(e2) {
+      console.error('[IMPORT]', e2);
+      toast('Erro ao processar arquivo: ' + e2.message, 'err');
+    }
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'Analisar planilha <i class="fas fa-arrow-right"></i>';
@@ -863,11 +875,46 @@ async function processarViaBackend() {
     headers: {'Authorization':'Bearer '+localStorage.getItem('token')},
     body: fd
   });
-  if (!r.ok) throw new Error('Backend indisponível');
+  if (!r.ok) throw new Error('Erro no servidor ao ler planilha');
   const d = await r.json();
-  if (!d.success || !d.colunas) throw new Error('Sem dados');
-  colunas = d.colunas;
-  linhas  = d.linhas || d.preview || [];
+  if (!d.success) throw new Error(d.error || 'Sem dados');
+
+  // Backend retorna clientes agrupados — desagrupar para o mapeamento visual
+  // mas guardar os dados agrupados para envio final
+  colunas = d.colunas_detectadas || [];
+
+  // Converter clientes agrupados em linhas planas para o preview/mapeamento
+  linhas = [];
+  (d.clientes || []).forEach(cli => {
+    (cli.dividas || [{}]).forEach(div => {
+      linhas.push({
+        nome:             cli.nome,
+        cpf_cnpj:         cli.cpf_formatado || cli.cpf_cnpj,
+        telefone:         cli.telefone,
+        telefone2:        cli.telefone2,
+        email:            cli.email,
+        valor:            div.valor,
+        data_vencimento:  div.data_vencimento,
+        descricao:        div.descricao,
+        numero_documento: div.numero_documento,
+        _dias_atraso:     div.dias_atraso
+      });
+    });
+  });
+
+  // Se o backend detectou o mapeamento, aplicar ao template
+  if (d.mapeamento_detectado && !templateAtual) {
+    templateAtual = { mapeamento: {} };
+    // Inverter: { campo: coluna } -> { campo: campo } (colunas já são os campos)
+    Object.entries(d.mapeamento_detectado).forEach(([campo, col]) => {
+      templateAtual.mapeamento[campo] = campo; // colunas viram os campos do sistema
+    });
+  }
+
+  // Colunas são os campos do sistema (backend já normalizou)
+  if (!colunas.length) {
+    colunas = ['nome','cpf_cnpj','telefone','telefone2','email','valor','data_vencimento','descricao','numero_documento'];
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1077,7 +1124,6 @@ async function executarImportacao() {
   document.getElementById('confFoot').style.display = 'none';
   document.getElementById('progView').classList.add('on');
 
-  // Animar barra de progresso
   let pct = 0;
   const timer = setInterval(() => {
     pct = Math.min(pct + 2, 85);
@@ -1089,7 +1135,54 @@ async function executarImportacao() {
   }, 120);
 
   try {
-    const body = { clientes: dadosValidados, credor_nome: credorNome };
+    // ── Agrupar dados por CPF (formato que o backend espera) ──
+    const m = mapeamento;
+    const clientesMap = new Map();
+
+    dadosValidados.forEach(reg => {
+      const cpf = reg.cpf_cnpj || '';
+      const chave = cpf || ('nome_' + (reg.nome||'').toLowerCase().replace(/\s+/g,'_'));
+
+      if (!clientesMap.has(chave)) {
+        clientesMap.set(chave, {
+          nome:      reg.nome     || '',
+          cpf_cnpj:  cpf,
+          telefone:  reg.telefone  || '',
+          telefone2: reg.telefone2 || '',
+          email:     reg.email     || '',
+          dividas:   []
+        });
+      }
+
+      const cli = clientesMap.get(chave);
+
+      // Calcular dias de atraso
+      let diasAtraso = 0;
+      if (reg.data_vencimento) {
+        const dv = new Date(reg.data_vencimento);
+        if (!isNaN(dv.getTime())) {
+          diasAtraso = Math.max(0, Math.floor((Date.now() - dv.getTime()) / 86400000));
+        }
+      }
+
+      if (reg.valor > 0) {
+        cli.dividas.push({
+          valor:            parseFloat(reg.valor),
+          data_vencimento:  reg.data_vencimento || null,
+          descricao:        reg.descricao || ('Importado ' + credorNome),
+          numero_documento: reg.numero_documento || null,
+          dias_atraso:      diasAtraso
+        });
+      }
+    });
+
+    const clientesAgrupados = Array.from(clientesMap.values())
+      .filter(c => c.nome && c.dividas.length > 0);
+
+    const body = {
+      clientes:    clientesAgrupados,
+      credor_nome: credorNome
+    };
     if (credorId) body.credor_id = credorId;
 
     const r = await fetch(API+'/api/importacao/executar', {
@@ -1097,12 +1190,12 @@ async function executarImportacao() {
       body: JSON.stringify(body)
     });
     const d = await r.json();
-    if (!d.success) throw new Error(d.error||'Erro na importação');
+    if (!d.success) throw new Error(d.error || 'Erro na importação');
 
     clearInterval(timer);
     document.getElementById('progFill').style.width = '100%';
 
-    // ✅ SALVAR TEMPLATE após importação bem-sucedida
+    // Salvar template após sucesso
     salvarTemplate(credorId, credorNome, mapeamento);
 
     setTimeout(() => {
@@ -1111,8 +1204,9 @@ async function executarImportacao() {
       document.getElementById('confFoot').style.display = 'none';
       document.getElementById('resClientes').textContent =
         (d.resultado?.clientes_criados||0) + (d.resultado?.clientes_atualizados||0);
-      document.getElementById('resCob').textContent = d.resultado?.cobrancas_criadas || dadosValidados.length;
-      toast('Importação concluída! Template salvo para '+credorNome);
+      document.getElementById('resCob').textContent =
+        d.resultado?.cobrancas_criadas || dadosValidados.length;
+      toast('Importação concluída! Template salvo para ' + credorNome);
     }, 400);
 
   } catch(e) {
@@ -1120,7 +1214,7 @@ async function executarImportacao() {
     document.getElementById('progView').classList.remove('on');
     document.getElementById('confBody').style.display = 'block';
     document.getElementById('confFoot').style.display = 'flex';
-    toast('Erro: '+e.message, 'err');
+    toast('Erro: ' + e.message, 'err');
   }
 }
 
