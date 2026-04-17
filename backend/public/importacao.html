@@ -879,42 +879,48 @@ async function processarViaBackend() {
   const d = await r.json();
   if (!d.success) throw new Error(d.error || 'Sem dados');
 
-  // Backend retorna clientes agrupados — desagrupar para o mapeamento visual
-  // mas guardar os dados agrupados para envio final
+  // Backend retorna colunas_detectadas (nomes originais da planilha)
+  // e mapeamento_detectado { campo_sistema: coluna_original }
   colunas = d.colunas_detectadas || [];
 
-  // Converter clientes agrupados em linhas planas para o preview/mapeamento
+  // Guardar mapeamento detectado pelo backend para aplicar nos selects
+  if (d.mapeamento_detectado && Object.keys(d.mapeamento_detectado).length) {
+    // Inverter: { campo_sistema: col_original } -> usar no templateAtual
+    if (!templateAtual) templateAtual = { mapeamento: {} };
+    templateAtual.mapeamento = {};
+    Object.entries(d.mapeamento_detectado).forEach(([campo, colOriginal]) => {
+      templateAtual.mapeamento[campo] = colOriginal;
+    });
+  }
+
+  // Converter clientes agrupados em linhas planas usando colunas ORIGINAIS como chave
+  // para que o renderPreview consiga exibir os dados corretamente
   linhas = [];
+  const mdet = d.mapeamento_detectado || {};
+
   (d.clientes || []).forEach(cli => {
-    (cli.dividas || [{}]).forEach(div => {
-      linhas.push({
-        nome:             cli.nome,
-        cpf_cnpj:         cli.cpf_formatado || cli.cpf_cnpj,
-        telefone:         cli.telefone,
-        telefone2:        cli.telefone2,
-        email:            cli.email,
-        valor:            div.valor,
-        data_vencimento:  div.data_vencimento,
-        descricao:        div.descricao,
-        numero_documento: div.numero_documento,
-        _dias_atraso:     div.dias_atraso
+    (cli.dividas && cli.dividas.length ? cli.dividas : [{}]).forEach(div => {
+      const linha = {};
+      // Preencher cada coluna original com o valor correspondente
+      colunas.forEach(col => {
+        linha[col] = '';
       });
+      // Mapear valores para as colunas originais
+      if (mdet.nome)            linha[mdet.nome]            = cli.nome || '';
+      if (mdet.cpf_cnpj)        linha[mdet.cpf_cnpj]        = cli.cpf_formatado || cli.cpf_cnpj || '';
+      if (mdet.telefone)        linha[mdet.telefone]        = cli.telefone || '';
+      if (mdet.telefone2)       linha[mdet.telefone2]       = cli.telefone2 || '';
+      if (mdet.email)           linha[mdet.email]           = cli.email || '';
+      if (mdet.valor)           linha[mdet.valor]           = div.valor != null ? String(div.valor) : '';
+      if (mdet.data_vencimento) linha[mdet.data_vencimento] = div.data_vencimento || '';
+      if (mdet.descricao)       linha[mdet.descricao]       = div.descricao || '';
+      if (mdet.numero_documento)linha[mdet.numero_documento]= div.numero_documento || '';
+      linhas.push(linha);
     });
   });
 
-  // Se o backend detectou o mapeamento, aplicar ao template
-  if (d.mapeamento_detectado && !templateAtual) {
-    templateAtual = { mapeamento: {} };
-    // Inverter: { campo: coluna } -> { campo: campo } (colunas já são os campos)
-    Object.entries(d.mapeamento_detectado).forEach(([campo, col]) => {
-      templateAtual.mapeamento[campo] = campo; // colunas viram os campos do sistema
-    });
-  }
-
-  // Colunas são os campos do sistema (backend já normalizou)
-  if (!colunas.length) {
-    colunas = ['nome','cpf_cnpj','telefone','telefone2','email','valor','data_vencimento','descricao','numero_documento'];
-  }
+  console.log('[IMPORT] colunas:', colunas);
+  console.log('[IMPORT] linhas (primeiras 3):', linhas.slice(0,3));
 }
 
 /* ═══════════════════════════════════════
