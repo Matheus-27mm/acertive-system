@@ -407,32 +407,71 @@
   }
 
   .mockup-card {
-    background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-quaternary) 100%);
-    border: 1px solid var(--bg-border);
-    border-radius: var(--radius-xl);
-    padding: 26px;
-    box-shadow: var(--shadow-lg), 0 0 60px -20px rgba(232, 192, 122, 0.15);
+    position: relative;
+    padding: 30px;
+    border-radius: 32px;
     transform: rotateY(-6deg) rotateX(4deg);
     transform-style: preserve-3d;
-    position: relative;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+    background: linear-gradient(
+      145deg,
+      rgba(232, 192, 122, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(232, 192, 122, 0.05) 100%
+    );
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      inset 0 1px 2px rgba(255, 255, 255, 0.2),
+      0 30px 80px rgba(0, 0, 0, 0.5),
+      0 0 80px -20px rgba(232, 192, 122, 0.25);
+    overflow: hidden;
   }
 
   .mockup-card:hover {
     transform: rotateY(-2deg) rotateX(1deg) scale(1.02);
   }
 
+  /* Top glass shine */
   .mockup-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: var(--radius-xl);
-    padding: 1px;
-    background: linear-gradient(145deg, rgba(232, 192, 122, 0.35) 0%, transparent 40%, transparent 60%, rgba(232, 192, 122, 0.1) 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 100%
+    );
+    border-radius: 32px 32px 0 0;
     pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Gold corner radial */
+  .mockup-card::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -20%;
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(232, 192, 122, 0.2) 0%,
+      transparent 60%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .mockup-card > * {
+    position: relative;
+    z-index: 2;
   }
 
   .mockup-header {
@@ -567,162 +606,169 @@
     line-height: 1.6;
   }
 
+  /* ─────────────────────────────────────
+     PAIN CARDS — 3D Liquid Glass
+     Adapted from UIverse concept
+     ───────────────────────────────────── */
   .pain-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 24px;
+    perspective: 1400px;
   }
 
   .pain-card {
-    /* LIQUID GLASS EFFECT — intensified shine */
+    position: relative;
+    aspect-ratio: 1 / 1.25;
+    border-radius: 36px;
+    transform-style: preserve-3d;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+
+    /* Base gradient subtle gold */
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.03) 50%,
-      rgba(255, 255, 255, 0.07) 100%
+      rgba(232, 192, 122, 0.08) 0%,
+      rgba(232, 192, 122, 0.02) 100%
     );
-    backdrop-filter: blur(20px) saturate(1.6);
-    -webkit-backdrop-filter: blur(20px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: var(--radius-xl);
-    padding: 36px 32px;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.4s ease,
-                background 0.4s ease,
-                box-shadow 0.4s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: default;
-    aspect-ratio: 1 / 1.15;
+
+    box-shadow:
+      rgba(0, 0, 0, 0) 40px 50px 25px -40px,
+      rgba(0, 0, 0, 0.25) 0px 25px 25px -5px;
+  }
+
+  /* Glass layer — the shine on top */
+  .pain-glass {
+    position: absolute;
+    inset: 8px;
+    border-radius: 32px;
+    border-top-right-radius: 100%;
+    background: linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.14) 100%
+    );
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    transform: translate3d(0px, 0px, 25px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Decorative 3D circles stack in top-right corner */
+  .pain-deco {
+    position: absolute;
+    right: 0;
+    top: 0;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+
+  .deco-circle {
+    display: block;
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    top: 0;
+    right: 0;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .deco-c1 {
+    width: 120px;
+    top: 12px;
+    right: 12px;
+    background: rgba(232, 192, 122, 0.08);
+    box-shadow: rgba(0, 0, 0, 0.2) -10px 10px 20px 0px;
+    transform: translate3d(0, 0, 20px);
+  }
+
+  .deco-c2 {
+    width: 85px;
+    top: 18px;
+    right: 18px;
+    background: rgba(232, 192, 122, 0.12);
+    transform: translate3d(0, 0, 40px);
+    transition-delay: 0.1s;
+  }
+
+  .deco-c3 {
+    width: 50px;
+    top: 25px;
+    right: 25px;
+    background: linear-gradient(135deg, var(--gold-300) 0%, var(--gold-500) 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.3),
+      0 4px 12px rgba(232, 192, 122, 0.3);
+    transform: translate3d(0, 0, 60px);
+    transition-delay: 0.2s;
+  }
+
+  /* Content sits above all layers */
+  .pain-content {
+    position: absolute;
+    inset: 0;
+    padding: 100px 32px 32px 32px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    box-shadow:
-      inset 0 1px 2px rgba(255, 255, 255, 0.28),
-      inset 0 -1px 2px rgba(0, 0, 0, 0.3),
-      inset 1px 0 1px rgba(255, 255, 255, 0.1),
-      0 8px 32px rgba(0, 0, 0, 0.4);
+    justify-content: flex-end;
+    transform: translate3d(0, 0, 26px);
+    transform-style: preserve-3d;
   }
 
-  /* Top glass highlight — more pronounced */
-  .pain-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 55%;
-    background:
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.22) 0%,
-        rgba(255, 255, 255, 0.08) 40%,
-        transparent 100%
-      ),
-      linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.04) 50%,
-        transparent 100%
-      );
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
-  }
-
-  /* Diagonal shine streak — much more visible and animated */
-  .pain-card::after {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 300%;
-    height: 300%;
-    background: linear-gradient(
-      115deg,
-      transparent 20%,
-      rgba(255, 255, 255, 0.15) 40%,
-      rgba(255, 255, 255, 0.3) 48%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0.3) 52%,
-      rgba(255, 255, 255, 0.15) 60%,
-      transparent 80%
-    );
-    pointer-events: none;
-    opacity: 0.7;
-    transition: opacity 0.5s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
-    transform: translateX(-60%) translateY(-30%);
-    mix-blend-mode: overlay;
-  }
-
-  .pain-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(232, 192, 122, 0.45);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.14) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(232, 192, 122, 0.12) 100%
-    );
-    box-shadow:
-      inset 0 1px 2px rgba(255, 255, 255, 0.35),
-      inset 0 -1px 2px rgba(0, 0, 0, 0.3),
-      inset 1px 0 1px rgba(255, 255, 255, 0.15),
-      0 20px 60px rgba(0, 0, 0, 0.5),
-      0 0 60px rgba(232, 192, 122, 0.2);
-  }
-
-  .pain-card:hover::before {
-    opacity: 1.2;
-  }
-
-  .pain-card:hover::after {
-    opacity: 1;
-    transform: translateX(40%) translateY(30%);
-  }
-
-  .pain-icon {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 24px;
+  .pain-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
     color: var(--gold-300);
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))
-            drop-shadow(0 0 12px rgba(232, 192, 122, 0.35));
-    position: relative;
-    z-index: 2;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    transform: translate3d(0, 0, 10px);
   }
 
-  .pain-card:hover .pain-icon {
-    transform: scale(1.12) rotate(-4deg);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))
-            drop-shadow(0 0 20px rgba(232, 192, 122, 0.6));
-  }
-
-  /* ENGRAVED TEXT — sharper contrast on glass */
   .pain-title {
     font-family: 'Fraunces', serif;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 600;
-    margin-bottom: 12px;
+    line-height: 1.15;
+    margin-bottom: 14px;
     color: rgba(255, 255, 255, 0.96);
-    position: relative;
-    z-index: 2;
     letter-spacing: -0.01em;
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.2),
-      0 -1px 1px rgba(0, 0, 0, 0.7),
-      0 2px 4px rgba(0, 0, 0, 0.5);
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      0 -1px 1px rgba(0, 0, 0, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.4);
+    transform: translate3d(0, 0, 15px);
   }
 
   .pain-desc {
     font-size: 14.5px;
-    color: rgba(255, 255, 255, 0.72);
-    line-height: 1.6;
-    position: relative;
-    z-index: 2;
-    text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.68);
+    line-height: 1.55;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    transform: translate3d(0, 0, 10px);
+  }
+
+  /* Hover — 3D rotation like UIverse reference */
+  .pain-card:hover {
+    transform: rotate3d(1, 1, 0, 12deg);
+    box-shadow:
+      rgba(0, 0, 0, 0.35) 30px 50px 25px -40px,
+      rgba(0, 0, 0, 0.2) 0px 25px 30px 0px,
+      0 0 60px rgba(232, 192, 122, 0.15);
+  }
+
+  .pain-card:hover .deco-c1 { transform: translate3d(0, 0, 40px); }
+  .pain-card:hover .deco-c2 { transform: translate3d(0, 0, 70px); }
+  .pain-card:hover .deco-c3 {
+    transform: translate3d(0, 0, 100px);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.4),
+      0 8px 24px rgba(232, 192, 122, 0.5);
   }
 
   /* ============================================
@@ -795,42 +841,88 @@
   }
 
   .feature-visual {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--bg-border-subtle);
-    border-radius: var(--radius-xl);
-    padding: 32px;
-    box-shadow: var(--shadow-lg);
-    aspect-ratio: 4 / 3;
     position: relative;
+    padding: 36px;
+    aspect-ratio: 4 / 3;
+    border-radius: 32px;
     overflow: hidden;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.4s ease,
-                box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: default;
+
+    background: linear-gradient(
+      135deg,
+      rgba(232, 192, 122, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(232, 192, 122, 0.04) 100%
+    );
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      0 10px 40px rgba(0, 0, 0, 0.35);
   }
 
+  /* Glass top shine */
   .feature-visual::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: var(--radius-xl);
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(232, 192, 122, 0.15) 0%, transparent 40%, transparent 60%, rgba(232, 192, 122, 0.05) 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 100%
+    );
+    border-radius: 32px 32px 0 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+  }
+
+  /* Gold corner accent */
+  .feature-visual::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -30%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(
+      circle,
+      rgba(232, 192, 122, 0.12) 0%,
+      transparent 60%
+    );
     pointer-events: none;
     opacity: 0.6;
-    transition: opacity 0.5s ease;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    z-index: 1;
+  }
+
+  .feature-visual > * {
+    position: relative;
+    z-index: 2;
+    transform: translate3d(0, 0, 15px);
+    transform-style: preserve-3d;
   }
 
   .feature-visual:hover {
-    transform: translateY(-4px) scale(1.01);
-    border-color: rgba(232, 192, 122, 0.2);
-    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+    transform: rotate3d(1, 1, 0, 6deg);
+    border-color: rgba(232, 192, 122, 0.3);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.2),
+      0 40px 80px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(232, 192, 122, 0.15);
   }
 
-  .feature-visual:hover::before { opacity: 1; }
+  .feature-visual:hover::before { opacity: 1.3; }
+  .feature-visual:hover::after {
+    transform: translate(-15%, 15%);
+    opacity: 1;
+  }
 
   /* Feature visual variations */
   .visual-dashboard {
@@ -937,67 +1029,133 @@
     gap: 24px;
   }
 
-  .audience-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--bg-border-subtle);
-    border-radius: var(--radius-xl);
-    padding: 44px 36px;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.4s ease,
-                background 0.4s ease,
-                box-shadow 0.4s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: default;
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    perspective: 1400px;
   }
 
+  .audience-card {
+    position: relative;
+    padding: 48px 40px;
+    border-radius: 36px;
+    transform-style: preserve-3d;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+    overflow: hidden;
+
+    background: linear-gradient(
+      135deg,
+      rgba(232, 192, 122, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(232, 192, 122, 0.04) 100%
+    );
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Top glass shine */
   .audience-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: var(--radius-xl);
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(232, 192, 122, 0.1) 0%, transparent 50%, rgba(232, 192, 122, 0.05) 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      transparent 100%
+    );
+    border-radius: 36px 36px 0 0;
     pointer-events: none;
-    opacity: 0.4;
     transition: opacity 0.4s ease;
   }
 
-  .audience-card:hover {
-    background: var(--bg-quaternary);
-    border-color: rgba(232, 192, 122, 0.25);
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5);
+  /* Gold corner glow */
+  .audience-card::after {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -40%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(
+      circle,
+      rgba(232, 192, 122, 0.15) 0%,
+      transparent 60%
+    );
+    pointer-events: none;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    opacity: 0.5;
   }
 
-  .audience-card:hover::before { opacity: 1; }
+  .audience-card:hover {
+    transform: rotate3d(1, 1, 0, 8deg);
+    border-color: rgba(232, 192, 122, 0.3);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.2),
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(232, 192, 122, 0.15);
+  }
+
+  .audience-card:hover::before {
+    opacity: 1.3;
+  }
+
+  .audience-card:hover::after {
+    transform: translate(-10%, 10%);
+    opacity: 1;
+  }
 
   .audience-icon {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     color: var(--gold-300);
-    margin-bottom: 28px;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-bottom: 32px;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 12px rgba(232, 192, 122, 0.3));
+    transform: translate3d(0, 0, 20px);
+    position: relative;
+    z-index: 2;
   }
 
   .audience-card:hover .audience-icon {
-    transform: scale(1.08) rotate(-3deg);
+    transform: translate3d(0, 0, 50px) scale(1.1) rotate(-4deg);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5))
+            drop-shadow(0 0 20px rgba(232, 192, 122, 0.6));
   }
 
   .audience-title {
     font-family: 'Fraunces', serif;
-    font-size: 24px;
-    font-weight: 500;
-    margin-bottom: 14px;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: rgba(255, 255, 255, 0.96);
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 2;
+    transform: translate3d(0, 0, 15px);
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      0 -1px 1px rgba(0, 0, 0, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.4);
   }
 
   .audience-desc {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 15px;
-    line-height: 1.55;
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+    transform: translate3d(0, 0, 10px);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
   }
 
   /* ============================================
@@ -1430,38 +1588,59 @@
 
     <div class="pain-grid">
       <div class="pain-card reveal">
-        <svg class="pain-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
-        </svg>
-        <h3 class="pain-title">Planilha bagunçada</h3>
-        <p class="pain-desc">Centenas de linhas, cores aleatórias, fórmulas quebradas. Você nem sabe mais quem já pagou.</p>
+        <div class="pain-deco">
+          <span class="deco-circle deco-c1"></span>
+          <span class="deco-circle deco-c2"></span>
+          <span class="deco-circle deco-c3"></span>
+        </div>
+        <div class="pain-glass"></div>
+        <div class="pain-content">
+          <span class="pain-number">01</span>
+          <h3 class="pain-title">Planilha bagunçada</h3>
+          <p class="pain-desc">Centenas de linhas, cores aleatórias, fórmulas quebradas. Você nem sabe mais quem já pagou.</p>
+        </div>
       </div>
 
       <div class="pain-card reveal">
-        <svg class="pain-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-        </svg>
-        <h3 class="pain-title">WhatsApp perdido</h3>
-        <p class="pain-desc">Acordos escritos em conversas. Promessas esquecidas. Devedor sumindo no digital.</p>
+        <div class="pain-deco">
+          <span class="deco-circle deco-c1"></span>
+          <span class="deco-circle deco-c2"></span>
+          <span class="deco-circle deco-c3"></span>
+        </div>
+        <div class="pain-glass"></div>
+        <div class="pain-content">
+          <span class="pain-number">02</span>
+          <h3 class="pain-title">WhatsApp perdido</h3>
+          <p class="pain-desc">Acordos escritos em conversas. Promessas esquecidas. Devedor sumindo no digital.</p>
+        </div>
       </div>
 
       <div class="pain-card reveal">
-        <svg class="pain-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M4 4h16v16H4z"/>
-          <path d="M4 9h16M9 4v16"/>
-        </svg>
-        <h3 class="pain-title">Boletos vencidos</h3>
-        <p class="pain-desc">Dinheiro seu, parado, na conta de outro. Semana após semana. Mês após mês.</p>
+        <div class="pain-deco">
+          <span class="deco-circle deco-c1"></span>
+          <span class="deco-circle deco-c2"></span>
+          <span class="deco-circle deco-c3"></span>
+        </div>
+        <div class="pain-glass"></div>
+        <div class="pain-content">
+          <span class="pain-number">03</span>
+          <h3 class="pain-title">Boletos vencidos</h3>
+          <p class="pain-desc">Dinheiro seu, parado, na conta de outro. Semana após semana. Mês após mês.</p>
+        </div>
       </div>
 
       <div class="pain-card reveal">
-        <svg class="pain-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M12 6v6l4 2"/>
-        </svg>
-        <h3 class="pain-title">Tempo perdido</h3>
-        <p class="pain-desc">Metade do expediente cobrando. Em vez de fazer sua empresa crescer de verdade.</p>
+        <div class="pain-deco">
+          <span class="deco-circle deco-c1"></span>
+          <span class="deco-circle deco-c2"></span>
+          <span class="deco-circle deco-c3"></span>
+        </div>
+        <div class="pain-glass"></div>
+        <div class="pain-content">
+          <span class="pain-number">04</span>
+          <h3 class="pain-title">Tempo perdido</h3>
+          <p class="pain-desc">Metade do expediente cobrando. Em vez de fazer sua empresa crescer de verdade.</p>
+        </div>
       </div>
     </div>
   </div>
