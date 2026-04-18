@@ -607,168 +607,191 @@
   }
 
   /* ─────────────────────────────────────
-     PAIN CARDS — 3D Liquid Glass
-     Adapted from UIverse concept
+     PAIN CARDS — Hover Reveal
+     Front: minimalist icon / Back: image + info
      ───────────────────────────────────── */
   .pain-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    perspective: 1400px;
+    gap: 20px;
   }
 
   .pain-card {
     position: relative;
     aspect-ratio: 1 / 1.25;
-    border-radius: 36px;
-    transform-style: preserve-3d;
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: default;
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-border-subtle);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.5s ease,
+                box-shadow 0.5s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
 
-    /* Base gradient subtle gold */
+  /* FRONT — minimalist state */
+  .pain-front {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
     background: linear-gradient(
       135deg,
-      rgba(232, 192, 122, 0.08) 0%,
-      rgba(232, 192, 122, 0.02) 100%
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.01) 100%
     );
-
-    box-shadow:
-      rgba(0, 0, 0, 0) 40px 50px 25px -40px,
-      rgba(0, 0, 0, 0.25) 0px 25px 25px -5px;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2;
   }
 
-  /* Glass layer — the shine on top */
-  .pain-glass {
+  .pain-front-icon {
+    width: 56px;
+    height: 56px;
+    color: var(--gold-300);
+    opacity: 0.85;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.4s ease;
+    filter: drop-shadow(0 0 20px rgba(232, 192, 122, 0.2));
+  }
+
+  .pain-front-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-300);
+    opacity: 0.7;
+    transition: opacity 0.4s ease;
+  }
+
+  /* Animated border on front */
+  .pain-card::before {
+    content: '';
     position: absolute;
-    inset: 8px;
-    border-radius: 32px;
-    border-top-right-radius: 100%;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1px;
     background: linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.04) 0%,
-      rgba(255, 255, 255, 0.14) 100%
+      135deg,
+      rgba(232, 192, 122, 0.3) 0%,
+      rgba(232, 192, 122, 0.05) 30%,
+      transparent 50%,
+      rgba(232, 192, 122, 0.05) 70%,
+      rgba(232, 192, 122, 0.3) 100%
     );
-    backdrop-filter: blur(8px) saturate(1.2);
-    -webkit-backdrop-filter: blur(8px) saturate(1.2);
-    border-left: 1px solid rgba(255, 255, 255, 0.18);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    transform: translate3d(0px, 0px, 25px);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+    z-index: 3;
   }
 
-  /* Decorative 3D circles stack in top-right corner */
-  .pain-deco {
+  /* BACK — image + info state (hidden by default) */
+  .pain-back {
     position: absolute;
-    right: 0;
-    top: 0;
-    transform-style: preserve-3d;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+  }
+
+  /* Back overlay — gradient to ensure text legibility */
+  .pain-back-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(11, 11, 13, 0.4) 0%,
+        rgba(11, 11, 13, 0.2) 30%,
+        rgba(11, 11, 13, 0.7) 70%,
+        rgba(11, 11, 13, 0.95) 100%
+      );
+    z-index: 1;
+  }
+
+  /* Tag (top of back) */
+  .pain-back-tag {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    background: rgba(11, 11, 13, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(232, 192, 122, 0.2);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-300);
+  }
+
+  .pain-back-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .pain-back-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  .pain-back-desc {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.5;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  /* HOVER — the magic happens */
+  .pain-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(232, 192, 122, 0.35);
+    box-shadow:
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(232, 192, 122, 0.12);
+  }
+
+  .pain-card:hover .pain-front {
+    opacity: 0;
+    transform: scale(0.95);
     pointer-events: none;
   }
 
-  .deco-circle {
-    display: block;
-    position: absolute;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    top: 0;
-    right: 0;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  .pain-card:hover .pain-back {
+    opacity: 1;
+    transform: scale(1);
   }
 
-  .deco-c1 {
-    width: 120px;
-    top: 12px;
-    right: 12px;
-    background: rgba(232, 192, 122, 0.08);
-    box-shadow: rgba(0, 0, 0, 0.2) -10px 10px 20px 0px;
-    transform: translate3d(0, 0, 20px);
-  }
-
-  .deco-c2 {
-    width: 85px;
-    top: 18px;
-    right: 18px;
-    background: rgba(232, 192, 122, 0.12);
-    transform: translate3d(0, 0, 40px);
-    transition-delay: 0.1s;
-  }
-
-  .deco-c3 {
-    width: 50px;
-    top: 25px;
-    right: 25px;
-    background: linear-gradient(135deg, var(--gold-300) 0%, var(--gold-500) 100%);
-    box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.3),
-      0 4px 12px rgba(232, 192, 122, 0.3);
-    transform: translate3d(0, 0, 60px);
-    transition-delay: 0.2s;
-  }
-
-  /* Content sits above all layers */
-  .pain-content {
-    position: absolute;
-    inset: 0;
-    padding: 100px 32px 32px 32px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    transform: translate3d(0, 0, 26px);
-    transform-style: preserve-3d;
-  }
-
-  .pain-number {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    color: var(--gold-300);
-    opacity: 0.7;
-    margin-bottom: 16px;
-    transform: translate3d(0, 0, 10px);
-  }
-
-  .pain-title {
-    font-family: 'Fraunces', serif;
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1.15;
-    margin-bottom: 14px;
-    color: rgba(255, 255, 255, 0.96);
-    letter-spacing: -0.01em;
-    text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.1),
-      0 -1px 1px rgba(0, 0, 0, 0.5),
-      0 2px 4px rgba(0, 0, 0, 0.4);
-    transform: translate3d(0, 0, 15px);
-  }
-
-  .pain-desc {
-    font-size: 14.5px;
-    color: rgba(255, 255, 255, 0.68);
-    line-height: 1.55;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
-    transform: translate3d(0, 0, 10px);
-  }
-
-  /* Hover — 3D rotation like UIverse reference */
-  .pain-card:hover {
-    transform: rotate3d(1, 1, 0, 12deg);
-    box-shadow:
-      rgba(0, 0, 0, 0.35) 30px 50px 25px -40px,
-      rgba(0, 0, 0, 0.2) 0px 25px 30px 0px,
-      0 0 60px rgba(232, 192, 122, 0.15);
-  }
-
-  .pain-card:hover .deco-c1 { transform: translate3d(0, 0, 40px); }
-  .pain-card:hover .deco-c2 { transform: translate3d(0, 0, 70px); }
-  .pain-card:hover .deco-c3 {
-    transform: translate3d(0, 0, 100px);
-    box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.4),
-      0 8px 24px rgba(232, 192, 122, 0.5);
+  .pain-card:hover::before {
+    opacity: 1;
   }
 
   /* ============================================
@@ -1588,58 +1611,73 @@
 
     <div class="pain-grid">
       <div class="pain-card reveal">
-        <div class="pain-deco">
-          <span class="deco-circle deco-c1"></span>
-          <span class="deco-circle deco-c2"></span>
-          <span class="deco-circle deco-c3"></span>
+        <div class="pain-front">
+          <svg class="pain-front-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+          </svg>
+          <span class="pain-front-label">Hover</span>
         </div>
-        <div class="pain-glass"></div>
-        <div class="pain-content">
-          <span class="pain-number">01</span>
-          <h3 class="pain-title">Planilha bagunçada</h3>
-          <p class="pain-desc">Centenas de linhas, cores aleatórias, fórmulas quebradas. Você nem sabe mais quem já pagou.</p>
-        </div>
-      </div>
-
-      <div class="pain-card reveal">
-        <div class="pain-deco">
-          <span class="deco-circle deco-c1"></span>
-          <span class="deco-circle deco-c2"></span>
-          <span class="deco-circle deco-c3"></span>
-        </div>
-        <div class="pain-glass"></div>
-        <div class="pain-content">
-          <span class="pain-number">02</span>
-          <h3 class="pain-title">WhatsApp perdido</h3>
-          <p class="pain-desc">Acordos escritos em conversas. Promessas esquecidas. Devedor sumindo no digital.</p>
+        <div class="pain-back" style="background-image: url('pain-01.jpg');">
+          <div class="pain-back-overlay"></div>
+          <span class="pain-back-tag">01 · Planilhas</span>
+          <div class="pain-back-content">
+            <h3 class="pain-back-title">Planilha bagunçada</h3>
+            <p class="pain-back-desc">Centenas de linhas, cores aleatórias, fórmulas quebradas. Você nem sabe mais quem já pagou.</p>
+          </div>
         </div>
       </div>
 
       <div class="pain-card reveal">
-        <div class="pain-deco">
-          <span class="deco-circle deco-c1"></span>
-          <span class="deco-circle deco-c2"></span>
-          <span class="deco-circle deco-c3"></span>
+        <div class="pain-front">
+          <svg class="pain-front-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <span class="pain-front-label">Hover</span>
         </div>
-        <div class="pain-glass"></div>
-        <div class="pain-content">
-          <span class="pain-number">03</span>
-          <h3 class="pain-title">Boletos vencidos</h3>
-          <p class="pain-desc">Dinheiro seu, parado, na conta de outro. Semana após semana. Mês após mês.</p>
+        <div class="pain-back" style="background-image: url('pain-02.jpg');">
+          <div class="pain-back-overlay"></div>
+          <span class="pain-back-tag">02 · Mensagens</span>
+          <div class="pain-back-content">
+            <h3 class="pain-back-title">WhatsApp perdido</h3>
+            <p class="pain-back-desc">Acordos escritos em conversas. Promessas esquecidas. Devedor sumindo no digital.</p>
+          </div>
         </div>
       </div>
 
       <div class="pain-card reveal">
-        <div class="pain-deco">
-          <span class="deco-circle deco-c1"></span>
-          <span class="deco-circle deco-c2"></span>
-          <span class="deco-circle deco-c3"></span>
+        <div class="pain-front">
+          <svg class="pain-front-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M4 9h16M9 4v16"/>
+          </svg>
+          <span class="pain-front-label">Hover</span>
         </div>
-        <div class="pain-glass"></div>
-        <div class="pain-content">
-          <span class="pain-number">04</span>
-          <h3 class="pain-title">Tempo perdido</h3>
-          <p class="pain-desc">Metade do expediente cobrando. Em vez de fazer sua empresa crescer de verdade.</p>
+        <div class="pain-back" style="background-image: url('pain-03.jpg');">
+          <div class="pain-back-overlay"></div>
+          <span class="pain-back-tag">03 · Crédito</span>
+          <div class="pain-back-content">
+            <h3 class="pain-back-title">Boletos vencidos</h3>
+            <p class="pain-back-desc">Dinheiro seu, parado, na conta de outro. Semana após semana. Mês após mês.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pain-card reveal">
+        <div class="pain-front">
+          <svg class="pain-front-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <span class="pain-front-label">Hover</span>
+        </div>
+        <div class="pain-back" style="background-image: url('pain-04.jpg');">
+          <div class="pain-back-overlay"></div>
+          <span class="pain-back-tag">04 · Operação</span>
+          <div class="pain-back-content">
+            <h3 class="pain-back-title">Tempo perdido</h3>
+            <p class="pain-back-desc">Metade do expediente cobrando. Em vez de fazer sua empresa crescer de verdade.</p>
+          </div>
         </div>
       </div>
     </div>
