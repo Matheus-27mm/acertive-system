@@ -332,14 +332,48 @@
   .marquee-item:hover { color: var(--text-primary); opacity: 1; }
   .marquee-item.italic { font-style: italic; font-weight: 300; }
 
-  /* Para quando tiver os PNGs */
+  /* Logos dos clientes no marquee */
   .marquee-logo {
     height: 48px; width: auto; flex-shrink: 0;
-    opacity: 0.7;
-    filter: grayscale(100%) brightness(0.95);
-    transition: opacity 0.4s ease, filter 0.4s ease;
+    opacity: 0.92;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
-  .marquee-logo:hover { opacity: 1; filter: grayscale(0%) brightness(1); }
+  .marquee-logo:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  /* Ajustes individuais por logo */
+  .marquee-logo.logo-transbyshop { height: 58px; }
+  .marquee-logo.logo-odonto { height: 52px; }
+  .marquee-logo.logo-fogas { height: 50px; }
+
+  /* Label ao lado da logo Odonto Vitta */
+  .marquee-client {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .marquee-client-name {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    opacity: 0.85;
+    transition: color 0.4s ease, opacity 0.4s ease;
+  }
+
+  .marquee-client:hover .marquee-client-name {
+    color: var(--text-primary);
+    opacity: 1;
+  }
 
   .marquee-divider {
     display: flex; align-items: center; justify-content: center;
@@ -926,20 +960,145 @@
   .audience-card.reveal:nth-child(3) { transition-delay: 0.2s; }
 
   /* RESPONSIVE */
+
+  /* Menu mobile hamburger button */
+  .nav-mobile-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid rgba(232,192,122,0.25);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gold-300);
+    transition: all 0.3s ease;
+    padding: 0;
+  }
+  .nav-mobile-toggle:hover {
+    border-color: var(--gold-300);
+    background: rgba(232,192,122,0.08);
+  }
+  .nav-mobile-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Mobile drawer menu */
+  .nav-mobile-drawer {
+    position: fixed;
+    inset: 0;
+    background: rgba(11,11,13,0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s var(--ease-out);
+    display: flex;
+    flex-direction: column;
+    padding: 80px 24px 40px;
+  }
+  .nav-mobile-drawer.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-mobile-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: transparent;
+    border: 1px solid rgba(232,192,122,0.25);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gold-300);
+    padding: 0;
+  }
+  .nav-mobile-close svg { width: 18px; height: 18px; }
+  .nav-mobile-drawer nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 20px;
+  }
+  .nav-mobile-drawer nav a {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--bg-border);
+    transition: color 0.3s ease, padding-left 0.3s ease;
+  }
+  .nav-mobile-drawer nav a:hover {
+    color: var(--gold-300);
+    padding-left: 8px;
+  }
+  .nav-mobile-drawer-cta {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .nav-mobile-drawer-cta .btn { width: 100%; justify-content: center; }
+
+  /* TABLET */
+  @media (max-width: 1024px) {
+    .feature-block { gap: 60px; padding: 60px 0; }
+    .feature-title { font-size: 34px; }
+    .audience-grid, .stats-grid { gap: 20px; }
+    .pain-grid { gap: 16px; }
+  }
+
+  /* MOBILE LARGE */
   @media (max-width: 900px) {
     .hero { padding: 80px 0 40px; }
-    .feature-block, .footer-grid { grid-template-columns: 1fr; gap: 50px; }
+    .hero-headline { font-size: clamp(44px, 10vw, 72px); }
+
+    .feature-block, .footer-grid { grid-template-columns: 1fr; gap: 50px; padding: 60px 0; }
     .feature-block.reverse { direction: ltr; }
-    .pain-grid { grid-template-columns: 1fr 1fr; }
-    .audience-grid, .stats-grid { grid-template-columns: 1fr; gap: 40px; }
+    .feature-title { font-size: 32px; line-height: 1.15; }
+    .feature-title br { display: none; }
+    .feature-visual { aspect-ratio: 16 / 11; padding: 24px; }
+
+    .pain-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .pain-card { aspect-ratio: 1 / 1.15; }
+    .pain-front-icon { width: 64px; height: 64px; }
+    .pain-back-title { font-size: 18px; }
+    .pain-back-desc { font-size: 12.5px; }
+
+    .audience-grid, .stats-grid { grid-template-columns: 1fr; gap: 24px; }
+    .audience-card { padding: 36px 28px; }
+
+    /* Esconder menu desktop, mostrar hamburger */
     .nav-links { display: none; }
     .nav-signin { display: none; }
+    .nav-actions .btn-primary { display: none; }
+    .nav-mobile-toggle { display: inline-flex; }
+
     .cta-form { grid-template-columns: 1fr; }
+    .cta-title br { display: none; }
     .section { padding: 80px 0; }
-    .marquee-item { font-size: 22px; }
+    .section-header { margin-bottom: 48px; }
+    .section-title { font-size: 36px; }
+
     .marquee-track { gap: 50px; }
-    .marquee-logo { height: 32px; }
-    .calendar-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
+    .marquee-logo { height: 40px; }
+    .marquee-logo.logo-transbyshop { height: 48px; }
+    .marquee-logo.logo-odonto { height: 42px; }
+    .marquee-logo.logo-fogas { height: 40px; }
+    .marquee-client { gap: 10px; }
+    .marquee-client-name { font-size: 18px; }
+
+    .calendar-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); gap: 6px; }
+
     .video-bg video { display: none; }
     .video-bg {
       background:
@@ -948,15 +1107,77 @@
         var(--bg-primary);
     }
     .announcement { font-size: 12px; padding: 8px 16px; }
+    .announcement a { display: block; margin-left: 0; margin-top: 4px; }
+
+    .testimonial { padding: 80px 0; }
+    .testimonial::before { font-size: 120px; top: 40px; }
+    .testimonial-quote { font-size: 22px; }
+
+    .stats { padding: 80px 0; }
+
+    .cta { padding: 80px 0; }
+
+    .footer { padding: 60px 0 30px; }
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
   }
 
+  /* MOBILE */
   @media (max-width: 560px) {
-    .pain-grid { grid-template-columns: 1fr; }
+    .pain-grid { grid-template-columns: 1fr; gap: 14px; }
+    .pain-card { aspect-ratio: 3 / 2; }
     .container, .hero-container { padding: 0 20px; }
-    .hero-headline { font-size: 46px; letter-spacing: -0.03em; }
-    .hero-subheadline { font-size: 16px; }
-    .marquee-item { font-size: 18px; }
-    .calendar-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); }
+
+    .hero { padding: 60px 0 30px; }
+    .hero-eyebrow { font-size: 10px; padding: 6px 12px; margin-bottom: 28px; }
+    .hero-headline { font-size: 42px; letter-spacing: -0.03em; margin-bottom: 24px; }
+    .hero-subheadline { font-size: 15px; margin-bottom: 32px; }
+
+    .hero-cta { flex-direction: column; width: 100%; gap: 10px; }
+    .hero-cta .btn { width: 100%; justify-content: center; }
+
+    .hero-proof { margin-top: 56px; padding-top: 28px; }
+    .clients-label-text { font-size: 9.5px; letter-spacing: 0.2em; }
+    .clients-label-line { flex: 0 1 24px; }
+
+    .marquee-track { gap: 36px; }
+    .marquee-logo { height: 34px; }
+    .marquee-logo.logo-transbyshop { height: 40px; }
+    .marquee-logo.logo-odonto { height: 36px; }
+    .marquee-logo.logo-fogas { height: 34px; }
+    .marquee-client-name { font-size: 15px; }
+    .marquee-divider { font-size: 16px; }
+
+    .section-title { font-size: 28px; }
+    .feature-title { font-size: 26px; }
+    .feature-desc { font-size: 15px; }
+    .feature-visual { padding: 18px; }
+
+    .calendar-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); gap: 5px; }
+    .calendar-month { padding: 6px 4px 4px; }
+    .calendar-month-label { font-size: 8.5px; }
+
+    .stat-big { font-size: 56px; }
+
+    .testimonial-quote { font-size: 19px; padding: 0 10px; }
+    .testimonial::before { font-size: 100px; top: 30px; }
+
+    .cta-title { font-size: 34px; }
+    .cta-subtitle { font-size: 15px; }
+
+    .audience-card { padding: 32px 24px; }
+    .audience-title { font-size: 22px; }
+
+    .nav { padding: 14px 0; }
+    .logo-text { display: none; }
+    .logo img { height: 32px; }
+  }
+
+  /* MOBILE EXTRA SMALL */
+  @media (max-width: 380px) {
+    .hero-headline { font-size: 36px; }
+    .section-title { font-size: 24px; }
+    .stat-big { font-size: 46px; }
+    .cta-title { font-size: 28px; }
   }
 </style>
 </head>
@@ -995,9 +1216,38 @@
         Falar com especialista
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </a>
+      <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="7" x2="21" y2="7"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="17" x2="21" y2="17"/>
+        </svg>
+      </button>
     </div>
   </div>
 </nav>
+
+<!-- MOBILE DRAWER -->
+<div class="nav-mobile-drawer" id="mobileDrawer">
+  <button class="nav-mobile-close" id="mobileClose" aria-label="Fechar menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+  <nav>
+    <a href="#metodo" class="drawer-link">Método</a>
+    <a href="#para-quem" class="drawer-link">Para quem</a>
+    <a href="#resultados" class="drawer-link">Resultados</a>
+    <a href="#contato" class="drawer-link">Contato</a>
+  </nav>
+  <div class="nav-mobile-drawer-cta">
+    <a href="#contato" class="btn btn-primary drawer-link">
+      Falar com especialista
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1038,11 +1288,14 @@
 
       <div class="marquee">
         <div class="marquee-track" id="marqueeTrack">
-          <img src="transbyshop.png" alt="Transbyshop" class="marquee-logo">
+          <img src="transbyshop.png" alt="Transbyshop" class="marquee-logo logo-transbyshop">
           <span class="marquee-divider">✦</span>
-          <img src="odonto-vitta.png" alt="Odonto Vitta" class="marquee-logo">
+          <span class="marquee-client">
+            <img src="odonto-vitta.png" alt="Odonto Vitta" class="marquee-logo logo-odonto">
+            <span class="marquee-client-name">Odonto Vitta</span>
+          </span>
           <span class="marquee-divider">✦</span>
-          <img src="fogas.png" alt="Fogás" class="marquee-logo">
+          <img src="fogas.png" alt="Fogás" class="marquee-logo logo-fogas">
           <span class="marquee-divider">✦</span>
         </div>
       </div>
@@ -1474,6 +1727,36 @@
 </footer>
 
 <script>
+  // MOBILE DRAWER
+  (function setupMobileDrawer() {
+    const toggle = document.getElementById('mobileToggle');
+    const drawer = document.getElementById('mobileDrawer');
+    const closeBtn = document.getElementById('mobileClose');
+    if (!toggle || !drawer || !closeBtn) return;
+
+    const openDrawer = () => {
+      drawer.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    const closeDrawer = () => {
+      drawer.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+
+    // Fechar drawer ao clicar em qualquer link
+    drawer.querySelectorAll('.drawer-link').forEach(link => {
+      link.addEventListener('click', closeDrawer);
+    });
+
+    // Fechar com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+  })();
+
   // MARQUEE
   (function setupMarquee() {
     const track = document.getElementById('marqueeTrack');
