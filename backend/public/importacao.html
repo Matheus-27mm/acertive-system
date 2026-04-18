@@ -1183,96 +1183,43 @@ async function executarImportacao() {
 
   let pct = 0;
   const timer = setInterval(() => {
-    pct = Math.min(pct + 2, 85);
+    pct = Math.min(pct + 1, 90);
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('progTxt').textContent =
-      pct < 30 ? 'Criando clientes...' :
-      pct < 60 ? 'Registrando cobranças...' :
-      'Finalizando...';
-  }, 120);
+      pct < 20 ? 'Enviando arquivo...' :
+      pct < 50 ? 'Processando registros...' :
+      pct < 80 ? 'Criando cobranças...' : 'Finalizando...';
+  }, 200);
 
   try {
-    // ── Agrupar dados por CPF (formato que o backend espera) ──
-    const m = mapeamento;
-    const clientesMap = new Map();
+    // Enviar arquivo direto — backend processa tudo em uma transação
+    const fd = new FormData();
+    fd.append('file', arquivoRaw);
+    fd.append('credor_nome', credorNome);
+    if (credorId) fd.append('credor_id', credorId);
+    fd.append('mapeamento', JSON.stringify(mapeamento));
 
-    dadosValidados.forEach(reg => {
-      const cpf = reg.cpf_cnpj || '';
-      const chave = cpf || ('nome_' + (reg.nome||'').toLowerCase().replace(/\s+/g,'_'));
-
-      if (!clientesMap.has(chave)) {
-        clientesMap.set(chave, {
-          nome:      reg.nome     || '',
-          cpf_cnpj:  cpf,
-          telefone:  reg.telefone  || '',
-          telefone2: reg.telefone2 || '',
-          email:     reg.email     || '',
-          dividas:   []
-        });
-      }
-
-      const cli = clientesMap.get(chave);
-
-      // Calcular dias de atraso
-      let diasAtraso = 0;
-      if (reg.data_vencimento) {
-        const dv = new Date(reg.data_vencimento);
-        if (!isNaN(dv.getTime())) {
-          diasAtraso = Math.max(0, Math.floor((Date.now() - dv.getTime()) / 86400000));
-        }
-      }
-
-      if (reg.valor > 0) {
-        cli.dividas.push({
-          valor:            parsearValorBR(reg.valor),
-          data_vencimento:  reg.data_vencimento || null,
-          descricao:        reg.descricao || ('Importado ' + credorNome),
-          numero_documento: reg.numero_documento || null,
-          dias_atraso:      diasAtraso
-        });
-      }
+    const r = await fetch(API + '/api/importacao/executar', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      body: fd
     });
 
-    const clientesAgrupados = Array.from(clientesMap.values())
-      .filter(c => c.nome && c.dividas.length > 0);
-
-    // Enviar em lotes de 300 clientes para evitar 413 Content Too Large
-    const LOTE = 300;
-    let totalClientes = 0, totalCob = 0;
-
-    for (let i = 0; i < clientesAgrupados.length; i += LOTE) {
-      const lote = clientesAgrupados.slice(i, i + LOTE);
-      const pctLote = Math.round(((i + lote.length) / clientesAgrupados.length) * 85);
-      document.getElementById('progFill').style.width = pctLote + '%';
-      document.getElementById('progTxt').textContent =
-        `Enviando lote ${Math.ceil((i+1)/LOTE)} de ${Math.ceil(clientesAgrupados.length/LOTE)}...`;
-
-      const body = { clientes: lote, credor_nome: credorNome };
-      if (credorId) body.credor_id = credorId;
-
-      const r = await fetch(API+'/api/importacao/executar', {
-        method: 'POST', headers: H(),
-        body: JSON.stringify(body)
-      });
-      const d = await r.json();
-      if (!d.success) throw new Error(d.error || 'Erro no lote ' + Math.ceil((i+1)/LOTE));
-
-      totalClientes += (d.resultado?.clientes_criados||0) + (d.resultado?.clientes_atualizados||0);
-      totalCob      += d.resultado?.cobrancas_criadas || lote.length;
-    }
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Erro na importação');
 
     clearInterval(timer);
     document.getElementById('progFill').style.width = '100%';
 
-    // Salvar template após sucesso
     salvarTemplate(credorId, credorNome, mapeamento);
 
     setTimeout(() => {
       document.getElementById('progView').classList.remove('on');
       document.getElementById('successView').classList.add('on');
       document.getElementById('confFoot').style.display = 'none';
-      document.getElementById('resClientes').textContent = totalClientes;
-      document.getElementById('resCob').textContent = totalCob;
+      document.getElementById('resClientes').textContent =
+        (d.resultado?.clientes_criados||0) + (d.resultado?.clientes_atualizados||0);
+      document.getElementById('resCob').textContent = d.resultado?.cobrancas_criadas || 0;
       toast('Importação concluída! Template salvo para ' + credorNome);
     }, 400);
 
@@ -1284,45 +1231,3 @@ async function executarImportacao() {
     toast('Erro: ' + e.message, 'err');
   }
 }
-
-/* ═══════════════════════════════════════
-   UTILS
-═══════════════════════════════════════ */
-function reiniciar() {
-  credorId=null; credorNome=''; arquivoRaw=null;
-  colunas=[]; linhas=[]; mapeamento={}; dadosValidados=[]; templateAtual=null;
-
-  document.getElementById('credorSelect').value = '';
-  document.getElementById('novoCredorNome').value = '';
-  document.getElementById('novoCredorPanel').classList.remove('on');
-  document.getElementById('credorBadge').style.display = 'none';
-  document.getElementById('tmplInfo').style.display = 'none';
-  document.getElementById('btn1').disabled = true;
-  document.getElementById('fileSelected').classList.remove('on');
-  document.getElementById('uploadZone').style.display = '';
-  document.getElementById('btn2').disabled = true;
-  document.getElementById('fileInput').value = '';
-  document.getElementById('confBody').style.display = 'block';
-  document.getElementById('confFoot').style.display = 'flex';
-  document.getElementById('progView').classList.remove('on');
-  document.getElementById('successView').classList.remove('on');
-  irPara(1);
-}
-
-let _tt;
-function toast(msg, tipo='ok') {
-  const t = document.getElementById('toast');
-  t.querySelector('i').className = tipo==='ok'?'fas fa-check-circle':'fas fa-times-circle';
-  t.className = 'toast ' + tipo;
-  document.getElementById('toastTxt').textContent = msg;
-  t.classList.add('on');
-  clearTimeout(_tt); _tt = setTimeout(()=>t.classList.remove('on'), 3500);
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await checkAuth();
-  await carregarCredores();
-});
-</script>
-</body>
-</html>
