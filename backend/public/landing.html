@@ -139,8 +139,8 @@
     height: auto;
     transform: translate(-50%, -50%);
     object-fit: cover;
-    opacity: 0.32;
-    filter: saturate(0.7) brightness(0.95) hue-rotate(-15deg);
+    opacity: 0.45;
+    filter: saturate(0.85) brightness(1.05) hue-rotate(-15deg) contrast(1.1);
   }
 
   .video-bg-overlay {
@@ -148,8 +148,8 @@
     inset: 0;
     z-index: 1;
     background:
-      radial-gradient(ellipse 1400px 900px at 50% 50%, rgba(11, 11, 13, 0) 0%, rgba(11, 11, 13, 0.4) 70%, rgba(11, 11, 13, 0.85) 100%),
-      linear-gradient(180deg, rgba(11, 11, 13, 0.3) 0%, transparent 30%, transparent 70%, rgba(11, 11, 13, 0.6) 100%);
+      radial-gradient(ellipse 1400px 900px at 50% 50%, rgba(11, 11, 13, 0) 0%, rgba(11, 11, 13, 0.25) 70%, rgba(11, 11, 13, 0.7) 100%),
+      linear-gradient(180deg, rgba(11, 11, 13, 0.2) 0%, transparent 30%, transparent 70%, rgba(11, 11, 13, 0.5) 100%);
     pointer-events: none;
   }
 
@@ -574,16 +574,16 @@
   }
 
   .pain-card {
-    /* LIQUID GLASS EFFECT */
+    /* LIQUID GLASS EFFECT — intensified shine */
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.02) 50%,
-      rgba(255, 255, 255, 0.05) 100%
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0.07) 100%
     );
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: var(--radius-xl);
     padding: 36px 32px;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
@@ -598,66 +598,78 @@
     flex-direction: column;
     justify-content: space-between;
     box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.18),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.2),
-      0 8px 32px rgba(0, 0, 0, 0.3);
+      inset 0 1px 2px rgba(255, 255, 255, 0.28),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+      inset 1px 0 1px rgba(255, 255, 255, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
-  /* Top highlight (glass shine reflection) */
+  /* Top glass highlight — more pronounced */
   .pain-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 50%;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.12) 0%,
-      rgba(255, 255, 255, 0.04) 50%,
-      transparent 100%
-    );
+    height: 55%;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0.08) 40%,
+        transparent 100%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.04) 50%,
+        transparent 100%
+      );
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     pointer-events: none;
     transition: opacity 0.4s ease;
   }
 
-  /* Diagonal light streak (liquid glass signature) */
+  /* Diagonal shine streak — much more visible and animated */
   .pain-card::after {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
     background: linear-gradient(
       115deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.08) 45%,
-      rgba(255, 255, 255, 0.15) 50%,
-      rgba(255, 255, 255, 0.08) 55%,
-      transparent 70%
+      transparent 20%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 255, 255, 0.3) 48%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0.3) 52%,
+      rgba(255, 255, 255, 0.15) 60%,
+      transparent 80%
     );
     pointer-events: none;
-    opacity: 0.6;
-    transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    transform: translateX(-30%);
+    opacity: 0.7;
+    transition: opacity 0.5s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(-60%) translateY(-30%);
+    mix-blend-mode: overlay;
   }
 
   .pain-card:hover {
     transform: translateY(-8px);
-    border-color: rgba(232, 192, 122, 0.4);
+    border-color: rgba(232, 192, 122, 0.45);
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.12) 0%,
-      rgba(255, 255, 255, 0.04) 50%,
-      rgba(232, 192, 122, 0.08) 100%
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(232, 192, 122, 0.12) 100%
     );
     box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.25),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.2),
-      0 20px 60px rgba(0, 0, 0, 0.4),
-      0 0 40px rgba(232, 192, 122, 0.15);
+      inset 0 1px 2px rgba(255, 255, 255, 0.35),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+      inset 1px 0 1px rgba(255, 255, 255, 0.15),
+      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(232, 192, 122, 0.2);
   }
 
   .pain-card:hover::before {
@@ -666,7 +678,7 @@
 
   .pain-card:hover::after {
     opacity: 1;
-    transform: translateX(20%);
+    transform: translateX(40%) translateY(30%);
   }
 
   .pain-icon {
@@ -675,42 +687,42 @@
     margin-bottom: 24px;
     color: var(--gold-300);
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))
-            drop-shadow(0 0 8px rgba(232, 192, 122, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 12px rgba(232, 192, 122, 0.35));
     position: relative;
     z-index: 2;
   }
 
   .pain-card:hover .pain-icon {
     transform: scale(1.12) rotate(-4deg);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))
-            drop-shadow(0 0 16px rgba(232, 192, 122, 0.5));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))
+            drop-shadow(0 0 20px rgba(232, 192, 122, 0.6));
   }
 
-  /* ENGRAVED TEXT EFFECT — title looks carved into glass */
+  /* ENGRAVED TEXT — sharper contrast on glass */
   .pain-title {
     font-family: 'Fraunces', serif;
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.92);
+    color: rgba(255, 255, 255, 0.96);
     position: relative;
     z-index: 2;
     letter-spacing: -0.01em;
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.15),
-      0 -1px 1px rgba(0, 0, 0, 0.6),
-      0 2px 3px rgba(0, 0, 0, 0.4);
+      0 1px 0 rgba(255, 255, 255, 0.2),
+      0 -1px 1px rgba(0, 0, 0, 0.7),
+      0 2px 4px rgba(0, 0, 0, 0.5);
   }
 
   .pain-desc {
     font-size: 14.5px;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.72);
     line-height: 1.6;
     position: relative;
     z-index: 2;
     text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.4);
+      0 1px 0 rgba(0, 0, 0, 0.5);
   }
 
   /* ============================================
