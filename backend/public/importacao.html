@@ -601,7 +601,7 @@ async function checkAuth() {
 
 async function carregarCredores() {
   try {
-    const r = await fetch(API+'/api/credores', {headers:H()});
+    const r = await fetch(API+'/api/importacao/credores', {headers:H()});
     const d = await r.json();
     const lista = d.data || d || [];
     const sel = document.getElementById('credorSelect');
@@ -1231,3 +1231,44 @@ async function executarImportacao() {
     toast('Erro: ' + e.message, 'err');
   }
 }
+
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+function reiniciar() {
+  credorId=null; credorNome=''; arquivoRaw=null;
+  colunas=[]; linhas=[]; mapeamento={}; dadosValidados=[]; templateAtual=null;
+  document.getElementById('credorSelect').value = '';
+  document.getElementById('novoCredorNome').value = '';
+  document.getElementById('novoCredorPanel').classList.remove('on');
+  document.getElementById('credorBadge').style.display = 'none';
+  document.getElementById('tmplInfo').style.display = 'none';
+  document.getElementById('btn1').disabled = true;
+  document.getElementById('fileSelected').classList.remove('on');
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('btn2').disabled = true;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('confBody').style.display = 'block';
+  document.getElementById('confFoot').style.display = 'flex';
+  document.getElementById('progView').classList.remove('on');
+  document.getElementById('successView').classList.remove('on');
+  irPara(1);
+}
+
+let _tt;
+function toast(msg, tipo='ok') {
+  const t = document.getElementById('toast');
+  t.querySelector('i').className = tipo==='ok'?'fas fa-check-circle':'fas fa-times-circle';
+  t.className = 'toast ' + tipo;
+  document.getElementById('toastTxt').textContent = msg;
+  t.classList.add('on');
+  clearTimeout(_tt); _tt = setTimeout(()=>t.classList.remove('on'), 3500);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await checkAuth();
+  await carregarCredores();
+});
+</script>
+</body>
+</html>
