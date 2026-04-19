@@ -925,7 +925,7 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   max-width:340px;
 }
 
-/* Odômetro (loop contínuo de dígitos) */
+/* Odômetro — loop contínuo com alturas fixas em pixels */
 .odometer-wrap{
   margin:auto 0;
   display:flex;flex-direction:column;gap:6px;
@@ -936,20 +936,23 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   color:var(--text-secondary);
   letter-spacing:-0.01em;
 }
+
+/* IMPORTANTE: altura do dígito em PIXELS fixos, não em em */
 .odometer{
+  --digit-h:72px;  /* altura de cada dígito em pixels */
+  --digit-w:44px;  /* largura de cada dígito */
   display:flex;align-items:center;
   font-family:var(--sans);
-  font-size:clamp(48px, 5.5vw, 72px);
   font-weight:600;
-  line-height:1;
   letter-spacing:-0.04em;
-  /* Altura fixa = tamanho de 1 dígito */
-  --digit-size:1em;
+  font-size:var(--digit-h);
+  line-height:var(--digit-h);
+  height:var(--digit-h);
 }
 .odometer-digit{
   display:inline-block;
-  width:0.65em;
-  height:var(--digit-size);
+  width:var(--digit-w);
+  height:var(--digit-h);
   overflow:hidden;
   position:relative;
   vertical-align:top;
@@ -960,47 +963,64 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   will-change:transform;
 }
 .odometer-digit-inner span{
-  height:var(--digit-size);
-  line-height:var(--digit-size);
+  width:var(--digit-w);
+  height:var(--digit-h);
+  line-height:var(--digit-h);
+  font-size:var(--digit-h);
   display:flex;
   align-items:center;
   justify-content:center;
-  flex-shrink:0;
+  flex:0 0 var(--digit-h);
+  font-variant-numeric:tabular-nums;
 }
 
-/* Cada dígito tem sua própria animação de loop */
-.odometer.negative .odometer-digit-inner{
-  animation:odoScrollDown var(--speed, 8s) linear infinite;
-  animation-delay:var(--delay, 0s);
-}
+/* Animações de loop contínuo.
+   CADA dígito tem 11 spans (0,1,2,3,4,5,6,7,8,9,0).
+   Translada do topo (0) até -10 * altura (seamless pois span 10 = span 0). */
 .odometer.gold .odometer-digit-inner{
-  animation:odoScrollUp var(--speed, 8s) linear infinite;
+  animation:odoUp var(--speed, 6s) linear infinite;
+  animation-delay:var(--delay, 0s);
+}
+.odometer.negative .odometer-digit-inner{
+  animation:odoDown var(--speed, 6s) linear infinite;
   animation-delay:var(--delay, 0s);
 }
 
-/* Desce continuamente - simula valor caindo */
-@keyframes odoScrollDown{
-  0%{transform:translateY(0)}
-  100%{transform:translateY(-10em)}
+/* SOBE (gold): começa mostrando o 0 no topo, sobe passando por 1,2,3...9 e volta ao 0.
+   Os spans estão na ordem [0,1,2,3,4,5,6,7,8,9,0].
+   Translate Y negativo = spans sobem = mostra valor maior. */
+@keyframes odoUp{
+  0%   {transform:translate3d(0, 0, 0)}
+  100% {transform:translate3d(0, calc(var(--digit-h) * -10), 0)}
 }
-/* Sobe continuamente - simula valor crescendo */
-@keyframes odoScrollUp{
-  0%{transform:translateY(-10em)}
-  100%{transform:translateY(0)}
+
+/* DESCE (negative): começa mostrando o 9, desce passando por 8,7,6...0 e volta ao 9.
+   Os spans estão na ordem [9,8,7,6,5,4,3,2,1,0,9].
+   Mesma translate Y negativa (mesma animação visual), mas a sequência está invertida. */
+@keyframes odoDown{
+  0%   {transform:translate3d(0, 0, 0)}
+  100% {transform:translate3d(0, calc(var(--digit-h) * -10), 0)}
 }
 
 .odometer-suffix{
-  font-size:0.4em;
+  font-size:28px;
   color:var(--text-secondary);
-  margin-left:0.15em;
+  margin-left:6px;
   font-weight:400;
   line-height:1;
+  align-self:flex-end;
+  margin-bottom:8px;
 }
 
 .odometer.gold .odometer-digit-inner span,
 .odometer.gold .odometer-suffix{color:var(--gold-300)}
 .odometer.negative .odometer-digit-inner span,
 .odometer.negative .odometer-suffix{color:#D4827D}
+
+@media (max-width:768px){
+  .odometer{--digit-h:52px; --digit-w:32px}
+  .odometer-suffix{font-size:20px;margin-bottom:5px}
+}
 
 /* Footer do card - variação/período */
 .compare-footer{
@@ -1957,19 +1977,16 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
     const isGold = odometer.classList.contains('gold');
 
     digitEls.forEach((el, idx) => {
-      // Popula cada coluna com dígitos 0-9 + cópia do 0 no final
-      // Isso garante loop seamless (chegar em -10em = mostrar 0 de novo)
       el.innerHTML = '';
 
-      // Se for gold (subindo), vai de 0 a 9 + 0 final
-      // Se for negative (descendo), vai de 9 a 0 + 9 final
-      const sequence = [];
+      // Sequência de 11 dígitos (10 + 1 repetição pro loop seamless)
+      let sequence;
       if (isGold){
-        for(let i = 0; i <= 9; i++) sequence.push(i);
-        sequence.push(0); // Dígito extra = valor de loop
+        // Sobe: 0,1,2,3,4,5,6,7,8,9,0
+        sequence = [0,1,2,3,4,5,6,7,8,9,0];
       } else {
-        for(let i = 9; i >= 0; i--) sequence.push(i);
-        sequence.push(9); // Dígito extra = valor de loop
+        // Desce: 9,8,7,6,5,4,3,2,1,0,9
+        sequence = [9,8,7,6,5,4,3,2,1,0,9];
       }
 
       sequence.forEach(d => {
@@ -1978,15 +1995,14 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
         el.appendChild(span);
       });
 
-      // Velocidades diferentes para cada dígito (centenas mais lentas, unidades mais rápidas)
-      // Cria sensação de número contábil real (unidades correm, dezenas mais lentas, centenas ainda mais)
-      const speeds = [12, 6, 3]; // centenas, dezenas, unidades em segundos
-      const speed = speeds[idx] || 4;
+      // Velocidades escalonadas por posição (efeito contábil real):
+      // idx 0 = centenas (mais lento), idx 1 = dezenas, idx 2 = unidades (mais rápido)
+      const speeds = [18, 9, 4.5]; // segundos
+      const speed = speeds[idx] !== undefined ? speeds[idx] : 6;
       el.style.setProperty('--speed', speed + 's');
 
-      // Delay inicial aleatório pra não ficar todos sincronizados
-      const delay = -Math.random() * speed;
-      el.style.setProperty('--delay', delay + 's');
+      // SEM delay aleatório — todos começam do mesmo ponto para comportamento previsível
+      el.style.setProperty('--delay', '0s');
     });
   });
 })();
