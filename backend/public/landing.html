@@ -689,20 +689,39 @@ section{padding:clamp(70px, 9vw, 130px) 0;position:relative}
 }
 .cube-face{
   position:absolute;inset:0;
-  background:linear-gradient(135deg, rgba(255,255,255,0.1), rgba(232,196,121,0.05));
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.18);
+  /* Background sólido dourado escuro - sem transparência para evitar faces vazarem */
+  background:linear-gradient(135deg, #1A2A26 0%, #0F2A27 100%);
+  border:1px solid rgba(232,196,121,0.35);
   border-radius:16px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:14px;text-align:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12), 0 0 20px rgba(232,196,121,0.15);
+  box-shadow:inset 0 1px 0 rgba(232,196,121,0.15), inset 0 0 30px rgba(232,196,121,0.08), 0 0 20px rgba(232,196,121,0.2);
+  /* Esconde face quando está de costas - CRÍTICO para legibilidade */
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
-.cube-face .cf-lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px}
-.cube-face .cf-v{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-0.02em;color:var(--text-primary)}
+.cube-face .cf-lbl{
+  font-family:var(--mono);
+  font-size:9px;font-weight:500;
+  letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--gold-300);
+  margin-bottom:8px;
+  opacity:0.75;
+}
+.cube-face .cf-v{
+  font-family:var(--sans);
+  font-size:22px;font-weight:600;
+  letter-spacing:-0.025em;
+  color:var(--text-primary);
+  line-height:1;
+}
 .cube-face .cf-v.gold{color:var(--gold-300)}
-.cube-face.face-5{background:linear-gradient(135deg, var(--gold-500), var(--gold-600));border-color:var(--gold-300)}
-.cube-face img.cube-logo{height:48px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))}
+/* Face especial com logo ACERTIVE */
+.cube-face.face-logo{
+  background:linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+  border-color:var(--gold-200);
+}
+.cube-face img.cube-logo{height:56px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5))}
 .cf-f{transform:translateZ(70px)}
 .cf-b{transform:rotateY(180deg) translateZ(70px)}
 .cf-l{transform:rotateY(-90deg) translateZ(70px)}
@@ -815,6 +834,185 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   display:flex;justify-content:space-between;align-items:center;
   padding-top:26px;border-top:1px solid var(--border-glass);
   color:var(--text-tertiary);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+}
+
+/* ═══════════════════════════════════════════
+   COMPARATIVO — Com vs Sem ACERTIVE (odômetros)
+   ═══════════════════════════════════════════ */
+.compare-section{padding:clamp(70px, 9vw, 130px) 0;position:relative}
+
+.compare-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:24px;
+  position:relative;
+}
+
+/* Divider central com "VS" */
+.compare-grid::before{
+  content:'VS';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:var(--sans);
+  font-size:14px;font-weight:600;
+  letter-spacing:0.15em;
+  color:var(--gold-300);
+  background:var(--bg-surface);
+  border:1px solid var(--border-glass-strong);
+  width:56px;height:56px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  z-index:5;
+  box-shadow:0 0 24px rgba(232,196,121,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.compare-card{
+  padding:40px 36px;
+  min-height:420px;
+  display:flex;flex-direction:column;gap:18px;
+}
+
+/* Card "Sem ACERTIVE" — tom vermelho/alerta */
+.compare-card.negative{
+  background:linear-gradient(135deg,
+    rgba(156, 74, 69, 0.08) 0%,
+    rgba(255,255,255,0.02) 40%,
+    rgba(156, 74, 69, 0.05) 100%);
+  border-color:rgba(156, 74, 69, 0.2);
+}
+.compare-card.negative::after{
+  background:radial-gradient(circle at 30% 30%, rgba(156, 74, 69, 0.18), transparent 55%);
+}
+
+.compare-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-family:var(--mono);
+  font-size:10.5px;font-weight:500;
+  letter-spacing:0.2em;text-transform:uppercase;
+  width:fit-content;
+  border:1px solid var(--border-glass);
+  background:rgba(255,255,255,0.03);
+}
+.compare-tag.negative{
+  color:#D4827D;
+  border-color:rgba(156, 74, 69, 0.3);
+  background:rgba(156, 74, 69, 0.08);
+}
+.compare-tag.positive{
+  color:var(--gold-300);
+  border-color:rgba(232,196,121,0.3);
+  background:rgba(232,196,121,0.08);
+}
+.compare-tag .dot{
+  width:6px;height:6px;border-radius:50%;
+}
+.compare-tag.negative .dot{background:#D4827D;box-shadow:0 0 8px rgba(212, 130, 125, 0.6)}
+.compare-tag.positive .dot{background:var(--gold-300);box-shadow:0 0 8px var(--gold-glow);animation:pulse 2.2s var(--ease) infinite}
+
+.compare-title{
+  font-family:var(--sans);font-weight:500;
+  font-size:20px;letter-spacing:-0.02em;
+  line-height:1.25;
+  color:var(--text-primary);
+  text-wrap:balance;
+}
+.compare-subtitle{
+  color:var(--text-secondary);
+  font-size:13.5px;
+  line-height:1.5;
+  max-width:340px;
+}
+
+/* Odômetro (rolagem mecânica de dígitos) */
+.odometer-wrap{
+  margin:auto 0;
+  display:flex;flex-direction:column;gap:6px;
+}
+.odometer-currency{
+  font-family:var(--sans);
+  font-size:20px;font-weight:400;
+  color:var(--text-secondary);
+  letter-spacing:-0.01em;
+}
+.odometer{
+  display:flex;align-items:center;
+  font-family:var(--sans);
+  font-size:clamp(48px, 5.5vw, 72px);
+  font-weight:600;
+  line-height:1;
+  letter-spacing:-0.04em;
+}
+.odometer-digit{
+  display:inline-block;
+  height:1em;
+  overflow:hidden;
+  position:relative;
+  vertical-align:top;
+}
+.odometer-digit-inner{
+  display:flex;
+  flex-direction:column;
+  transition:transform 2.4s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change:transform;
+}
+.odometer-digit-inner span{
+  height:1em;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.odometer-suffix{
+  font-size:0.4em;
+  color:var(--text-secondary);
+  margin-left:0.15em;
+  font-weight:400;
+}
+
+.odometer.gold .odometer-digit-inner span,
+.odometer.gold .odometer-suffix{color:var(--gold-300)}
+.odometer.negative .odometer-digit-inner span,
+.odometer.negative .odometer-suffix{color:#D4827D}
+
+/* Footer do card - variação/período */
+.compare-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:16px;
+  border-top:1px solid var(--border-glass);
+  font-family:var(--mono);
+  font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;
+}
+.compare-delta{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.compare-delta.negative{color:#D4827D}
+.compare-delta.positive{color:var(--gold-300)}
+.compare-period{color:var(--text-tertiary)}
+
+/* Mini chart embaixo do odômetro */
+.compare-chart{height:60px;margin-top:6px;opacity:0;transition:opacity 1s var(--ease) 1s}
+.compare-card.in .compare-chart{opacity:1}
+.compare-chart svg{width:100%;height:100%;overflow:visible}
+.compare-chart .chart-line{
+  fill:none;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-dasharray:300;
+  stroke-dashoffset:300;
+  animation:drawLine 2.2s cubic-bezier(0.65, 0, 0.35, 1) 0.4s forwards;
+}
+.compare-chart .chart-line.negative{stroke:#D4827D;filter:drop-shadow(0 0 4px rgba(212, 130, 125, 0.4))}
+.compare-chart .chart-line.positive{stroke:var(--gold-300);filter:drop-shadow(0 0 4px var(--gold-glow))}
+.compare-card:not(.in) .compare-chart .chart-line{animation-play-state:paused}
+@keyframes drawLine{
+  to{stroke-dashoffset:0}
+}
+
+@media (max-width:768px){
+  .compare-grid{grid-template-columns:1fr;gap:44px}
+  .compare-grid::before{top:50%;left:50%}
+  .compare-card{min-height:340px;padding:30px 24px}
+  .odometer{font-size:clamp(40px, 9vw, 56px)}
 }
 
 /* ═══════════════════════════════════════════
@@ -1237,21 +1435,93 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
             </div>
             <div class="cube-face cf-b">
               <div class="cf-lbl">Recuperado</div>
-              <div class="cf-v">R$ 2M</div>
+              <div class="cf-v gold">+R$ 2M</div>
             </div>
             <div class="cube-face cf-r">
-              <div class="cf-lbl">Acordos</div>
+              <div class="cf-lbl">Taxa</div>
               <div class="cf-v">73%</div>
             </div>
             <div class="cube-face cf-l">
               <div class="cf-lbl">Clientes</div>
               <div class="cf-v gold">3</div>
             </div>
-            <div class="cube-face cf-t face-5">
+            <div class="cube-face cf-t face-logo">
               <img src="acertivelogo.png" alt="ACERTIVE" class="cube-logo">
             </div>
-            <div class="cube-face cf-bt" style="background:linear-gradient(135deg, var(--gold-500), rgba(42,122,108,0.5))"></div>
+            <div class="cube-face cf-bt face-logo" style="background:linear-gradient(135deg, var(--green-600) 0%, var(--green-700) 100%)">
+              <div class="cf-lbl">ATIVO</div>
+              <div class="cf-v gold" style="font-size:14px">Em operação</div>
+            </div>
           </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 6.5. COMPARATIVO COM vs SEM ACERTIVE -->
+<section class="compare-section" id="compare">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">O custo de não agir</span>
+      <h2>O que uma carteira <span class="grad-text">perde ou recupera</span> em 12 meses.</h2>
+      <p>Cenário real: uma carteira de R$ 420k em recebíveis. Sem gestão profissional, o valor recuperável cai mês a mês. Com a ACERTIVE, o movimento se inverte.</p>
+    </div>
+
+    <div class="compare-grid">
+      <!-- SEM ACERTIVE -->
+      <article class="compare-card liquid-glass negative reveal" data-track data-compare="negative">
+        <div class="glow-layer"></div>
+        <span class="compare-tag negative"><span class="dot"></span>Sem ACERTIVE</span>
+        <h3 class="compare-title">Carteira sem gestão profissional</h3>
+        <p class="compare-subtitle">Cobrança interna inconsistente. Recebíveis envelhecendo sem método. Valor recuperável decrescente a cada mês.</p>
+
+        <div class="odometer-wrap">
+          <span class="odometer-currency">R$</span>
+          <div class="odometer negative" data-odometer data-target="180000" data-start="420000">
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-suffix">,00</span>
+          </div>
+          <div class="compare-chart">
+            <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+              <path class="chart-line negative" d="M0 10 L30 14 L60 18 L90 22 L120 28 L150 30 L180 36 L210 40 L240 46 L270 50 L300 55"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="compare-footer">
+          <span class="compare-delta negative">▼ -57%</span>
+          <span class="compare-period">12 meses</span>
+        </div>
+      </article>
+
+      <!-- COM ACERTIVE -->
+      <article class="compare-card liquid-glass reveal" data-track data-compare="positive" style="--rd:150ms">
+        <div class="glow-layer"></div>
+        <span class="compare-tag positive"><span class="dot"></span>Com ACERTIVE</span>
+        <h3 class="compare-title">Carteira sob gestão da ACERTIVE</h3>
+        <p class="compare-subtitle">Método estruturado, equipe especializada e operação contínua. Recuperação progressiva da carteira mês a mês.</p>
+
+        <div class="odometer-wrap">
+          <span class="odometer-currency">R$</span>
+          <div class="odometer gold" data-odometer data-target="420000" data-start="180000">
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            <span class="odometer-suffix">,00</span>
+          </div>
+          <div class="compare-chart">
+            <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+              <path class="chart-line positive" d="M0 50 L30 46 L60 42 L90 36 L120 32 L150 28 L180 22 L210 18 L240 14 L270 10 L300 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="compare-footer">
+          <span class="compare-delta positive">▲ +133%</span>
+          <span class="compare-period">12 meses</span>
         </div>
       </article>
     </div>
@@ -1650,6 +1920,88 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
     frag.appendChild(p);
   }
   host.appendChild(frag);
+})();
+/* Odômetros — rolagem de dígitos mecânica */
+(function(){
+  const odometers = document.querySelectorAll('[data-odometer]');
+  if (!odometers.length) return;
+
+  function formatValue(num){
+    // Formata: 420000 -> "420", 180000 -> "180" (valor em K)
+    const thousands = Math.round(num / 1000);
+    return thousands.toString().padStart(3, '0'); // 3 dígitos sempre
+  }
+
+  function setupOdometerDigits(odometer){
+    const start = parseInt(odometer.dataset.start);
+    const target = parseInt(odometer.dataset.target);
+    const digitEls = odometer.querySelectorAll('.odometer-digit-inner');
+
+    const startStr = formatValue(start);
+    const targetStr = formatValue(target);
+
+    digitEls.forEach((el, idx) => {
+      const startDigit = parseInt(startStr[idx]);
+      const targetDigit = parseInt(targetStr[idx]);
+
+      // Monta coluna com todos os números 0-9 (para permitir rolar qualquer direção)
+      el.innerHTML = '';
+      // Sempre rola para baixo passando por vários números antes de chegar no alvo
+      // Técnica: criar uma sequência que passa por várias dezenas e termina no dígito certo
+      const sequence = [];
+
+      // Começa no dígito inicial
+      sequence.push(startDigit);
+
+      // Adiciona 2 voltas completas (20 números) para dar efeito mecânico
+      for(let i = 0; i < 20; i++){
+        sequence.push(Math.floor(Math.random() * 10));
+      }
+
+      // Termina no dígito alvo
+      sequence.push(targetDigit);
+
+      sequence.forEach(d => {
+        const span = document.createElement('span');
+        span.textContent = d;
+        el.appendChild(span);
+      });
+
+      // Posição inicial mostra o primeiro dígito (startDigit)
+      el.style.transform = 'translateY(0)';
+      el.dataset.sequenceLength = sequence.length;
+    });
+  }
+
+  function rollOdometer(odometer){
+    const digitEls = odometer.querySelectorAll('.odometer-digit-inner');
+    digitEls.forEach((el, idx) => {
+      const len = parseInt(el.dataset.sequenceLength);
+      // Desloca até o último item (o dígito alvo)
+      const translateY = -(len - 1) * 100; // % de altura
+      // Cada dígito tem delay leve pra criar efeito escalonado
+      el.style.transitionDelay = (idx * 100) + 'ms';
+      el.style.transform = `translateY(${translateY}%)`;
+    });
+  }
+
+  // Inicializa dígitos (posição inicial)
+  odometers.forEach(setupOdometerDigits);
+
+  // Dispara quando entrar no viewport
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const odo = entry.target.querySelector('[data-odometer]');
+        if (odo) {
+          setTimeout(() => rollOdometer(odo), 300);
+        }
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.35 });
+
+  document.querySelectorAll('.compare-card').forEach(card => obs.observe(card));
 })();
 </script>
 </body>
