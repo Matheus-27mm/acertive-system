@@ -925,30 +925,82 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   max-width:340px;
 }
 
-/* Odômetro — loop contínuo com alturas fixas em pixels */
+/* Odômetro — rolos mecânicos 3D com moldura (estilo cofre / caixa registradora) */
 .odometer-wrap{
-  margin:auto 0;
-  display:flex;flex-direction:column;gap:6px;
+  margin:18px 0;
+  display:flex;flex-direction:column;gap:10px;
+  align-items:flex-start;
 }
 .odometer-currency{
   font-family:var(--sans);
-  font-size:20px;font-weight:400;
+  font-size:18px;font-weight:400;
   color:var(--text-secondary);
   letter-spacing:-0.01em;
+  margin-left:4px;
 }
 
-/* IMPORTANTE: altura do dígito em PIXELS fixos, não em em */
+/* Moldura do odômetro — look de display mecânico */
 .odometer{
-  --digit-h:72px;  /* altura de cada dígito em pixels */
-  --digit-w:44px;  /* largura de cada dígito */
-  display:flex;align-items:center;
+  --digit-h:74px;
+  --digit-w:44px;
+  --sep-w:14px;
+  display:inline-flex;
+  align-items:stretch;
+  padding:12px 16px 12px 14px;
+  border-radius:12px;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.55) 100%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0.4), rgba(0,0,0,0.65));
+  border:1px solid rgba(0,0,0,0.5);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.04),
+    0 1px 0 rgba(255,255,255,0.05);
+  overflow:hidden;
+  position:relative;
   font-family:var(--sans);
-  font-weight:600;
-  letter-spacing:-0.04em;
+  font-weight:700;
+  letter-spacing:-0.03em;
   font-size:var(--digit-h);
   line-height:var(--digit-h);
-  height:var(--digit-h);
 }
+
+/* Sinal de menos (só no vermelho) */
+.odometer-sign{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:var(--digit-h);
+  font-size:var(--digit-h);
+  font-weight:700;
+  line-height:1;
+  color:#D4827D;
+  margin-right:2px;
+  flex-shrink:0;
+}
+
+/* Container de dígitos + separadores */
+.odometer-reels{
+  display:inline-flex;
+  align-items:stretch;
+  gap:0;
+}
+
+/* Separador de milhar (ponto) */
+.odometer-sep{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  width:var(--sep-w);
+  height:var(--digit-h);
+  padding-bottom:12px;
+  font-size:var(--digit-h);
+  line-height:1;
+  color:inherit;
+  flex-shrink:0;
+}
+
 .odometer-digit{
   display:inline-block;
   width:var(--digit-w);
@@ -956,7 +1008,26 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   overflow:hidden;
   position:relative;
   vertical-align:top;
+  /* Gradiente nas bordas superior e inferior = efeito de "rolo 3D" */
 }
+.odometer-digit::before,
+.odometer-digit::after{
+  content:'';
+  position:absolute;
+  left:0;right:0;
+  height:30%;
+  pointer-events:none;
+  z-index:2;
+}
+.odometer-digit::before{
+  top:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+}
+.odometer-digit::after{
+  bottom:0;
+  background:linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+}
+
 .odometer-digit-inner{
   display:flex;
   flex-direction:column;
@@ -972,54 +1043,82 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   justify-content:center;
   flex:0 0 var(--digit-h);
   font-variant-numeric:tabular-nums;
+  font-weight:700;
 }
 
 /* Animações de loop contínuo.
-   CADA dígito tem 11 spans (0,1,2,3,4,5,6,7,8,9,0).
-   Translada do topo (0) até -10 * altura (seamless pois span 10 = span 0). */
-.odometer.gold .odometer-digit-inner{
-  animation:odoUp var(--speed, 6s) linear infinite;
+   Os dois rodam para cima visualmente (translateY negativo).
+   A diferença está na ORDEM dos spans no DOM (definida no JS). */
+.odometer-digit-inner{
+  animation:odoRoll var(--speed, 5s) linear infinite;
   animation-delay:var(--delay, 0s);
 }
-.odometer.negative .odometer-digit-inner{
-  animation:odoDown var(--speed, 6s) linear infinite;
-  animation-delay:var(--delay, 0s);
-}
-
-/* SOBE (gold): começa mostrando o 0 no topo, sobe passando por 1,2,3...9 e volta ao 0.
-   Os spans estão na ordem [0,1,2,3,4,5,6,7,8,9,0].
-   Translate Y negativo = spans sobem = mostra valor maior. */
-@keyframes odoUp{
-  0%   {transform:translate3d(0, 0, 0)}
-  100% {transform:translate3d(0, calc(var(--digit-h) * -10), 0)}
-}
-
-/* DESCE (negative): começa mostrando o 9, desce passando por 8,7,6...0 e volta ao 9.
-   Os spans estão na ordem [9,8,7,6,5,4,3,2,1,0,9].
-   Mesma translate Y negativa (mesma animação visual), mas a sequência está invertida. */
-@keyframes odoDown{
+@keyframes odoRoll{
   0%   {transform:translate3d(0, 0, 0)}
   100% {transform:translate3d(0, calc(var(--digit-h) * -10), 0)}
 }
 
 .odometer-suffix{
-  font-size:28px;
+  font-size:26px;
   color:var(--text-secondary);
-  margin-left:6px;
-  font-weight:400;
+  margin-left:4px;
+  margin-bottom:14px;
+  font-weight:500;
   line-height:1;
   align-self:flex-end;
-  margin-bottom:8px;
 }
 
-.odometer.gold .odometer-digit-inner span,
+/* Cores por variante */
+.odometer.gold{
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.04),
+    inset 0 0 30px rgba(232,196,121,0.08),
+    0 1px 0 rgba(255,255,255,0.05),
+    0 0 24px rgba(232,196,121,0.12);
+}
+.odometer.gold .odometer-digit-inner span{
+  color:var(--gold-200);
+  text-shadow:0 0 12px rgba(232,196,121,0.5), 0 0 2px rgba(232,196,121,0.8);
+}
+.odometer.gold + .odometer-suffix,
 .odometer.gold .odometer-suffix{color:var(--gold-300)}
+
+.odometer.negative{
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.04),
+    inset 0 0 30px rgba(156,74,69,0.08),
+    0 1px 0 rgba(255,255,255,0.05),
+    0 0 24px rgba(156,74,69,0.12);
+}
 .odometer.negative .odometer-digit-inner span,
-.odometer.negative .odometer-suffix{color:#D4827D}
+.odometer.negative .odometer-sep,
+.odometer.negative .odometer-sign{
+  color:#E89B95;
+  text-shadow:0 0 12px rgba(212,130,125,0.5), 0 0 2px rgba(212,130,125,0.8);
+}
+.odometer.gold .odometer-sep{color:var(--gold-200);text-shadow:0 0 12px rgba(232,196,121,0.5)}
+
+.odometer-suffix.gold{color:var(--gold-300)}
+.odometer-suffix.negative{color:#D4827D}
+
+/* Footer "nos últimos 12 meses" */
+.compare-period-sub{
+  font-family:var(--body);
+  font-size:12px;
+  color:var(--text-tertiary);
+  margin-top:2px;
+  font-weight:400;
+  letter-spacing:0;
+  text-transform:none;
+}
 
 @media (max-width:768px){
-  .odometer{--digit-h:52px; --digit-w:32px}
-  .odometer-suffix{font-size:20px;margin-bottom:5px}
+  .odometer{--digit-h:48px; --digit-w:30px; --sep-w:10px; padding:10px 12px}
+  .odometer-sign{width:18px;font-size:48px}
+  .odometer-suffix{font-size:18px;margin-bottom:9px}
+  .compare-period-sub{font-size:10.5px}
 }
 
 /* Footer do card - variação/período */
@@ -1524,11 +1623,18 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
 
         <div class="odometer-wrap">
           <span class="odometer-currency">R$</span>
-          <div class="odometer negative" data-odometer data-target="180000" data-start="420000">
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-suffix">,00</span>
+          <div class="odometer negative" data-odometer>
+            <span class="odometer-sign">−</span>
+            <div class="odometer-reels">
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-sep">.</span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            </div>
+            <span class="odometer-suffix negative">,00</span>
           </div>
           <div class="compare-chart">
             <svg viewBox="0 0 300 60" preserveAspectRatio="none">
@@ -1538,7 +1644,10 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
         </div>
 
         <div class="compare-footer">
-          <span class="compare-delta negative">▼ -57%</span>
+          <div>
+            <div class="compare-delta negative">▼ -57%</div>
+            <div class="compare-period-sub">nos últimos 12 meses</div>
+          </div>
           <span class="compare-period">12 meses</span>
         </div>
       </article>
@@ -1552,11 +1661,17 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
 
         <div class="odometer-wrap">
           <span class="odometer-currency">R$</span>
-          <div class="odometer gold" data-odometer data-target="420000" data-start="180000">
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
-            <span class="odometer-suffix">,00</span>
+          <div class="odometer gold" data-odometer>
+            <div class="odometer-reels">
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-sep">.</span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+              <span class="odometer-digit"><span class="odometer-digit-inner"></span></span>
+            </div>
+            <span class="odometer-suffix gold">,00</span>
           </div>
           <div class="compare-chart">
             <svg viewBox="0 0 300 60" preserveAspectRatio="none">
@@ -1566,7 +1681,10 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
         </div>
 
         <div class="compare-footer">
-          <span class="compare-delta positive">▲ +133%</span>
+          <div>
+            <div class="compare-delta positive">▲ +133%</div>
+            <div class="compare-period-sub">nos últimos 12 meses</div>
+          </div>
           <span class="compare-period">12 meses</span>
         </div>
       </article>
@@ -1967,7 +2085,7 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   }
   host.appendChild(frag);
 })();
-/* Odômetros — loop contínuo de dígitos rolando */
+/* Odômetros — rolos mecânicos de 6 dígitos em loop contínuo */
 (function(){
   const odometers = document.querySelectorAll('[data-odometer]');
   if (!odometers.length) return;
@@ -1982,10 +2100,10 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
       // Sequência de 11 dígitos (10 + 1 repetição pro loop seamless)
       let sequence;
       if (isGold){
-        // Sobe: 0,1,2,3,4,5,6,7,8,9,0
+        // Sobe: mostra 0,1,2,3,4,5,6,7,8,9 depois volta ao 0 (loop)
         sequence = [0,1,2,3,4,5,6,7,8,9,0];
       } else {
-        // Desce: 9,8,7,6,5,4,3,2,1,0,9
+        // Desce: mostra 9,8,7,6,5,4,3,2,1,0 depois volta ao 9 (loop)
         sequence = [9,8,7,6,5,4,3,2,1,0,9];
       }
 
@@ -1995,14 +2113,24 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
         el.appendChild(span);
       });
 
-      // Velocidades escalonadas por posição (efeito contábil real):
-      // idx 0 = centenas (mais lento), idx 1 = dezenas, idx 2 = unidades (mais rápido)
-      const speeds = [18, 9, 4.5]; // segundos
-      const speed = speeds[idx] !== undefined ? speeds[idx] : 6;
+      // Velocidades escalonadas estilo odômetro mecânico de verdade:
+      // O dígito mais à direita (unidade) é o mais rápido.
+      // Cada dígito à esquerda é 10x mais lento (cascata mecânica real).
+      // idx 0,1,2 = milhares (mais à esquerda, mais lentos)
+      // idx 3,4,5 = centenas/dezenas/unidades (mais à direita, mais rápidos)
+      //
+      // Para efeito visual bom mas sem extremos:
+      const speedsGold = [45, 22, 11, 6, 3, 1.5];  // sobe
+      const speedsNeg  = [45, 22, 11, 6, 3, 1.5];  // desce (mesmas velocidades)
+      const speeds = isGold ? speedsGold : speedsNeg;
+      const speed = speeds[idx] !== undefined ? speeds[idx] : 4;
       el.style.setProperty('--speed', speed + 's');
 
-      // SEM delay aleatório — todos começam do mesmo ponto para comportamento previsível
-      el.style.setProperty('--delay', '0s');
+      // Delay negativo = cada dígito começa numa posição diferente no loop
+      // Isso faz com que na primeira visualização os números já estejam em posições diferentes
+      // (como um odômetro real, onde nem todos os dígitos estão em 0 ao mesmo tempo)
+      const delay = -Math.random() * speed;
+      el.style.setProperty('--delay', delay + 's');
     });
   });
 })();
