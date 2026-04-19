@@ -652,11 +652,18 @@
     font-size: 10px; color: var(--text-tertiary);
     letter-spacing: 0.1em;
   }
+  .calendar-legend-scale {
+    display: flex; align-items: center; gap: 3px;
+  }
   .calendar-legend-dot {
     width: 8px; height: 8px;
     border-radius: 2px;
+  }
+  .calendar-legend-dot.l1 { background: rgba(232,192,122,0.45); }
+  .calendar-legend-dot.l2 { background: var(--gold-400); }
+  .calendar-legend-dot.l3 {
     background: var(--gold-300);
-    box-shadow: 0 0 8px rgba(232,192,122,0.5);
+    box-shadow: 0 0 4px rgba(232,192,122,0.5);
   }
   .calendar-grid {
     flex: 1;
@@ -697,17 +704,75 @@
   }
   .calendar-day {
     aspect-ratio: 1;
-    border-radius: 1px;
-    background: rgba(232,192,122,0.05);
-    transition: background 0.6s var(--ease-out), box-shadow 0.6s var(--ease-out);
+    border-radius: 2px;
+    background: rgba(232,192,122,0.04);
+    transition: background 0.6s var(--ease-out), box-shadow 0.6s var(--ease-out), transform 0.2s var(--ease-out);
+    position: relative;
   }
-  .calendar-day.filled {
+  .calendar-day.filled-1 {
+    background: rgba(232,192,122,0.45);
+    box-shadow: 0 0 3px rgba(232,192,122,0.25);
+    cursor: pointer;
+  }
+  .calendar-day.filled-2 {
+    background: var(--gold-400);
+    box-shadow: 0 0 5px rgba(232,192,122,0.4);
+    cursor: pointer;
+  }
+  .calendar-day.filled-3 {
     background: var(--gold-300);
-    box-shadow: 0 0 6px rgba(232,192,122,0.6);
+    box-shadow: 0 0 7px rgba(232,192,122,0.55);
+    cursor: pointer;
   }
-  .calendar-day.filled-strong {
-    background: var(--gold-200);
-    box-shadow: 0 0 10px rgba(232,192,122,0.8);
+  .calendar-day[data-accords]:hover {
+    transform: scale(1.4);
+    z-index: 10;
+    box-shadow: 0 0 14px rgba(232,192,122,0.7);
+  }
+
+  /* Tooltip */
+  .calendar-tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(11,11,13,0.96);
+    border: 1px solid rgba(232,192,122,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.4);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    min-width: 120px;
+    white-space: nowrap;
+  }
+  .calendar-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .calendar-tooltip-date {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .calendar-tooltip-divider {
+    height: 1px;
+    background: rgba(232,192,122,0.15);
+    margin: 6px 0;
+  }
+  .calendar-tooltip-metric {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-300);
+    letter-spacing: 0.05em;
+  }
+  .calendar-tooltip-metric strong {
+    color: var(--gold-200);
+    font-weight: 500;
   }
 
   /* AUDIENCE */
@@ -1549,11 +1614,21 @@
           <div class="calendar-header">
             <span class="calendar-header-title">Recuperações · 2026</span>
             <div class="calendar-legend">
-              <span class="calendar-legend-dot"></span>
-              <span>RECUPERADO</span>
+              <span>MENOS</span>
+              <div class="calendar-legend-scale">
+                <span class="calendar-legend-dot l1"></span>
+                <span class="calendar-legend-dot l2"></span>
+                <span class="calendar-legend-dot l3"></span>
+              </div>
+              <span>MAIS</span>
             </div>
           </div>
           <div class="calendar-grid" id="calendarGrid"></div>
+          <div class="calendar-tooltip" id="calendarTooltip">
+            <div class="calendar-tooltip-date" id="tooltipDate"></div>
+            <div class="calendar-tooltip-divider"></div>
+            <div class="calendar-tooltip-metric" id="tooltipMetric"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1767,9 +1842,15 @@
   // CALENDAR
   (function setupCalendar() {
     const grid = document.getElementById('calendarGrid');
+    const tooltip = document.getElementById('calendarTooltip');
+    const tooltipDate = document.getElementById('tooltipDate');
+    const tooltipMetric = document.getElementById('tooltipMetric');
     if (!grid) return;
 
     const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+    const monthsFull = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    // Quantidade de dias com recuperação por mês (simulando crescimento)
     const activeDays = [6, 8, 10, 12, 14, 15, 17, 18, 20, 22, 23, 25];
     const currentMonthIndex = 4;
 
@@ -1785,19 +1866,45 @@
       const days = document.createElement('div');
       days.className = 'calendar-days';
 
-      const totalDays = 35;
+      const totalCells = 35;
+      const monthDays = daysInMonth[idx];
       const filledCount = activeDays[idx] || 0;
-      const filledPositions = new Set();
-      while (filledPositions.size < filledCount) {
-        filledPositions.add(Math.floor(Math.random() * totalDays));
+
+      // Distribuir acordos em posições aleatórias dentro do mês
+      const filledPositions = new Map();
+      const available = Array.from({ length: monthDays }, (_, i) => i);
+      for (let i = 0; i < filledCount; i++) {
+        if (available.length === 0) break;
+        const randomIdx = Math.floor(Math.random() * available.length);
+        const dayPosition = available.splice(randomIdx, 1)[0];
+
+        // Nível de intensidade: 55% nível 1, 30% nível 2, 15% nível 3
+        const roll = Math.random();
+        let level, accords;
+        if (roll < 0.55) {
+          level = 1;
+          accords = 1 + Math.floor(Math.random() * 2); // 1-2 acordos
+        } else if (roll < 0.85) {
+          level = 2;
+          accords = 3 + Math.floor(Math.random() * 2); // 3-4 acordos
+        } else {
+          level = 3;
+          accords = 5 + Math.floor(Math.random() * 3); // 5-7 acordos
+        }
+        filledPositions.set(dayPosition, { level, accords });
       }
 
-      for (let i = 0; i < totalDays; i++) {
+      for (let i = 0; i < totalCells; i++) {
         const day = document.createElement('div');
         day.className = 'calendar-day';
-        if (filledPositions.has(i)) {
+
+        if (i < monthDays && filledPositions.has(i)) {
+          const { level, accords } = filledPositions.get(i);
           day.dataset.fill = 'true';
-          if (Math.random() < 0.25) day.dataset.strong = 'true';
+          day.dataset.level = level;
+          day.dataset.accords = accords;
+          day.dataset.dayNum = i + 1;
+          day.dataset.monthIdx = idx;
         }
         days.appendChild(day);
       }
@@ -1805,6 +1912,47 @@
       monthEl.appendChild(days);
       grid.appendChild(monthEl);
     });
+
+    // Tooltip
+    const allFilledDays = () => grid.querySelectorAll('.calendar-day[data-accords]');
+
+    function attachTooltip() {
+      allFilledDays().forEach(day => {
+        day.addEventListener('mouseenter', (e) => {
+          const dayNum = day.dataset.dayNum;
+          const monthIdx = parseInt(day.dataset.monthIdx);
+          const accords = day.dataset.accords;
+          const plural = accords === '1' ? 'acordo firmado' : 'acordos firmados';
+
+          tooltipDate.textContent = `${dayNum} de ${monthsFull[monthIdx]}`;
+          tooltipMetric.innerHTML = `<strong>${accords}</strong> ${plural}`;
+          tooltip.classList.add('visible');
+        });
+
+        day.addEventListener('mousemove', (e) => {
+          // Posiciona o tooltip à direita/acima do cursor
+          const tooltipRect = tooltip.getBoundingClientRect();
+          let left = e.clientX + 14;
+          let top = e.clientY - tooltipRect.height - 10;
+
+          // Ajuste pra não sair da tela à direita
+          if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = e.clientX - tooltipRect.width - 14;
+          }
+          // Ajuste pra não sair no topo
+          if (top < 10) {
+            top = e.clientY + 20;
+          }
+
+          tooltip.style.left = `${left}px`;
+          tooltip.style.top = `${top}px`;
+        });
+
+        day.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('visible');
+        });
+      });
+    }
 
     const calObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1821,10 +1969,11 @@
       const allDays = grid.querySelectorAll('.calendar-day[data-fill="true"]');
       allDays.forEach((day, idx) => {
         setTimeout(() => {
-          day.classList.add('filled');
-          if (day.dataset.strong) day.classList.add('filled-strong');
+          day.classList.add(`filled-${day.dataset.level}`);
         }, idx * 18);
       });
+      // Anexa tooltips após animação
+      setTimeout(attachTooltip, allDays.length * 18 + 200);
     }
   })();
 
