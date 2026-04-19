@@ -925,7 +925,7 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   max-width:340px;
 }
 
-/* Odômetro (rolagem mecânica de dígitos) */
+/* Odômetro (loop contínuo de dígitos) */
 .odometer-wrap{
   margin:auto 0;
   display:flex;flex-direction:column;gap:6px;
@@ -943,10 +943,13 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   font-weight:600;
   line-height:1;
   letter-spacing:-0.04em;
+  /* Altura fixa = tamanho de 1 dígito */
+  --digit-size:1em;
 }
 .odometer-digit{
   display:inline-block;
-  height:1em;
+  width:0.65em;
+  height:var(--digit-size);
   overflow:hidden;
   position:relative;
   vertical-align:top;
@@ -954,21 +957,44 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
 .odometer-digit-inner{
   display:flex;
   flex-direction:column;
-  transition:transform 2.4s cubic-bezier(0.65, 0, 0.35, 1);
   will-change:transform;
 }
 .odometer-digit-inner span{
-  height:1em;
-  line-height:1;
+  height:var(--digit-size);
+  line-height:var(--digit-size);
   display:flex;
   align-items:center;
   justify-content:center;
+  flex-shrink:0;
 }
+
+/* Cada dígito tem sua própria animação de loop */
+.odometer.negative .odometer-digit-inner{
+  animation:odoScrollDown var(--speed, 8s) linear infinite;
+  animation-delay:var(--delay, 0s);
+}
+.odometer.gold .odometer-digit-inner{
+  animation:odoScrollUp var(--speed, 8s) linear infinite;
+  animation-delay:var(--delay, 0s);
+}
+
+/* Desce continuamente - simula valor caindo */
+@keyframes odoScrollDown{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(-10em)}
+}
+/* Sobe continuamente - simula valor crescendo */
+@keyframes odoScrollUp{
+  0%{transform:translateY(-10em)}
+  100%{transform:translateY(0)}
+}
+
 .odometer-suffix{
   font-size:0.4em;
   color:var(--text-secondary);
   margin-left:0.15em;
   font-weight:400;
+  line-height:1;
 }
 
 .odometer.gold .odometer-digit-inner span,
@@ -1921,45 +1947,30 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
   }
   host.appendChild(frag);
 })();
-/* Odômetros — rolagem de dígitos mecânica */
+/* Odômetros — loop contínuo de dígitos rolando */
 (function(){
   const odometers = document.querySelectorAll('[data-odometer]');
   if (!odometers.length) return;
 
-  function formatValue(num){
-    // Formata: 420000 -> "420", 180000 -> "180" (valor em K)
-    const thousands = Math.round(num / 1000);
-    return thousands.toString().padStart(3, '0'); // 3 dígitos sempre
-  }
-
-  function setupOdometerDigits(odometer){
-    const start = parseInt(odometer.dataset.start);
-    const target = parseInt(odometer.dataset.target);
+  odometers.forEach(odometer => {
     const digitEls = odometer.querySelectorAll('.odometer-digit-inner');
-
-    const startStr = formatValue(start);
-    const targetStr = formatValue(target);
+    const isGold = odometer.classList.contains('gold');
 
     digitEls.forEach((el, idx) => {
-      const startDigit = parseInt(startStr[idx]);
-      const targetDigit = parseInt(targetStr[idx]);
-
-      // Monta coluna com todos os números 0-9 (para permitir rolar qualquer direção)
+      // Popula cada coluna com dígitos 0-9 + cópia do 0 no final
+      // Isso garante loop seamless (chegar em -10em = mostrar 0 de novo)
       el.innerHTML = '';
-      // Sempre rola para baixo passando por vários números antes de chegar no alvo
-      // Técnica: criar uma sequência que passa por várias dezenas e termina no dígito certo
+
+      // Se for gold (subindo), vai de 0 a 9 + 0 final
+      // Se for negative (descendo), vai de 9 a 0 + 9 final
       const sequence = [];
-
-      // Começa no dígito inicial
-      sequence.push(startDigit);
-
-      // Adiciona 2 voltas completas (20 números) para dar efeito mecânico
-      for(let i = 0; i < 20; i++){
-        sequence.push(Math.floor(Math.random() * 10));
+      if (isGold){
+        for(let i = 0; i <= 9; i++) sequence.push(i);
+        sequence.push(0); // Dígito extra = valor de loop
+      } else {
+        for(let i = 9; i >= 0; i--) sequence.push(i);
+        sequence.push(9); // Dígito extra = valor de loop
       }
-
-      // Termina no dígito alvo
-      sequence.push(targetDigit);
 
       sequence.forEach(d => {
         const span = document.createElement('span');
@@ -1967,41 +1978,17 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border-glass)}
         el.appendChild(span);
       });
 
-      // Posição inicial mostra o primeiro dígito (startDigit)
-      el.style.transform = 'translateY(0)';
-      el.dataset.sequenceLength = sequence.length;
+      // Velocidades diferentes para cada dígito (centenas mais lentas, unidades mais rápidas)
+      // Cria sensação de número contábil real (unidades correm, dezenas mais lentas, centenas ainda mais)
+      const speeds = [12, 6, 3]; // centenas, dezenas, unidades em segundos
+      const speed = speeds[idx] || 4;
+      el.style.setProperty('--speed', speed + 's');
+
+      // Delay inicial aleatório pra não ficar todos sincronizados
+      const delay = -Math.random() * speed;
+      el.style.setProperty('--delay', delay + 's');
     });
-  }
-
-  function rollOdometer(odometer){
-    const digitEls = odometer.querySelectorAll('.odometer-digit-inner');
-    digitEls.forEach((el, idx) => {
-      const len = parseInt(el.dataset.sequenceLength);
-      // Desloca até o último item (o dígito alvo)
-      const translateY = -(len - 1) * 100; // % de altura
-      // Cada dígito tem delay leve pra criar efeito escalonado
-      el.style.transitionDelay = (idx * 100) + 'ms';
-      el.style.transform = `translateY(${translateY}%)`;
-    });
-  }
-
-  // Inicializa dígitos (posição inicial)
-  odometers.forEach(setupOdometerDigits);
-
-  // Dispara quando entrar no viewport
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const odo = entry.target.querySelector('[data-odometer]');
-        if (odo) {
-          setTimeout(() => rollOdometer(odo), 300);
-        }
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.35 });
-
-  document.querySelectorAll('.compare-card').forEach(card => obs.observe(card));
+  });
 })();
 </script>
 </body>
