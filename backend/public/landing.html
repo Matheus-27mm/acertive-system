@@ -313,7 +313,7 @@
   }
   .marquee-track {
     display: flex; align-items: center;
-    gap: 90px; width: max-content;
+    gap: 120px; width: max-content;
     animation: marquee 32s linear infinite;
   }
   .marquee:hover .marquee-track { animation-play-state: paused; }
@@ -334,7 +334,7 @@
 
   /* Logos dos clientes no marquee */
   .marquee-logo {
-    height: 48px; width: auto; flex-shrink: 0;
+    height: 68px; width: auto; flex-shrink: 0;
     opacity: 0.92;
     transition: opacity 0.4s ease, transform 0.4s ease;
     image-rendering: -webkit-optimize-contrast;
@@ -347,15 +347,15 @@
 
   /* Ajustes individuais por logo */
   .marquee-logo.logo-transbyshop {
-    height: 58px;
+    height: 78px;
     /* Logo é preta — invertendo pra aparecer sobre o fundo escuro */
     filter: invert(1) brightness(1.05);
   }
   .marquee-logo.logo-transbyshop:hover {
     filter: invert(1) brightness(1.15);
   }
-  .marquee-logo.logo-odonto { height: 52px; }
-  .marquee-logo.logo-fogas { height: 50px; }
+  .marquee-logo.logo-odonto { height: 72px; }
+  .marquee-logo.logo-fogas { height: 72px; }
 
   /* Label ao lado da logo Odonto Vitta */
   .marquee-client {
@@ -367,7 +367,7 @@
 
   .marquee-client-name {
     font-family: 'Fraunces', serif;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 400;
     font-style: italic;
     color: var(--text-secondary);
@@ -739,6 +739,240 @@
     z-index: 10;
     box-shadow: 0 0 16px rgba(232,192,122,0.85), 0 0 24px rgba(232,192,122,0.4);
     background: var(--gold-100);
+  }
+
+  /* ============================================
+     DICE DATE — 3D rolling date display
+     ============================================ */
+  .dice-stage {
+    width: 100%;
+    height: 100%;
+    perspective: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .dice-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dice-label-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold-300);
+    box-shadow: 0 0 8px var(--gold-300);
+    animation: pulse 2s infinite;
+  }
+
+  .dice-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    position: relative;
+    transform-style: preserve-3d;
+    padding: 20px 0;
+  }
+
+  .dice-separator {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--gold-500);
+    line-height: 1;
+    padding: 0 4px;
+    opacity: 0.7;
+  }
+
+  .dice-group {
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    gap: 14px;
+  }
+
+  .dice {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dice-face {
+    position: absolute;
+    inset: 0;
+    outline: 1px solid transparent;
+    background: linear-gradient(135deg, #1A1A1F 0%, #0B0B0D 100%);
+    border: 1px solid rgba(232, 192, 122, 0.2);
+    border-radius: 8px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+      0 4px 14px rgba(0, 0, 0, 0.4);
+  }
+
+  .dice-face:nth-child(1) { transform: rotateY(0deg)   translateZ(35px); }
+  .dice-face:nth-child(2) { transform: rotateY(90deg)  translateZ(35px); }
+  .dice-face:nth-child(3) { transform: rotateY(180deg) translateZ(35px); }
+  .dice-face:nth-child(4) { transform: rotateY(270deg) translateZ(35px); }
+  .dice-face:nth-child(5) { transform: rotateX(90deg)  translateZ(35px); }
+  .dice-face:nth-child(6) { transform: rotateX(-90deg) translateZ(35px); }
+
+  .dice-face::after {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+  }
+
+  /* Números formados por box-shadow (pixel-art dot matrix) */
+  /* Sistema: grid de 5x7 células de ~8px, começando em (10,10) */
+  /* Cada ponto = quadrado 6px via box-shadow (spread 3px) */
+
+  .dn-0::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200), 51px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200), 51px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    19px 41px 0 3px var(--gold-200), 51px 41px 0 3px var(--gold-200),
+    19px 49px 0 3px var(--gold-200), 51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-1::after { box-shadow:
+    35px 9px 0 3px var(--gold-200),
+    35px 17px 0 3px var(--gold-200),
+    35px 25px 0 3px var(--gold-200),
+    35px 33px 0 3px var(--gold-200),
+    35px 41px 0 3px var(--gold-200),
+    35px 49px 0 3px var(--gold-200),
+    35px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-2::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    51px 17px 0 3px var(--gold-200),
+    51px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    19px 41px 0 3px var(--gold-200),
+    19px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-3::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    51px 17px 0 3px var(--gold-200),
+    51px 25px 0 3px var(--gold-200),
+    27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    51px 41px 0 3px var(--gold-200),
+    51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-4::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200), 51px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200), 51px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    51px 41px 0 3px var(--gold-200),
+    51px 49px 0 3px var(--gold-200),
+    51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-5::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    51px 41px 0 3px var(--gold-200),
+    51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-6::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    19px 41px 0 3px var(--gold-200), 51px 41px 0 3px var(--gold-200),
+    19px 49px 0 3px var(--gold-200), 51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-7::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    51px 17px 0 3px var(--gold-200),
+    51px 25px 0 3px var(--gold-200),
+    51px 33px 0 3px var(--gold-200),
+    51px 41px 0 3px var(--gold-200),
+    51px 49px 0 3px var(--gold-200),
+    51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-8::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200), 51px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200), 51px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    19px 41px 0 3px var(--gold-200), 51px 41px 0 3px var(--gold-200),
+    19px 49px 0 3px var(--gold-200), 51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dn-9::after { box-shadow:
+    19px 9px 0 3px var(--gold-200), 27px 9px 0 3px var(--gold-200), 35px 9px 0 3px var(--gold-200), 43px 9px 0 3px var(--gold-200), 51px 9px 0 3px var(--gold-200),
+    19px 17px 0 3px var(--gold-200), 51px 17px 0 3px var(--gold-200),
+    19px 25px 0 3px var(--gold-200), 51px 25px 0 3px var(--gold-200),
+    19px 33px 0 3px var(--gold-200), 27px 33px 0 3px var(--gold-200), 35px 33px 0 3px var(--gold-200), 43px 33px 0 3px var(--gold-200), 51px 33px 0 3px var(--gold-200),
+    51px 41px 0 3px var(--gold-200),
+    51px 49px 0 3px var(--gold-200),
+    19px 57px 0 3px var(--gold-200), 27px 57px 0 3px var(--gold-200), 35px 57px 0 3px var(--gold-200), 43px 57px 0 3px var(--gold-200), 51px 57px 0 3px var(--gold-200);
+  }
+
+  .dice-date {
+    margin-top: 22px;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .dice-date.visible { opacity: 1; }
+
+  @media (max-width: 560px) {
+    .dice { width: 56px; height: 56px; }
+    .dice-face:nth-child(1) { transform: rotateY(0deg)   translateZ(28px); }
+    .dice-face:nth-child(2) { transform: rotateY(90deg)  translateZ(28px); }
+    .dice-face:nth-child(3) { transform: rotateY(180deg) translateZ(28px); }
+    .dice-face:nth-child(4) { transform: rotateY(270deg) translateZ(28px); }
+    .dice-face:nth-child(5) { transform: rotateX(90deg)  translateZ(28px); }
+    .dice-face:nth-child(6) { transform: rotateX(-90deg) translateZ(28px); }
+    .dice-board { gap: 18px; }
+    .dice-separator { font-size: 36px; }
+    .dice-group { gap: 10px; }
   }
 
   /* Tooltip */
@@ -1165,13 +1399,13 @@
     .section-header { margin-bottom: 48px; }
     .section-title { font-size: 36px; }
 
-    .marquee-track { gap: 50px; }
-    .marquee-logo { height: 40px; }
-    .marquee-logo.logo-transbyshop { height: 48px; }
-    .marquee-logo.logo-odonto { height: 42px; }
-    .marquee-logo.logo-fogas { height: 40px; }
-    .marquee-client { gap: 10px; }
-    .marquee-client-name { font-size: 18px; }
+    .marquee-track { gap: 60px; }
+    .marquee-logo { height: 54px; }
+    .marquee-logo.logo-transbyshop { height: 62px; }
+    .marquee-logo.logo-odonto { height: 58px; }
+    .marquee-logo.logo-fogas { height: 58px; }
+    .marquee-client { gap: 14px; }
+    .marquee-client-name { font-size: 24px; }
 
     .calendar-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); gap: 6px; }
 
@@ -1215,12 +1449,12 @@
     .clients-label-text { font-size: 9.5px; letter-spacing: 0.2em; }
     .clients-label-line { flex: 0 1 24px; }
 
-    .marquee-track { gap: 36px; }
-    .marquee-logo { height: 34px; }
-    .marquee-logo.logo-transbyshop { height: 40px; }
-    .marquee-logo.logo-odonto { height: 36px; }
-    .marquee-logo.logo-fogas { height: 34px; }
-    .marquee-client-name { font-size: 15px; }
+    .marquee-track { gap: 44px; }
+    .marquee-logo { height: 44px; }
+    .marquee-logo.logo-transbyshop { height: 50px; }
+    .marquee-logo.logo-odonto { height: 48px; }
+    .marquee-logo.logo-fogas { height: 48px; }
+    .marquee-client-name { font-size: 18px; }
     .marquee-divider { font-size: 16px; }
 
     .section-title { font-size: 28px; }
@@ -1608,38 +1842,70 @@
       </div>
     </div>
 
-    <!-- FEATURE 4 — CALENDAR -->
+    <!-- FEATURE 4 — DADOS 3D -->
     <div class="feature-block reverse">
       <div class="reveal">
-        <div class="feature-number">— 04 / Prestação de contas</div>
-        <h3 class="feature-title">Cada recuperação<br>registrada.<br>Mês a mês.</h3>
-        <p class="feature-desc">O calendário consolida todas as recuperações efetivadas ao longo do ano, permitindo acompanhar padrões, sazonalidades e a performance da carteira. No fim de cada período, o resultado está documentado e auditável.</p>
+        <div class="feature-number">— 04 / Presença diária</div>
+        <h3 class="feature-title">Operação ativa.<br>Todos os dias.</h3>
+        <p class="feature-desc">A recuperação de crédito não pode parar. Nossa equipe opera continuamente — cada dia é dia de acordos firmados, pagamentos registrados e carteira em movimento. O tempo passa a trabalhar a seu favor.</p>
         <ul class="feature-bullets">
-          <li>Histórico anual de recuperações por dia e por mês</li>
-          <li>Comparativo entre acordos firmados e acordos cumpridos</li>
-          <li>Relatório consolidado enviado ao final de cada mês</li>
+          <li>Operação contínua em dias úteis sem interrupção</li>
+          <li>Registro de acordos em tempo real no Portal do Credor</li>
+          <li>Fechamento de indicadores a cada 30 dias</li>
         </ul>
       </div>
       <div class="feature-visual reveal">
-        <div class="calendar-wrap">
-          <div class="calendar-header">
-            <span class="calendar-header-title">Recuperações · 2026</span>
-            <div class="calendar-legend">
-              <span>MENOS</span>
-              <div class="calendar-legend-scale">
-                <span class="calendar-legend-dot l1"></span>
-                <span class="calendar-legend-dot l2"></span>
-                <span class="calendar-legend-dot l3"></span>
+        <div class="dice-stage">
+          <div class="dice-label">
+            <span class="dice-label-dot"></span>
+            <span>HOJE</span>
+          </div>
+
+          <div class="dice-board">
+            <!-- MÊS: dois dígitos -->
+            <div class="dice-group" id="diceGroupMonth">
+              <div class="dice" id="diceM1">
+                <div class="dice-face dn-0"></div>
+                <div class="dice-face dn-1"></div>
+                <div class="dice-face dn-2"></div>
+                <div class="dice-face dn-4"></div>
+                <div class="dice-face dn-6"></div>
+                <div class="dice-face dn-8"></div>
               </div>
-              <span>MAIS</span>
+              <div class="dice" id="diceM2">
+                <div class="dice-face dn-0"></div>
+                <div class="dice-face dn-1"></div>
+                <div class="dice-face dn-2"></div>
+                <div class="dice-face dn-3"></div>
+                <div class="dice-face dn-5"></div>
+                <div class="dice-face dn-7"></div>
+              </div>
+            </div>
+
+            <span class="dice-separator">/</span>
+
+            <!-- DIA: dois dígitos -->
+            <div class="dice-group" id="diceGroupDay">
+              <div class="dice" id="diceD1">
+                <div class="dice-face dn-0"></div>
+                <div class="dice-face dn-1"></div>
+                <div class="dice-face dn-2"></div>
+                <div class="dice-face dn-4"></div>
+                <div class="dice-face dn-6"></div>
+                <div class="dice-face dn-8"></div>
+              </div>
+              <div class="dice" id="diceD2">
+                <div class="dice-face dn-0"></div>
+                <div class="dice-face dn-1"></div>
+                <div class="dice-face dn-2"></div>
+                <div class="dice-face dn-3"></div>
+                <div class="dice-face dn-5"></div>
+                <div class="dice-face dn-7"></div>
+              </div>
             </div>
           </div>
-          <div class="calendar-grid" id="calendarGrid"></div>
-          <div class="calendar-tooltip" id="calendarTooltip">
-            <div class="calendar-tooltip-date" id="tooltipDate"></div>
-            <div class="calendar-tooltip-divider"></div>
-            <div class="calendar-tooltip-metric" id="tooltipMetric"></div>
-          </div>
+
+          <div class="dice-date" id="diceDate"></div>
         </div>
       </div>
     </div>
@@ -1850,142 +2116,129 @@
     track.innerHTML += track.innerHTML;
   })();
 
-  // CALENDAR
-  (function setupCalendar() {
-    const grid = document.getElementById('calendarGrid');
-    const tooltip = document.getElementById('calendarTooltip');
-    const tooltipDate = document.getElementById('tooltipDate');
-    const tooltipMetric = document.getElementById('tooltipMetric');
-    if (!grid) return;
+  // DICE DATE — 3D rolling date
+  (function setupDiceDate() {
+    const groupMonth = document.getElementById('diceGroupMonth');
+    const groupDay = document.getElementById('diceGroupDay');
+    const diceM1 = document.getElementById('diceM1');
+    const diceM2 = document.getElementById('diceM2');
+    const diceD1 = document.getElementById('diceD1');
+    const diceD2 = document.getElementById('diceD2');
+    const dateLabel = document.getElementById('diceDate');
+    if (!groupMonth || !groupDay) return;
 
-    const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-    const monthsFull = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    // Quantidade de dias com recuperação por mês (simulando crescimento)
-    const activeDays = [6, 8, 10, 12, 14, 15, 17, 18, 20, 22, 23, 25];
-    const currentMonthIndex = 4;
+    // Mapa de rotação: posição de cada face quando cai pra cima
+    // Faces na ordem: [0, 1, 2, 4, 6, 8] pro diceA; [0, 1, 2, 3, 5, 7] pro diceB
+    // Vou montar mapas por tipo de dado
+    const rotA = {
+      0: { x:   0, y:   0 },
+      1: { x:   0, y: 270 },
+      2: { x:   0, y: 180 },
+      4: { x:   0, y:  90 },
+      6: { x: 270, y:   0 },
+      8: { x:  90, y:   0 }
+    };
+    const rotB = {
+      0: { x:   0, y:   0 },
+      1: { x:   0, y: 270 },
+      2: { x:   0, y: 180 },
+      3: { x:   0, y:  90 },
+      5: { x: 270, y:   0 },
+      7: { x:  90, y:   0 }
+    };
 
-    months.forEach((m, idx) => {
-      const monthEl = document.createElement('div');
-      monthEl.className = 'calendar-month' + (idx === currentMonthIndex ? ' active' : '');
+    // Números disponíveis em cada dado
+    const facesA = [0, 1, 2, 4, 6, 8];
+    const facesB = [0, 1, 2, 3, 5, 7];
 
-      const label = document.createElement('div');
-      label.className = 'calendar-month-label';
-      label.textContent = m;
-      monthEl.appendChild(label);
-
-      const days = document.createElement('div');
-      days.className = 'calendar-days';
-
-      const totalCells = 35;
-      const monthDays = daysInMonth[idx];
-      const filledCount = activeDays[idx] || 0;
-
-      // Distribuir acordos em posições aleatórias dentro do mês
-      const filledPositions = new Map();
-      const available = Array.from({ length: monthDays }, (_, i) => i);
-      for (let i = 0; i < filledCount; i++) {
-        if (available.length === 0) break;
-        const randomIdx = Math.floor(Math.random() * available.length);
-        const dayPosition = available.splice(randomIdx, 1)[0];
-
-        // Nível de intensidade: 55% nível 1, 30% nível 2, 15% nível 3
-        const roll = Math.random();
-        let level, accords;
-        if (roll < 0.55) {
-          level = 1;
-          accords = 1 + Math.floor(Math.random() * 2); // 1-2 acordos
-        } else if (roll < 0.85) {
-          level = 2;
-          accords = 3 + Math.floor(Math.random() * 2); // 3-4 acordos
-        } else {
-          level = 3;
-          accords = 5 + Math.floor(Math.random() * 3); // 5-7 acordos
-        }
-        filledPositions.set(dayPosition, { level, accords });
+    function showNumber(dice, num, facesAvailable, rotMap, extraSpin = 0) {
+      // Se o número não está no dado, pega o mais próximo disponível
+      let target = num;
+      if (!facesAvailable.includes(num)) {
+        // Encontra o número disponível mais próximo
+        target = facesAvailable.reduce((a, b) =>
+          Math.abs(b - num) < Math.abs(a - num) ? b : a
+        );
       }
-
-      for (let i = 0; i < totalCells; i++) {
-        const day = document.createElement('div');
-        day.className = 'calendar-day';
-
-        if (i < monthDays && filledPositions.has(i)) {
-          const { level, accords } = filledPositions.get(i);
-          day.dataset.fill = 'true';
-          day.dataset.level = level;
-          day.dataset.accords = accords;
-          day.dataset.dayNum = i + 1;
-          day.dataset.monthIdx = idx;
-        }
-        days.appendChild(day);
-      }
-
-      monthEl.appendChild(days);
-      grid.appendChild(monthEl);
-    });
-
-    // Tooltip
-    const allFilledDays = () => grid.querySelectorAll('.calendar-day[data-accords]');
-
-    function attachTooltip() {
-      allFilledDays().forEach(day => {
-        day.addEventListener('mouseenter', (e) => {
-          const dayNum = day.dataset.dayNum;
-          const monthIdx = parseInt(day.dataset.monthIdx);
-          const accords = day.dataset.accords;
-          const plural = accords === '1' ? 'acordo firmado' : 'acordos firmados';
-
-          tooltipDate.textContent = `${dayNum} de ${monthsFull[monthIdx]}`;
-          tooltipMetric.innerHTML = `<strong>${accords}</strong> ${plural}`;
-          tooltip.classList.add('visible');
-        });
-
-        day.addEventListener('mousemove', (e) => {
-          // Posiciona o tooltip à direita/acima do cursor
-          const tooltipRect = tooltip.getBoundingClientRect();
-          let left = e.clientX + 14;
-          let top = e.clientY - tooltipRect.height - 10;
-
-          // Ajuste pra não sair da tela à direita
-          if (left + tooltipRect.width > window.innerWidth - 10) {
-            left = e.clientX - tooltipRect.width - 14;
-          }
-          // Ajuste pra não sair no topo
-          if (top < 10) {
-            top = e.clientY + 20;
-          }
-
-          tooltip.style.left = `${left}px`;
-          tooltip.style.top = `${top}px`;
-        });
-
-        day.addEventListener('mouseleave', () => {
-          tooltip.classList.remove('visible');
-        });
-      });
+      const r = rotMap[target];
+      dice.style.transform = `rotateX(${r.x + extraSpin}deg) rotateY(${r.y + extraSpin}deg)`;
     }
 
-    const calObserver = new IntersectionObserver((entries) => {
+    function getTodayDigits() {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      return {
+        m1: month < 10 ? 0 : Math.floor(month / 10),
+        m2: month < 10 ? month : month % 10,
+        d1: day < 10 ? 0 : Math.floor(day / 10),
+        d2: day < 10 ? day : day % 10,
+        dateText: now.toLocaleDateString('pt-BR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+      };
+    }
+
+    // Animação de entrada: dados rolam várias vezes antes de pousar na data
+    function animateRollIn() {
+      const { m1, m2, d1, d2, dateText } = getTodayDigits();
+
+      // Tilt geral pros grupos
+      groupMonth.style.transform = 'rotateX(30deg) rotateY(-15deg)';
+      groupDay.style.transform = 'rotateX(30deg) rotateY(15deg)';
+
+      // Fase 1 — rolagem aleatória rápida
+      let rolls = 0;
+      const maxRolls = 4;
+
+      const rollInterval = setInterval(() => {
+        const randomA = facesA[Math.floor(Math.random() * facesA.length)];
+        const randomB = facesB[Math.floor(Math.random() * facesB.length)];
+        const spinM1 = 360 * (rolls + 1);
+        const spinM2 = 360 * (rolls + 1);
+        const spinD1 = 360 * (rolls + 1);
+        const spinD2 = 360 * (rolls + 1);
+
+        showNumber(diceM1, randomA, facesA, rotA, spinM1);
+        showNumber(diceM2, randomB, facesB, rotB, spinM2);
+        showNumber(diceD1, randomA, facesA, rotA, spinD1);
+        showNumber(diceD2, randomB, facesB, rotB, spinD2);
+
+        rolls++;
+        if (rolls >= maxRolls) {
+          clearInterval(rollInterval);
+          // Fase 2 — pousa na data real
+          setTimeout(() => {
+            const finalSpin = 360 * (maxRolls + 1);
+            showNumber(diceM1, m1, facesA, rotA, finalSpin);
+            showNumber(diceM2, m2, facesB, rotB, finalSpin);
+            showNumber(diceD1, d1, facesA, rotA, finalSpin);
+            showNumber(diceD2, d2, facesB, rotB, finalSpin);
+
+            // Mostra data por extenso
+            setTimeout(() => {
+              dateLabel.textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1);
+              dateLabel.classList.add('visible');
+            }, 800);
+          }, 300);
+        }
+      }, 500);
+    }
+
+    // Dispara quando a seção entra no viewport
+    const diceObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          animateCalendar();
-          calObserver.disconnect();
+          animateRollIn();
+          diceObserver.disconnect();
         }
       });
     }, { threshold: 0.3 });
 
-    calObserver.observe(grid);
-
-    function animateCalendar() {
-      const allDays = grid.querySelectorAll('.calendar-day[data-fill="true"]');
-      allDays.forEach((day, idx) => {
-        setTimeout(() => {
-          day.classList.add(`filled-${day.dataset.level}`);
-        }, idx * 18);
-      });
-      // Anexa tooltips após animação
-      setTimeout(attachTooltip, allDays.length * 18 + 200);
-    }
+    diceObserver.observe(groupMonth);
   })();
 
   // SCROLL REVEAL
